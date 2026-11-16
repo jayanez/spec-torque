@@ -32,7 +32,7 @@ export async function startServer(root: string, requestedPort = 4317) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self' vscode-webview:; base-uri 'none'; object-src 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self' vscode-webview: vscode-file://vscode-app; base-uri 'none'; object-src 'none'");
     const send = (status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
     if (!hosts.has(req.headers.host ?? '') || req.headers.origin && !origins.has(req.headers.origin)) { send(403, { error: 'Untrusted origin or host.' }); return; }
     const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`);

@@ -37,6 +37,9 @@ test('local HTTP enforces origin, session and exact reviewed write; undo checks 
     await writeFile(join(root, 'spec.md'), source);
     assert.equal((await fetch(url + '/api/workspace')).status, 403);
     assert.equal((await fetch(url + '/api/session', { headers: { Origin: 'https://evil.test' } })).status, 403);
+    const csp = (await fetch(url + '/api/session')).headers.get('content-security-policy')!;
+    assert.match(csp, /frame-ancestors 'self' vscode-webview: vscode-file:\/\/vscode-app;/);
+    assert.ok(!csp.includes('*'), 'Embedding remains restricted to the local workbench and VS Code.');
     const headers = { 'Content-Type': 'application/json', 'X-SpecTorque-Token': token };
     const set = await (await fetch(url + '/api/workspace', { headers })).json();
     assert.equal(set.artifacts.length, 1);
