@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import { unzipSync, strFromU8 } from 'fflate';
 import { startServer } from '../src/node/server.js';
 import { reviewWorkspace } from '../src/integration.js';
@@ -32,9 +32,9 @@ try {
   await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
   await page.getByRole('button', { name: 'Decisions', exact: true }).click();
   await page.getByRole('button').filter({ hasText: `${decision.path}:${decision.line}` }).click();
-  const selected = await page.getByRole('textbox', { name: 'Source text editor' }).evaluate(node => node.value.slice(node.selectionStart, node.selectionEnd));
+  const editor = page.getByRole('textbox', { name: 'Source text editor' });
   const source = await readFile(join(root, decision.path), 'utf8');
-  assert.equal(selected, source.split(/\r?\n/)[decision.line - 1]);
+  await expect.poll(() => editor.evaluate(node => node.value.slice(node.selectionStart, node.selectionEnd)), { message: 'Decision selection must finish before export.' }).toBe(source.split(/\r?\n/)[decision.line - 1]);
   let download = page.waitForEvent('download');
   await page.getByRole('button', { name: '↓ JSON', exact: true }).click();
   await (await download).saveAs(join(run, 'assessment.json'));
