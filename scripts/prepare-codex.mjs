@@ -17,5 +17,5 @@ await mkdir(join(root, '.agents'), { recursive: true });
 await cp(join(repository, 'skills'), join(root, '.agents', 'skills'), { recursive: true });
 await mkdir(join(root, '.codex'));
 const tomlString = value => JSON.stringify(value);
-await writeFile(join(root, '.codex', 'config.toml'), `[mcp_servers.spec-torque]\ncommand = ${tomlString(process.execPath)}\nargs = [${tomlString(join(repository, 'dist', 'mcp.js'))}]\n\n[mcp_servers.spec-torque.env]\nSPECTORQUE_ROOT = ${tomlString(root)}\n`, { flag: 'wx' });
+await writeFile(join(root, '.codex', 'config.toml'), `[mcp_servers.spectorque]\ncommand = ${tomlString(process.execPath)}\nargs = [${tomlString(join(repository, 'dist', 'mcp.js'))}]\n\n[mcp_servers.spectorque.env]\nSPECTORQUE_ROOT = ${tomlString(root)}\n`, { flag: 'wx' });
 console.log(JSON.stringify({ workspace: root, node: process.version, configuration: '.codex/config.toml', skills: '.agents/skills', removal: 'Remove this generated workspace after exporting any edits.' }, null, 2));

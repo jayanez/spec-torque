@@ -26,7 +26,7 @@ try {
     await mkdir(join(root, '.agents'));
     await cp(join(repository, 'skills'), join(root, '.agents/skills'), { recursive: true });
     await mkdir(join(root, '.codex'));
-    await writeFile(join(root, '.codex/config.toml'), `[mcp_servers.spec-torque]\ncommand = ${JSON.stringify(process.execPath)}\nargs = [${JSON.stringify(join(repository, 'dist/mcp.js'))}]\n[mcp_servers.spec-torque.env]\nSPECTORQUE_ROOT = ${JSON.stringify(root)}\n`);
+    await writeFile(join(root, '.codex/config.toml'), `[mcp_servers.spectorque]\ncommand = ${JSON.stringify(process.execPath)}\nargs = [${JSON.stringify(join(repository, 'dist/mcp.js'))}]\n[mcp_servers.spectorque.env]\nSPECTORQUE_ROOT = ${JSON.stringify(root)}\n`);
     await writeFile(join(home, 'config.toml'), `model_provider = "offline"\nmodel = "offline"\n[model_providers.offline]\nname = "Offline qualification"\nbase_url = ${JSON.stringify(providerUrl)}\nwire_api = "responses"\n[analytics]\nenabled = false\n[feedback]\nenabled = false\n[projects.${JSON.stringify(repository)}]\ntrust_level = "trusted"\n[projects.${JSON.stringify(root)}]\ntrust_level = "trusted"\n`);
     const env = { ...process.env, CODEX_HOME: home };
     delete env.OPENAI_API_KEY; delete env.CODEX_API_KEY;
