@@ -81,12 +81,14 @@ npm run qualify:handoff -- /absolute/scratch-workspace
 An existing project browser cache can be selected with `PLAYWRIGHT_BROWSERS_PATH`.
 The script launches an ephemeral loopback server and an isolated Chromium
 context, loads the workspace, selects the exact pending-decision line, compares
-the downloaded JSON with the engine assessment, and checks every ZIP source file
+the downloaded JSON with the engine assessment apart from its creation timestamp,
+and checks the exact ZIP entry set and every source file
 against disk. It aborts non-loopback browser requests and rejects page errors.
 It saves the report, ZIP, screenshot and bounded evidence in an ignored
 `.spectorque/handoff-*` directory without changing the input workspace.
 
-This handoff passed on the three clients' ES post-application scratch workspaces.
+This handoff passed on the three clients' ES post-application scratch workspaces
+and on separate copies of their saved EN post-application documents.
 It checks real browser UI and downloaded artifacts; it does not automate native
 client controls or prove inference absence. EN native refinement, browser handoff,
 MCP discovery, headless reporting and broader human accessibility are distinct

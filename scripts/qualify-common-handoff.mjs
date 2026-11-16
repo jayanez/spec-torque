@@ -39,14 +39,14 @@ try {
   await page.getByRole('button', { name: '↓ JSON', exact: true }).click();
   await (await download).saveAs(join(run, 'assessment.json'));
   const exported = JSON.parse(await readFile(join(run, 'assessment.json'), 'utf8'));
-  assert.equal(exported.id, expected.id);
-  assert.equal(exported.engineVersion, expected.engineVersion);
-  assert.deepEqual(exported.decisions, expected.decisions);
-  assert.equal(exported.practices.length, 40);
+  const { createdAt: exportedAt, ...exportedAssessment } = exported;
+  const { createdAt: expectedAt, ...expectedAssessment } = expected;
+  assert.deepEqual(exportedAssessment, expectedAssessment);
   download = page.waitForEvent('download');
   await page.getByRole('button', { name: '↓ Artifacts', exact: true }).click();
   await (await download).saveAs(join(run, 'artifacts.zip'));
   const zip = unzipSync(await readFile(join(run, 'artifacts.zip')));
+  assert.deepEqual(Object.keys(zip).sort(), expected.artifacts.map(a => a.path).sort());
   for (const artifact of expected.artifacts) {
     assert.equal(strFromU8(zip[artifact.path]), await readFile(join(root, artifact.path), 'utf8'));
   }
