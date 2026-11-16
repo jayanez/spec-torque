@@ -85,7 +85,7 @@ the downloaded JSON with the engine assessment apart from its creation timestamp
 and checks the exact ZIP entry set and every source file
 against disk. It aborts non-loopback browser requests and rejects page errors.
 It saves the report, ZIP, screenshot and bounded evidence in an ignored
-`.spectorque/handoff-*` directory without changing the input workspace.
+`.spec-torque/handoff-*` directory without changing the input workspace.
 
 This handoff passed on the three clients' ES post-application scratch workspaces
 and on separate copies of their saved EN post-application documents.

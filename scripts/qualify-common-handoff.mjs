@@ -12,8 +12,8 @@ const root = resolve(process.argv[2]);
 const expected = await reviewWorkspace(root);
 const decision = expected.decisions[0];
 assert.ok(decision, 'First create a visible pending decision through the client under qualification.');
-await mkdir('.spectorque', { recursive: true });
-const run = await mkdtemp(resolve('.spectorque/handoff-'));
+await mkdir('.spec-torque', { recursive: true });
+const run = await mkdtemp(resolve('.spec-torque/handoff-'));
 const { server, url } = await startServer(root, 0);
 let browser;
 try {
