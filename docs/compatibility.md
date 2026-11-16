@@ -29,3 +29,7 @@ CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. 
 | Generic Markdown / PRD | Candidate basename and content | Arbitrary document semantics are not inferred reliably. |
 
 All detections and all heuristic statuses remain visible in exported assessments. Unsupported context must not become a passing result.
+
+The [original format-layout corpus](format-corpus.md) exercises fourteen constructed
+EN/ES cases with nested paths, archives and scoped IDs. It is regression evidence
+for the documented hints, not qualification of files from real framework producers.

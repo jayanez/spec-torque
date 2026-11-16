@@ -1,0 +1,495 @@
+{
+  "provenance": "Original constructed layout probes based on documented SpecTorque hints; not captured framework output or independent scientific labels.",
+  "cases": [
+    {
+      "id": "spec-kit-en",
+      "framework": "spec-kit",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/spec-kit-en/specs/booking/spec.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/spec-kit-en/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kit-en/specs/booking/plan.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/spec-kit-en/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kit-en/specs/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/spec-kit-en/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kit-en/specs/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/spec-kit-en/specs/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "spec-kit-es",
+      "framework": "spec-kit",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/spec-kit-es/specs/booking/spec.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/spec-kit-es/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kit-es/specs/booking/plan.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/spec-kit-es/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kit-es/specs/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/spec-kit-es/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kit-es/specs/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/spec-kit-es/specs/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "spec-kitty-en",
+      "framework": "spec-kitty",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/spec-kitty-en/.kittify/specs/booking/spec.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/spec-kitty-en/.kittify/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kitty-en/.kittify/specs/booking/plan.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/spec-kitty-en/.kittify/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kitty-en/.kittify/specs/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/spec-kitty-en/.kittify/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kitty-en/.kittify/specs/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/spec-kitty-en/.kittify/specs/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "spec-kitty-es",
+      "framework": "spec-kitty",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/spec-kitty-es/.kittify/specs/booking/spec.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/spec-kitty-es/.kittify/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kitty-es/.kittify/specs/booking/plan.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/spec-kitty-es/.kittify/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kitty-es/.kittify/specs/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/spec-kitty-es/.kittify/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/spec-kitty-es/.kittify/specs/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/spec-kitty-es/.kittify/specs/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "openspec-en",
+      "framework": "openspec",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/openspec-en/openspec/changes/booking/specs/rooms/spec.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/openspec-en/openspec/changes/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/openspec-en/openspec/changes/booking/design.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/openspec-en/openspec/changes/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/openspec-en/openspec/changes/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/openspec-en/openspec/changes/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/openspec-en/openspec/changes/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/openspec-en/openspec/changes/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "openspec-es",
+      "framework": "openspec",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/openspec-es/openspec/changes/booking/specs/rooms/spec.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/openspec-es/openspec/changes/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/openspec-es/openspec/changes/booking/design.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/openspec-es/openspec/changes/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/openspec-es/openspec/changes/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/openspec-es/openspec/changes/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/openspec-es/openspec/changes/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/openspec-es/openspec/changes/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "kiro-en",
+      "framework": "kiro",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/kiro-en/.kiro/specs/booking/requirements.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/kiro-en/.kiro/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/kiro-en/.kiro/specs/booking/design.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/kiro-en/.kiro/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/kiro-en/.kiro/specs/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/kiro-en/.kiro/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/kiro-en/.kiro/specs/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/kiro-en/.kiro/specs/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "kiro-es",
+      "framework": "kiro",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/kiro-es/.kiro/specs/booking/requirements.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/kiro-es/.kiro/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/kiro-es/.kiro/specs/booking/design.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/kiro-es/.kiro/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/kiro-es/.kiro/specs/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/kiro-es/.kiro/specs/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/kiro-es/.kiro/specs/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/kiro-es/.kiro/specs/booking",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "bmad-en",
+      "framework": "bmad",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/bmad-en/_bmad-output/planning-artifacts/booking/prd.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/bmad-en/_bmad-output/planning-artifacts/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/bmad-en/_bmad-output/planning-artifacts/booking/architecture.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/bmad-en/_bmad-output/planning-artifacts/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/bmad-en/_bmad-output/planning-artifacts/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/bmad-en/_bmad-output/planning-artifacts/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/bmad-en/_bmad-output/planning-artifacts/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/bmad-en/_bmad-output/planning-artifacts/booking/archive",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "bmad-es",
+      "framework": "bmad",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/bmad-es/_bmad-output/planning-artifacts/booking/prd.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/bmad-es/_bmad-output/planning-artifacts/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/bmad-es/_bmad-output/planning-artifacts/booking/architecture.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/bmad-es/_bmad-output/planning-artifacts/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/bmad-es/_bmad-output/planning-artifacts/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/bmad-es/_bmad-output/planning-artifacts/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/bmad-es/_bmad-output/planning-artifacts/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/bmad-es/_bmad-output/planning-artifacts/booking/archive",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "zeespec-en",
+      "framework": "zeespec",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/zeespec-en/.spec/booking/what.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/zeespec-en/.spec/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/zeespec-en/.spec/booking/plan.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/zeespec-en/.spec/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/zeespec-en/.spec/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/zeespec-en/.spec/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/zeespec-en/.spec/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/zeespec-en/.spec/booking/archive",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "zeespec-es",
+      "framework": "zeespec",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/zeespec-es/.spec/booking/what.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/zeespec-es/.spec/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/zeespec-es/.spec/booking/plan.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/zeespec-es/.spec/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/zeespec-es/.spec/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/zeespec-es/.spec/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/zeespec-es/.spec/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/zeespec-es/.spec/booking/archive",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "generic-en",
+      "framework": "generic",
+      "language": "en",
+      "artifacts": [
+        {
+          "path": "apps/generic-en/product/booking/prd.md",
+          "content": "FR-001: The service MUST respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/generic-en/product/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/generic-en/product/booking/plan.md",
+          "content": "# Architecture\nThe service uses a local component. Implements FR-001.",
+          "role": "plan",
+          "featureId": "apps/generic-en/product/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/generic-en/product/booking/tasks.md",
+          "content": "- [ ] Verify FR-001.",
+          "role": "tasks",
+          "featureId": "apps/generic-en/product/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/generic-en/product/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/generic-en/product/booking/archive",
+          "archived": true
+        }
+      ]
+    },
+    {
+      "id": "generic-es",
+      "framework": "generic",
+      "language": "es",
+      "artifacts": [
+        {
+          "path": "apps/generic-es/product/booking/prd.md",
+          "content": "FR-001: El servicio DEBERÁ responder dentro de 2 segundos.",
+          "role": "spec",
+          "featureId": "apps/generic-es/product/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/generic-es/product/booking/plan.md",
+          "content": "# Arquitectura\nEl servicio usa un componente local. Implementa FR-001.",
+          "role": "plan",
+          "featureId": "apps/generic-es/product/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/generic-es/product/booking/tasks.md",
+          "content": "- [ ] Verificar FR-001.",
+          "role": "tasks",
+          "featureId": "apps/generic-es/product/booking",
+          "archived": false
+        },
+        {
+          "path": "apps/generic-es/product/booking/archive/spec.md",
+          "content": "FR-001: The service MUST NOT respond within 2 seconds.",
+          "role": "spec",
+          "featureId": "apps/generic-es/product/booking/archive",
+          "archived": true
+        }
+      ]
+    }
+  ]
+}

@@ -9,8 +9,10 @@ Implementation choices resolved: shared TypeScript engine, Node 22, React/Vite l
 ## Next increments after corrective integration
 
 PRs #10/#12 and corrective tracking #11 are integrated. Continue with the bounded
-EN/ES normative-recognition increment in #2, then the remaining real-client
-common-workbench routes in #1 (Claude Code, OpenCode, Pi). Complete the rest of the
+EN/ES normative-recognition increment in #2 (PR #13), then the remaining real-client
+common-workbench routes in #1 (bounded evidence in PR #14 for Claude Code,
+OpenCode and Pi). The original format-layout probes in #2 add regression coverage;
+real-producer variants and independent labels remain pending. Complete the rest of the
 format corpus and #3 acceptance before final native qualification in #4–#7 and
 pilot #8. Arrange human accessibility checks during these increments. This order
 does not change milestone scope or close any broader acceptance issue.
