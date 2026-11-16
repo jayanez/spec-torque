@@ -54,6 +54,8 @@ async function main() {
     if (!Number.isInteger(minimum) || minimum < 0 || minimum > 30) throw new Error('--min must be an integer from 0 to 30.');
     if (result.summary.score === null || result.summary.score < minimum) process.exitCode = 2;
   }
-  if (values['require-complete'] && result.summary.score === null || values['fail-on-open'] && result.decisions.length > 0) process.exitCode = 2;
+  const incompleteEvidence = values['require-complete'] && result.summary.score === null;
+  const unresolvedDecisions = values['fail-on-open'] && result.decisions.length > 0;
+  if (incompleteEvidence || unresolvedDecisions) process.exitCode = 2;
 }
 main().catch(error => { console.error(error instanceof Error ? error.message : 'Operation failed.'); process.exitCode = 1; });
