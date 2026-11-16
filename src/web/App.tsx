@@ -23,6 +23,7 @@ export function App() {
   const [feature, setFeature] = useState<string | null>(null);
   const editor = useRef<HTMLTextAreaElement>(null);
   const artifact = set.artifacts.find(a => a.path === selected);
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
   useEffect(() => { void connectLocal().then(setLocal); }, []);
   useEffect(() => {
     let cancelled = false;

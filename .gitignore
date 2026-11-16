@@ -8,6 +8,8 @@ artifacts/
 .DS_Store
 *.vsix
 coverage/
+playwright-report/
+test-results/
 integrations/*/runtime/
 integrations/*/dist/
 integrations/*/web-dist/

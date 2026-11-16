@@ -8,14 +8,17 @@ export function SourcePanel({ set, selected, language, local, onLoad, onSelect, 
   const [repo, setRepo] = useState(''); const [busy, setBusy] = useState(false); const [paste, setPaste] = useState(false); const [text, setText] = useState('');
   async function files(list: FileList | null) {
     if (!list?.length) return;
+    // FileList is live: the input is reset while File.text() is still pending.
+    const selectedFiles = Array.from(list);
     try {
+      if (selectedFiles.length > 500) throw new Error('Import at most 500 Markdown files.');
       const artifacts: Artifact[] = [];
-      for (const f of Array.from(list)) {
+      for (const f of selectedFiles) {
         if (f.size > 1_000_000 || !f.name.endsWith('.md')) throw new Error('Use Markdown files smaller than 1 MB.');
         artifacts.push(classifyArtifact(f.webkitRelativePath || f.name, await f.text()));
       }
       if (new Set(artifacts.map(a => a.path)).size !== artifacts.length) throw new Error('Duplicate filenames: import one feature folder at a time.');
-      onLoad({ name: list[0].name, artifacts });
+      onLoad({ name: selectedFiles[0].name, artifacts });
     } catch (e) { onError((e as Error).message); }
   }
   async function remote() { setBusy(true); try { onLoad(await api<ArtifactSet>('github', { source: repo })); } catch (e) { onError((e as Error).message); } finally { setBusy(false); } }
