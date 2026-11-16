@@ -1,0 +1,77 @@
+import { useEffect, useRef, useState } from 'react';
+import { analyze, applyProposal, badgeSvg, classifyArtifact, markdownReport } from '../core.js';
+import type { ArtifactSet, Assessment, Finding, Language, PatchProposal } from '../core/types.js';
+import { api, connectLocal, download } from './api.js';
+import { sampleSet } from './samples.js';
+import { Builder } from './Builder.js';
+import { Radar } from './Radar.js';
+import { SourcePanel } from './SourcePanel.js';
+import { ReviewPanel } from './ReviewPanel.js';
+
+export function App() {
+  const [language, setLanguage] = useState<Language>('en'); const es = language === 'es';
+  const [tab, setTab] = useState<'analyze' | 'build' | 'history' | 'connect'>('analyze');
+  const [set, setSet] = useState<ArtifactSet>(() => sampleSet(true));
+  const [selected, setSelected] = useState('specs/booking/spec.md');
+  const [assessment, setAssessment] = useState<Assessment>(); const [history, setHistory] = useState<Assessment[]>([]);
+  const [finding, setFinding] = useState<Finding>(); const [filter, setFilter] = useState('all');
+  const [view, setView] = useState<'findings' | 'checklist' | 'traceability'>('findings');
+  const [local, setLocal] = useState(false); const [disk, setDisk] = useState(false); const [error, setError] = useState('');
+  const [status, setStatus] = useState(''); const [undo, setUndo] = useState<{ set: ArtifactSet; diskUndo?: string }[]>([]);
+  const [feature, setFeature] = useState('all');
+  const editor = useRef<HTMLTextAreaElement>(null);
+  const artifact = set.artifacts.find(a => a.path === selected);
+  useEffect(() => { void connectLocal().then(setLocal); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    const scoped = feature === 'all' ? set : { ...set, artifacts: set.artifacts.filter(a => a.featureId === feature || a.role === 'instructions') };
+    void analyze(scoped).then(a => { if (!cancelled) { setAssessment(a); setHistory(h => h.at(-1)?.id === a.id ? h : [...h.slice(-19), a]); } }).catch(e => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
+  }, [set, feature]);
+  function load(next: ArtifactSet, fromDisk = false) {
+    setUndo([]); setSet(next); setDisk(fromDisk); setSelected(next.artifacts[0]?.path ?? '');
+    setFinding(undefined); setFeature('all'); setError(''); setStatus(es ? 'Documentos cargados.' : 'Artifacts loaded.'); setTab('analyze');
+  }
+  function pickFinding(f: Finding) {
+    setFinding(f); setSelected(f.evidence[0]?.path ?? '');
+    setTimeout(() => { const node = editor.current; if (!node) return; const lines = node.value.split(/\r?\n/); const start = lines.slice(0, (f.evidence[0]?.line ?? 1) - 1).reduce((n, l) => n + l.length + 1, 0); node.focus(); node.setSelectionRange(start, start + (lines[(f.evidence[0]?.line ?? 1) - 1]?.length ?? 0)); }, 0);
+  }
+  async function accept(p: PatchProposal, persist: boolean) {
+    const source = set.artifacts.find(a => a.path === p.path); if (!source) throw new Error('Source artifact is not loaded.');
+    let content: string; let undoId: string | undefined;
+    if (persist) { const result = await api<{ content: string; undoId: string }>('apply', { proposal: p, approved: true }); content = result.content; undoId = result.undoId; }
+    else content = await applyProposal(source.content, p);
+    setUndo(h => [...h, { set, diskUndo: undoId }]);
+    setSet({ ...set, artifacts: set.artifacts.map(a => a.path === p.path ? classifyArtifact(a.path, content) : a) });
+    setFinding(undefined); setStatus(es ? 'Cambio aceptado y análisis actualizado.' : 'Change accepted. Assessment updated.');
+  }
+  async function undoLast() {
+    const entry = undo.at(-1); if (!entry) return;
+    try { if (entry.diskUndo) await api('undo', { id: entry.diskUndo, approved: true }); setSet(entry.set); setSelected(entry.set.artifacts[0]?.path ?? ''); setUndo(undo.slice(0, -1)); setFinding(undefined); setStatus(es ? 'Cambio deshecho.' : 'Change undone.'); } catch (e) { setError((e as Error).message); }
+  }
+  function edit(content: string) { if (!artifact) return; setUndo(h => [...h.slice(-49), { set }]); setSet({ ...set, artifacts: set.artifacts.map(a => a.path === artifact.path ? classifyArtifact(a.path, content) : a) }); setFinding(undefined); }
+  const findings = assessment?.findings.filter(f => filter === 'all' || f.severity === filter) ?? [];
+  const features = [...new Set(set.artifacts.filter(a => !a.archived).map(a => a.featureId))];
+  const previous = history.length > 1 ? history[history.length - 2] : undefined;
+  return <div className="app">
+    <header className="topbar"><a className="brand" href="#" onClick={e => { e.preventDefault(); setTab('analyze'); }}><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M23 8A11 11 0 1 0 24 18" fill="none" stroke="currentColor" strokeWidth="3"/><path d="M14 3v10l7 4" fill="none" stroke="#e9b454" strokeWidth="3"/></svg><strong>SpecTorque</strong><span>Specification workbench</span></a><div className="header-right"><span className="connection"><i/>{local ? 'Local workspace connected' : 'Browser engine'}</span><button className="language" onClick={() => setLanguage(es ? 'en' : 'es')}>{es ? 'English' : 'Español'}</button><a href="https://github.com/jayanez/spectorque" target="_blank" rel="noreferrer">GitHub ↗</a></div></header>
+    <nav className="main-tabs" aria-label="Main navigation">{([['analyze', es ? 'Analizar' : 'Analyze'], ['build', es ? 'Crear una spec' : 'Build a spec'], ['history', es ? 'Evolución' : 'History'], ['connect', es ? 'Conectar agentes' : 'Connect agents']] as const).map(([id, label]) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>{label}</button>)}<span className="version">Preview 0.1 · EPIC heuristic</span></nav>
+    {error && <div className="notice error" role="alert">{error}<button onClick={() => setError('')}>{es ? 'Cerrar' : 'Dismiss'}</button></div>}
+    <p className="sr-only" role="status">{status}</p>
+    {tab === 'build' ? <main className="single"><Builder language={language} onCreate={s => load(s)}/></main> : tab === 'history' ? <main className="single"><h1>{es ? 'Evolución del análisis' : 'Assessment history'}</h1><p>{es ? 'Historial de esta sesión. Las comparaciones usan la misma rúbrica; un cambio de puntuación no demuestra una mejora del software.' : 'This session only. Comparisons use the same rubric; a score change does not establish better software.'}</p>{history.map((a, i) => <div className="history-row" key={a.id + i}><strong>{a.name}</strong><span>{a.summary.score === null ? 'Incomplete' : a.summary.score + '/30'}</span><span>{a.findings.length} findings</span><code>{a.id.slice(0, 12)}</code><button onClick={() => download('spectorque-' + a.id.slice(0, 8) + '.json', JSON.stringify(a, null, 2), 'application/json')}>{es ? 'Exportar' : 'Export'}</button></div>)}</main> : tab === 'connect' ? <main className="single"><h1>{es ? 'El mismo motor, en tu entorno' : 'One engine, in your environment'}</h1><p>{es ? 'Las integraciones comparten análisis y evidencias. Consulta la matriz de versiones probadas antes de instalar.' : 'Integrations share the same analysis and evidence. Consult the tested-version matrix before installing.'}</p><div className="integration-grid">{['Claude Code', 'Codex / VS Code', 'OpenCode', 'Pi'].map((host, i) => <article key={host}><h2>{host}</h2><p>{['Plugin + native Mod', 'MCP + VS Code panel', 'Tools + terminal panel', 'Commands + widgets'][i]}</p><code>{['integrations/claude', 'integrations/vscode', 'integrations/opencode', 'integrations/pi'][i]}</code></article>)}</div><h2>{es ? 'Servidor MCP local' : 'Local MCP server'}</h2><pre>{JSON.stringify({ mcpServers: { spectorque: { command: 'node', args: ['/absolute/path/to/spectorque/dist/mcp.js'], env: { SPECTORQUE_ROOT: '/absolute/path/to/your/project' } } } }, null, 2)}</pre><p>{es ? 'Las propuestas no escriben archivos a través de MCP. Revisa y aplica en el panel o con las herramientas de edición de tu agente.' : 'MCP proposals do not write files. Review and apply in the workbench or through your agent’s own editing tools.'}</p></main> :
+    <div className="workspace"><SourcePanel set={set} selected={selected} language={language} local={local} onLoad={load} onSelect={setSelected} onError={setError}/><main className="analysis">
+      <div className="page-heading"><div><h1>{es ? 'Entiende dónde tendrá que adivinar tu agente.' : 'Find where your agent would have to guess.'}</h1><p>{set.name}</p></div><button onClick={() => setTab('build')}>{es ? 'Nueva spec' : 'New specification'}</button></div>
+      {features.length > 1 && <label className="feature-select">{es ? 'Conjunto de documentos' : 'Artifact set'} <select value={feature} onChange={e => setFeature(e.target.value)}><option value="all">{es ? 'Todos los documentos' : 'All artifacts'}</option>{features.map(f => <option key={f} value={f}>{f}</option>)}</select></label>}
+      {assessment && <><section className="overview" aria-label="Assessment overview"><div className="score"><span className="score-label">{es ? 'Evaluación EPIC' : 'EPIC assessment'}</span><div className="score-value">{assessment.summary.score === null ? '—' : assessment.summary.score}<span>/30</span></div><span className="pill">{assessment.summary.score === null ? (es ? 'Evaluación parcial' : 'Partial assessment') : (es ? 'Rúbrica heurística' : 'Heuristic rubric')}</span><p>{assessment.summary.assessedDimensions}/10 {es ? 'dimensiones evaluadas' : 'dimensions assessed'}</p><small>{es ? 'Lo desconocido permanece visible.' : 'Unknowns remain visible.'}</small></div><Radar assessment={assessment}/><div className="dimension-bars">{assessment.dimensions.map(d => <div key={d.id}><span><strong>{d.id}</strong> {d.title}</span><b>{d.score ?? '—'}<small>/3</small></b><div className="track"><i style={{ width: (d.score === null ? 0 : d.score / 3 * 100) + '%' }}/></div></div>)}</div></section>
+      <div className="metrics-strip"><span><strong>{assessment.findings.length}</strong> {es ? 'hallazgos' : 'findings'}</span><span><strong>{assessment.decisions.length}</strong> {es ? 'decisiones pendientes' : 'open decisions'}</span><span><strong>{assessment.traceability.length}</strong> {es ? 'referencias' : 'references'}</span><span><strong>{assessment.summary.unknown}</strong> {es ? 'prácticas sin evaluar' : 'unassessed practices'}</span></div>
+      <p className="method-note">{es ? 'Las reglas buscan evidencias; no certifican corrección ni completitud. Las decisiones de producto siguen siendo tuyas.' : 'Rules identify evidence; they do not certify correctness or completeness. Product decisions remain yours.'}</p>
+      <div className="report-actions"><button onClick={() => download('spectorque-report.md', markdownReport(assessment))}>↓ {es ? 'Informe' : 'Report'}</button><button onClick={() => download('spectorque-report.json', JSON.stringify(assessment, null, 2), 'application/json')}>↓ JSON</button><button onClick={() => download('spectorque-badge.svg', badgeSvg(assessment), 'image/svg+xml')}>↓ Badge</button><button onClick={() => set.artifacts.forEach(a => download(a.path.replaceAll('/', '__'), a.content))}>↓ {es ? 'Documentos' : 'Artifacts'}</button><button disabled={!undo.length} onClick={() => void undoLast()}>{es ? 'Deshacer' : 'Undo'}</button>{local && !disk && <button onClick={() => void api('save', { set, approved: true }).then(() => { setDisk(true); setStatus('Artifacts saved.'); }).catch(e => setError(e.message))}>{es ? 'Guardar como archivos nuevos' : 'Save as new files'}</button>}</div>
+      <div className="work-tabs">{(['findings', 'checklist', 'traceability'] as const).map(v => <button key={v} className={view === v ? 'active' : ''} onClick={() => setView(v)}>{v === 'findings' ? es ? 'Hallazgos' : 'Findings' : v === 'checklist' ? es ? '40 prácticas' : '40 practices' : es ? 'Trazabilidad' : 'Traceability'}</button>)}{view === 'findings' && <select aria-label="Filter findings" value={filter} onChange={e => setFilter(e.target.value)}><option value="all">{es ? 'Todos' : 'All severities'}</option><option value="error">Errors</option><option value="warning">Warnings</option></select>}</div>
+      {view === 'findings' ? <div className="findings-list">{findings.length ? findings.map(f => <button className={'finding ' + (finding?.id === f.id ? 'selected' : '')} key={f.id} onClick={() => pickFinding(f)}><span className={'severity ' + f.severity}>{f.severity === 'error' ? '!' : '◐'}</span><div><span className="finding-meta">{f.practiceId} · {f.evidence[0]?.path}:{f.evidence[0]?.line}</span><strong>{f.message}</strong><p>{f.suggestion}</p></div><span className="open-arrow">↗</span></button>) : <p className="empty">{es ? 'Sin hallazgos para este filtro. Revisa también las prácticas y decisiones pendientes.' : 'No findings for this filter. Also review practices and open decisions.'}</p>}</div> : view === 'checklist' ? <div className="checklist">{assessment.practices.map(p => <details key={p.id}><summary><span className={'status-dot ' + p.status}/><strong>{p.id}</strong> {p.title}<small>{p.status.replace('_', ' ')}</small></summary><p>{p.reason}</p>{p.evidence.map(e => <blockquote key={e.path + e.line}>{e.path}:{e.line}<br/>{e.text}</blockquote>)}<p>{p.suggestion}</p></details>)}</div> : <div className="trace-list">{assessment.traceability.length ? assessment.traceability.map((t, i) => <p key={i}><span className={'pill ' + (t.resolved ? '' : 'warning')}>{t.resolved ? 'Linked' : 'Unresolved'}</span> {t.from}:{t.evidence.line} → <strong>{t.to}</strong></p>) : <p>{es ? 'No se han encontrado referencias entre los documentos seleccionados.' : 'No cross-artifact requirement references found.'}</p>}<p className="fine">{es ? 'Un vínculo no demuestra que el código implemente el requisito.' : 'A link does not establish that code implements a requirement.'}</p></div>}
+      {previous && <p className="fine">{es ? 'Comparación anterior' : 'Previous assessment'}: {previous.summary.score ?? 'incomplete'} · {previous.findings.length} findings · {previous.id.slice(0, 8)}</p>}
+      </>}
+    </main><aside className="detail-panel"><section className="editor-panel"><div className="section-heading"><h2>{es ? 'Texto fuente' : 'Source text'}</h2><span className="pill">{disk ? 'Workspace' : 'In memory'}</span></div><p className="fine">{selected || (es ? 'Selecciona un archivo' : 'Select an artifact')}</p><textarea ref={editor} aria-label="Source text editor" spellCheck={false} value={artifact?.content ?? ''} onChange={e => edit(e.target.value)} rows={15}/><p className="fine">{es ? 'La edición directa permanece en memoria. Exporta los documentos para conservarla.' : 'Direct edits stay in memory. Export artifacts to keep them.'}</p></section><ReviewPanel artifact={artifact} finding={finding?.evidence[0]?.path === selected ? finding : undefined} local={local} disk={disk} language={language} onApply={accept} onError={setError}/></aside></div>}
+    <footer>SpecTorque · Apache-2.0 <span>{es ? 'Evidencias antes que suposiciones.' : 'Evidence before assumptions.'}</span></footer>
+  </div>;
+}
+

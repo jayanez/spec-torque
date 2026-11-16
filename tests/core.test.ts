@@ -33,6 +33,13 @@ test('explicit non-applicability requires a reason and does not earn points', as
   const result = await analyze({ name: 'test', artifacts: [classifyArtifact('spec.md', 'FR-001: System MUST run.')] }, { notApplicable: { 'E2.5': 'No personal or sensitive data is processed.' } });
   assert.equal(result.practices.find(p => p.id === 'E2.5')?.status, 'not_applicable');
 });
+test('IDs and empty structure do not establish measurements or scope separation', async () => {
+  const a = await analyze({ name: 'unmeasured', artifacts: [classifyArtifact('spec.md', 'FR-001: The system MUST support booking.')] });
+  assert.equal(a.practices.find(p => p.id === 'E1.2')?.status, 'missing');
+  assert.equal(a.practices.find(p => p.id === 'P2.1')?.status, 'missing');
+  const b = await analyze({ name: 'empty companions', artifacts: [classifyArtifact('spec.md', 'FR-001: The system MUST support booking.'), classifyArtifact('plan.md', ''), classifyArtifact('tasks.md', '')] });
+  assert.equal(b.practices.find(p => p.id === 'C1.2')?.status, 'missing');
+});
 test('patches reject stale content, changed obligations and invented quantities', async () => {
   const content = '# Spec\nFR-001: The system MUST respond within 2 seconds.\n';
   const patch = await createProposal('spec.md', content, 2, 'FR-001: The booking system MUST respond within 2 seconds.', 'Name the subject', 'host');
@@ -48,4 +55,31 @@ test('builder preserves unresolved decisions instead of creating product facts',
   assert.ok(artifacts[0].content.includes('[NEEDS CLARIFICATION:'));
   assert.ok(!artifacts[0].content.includes('99.9'));
   assert.ok(artifacts[2].content.includes('FR-001'));
+});
+
+test('feature namespaces prevent duplicates, cross-feature links and contradictions', async () => {
+  const result = await analyze({ name: 'monorepo', artifacts: [
+    classifyArtifact('specs/a/spec.md', 'FR-001: The service MUST accept requests.'),
+    classifyArtifact('specs/a/tasks.md', '- [ ] Implement FR-002.'),
+    classifyArtifact('specs/b/spec.md', 'FR-001: The service MUST NOT accept requests.\nFR-002: The service MUST reject invalid tokens.'),
+  ] });
+  assert.ok(!result.findings.some(f => /Duplicate|Opposite/.test(f.message)));
+  assert.equal(result.traceability[0].resolved, false);
+  assert.ok(result.findings.some(f => f.message.includes('FR-002')));
+  assert.equal(result.practices.find(p => p.id === 'C1.2')?.status, 'unknown');
+});
+
+test('protocol versions do not count as measurable acceptance thresholds', async () => {
+  const result = await analyze({ name: 'protocol', artifacts: [classifyArtifact('spec.md', 'FR-001: The service MUST support HTTP/2.')] });
+  assert.equal(result.practices.find(p => p.id === 'E1.2')?.status, 'missing');
+});
+
+test('Spanish plural obligations and words containing MAY remain protected correctly', async () => {
+  const text = 'FR-001: Los usuarios DEBEN recibir el resumen mayor.';
+  await assert.rejects(createProposal('spec.md', text, 1, 'FR-001: Los usuarios PUEDEN recibir el resumen mayor.', 'changed'), /obligation/);
+  await createProposal('spec.md', text, 1, 'FR-001: Los usuarios DEBEN recibir un resumen de mayor detalle.', 'clarify');
+});
+
+test('accented normative words cannot disappear during refinement', async () => {
+  await assert.rejects(createProposal('spec.md', 'FR-001: El servicio DEBERÁ rechazar la solicitud.', 1, 'FR-001: El servicio rechaza la solicitud.', 'rewrite'), /obligation/);
 });

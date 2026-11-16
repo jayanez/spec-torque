@@ -1,0 +1,6 @@
+{
+  "description": "SpecTorque native pane",
+  "modules": [
+    "./register.js"
+  ]
+}

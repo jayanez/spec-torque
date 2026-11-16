@@ -8,3 +8,10 @@ artifacts/
 .DS_Store
 *.vsix
 coverage/
+integrations/*/runtime/
+integrations/*/dist/
+integrations/*/web-dist/
+integrations/*/skills/
+integrations/vscode/extension.cjs
+work/
+outputs/

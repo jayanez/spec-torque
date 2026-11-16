@@ -4,20 +4,57 @@
   "description": "Create, inspect and refine agent-ready specifications with traceable evidence.",
   "type": "module",
   "license": "Apache-2.0",
-  "engines": { "node": ">=22.20.0" },
-  "bin": { "spectorque": "dist/cli.js" },
-  "exports": { ".": "./dist/core.js", "./integrations": "./dist/integration.js" },
-  "files": ["dist", "web-dist", "skills", "integrations", "README.md", "LICENSE", "NOTICE"],
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "bin": {
+    "spectorque": "dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/core.js",
+    "./integrations": "./dist/integration.js"
+  },
+  "files": [
+    "dist",
+    "web-dist",
+    "skills",
+    "integrations",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "start": "node dist/cli.js serve",
     "test": "tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && tsup src/cli.ts src/mcp.ts src/core.ts src/integration.ts --format esm --target node22 --out-dir dist && vite build",
+    "build": "npm run typecheck && tsup src/cli.ts src/mcp.ts src/core.ts src/integration.ts --format esm --target node22 --out-dir dist --clean && vite build",
     "check": "npm run test && npm run build",
     "package:integrations": "node scripts/package-integrations.mjs"
   },
-  "dependencies": { "@modelcontextprotocol/server": "2.4.0", "react": "19.3.1", "react-dom": "19.3.1", "zod": "^4.0.0" },
-  "devDependencies": { "@types/node": "^22.0.0", "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0", "@types/vscode": "^1.100.0", "@vitejs/plugin-react": "^5.0.0", "tsx": "4.23.15", "tsup": "^8.0.0", "typescript": "^6.0.0", "vite": "8.3.8" },
-  "repository": { "type": "git", "url": "https://github.com/jayanez/spectorque.git" }
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/vscode": "^1.100.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "4.23.15",
+    "typescript": "^6.0.0",
+    "vite": "8.3.8",
+    "esbuild": "0.28.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jayanez/spectorque.git"
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
+  }
 }

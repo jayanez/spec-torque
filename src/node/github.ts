@@ -1,16 +1,16 @@
 import { classifyArtifact, isSpecCandidate } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet } from '../core/types.js';
+import { boundedJson } from './http.js';
 interface Repo { default_branch: string; private: boolean }
 interface Entry { path: string; type: string; size?: number; sha: string }
 async function request<T>(url: string): Promise<T> {
   const response = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'SpecTorque/0.1.0' }, redirect: 'error', signal: AbortSignal.timeout(20_000) });
   if (!response.ok) throw new Error(response.status === 403 || response.status === 429 ? 'GitHub rate limit reached. Try again later or import local files.' : `GitHub request failed (${response.status}). Check the repository and revision.`);
-  const text = await response.text();
-  if (text.length > 20_000_000) throw new Error('GitHub response too large. Select a smaller source.');
-  return JSON.parse(text) as T;
+  return boundedJson<T>(response, 20_000_000);
 }
 export function parseGitHubSource(input: string): { owner: string; repo: string; ref?: string; folder?: string } {
   const text = input.trim();
+  if (decodeURIComponent(text).split(/[\\/]/).some(p => p === '..' || p === '.')) throw new Error('Invalid GitHub path.');
   let parts: string[];
   if (text.startsWith('https://')) {
     const url = new URL(text);

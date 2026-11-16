@@ -9,7 +9,8 @@ function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
-    const requirement = !fenced && !/^\s*(?:#|>|```|~~~)/.test(text) && /\b(?:FR-\d+|NFR-\d+|REQ-\d+|MUST|SHALL|SHOULD|DEBE|DEBERÁ|DEBERÍA)\b/i.test(text);
+    const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
+    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && /\b(?:FR-\d+|NFR-\d+|REQ-\d+|MUST|SHALL|SHOULD|DEBE|DEBERÁ|DEBERÍA)\b/i.test(text);
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
   });
 }
@@ -22,12 +23,15 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
     const hits = specRequirements.filter(predicate);
     return { status: (!specRequirements.length ? 'unknown' : hits.length === specRequirements.length ? 'supported' : hits.length ? 'partial' : 'missing') as Status, hits };
   };
-  if (id === 'E1.2') return ratio(l => /\d|true|false|reject|deny|accept|rechaz|deneg|acept/i.test(l.text) && !new RegExp(vagueTerms.source, 'iu').test(l.text));
+  if (id === 'E1.2') return ratio(l => /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:ms\b|seconds?\b|segundos?\b|minutes?\b|minutos?\b|%|MB\b|GB\b)|\b(?:MUST|SHALL) (?:reject|deny)\b|\bDEBE(?:RÁ)? (?:rechazar|denegar)\b/i.test(l.text.replace(requirementId, '')) && !new RegExp(vagueTerms.source, 'iu').test(l.text));
   if (id === 'E1.4') return ratio(l => modal.test(l.text));
   if (id === 'E2.1') return ratio(l => !/;.+\b(?:MUST|SHALL|DEBE)\b|\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(l.text));
-  if (id === 'P2.1' || id === 'C1.1') return { status: specRequirements.length ? 'partial' : 'missing', hits: specRequirements.slice(0, 3) };
+  if (id === 'P2.1' || id === 'C1.1') {
+    const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && /user|visitor|actor|customer|usuario|visitante|cliente/i.test(l.text));
+    return { status: specRequirements.length && context ? 'partial' : 'missing', hits: specRequirements.length && context ? specRequirements.slice(0, 3) : [] };
+  }
   if (id === 'I1.2' || id === 'I2.2') {
-    const ids = specRequirements.flatMap(l => l.text.match(requirementId) ?? []).map(x => x.toUpperCase());
+    const ids = specRequirements.flatMap(l => (l.text.match(requirementId) ?? []).map(x => l.artifact.featureId + ':' + x.toUpperCase()));
     const unique = new Set(ids);
     return { status: !specRequirements.length ? 'unknown' : ids.length === specRequirements.length && ids.length === unique.size ? 'supported' : ids.length ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
   }
@@ -35,7 +39,10 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
     const hits = lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role) && /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text));
     return { status: hits.length ? 'partial' : 'missing', hits };
   }
-  if (id === 'C1.2') return { status: 'partial', hits: lines.filter(l => l.artifact.role !== 'instructions' && /^#\s/.test(l.text)) };
+  if (id === 'C1.2') {
+    const hits = lines.filter(l => l.artifact.role !== 'spec' && !l.text.includes('[NEEDS CLARIFICATION:') && /architecture|component|technical|arquitectura|componente|técnico|^- \[[ x]\]/i.test(l.text));
+    return { status: specRequirements.length && hits.length ? 'partial' : 'missing', hits };
+  }
   return undefined;
 }
 export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): Promise<Assessment> {
@@ -48,17 +55,27 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const lines = active.flatMap(linesOf);
   const requirements = lines.filter(l => l.requirement);
   const roles = new Set(active.map(a => a.role));
+  const multipleFeatures = new Set(active.filter(a => a.role === 'spec').map(a => a.featureId)).size > 1;
   const practices: PracticeResult[] = PRACTICES.map(def => {
     const dimension = def.id.split('.')[0];
     const base = { id: def.id, dimension, title: def.title, suggestion: def.fix };
     const reason = options.notApplicable?.[def.id];
     if (reason) return { ...base, status: 'not_applicable', evidence: [], reason };
+    if (multipleFeatures && ['I2.3', 'I2.4', 'I3.2', 'C1.2', 'C1.3', 'C2.3'].includes(def.id)) return { ...base, status: 'unknown', evidence: [], reason: 'Select one feature to assess companion-document completeness and cross-artifact consistency.' };
     const missingRoles = def.roles.filter(role => !roles.has(role));
     const roleRequired = def.roles.length === 1 || ['I2.3', 'I2.4', 'I3.2', 'C1.2', 'C1.3', 'C2.3'].includes(def.id);
     if ((roleRequired && missingRoles.length) || !active.length) return { ...base, status: 'unknown', evidence: [], reason: `Not assessed: supply ${missingRoles.join(', ') || 'source'} artifacts.` };
     const relevant = lines.filter(l => def.roles.includes(l.artifact.role));
     const special = evaluateSpecial(def.id, relevant, requirements);
-    const hits = special?.hits ?? relevant.filter(l => def.pattern?.test(l.text) && l.text.trim().length > 3);
+    const hits = special?.hits ?? relevant.filter((l, i) => {
+      if (!def.pattern?.test(l.text) || l.text.trim().length < 4) return false;
+      if (l.text.includes('[NEEDS CLARIFICATION:') && !['E1.1', 'P2.5'].includes(def.id)) return false;
+      if (/^\s*#/.test(l.text) && !['I1.1', 'I2.4', 'I3.1'].includes(def.id)) {
+        const next = relevant.slice(i + 1).find(n => n.path === l.path && n.text.trim());
+        return Boolean(next && !/^\s*#/.test(next.text) && !next.text.includes('[NEEDS CLARIFICATION:'));
+      }
+      return true;
+    });
     const status = special?.status ?? (hits.length ? 'partial' : 'missing');
     return { ...base, status, evidence: hits.slice(0, 4).map(evidenceOf), reason: special?.status === 'supported' ? 'The deterministic check is satisfied; semantic review may still find gaps.' : hits.length ? 'Textual signals found. Presence does not establish completeness or correctness.' : 'No evidence found by this check in the supplied artifacts.' };
   });
@@ -67,20 +84,20 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     findings.push({ id: `${practiceId}:${line.path}:${line.line}:${findings.length}`, practiceId, dimension: practiceId.split('.')[0], severity, message, suggestion, evidence: [evidenceOf(line)], source: 'rule' });
   };
   for (const line of requirements) {
-    for (const match of line.text.matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
+    for (const match of line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, '').matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
     if (/^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:it|this|that|esto|eso|ello)\b/i.test(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
     if (!/\b(?:FR|NFR|REQ|R)-\d+\b/i.test(line.text) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
-    if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text)) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
+    if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }
   const definitions = new Map<string, Line[]>();
   for (const line of requirements.filter(l => l.artifact.role === 'spec')) {
-    for (const raw of line.text.match(requirementId) ?? []) { const id = raw.toUpperCase(); definitions.set(id, [...(definitions.get(id) ?? []), line]); }
+    for (const raw of line.text.match(requirementId) ?? []) { const id = line.artifact.featureId + ':' + raw.toUpperCase(); definitions.set(id, [...(definitions.get(id) ?? []), line]); }
   }
-  for (const [id, entries] of definitions) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${id}.`, 'Give distinct obligations distinct IDs.', 'error');
+  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${entries[1].text.match(requirementId)?.[0]}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
   const traceability: Assessment['traceability'] = [];
   for (const line of lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role))) {
     for (const raw of line.text.match(requirementId) ?? []) {
-      const id = raw.toUpperCase(); const resolved = definitions.has(id);
+      const id = raw.toUpperCase(); const resolved = definitions.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
       if (!resolved && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
@@ -90,7 +107,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   for (const line of requirements) {
     const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').trim();
     const polarity = /MUST NOT|SHALL NOT|NO DEBE/i.test(text);
-    const key = text.replace(/MUST NOT|SHALL NOT|NO DEBE|MUST|SHALL|DEBE/gi, '').replace(/\s+/g, ' ').toLowerCase();
+    const key = line.artifact.featureId + ':' + text.replace(/MUST NOT|SHALL NOT|NO DEBE|MUST|SHALL|DEBE/gi, '').replace(/\s+/g, ' ').toLowerCase();
     const previous = behaviors.get(key);
     if (previous && polarity !== /MUST NOT|SHALL NOT|NO DEBE/i.test(previous.text)) add('I2.3', line, 'Opposite obligations describe the same behavior.', `Resolve the conflict with ${previous.path}:${previous.line}.`, 'error');
     behaviors.set(key, line);

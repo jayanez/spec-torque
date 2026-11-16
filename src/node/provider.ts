@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { refinementPrompt } from '../core/refine.js';
+import { boundedJson } from './http.js';
 const reply = z.object({ replacement: z.string().min(1).max(20_000), reason: z.string().min(1).max(2000) });
 export interface ProviderConfig { kind: 'ollama' | 'openai'; model: string; apiKey?: string }
 export async function requestRewrite(config: ProviderConfig, original: string, context: string, language = 'en', fetcher: typeof fetch = fetch): Promise<z.infer<typeof reply>> {
@@ -16,7 +17,7 @@ export async function requestRewrite(config: ProviderConfig, original: string, c
     });
   } catch { throw new Error('Model connection failed or timed out. Check the provider and try again.'); }
   if (!response.ok) throw new Error(`Model provider returned ${response.status}. Check the model, credentials and limits.`);
-  const result = await response.json() as { message?: { content?: string }; choices?: { message: { content: string } }[] };
+  const result = await boundedJson<{ message?: { content?: string }; choices?: { message: { content: string } }[] }>(response, 100_000);
   const content = ollama ? result.message?.content : result.choices?.[0]?.message.content;
   if (!content || content.length > 25_000) throw new Error('The model did not return a bounded proposal.');
   try { return reply.parse(JSON.parse(content)); } catch { throw new Error('The model returned an invalid proposal. No content was changed.'); }

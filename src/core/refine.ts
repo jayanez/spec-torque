@@ -4,14 +4,15 @@ function protectedQuantities(text: string): string[] {
   return (text.replace(/\b[A-Z]{1,8}-\d+\b/g, '').match(/\d+(?:[.,]\d+)?\s*(?:%|ms|seconds?|segundos?|minutes?|minutos?|hours?|horas?|days?|días?|MB|GB)?/gi) ?? []).map(s => s.replace(/\s+/g, ' ').trim().toLowerCase()).sort();
 }
 function obligations(text: string): string[] {
-  return (text.match(/MUST NOT|SHALL NOT|NO DEBE|MUST|SHALL|SHOULD|MAY|DEBERÁ|DEBE|DEBERÍA|PUEDE/gi) ?? []).map(s => s.toUpperCase()).sort();
+  return (text.match(/(?<![\p{L}\p{N}_])(?:MUST NOT|SHALL NOT|SHOULD NOT|NO (?:DEBERÁN|DEBERÁ|DEBEN|DEBE)|MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}_])/giu) ?? []).map(s => s.toUpperCase()).sort();
 }
 export function checkPreservation(original: string, replacement: string): void {
   if (!replacement.trim()) throw new Error('A replacement cannot be empty.');
   if (JSON.stringify(protectedQuantities(original)) !== JSON.stringify(protectedQuantities(replacement))) throw new Error('Changed quantities require an explicit product decision; preserve existing quantities.');
   if (JSON.stringify(obligations(original)) !== JSON.stringify(obligations(replacement))) throw new Error('Changed obligation: preserve normative wording.');
   const ids = original.match(/\b[A-Z]{1,8}-\d+\b/g) ?? [];
-  if (ids.some(id => !replacement.includes(id))) throw new Error('Preserve existing identifiers.');
+  const replacementIds: string[] = replacement.match(/\b[A-Z]{1,8}-\d+\b/g) ?? [];
+  if (ids.some(id => !replacementIds.includes(id))) throw new Error('Preserve existing identifiers.');
   if (/\bnot\b|\bno\b|never|nunca/i.test(original) && !/\bnot\b|\bno\b|never|nunca/i.test(replacement)) throw new Error('Preserve prohibitions and exclusions.');
 }
 export async function createProposal(path: string, content: string, line: number, replacement: string, reason: string, source: PatchProposal['source'] = 'human'): Promise<PatchProposal> {

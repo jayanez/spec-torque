@@ -1,7 +1,7 @@
 import { readdir, readFile, realpath, stat, mkdir, writeFile, rename, unlink, open } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, dirname, basename, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { classifyArtifact, isSpecCandidate } from '../core/artifacts.js';
+import { classifyArtifact, isSpecCandidate, contentHash } from '../core/artifacts.js';
 import { applyProposal } from '../core/refine.js';
 import type { Artifact, ArtifactSet, PatchProposal } from '../core/types.js';
 const excluded = new Set(['.git', 'node_modules', 'dist', 'web-dist', 'coverage', '.venv', 'vendor', '.spectorque']);
@@ -48,18 +48,23 @@ export async function readWorkspaceArtifact(root: string, path: string): Promise
   return readFile(target, 'utf8');
 }
 export async function applyWorkspaceProposal(root: string, proposal: PatchProposal): Promise<string> {
-  const target = await resolveArtifactPath(root, proposal.path);
+  const content = await readWorkspaceArtifact(root, proposal.path);
+  const updated = await applyProposal(content, proposal);
+  await replaceWorkspaceContent(root, proposal.path, proposal.baseHash, updated);
+  return updated;
+}
+export async function replaceWorkspaceContent(root: string, path: string, expectedHash: string, updated: string): Promise<void> {
+  const target = await resolveArtifactPath(root, path);
   const lockPath = `${target}.spectorque-lock`;
   const lock = await open(lockPath, 'wx').catch(() => { throw new Error('Another edit is in progress.'); });
   const temp = `${target}.${randomUUID()}.tmp`;
   try {
     const content = await readFile(target, 'utf8');
-    const updated = await applyProposal(content, proposal);
+    if (await contentHash(content) !== expectedHash) throw new Error('Source changed: this edit is stale.');
     const mode = (await stat(target)).mode;
     await writeFile(temp, updated, { flag: 'wx', mode });
     if (await readFile(target, 'utf8') !== content) throw new Error('Source changed during the edit.');
     await rename(temp, target);
-    return updated;
   } finally {
     await lock.close();
     await unlink(lockPath).catch(() => {});

@@ -1,0 +1,16 @@
+name: Bug report
+description: A reproducible problem in a supported workflow
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Version, operating system, host, steps and sanitized input. Do not include secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and observed behavior
+    validations:
+      required: true

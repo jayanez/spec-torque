@@ -1,0 +1,23 @@
+{
+  "name": "pi-spectorque",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=1.0.0"
+  }
+}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, symlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { discoverWorkspace, applyWorkspaceProposal, writeNewArtifacts } from '../src/node/workspace.js';
+import { discoverWorkspace, applyWorkspaceProposal, writeNewArtifacts, readWorkspaceArtifact } from '../src/node/workspace.js';
 import { createProposal } from '../src/core/refine.js';
 import { classifyArtifact } from '../src/core/artifacts.js';
 
@@ -14,7 +14,8 @@ test('workspace discovery and write boundaries exclude secrets and escaped symli
     await mkdir(join(root, 'specs'));
     await writeFile(join(root, 'specs', 'spec.md'), 'FR-001: System MUST run.');
     await writeFile(join(outside, 'secret.md'), 'private');
-    await symlink(join(outside, 'secret.md'), join(root, 'specs', 'linked-spec.md'));
+    await symlink(outside, join(root, 'specs', 'linked'), 'junction');
+    await assert.rejects(readWorkspaceArtifact(root, 'specs/linked/secret.md'), /outside/i);
     const set = await discoverWorkspace(root);
     assert.deepEqual(set.artifacts.map(a => a.path), ['specs/spec.md']);
     const patch = await createProposal('../secret.md', 'private', 1, 'private', 'test');

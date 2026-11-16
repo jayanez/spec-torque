@@ -1,0 +1,12 @@
+SpecTorque — original code and documentation, Apache License 2.0.
+
+EPIC practice identifiers, dimensions and paraphrased practice concepts are adapted from:
+Bruno Claudino, Ruizhe Xing, Yuanhao Zuo, Tyler Menezes, Anita Sarma,
+Kostadin Damevski and Zixuan Feng (2026), The EPIC Framework for Spec-Driven
+Development, https://arxiv.org/abs/2610.07534, licensed CC BY 4.0:
+https://creativecommons.org/licenses/by/4.0/
+
+Changes: concise English paraphrases, original EN/ES heuristic patterns, evidence
+states and automated scoring. The EPIC-derived material retains CC BY 4.0
+attribution requirements; Apache-2.0 does not relicense that material.
+No author or standards-body endorsement is implied. No ISO standard text is bundled.

@@ -1,0 +1,11 @@
+{
+  "name": "spectorque",
+  "version": "0.1.0",
+  "description": "Traceable specification review with a native pane, shared EPIC analysis and reviewed refinements.",
+  "author": {
+    "name": "SpecTorque contributors"
+  },
+  "skills": "./skills",
+  "mcpServers": "./.mcp.json",
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,1 @@
+Follow AGENTS.md, CONSTITUTION.md and docs/architecture.md. Build the shared engine before packaging native adapters. Native Mod tests are run with `claude plugin test integrations/claude`; this is distinct from interactive host acceptance.

@@ -1,0 +1,31 @@
+{
+  "name": "spectorque",
+  "displayName": "SpecTorque",
+  "version": "0.1.0",
+  "description": "Specification analysis and refinement alongside Codex and other coding agents.",
+  "publisher": "jayanez",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.cjs",
+  "activationEvents": [
+    "onCommand:spectorque.review"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "spectorque.review",
+        "title": "SpecTorque: Open Specification Workbench"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jayanez/spectorque.git",
+    "directory": "integrations/vscode"
+  }
+}
