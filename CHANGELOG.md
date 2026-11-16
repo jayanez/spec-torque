@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Reject refinements that remove or relocate detected EN/ES prohibitions or exclusions. Negative clauses must remain verbatim apart from whitespace; ambiguous rewrites require an explicit product decision. This conservative guard does not establish semantic equivalence.
-- Preserve selected files during asynchronous browser imports, and improve assessment label contrast.
+- Preserve selected files during asynchronous browser imports, improve assessment label contrast and wrap Spanish report controls on narrow screens across system fonts.
 - Restrict the VS Code workbench to trusted local workspaces, reuse its panel, and recover visibly from server startup failures. Permit its exact desktop ancestor in the loopback server's embedding policy.
 - Add project-local browser tooling, reproducible Codex qualification and actual VS Code extension-host checks. Their acceptance limits are documented separately.
 

@@ -72,7 +72,7 @@ Codex's conversational/desktop UI, authenticated IDE workflows, other operating 
 |---|---|---|
 | P1 | `src/core/refine.ts`: change `MUST never disclose credentials` to `MUST disclose credentials, never log errors`; or remove `sin publicarlos` in ES. | The previous guard accepted altered negative scope. Creation and application now require detected negative clauses to remain verbatim apart from whitespace; ten regression tests cover rejection and permitted edits. Ambiguous rewrites are blocked, not automatically accepted. |
 | P2 | `src/web/SourcePanel.tsx`: import a Markdown file using the selector. Its live FileList was reset before asynchronous reads finished. | Import failed after reading. Snapshot selected File objects before awaiting; EN/ES browser regressions exercise the real selector. |
-| P2 | `src/web/styles.css`: the `/30` label used contrast below 4.5:1. | Reuse the existing readable muted color; axe checks the corrected state. |
+| P2 | `src/web/styles.css`: the `/30` label used contrast below 4.5:1; Linux fonts also caused the Spanish report controls to overflow at 375px. | Reuse the readable muted color and allow report controls to wrap; axe and viewport assertions retain the same thresholds. |
 | P2 | VS Code manifest/command had no explicit trust boundary. | Declare unsupported untrusted/virtual workspaces and enforce trusted local workspace access before starting a child. Verified in actual Restricted Mode. |
 | P2 | `src/node/server.ts`: real VS Code iframe was blocked by frame-ancestors. | Add only the observed desktop ancestor `vscode-file://vscode-app`, retaining loopback Host/Origin/session checks and restricted embedding. The installed VSIX test verifies actual rendering. |
 
