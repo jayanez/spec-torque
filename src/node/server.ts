@@ -14,9 +14,10 @@ import { importGitHub } from './github.js';
 import { requestRewrite } from './provider.js';
 import { parseSet, builderSchema, proposalSchema, rewriteSchema } from './schemas.js';
 const mime: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json' };
+class RequestTooLarge extends Error {}
 async function body(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []; let size = 0;
-  for await (const chunk of req) { size += chunk.length; if (size > 6_000_000) throw new Error('Request exceeds 6 MB.'); chunks.push(Buffer.from(chunk)); }
+  for await (const chunk of req) { size += chunk.length; if (size > 6_000_000) throw new RequestTooLarge('Request exceeds 6 MB.'); chunks.push(Buffer.from(chunk)); }
   return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
 }
 export async function startServer(root: string, requestedPort = 4317) {
@@ -32,7 +33,7 @@ export async function startServer(root: string, requestedPort = 4317) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self' vscode-webview:; base-uri 'none'; object-src 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self' vscode-webview: vscode-file://vscode-app; base-uri 'none'; object-src 'none'");
     const send = (status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
     if (!hosts.has(req.headers.host ?? '') || req.headers.origin && !origins.has(req.headers.origin)) { send(403, { error: 'Untrusted origin or host.' }); return; }
     const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`);
@@ -91,7 +92,7 @@ export async function startServer(root: string, requestedPort = 4317) {
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch (error) {
       const message = error instanceof z.ZodError ? 'Invalid request parameters.' : (error as NodeJS.ErrnoException).code === 'ENOENT' ? 'File not found. Build the dashboard first with npm run build.' : error instanceof Error ? error.message : 'Operation failed.';
-      send((error as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 400, { error: message });
+      send(error instanceof RequestTooLarge ? 413 : (error as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 400, { error: message });
     }
   });
   await new Promise<void>((resolveListen, reject) => { server.once('error', reject); server.listen(requestedPort, '127.0.0.1', () => { server.off('error', reject); resolveListen(); }); });

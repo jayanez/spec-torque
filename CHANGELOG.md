@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Exclude concurrent apply/undo/save and ignore stale provider responses without replacing active documents.
+- Reject multiline refinements and changed identifier multisets, including lowercase identifiers.
+- Detect bounded explicit EN/ES mandatory contradictions with never/nunca; return HTTP 413 for oversized requests.
+
+- Reject refinements that remove or relocate detected EN/ES prohibitions or exclusions. Negative clauses must remain verbatim apart from whitespace; ambiguous rewrites require an explicit product decision. This conservative guard does not establish semantic equivalence.
+- Preserve selected files during asynchronous browser imports, improve assessment label contrast and wrap Spanish report controls on narrow screens across system fonts.
+- Restrict the VS Code workbench to trusted local workspaces, reuse its panel, and recover visibly from server startup failures. Permit its exact desktop ancestor in the loopback server's embedding policy.
+- Add project-local browser tooling, reproducible Codex qualification and actual VS Code extension-host checks. Their acceptance limits are documented separately.
+
 ## 0.1.0 — preview foundations
 
 Guided bilingual authoring, bounded artifact discovery/public GitHub import, forty explainable practice checks, feature-scoped references, source evidence and radar, reviewed hash-protected refinements, exports, read-only MCP and four visual adapter implementations. Native qualification and cross-platform acceptance are tracked separately; this preview does not claim completion of the December V1.

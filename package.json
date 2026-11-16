@@ -32,13 +32,20 @@
     "fixtures"
   ],
   "scripts": {
+    "verify:node": "node scripts/verify-node.mjs",
+    "browsers:install": "node scripts/install-browsers.mjs",
+    "test:browser": "npm run build && playwright test",
+    "prepare:codex": "node scripts/prepare-codex.mjs",
     "dev": "vite --host 127.0.0.1",
     "start": "node dist/cli.js serve",
     "test": "tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && tsup src/cli.ts src/mcp.ts src/core.ts src/integration.ts --format esm --target node22 --out-dir dist --clean && vite build",
-    "check": "npm run test && npm run build",
-    "package:integrations": "node scripts/package-integrations.mjs"
+    "check": "npm run verify:node && npm run test && npm run build",
+    "package:integrations": "npm run verify:node && node scripts/package-integrations.mjs",
+    "qualify:codex": "node --import tsx scripts/qualify-codex.mjs",
+    "test:vscode": "node scripts/test-vscode.mjs",
+    "package:vscode": "npm run package:integrations && node scripts/package-vscode.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
@@ -48,11 +55,15 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/vscode": "^1.100.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.1.1",
     "esbuild": "0.28.1",
     "tsup": "^8.0.0",
     "tsx": "4.23.15",
@@ -64,7 +75,10 @@
     "url": "https://github.com/jayanez/spec-torque.git"
   },
   "overrides": {
-    "esbuild": "0.28.1"
+    "esbuild": "0.28.1",
+    "@vscode/vsce": {
+      "minimatch": "11.0.1"
+    }
   },
   "author": {
     "name": "jayanez",

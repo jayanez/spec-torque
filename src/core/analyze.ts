@@ -103,14 +103,16 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
-  const behaviors = new Map<string, Line>();
+  const behaviors = new Map<string, { line: Line; negative: boolean }>();
   for (const line of requirements) {
     const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').trim();
-    const polarity = /MUST NOT|SHALL NOT|NO DEBE/i.test(text);
-    const key = line.artifact.featureId + ':' + text.replace(/MUST NOT|SHALL NOT|NO DEBE|MUST|SHALL|DEBE/gi, '').replace(/\s+/g, ' ').toLowerCase();
+    const match = text.match(/^(.*?)\b(?:(MUST|SHALL)\s+(?:(NOT|never)\s+)?|((?:NO|NUNCA)\s+)?(DEBE|DEBEN|DEBERÁ|DEBERÁN)(?:\s+(nunca))?\s+)(.+)$/iu);
+    if (!match) continue;
+    const negative = Boolean(match[3] || match[4] || match[6]);
+    const key = line.artifact.featureId + ':mandatory:' + (match[1] + match[7]).replace(/\s+/g, ' ').toLowerCase();
     const previous = behaviors.get(key);
-    if (previous && polarity !== /MUST NOT|SHALL NOT|NO DEBE/i.test(previous.text)) add('I2.3', line, 'Opposite obligations describe the same behavior.', `Resolve the conflict with ${previous.path}:${previous.line}.`, 'error');
-    behaviors.set(key, line);
+    if (previous && negative !== previous.negative) add('I2.3', line, 'Opposite obligations describe the same behavior.', `Resolve the conflict with ${previous.line.path}:${previous.line.line}.`, 'error');
+    behaviors.set(key, { line, negative });
   }
   const dimensions = DIMENSIONS.map(([id, title, category]) => {
     const rows = practices.filter(p => p.dimension === id && p.status !== 'not_applicable');

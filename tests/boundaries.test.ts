@@ -37,6 +37,9 @@ test('local HTTP enforces origin, session and exact reviewed write; undo checks 
     await writeFile(join(root, 'spec.md'), source);
     assert.equal((await fetch(url + '/api/workspace')).status, 403);
     assert.equal((await fetch(url + '/api/session', { headers: { Origin: 'https://evil.test' } })).status, 403);
+    const csp = (await fetch(url + '/api/session')).headers.get('content-security-policy')!;
+    assert.match(csp, /frame-ancestors 'self' vscode-webview: vscode-file:\/\/vscode-app;/);
+    assert.ok(!csp.includes('*'), 'Embedding remains restricted to the local workbench and VS Code.');
     const headers = { 'Content-Type': 'application/json', 'X-SpecTorque-Token': token };
     const set = await (await fetch(url + '/api/workspace', { headers })).json();
     assert.equal(set.artifacts.length, 1);
@@ -49,4 +52,35 @@ test('local HTTP enforces origin, session and exact reviewed write; undo checks 
     assert.equal(await readFile(join(root, 'spec.md'), 'utf8'), source);
     assert.equal((await fetch(url + '/api/undo', { method: 'POST', headers, body: JSON.stringify({ id: applied.undoId, approved: true }) })).status, 400);
   } finally { await new Promise<void>((r, reject) => server.close(e => e ? reject(e) : r())); await rm(root, { recursive: true, force: true }); }
+});
+
+test('HTTP distinguishes oversized and malformed JSON without changing source', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'spectorque-size-'));
+  const { server, url, token } = await startServer(root, 0);
+  try {
+    const source = 'FR-001: The system MUST run.';
+    await writeFile(join(root, 'spec.md'), source);
+    const headers = { 'Content-Type': 'application/json', 'X-SpecTorque-Token': token };
+    const oversized = await fetch(url + '/api/analyze', { method: 'POST', headers, body: JSON.stringify({ padding: 'x'.repeat(6_000_000) }) });
+    assert.equal(oversized.status, 413);
+    assert.match((await oversized.json()).error, /6 MB/);
+    assert.equal((await fetch(url + '/api/analyze', { method: 'POST', headers, body: '{' })).status, 400);
+    assert.equal(await readFile(join(root, 'spec.md'), 'utf8'), source);
+  } finally { await new Promise<void>(done => server.close(() => done())); await rm(root, { recursive: true, force: true }); }
+});
+
+test('HTTP rejects externally supplied multiline changes before writing', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'spectorque-line-'));
+  const { server, url, token } = await startServer(root, 0);
+  try {
+    const source = 'FR-001: The system MUST run.';
+    await writeFile(join(root, 'spec.md'), source);
+    const proposal = await createProposal('spec.md', source, 1, source, 'test');
+    proposal.replacement += '\nFR-999: Publish data.';
+    const headers = { 'Content-Type': 'application/json', 'X-SpecTorque-Token': token };
+    const response = await fetch(url + '/api/apply', { method: 'POST', headers, body: JSON.stringify({ proposal, approved: true }) });
+    assert.equal(response.status, 400);
+    assert.match((await response.json()).error, /single line/);
+    assert.equal(await readFile(join(root, 'spec.md'), 'utf8'), source);
+  } finally { await new Promise<void>(done => server.close(() => done())); await rm(root, { recursive: true, force: true }); }
 });
