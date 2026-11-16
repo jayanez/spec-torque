@@ -12,6 +12,10 @@ test('workspace discovery and write boundaries exclude secrets and escaped symli
   const outside = await mkdtemp(join(tmpdir(), 'spectorque-outside-'));
   try {
     await mkdir(join(root, 'specs'));
+    for (const local of ['.spec-torque', '.spectorque']) {
+      await mkdir(join(root, local));
+      await writeFile(join(root, local, 'spec.md'), 'Local qualification evidence, not project input.');
+    }
     await writeFile(join(root, 'specs', 'spec.md'), 'FR-001: System MUST run.');
     await writeFile(join(outside, 'secret.md'), 'private');
     await symlink(outside, join(root, 'specs', 'linked'), 'junction');

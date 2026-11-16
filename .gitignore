@@ -2,6 +2,7 @@ node_modules/
 dist/
 web-dist/
 artifacts/
+.spec-torque/
 .spectorque/
 .env*
 *.log

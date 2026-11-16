@@ -16,7 +16,7 @@ npm run test:browser
 npm run package:vscode
 ```
 
-Browser binaries live in ignored `.spectorque/browsers`, with results in `test-results` and `playwright-report`. Each test starts an ephemeral loopback server over disposable documents. The browser suite covers EN/ES import, exact evidence selection, keyboard navigation, rejection, acceptance, reanalysis, JSON/ZIP export, undo, stale disk writes, failed connections and empty workspaces. Axe runs WCAG A/AA checks on the reviewed document state. These automated checks do not establish complete accessibility or screen-reader acceptance. macOS WebKit uses Option+Tab for full keyboard traversal ([upstream guidance](https://github.com/microsoft/playwright/issues/5609)).
+Browser binaries live in ignored `.spec-torque/browsers`, with results in `test-results` and `playwright-report`. Each test starts an ephemeral loopback server over disposable documents. The browser suite covers EN/ES import, exact evidence selection, keyboard navigation, rejection, acceptance, reanalysis, JSON/ZIP export, undo, stale disk writes, failed connections and empty workspaces. Axe runs WCAG A/AA checks on the reviewed document state. These automated checks do not establish complete accessibility or screen-reader acceptance. macOS WebKit uses Option+Tab for full keyboard traversal ([upstream guidance](https://github.com/microsoft/playwright/issues/5609)).
 
 Tool versions: Playwright 1.65.1, axe-core/Playwright 4.14.0, test-electron 3.1.0 and vsce 4.1.1. The scoped vsce override pins minimatch 11.0.1 because its default dependency was affected by [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). The generated VSIX was installed and exercised with this override. No forced bulk dependency upgrade was used.
 
@@ -27,7 +27,7 @@ npm run prepare:codex -- en
 npm run prepare:codex -- es
 ```
 
-Each command creates a new ignored `.spectorque/codex-en` or `codex-es` workspace, copies original example documents and the three canonical skills into `.agents/skills`, and writes a local `.codex/config.toml` for the built stdio MCP server. It refuses to reset an existing directory. Paths are generated on the local machine, not committed. Open that directory in Codex, trust only that test workspace, and verify the SpecTorque MCP inventory. Project skill discovery follows the [official Codex implementation](https://github.com/openai/codex/blob/main/codex-rs/ext/skills/src/host_roots.rs).
+Each command creates a new ignored `.spec-torque/codex-en` or `codex-es` workspace, copies original example documents and the three canonical skills into `.agents/skills`, and writes a local `.codex/config.toml` for the built stdio MCP server. It refuses to reset an existing directory. Paths are generated on the local machine, not committed. Open that directory in Codex, trust only that test workspace, and verify the SpecTorque MCP inventory. Project skill discovery follows the [official Codex implementation](https://github.com/openai/codex/blob/main/codex-rs/ext/skills/src/host_roots.rs).
 
 The MCP tools return drafts and proposals; they do not apply edits. Review the source and difference in the common workbench and explicitly opt into a disk write, or use an approved host editing action. Export before removing the generated workspace. Removal consists of deleting that generated directory after retaining wanted edits; no global Codex configuration or skills need changing.
 
@@ -35,7 +35,7 @@ The MCP tools return drafts and proposals; they do not apply edits. Review the s
 npm run qualify:codex
 ```
 
-This opt-in script requires a local `codex` executable (or `CODEX_EXECUTABLE`). It uses a fresh project, separate `CODEX_HOME`, ephemeral app-server thread and a loopback-only model-provider trap. It starts no model turn. In both languages the real client discovers all three skills and six tools, creates a draft, discovers/analyzes source, reads refinement context, proposes without writing, rejects once in the actual browser, explicitly applies another proposal through the common workbench, reanalyzes and exports through Codex. It also checks an escaped source path. The trap must receive zero inference requests. Evidence and scratch files remain under the printed `.spectorque/codex-run-*` directory.
+This opt-in script requires a local `codex` executable (or `CODEX_EXECUTABLE`). It uses a fresh project, separate `CODEX_HOME`, ephemeral app-server thread and a loopback-only model-provider trap. It starts no model turn. In both languages the real client discovers all three skills and six tools, creates a draft, discovers/analyzes source, reads refinement context, proposes without writing, rejects once in the actual browser, explicitly applies another proposal through the common workbench, reanalyzes and exports through Codex. It also checks an escaped source path. The trap must receive zero inference requests. Evidence and scratch files remain under the printed `.spec-torque/codex-run-*` directory.
 
 ## Installed VS Code qualification
 
@@ -46,7 +46,7 @@ npm run test:vscode
 npm run test:vscode -- --restricted
 ```
 
-For example on macOS, the executable is `/Applications/Visual Studio Code.app/Contents/MacOS/Code`. The harness installs the generated VSIX into a fresh extensions directory and uses isolated user data with telemetry and updates disabled. It never downloads an editor or changes the user's profile. The positive run attaches Playwright to the real Electron renderer, exercises the embedded workbench and checks the actual loopback listener stops after closing its tab. Screenshots, exported assessment and evidence JSON are saved in `.spectorque/vscode-run-*`.
+For example on macOS, the executable is `/Applications/Visual Studio Code.app/Contents/MacOS/Code`. The harness installs the generated VSIX into a fresh extensions directory and uses isolated user data with telemetry and updates disabled. It never downloads an editor or changes the user's profile. The positive run attaches Playwright to the real Electron renderer, exercises the embedded workbench and checks the actual loopback listener stops after closing its tab. Screenshots, exported assessment and evidence JSON are saved in `.spec-torque/vscode-run-*`.
 
 To check coexistence, optionally set `CODEX_VSCODE_EXTENSION` to an existing local Codex extension directory. The harness copies it into the isolated profile and explicitly loads that copy; it opens the sidebar with a separate `CODEX_HOME` and submits no turn. No extension marketplace or user profile is changed.
 

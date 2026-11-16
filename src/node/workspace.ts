@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { classifyArtifact, isSpecCandidate, contentHash } from '../core/artifacts.js';
 import { applyProposal } from '../core/refine.js';
 import type { Artifact, ArtifactSet, PatchProposal } from '../core/types.js';
-const excluded = new Set(['.git', 'node_modules', 'dist', 'web-dist', 'coverage', '.venv', 'vendor', '.spectorque']);
+const excluded = new Set(['.git', 'node_modules', 'dist', 'web-dist', 'coverage', '.venv', 'vendor', '.spec-torque', '.spectorque']);
 function lexicalPath(root: string, path: string): string {
   if (!path || isAbsolute(path) || path.includes('\0')) throw new Error('Invalid relative artifact path.');
   const target = resolve(root, path);

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { chromium, type Frame } from 'playwright';
 
 export async function run() {
-  const extension = vscode.extensions.getExtension('jayanez.spectorque');
+  const extension = vscode.extensions.getExtension('jayanez.spec-torque');
   if (process.env.SPECTORQUE_RESTRICTED === '1') {
     assert.equal(vscode.workspace.isTrusted, false);
     assert.ok(!extension?.isActive);
@@ -16,7 +16,7 @@ export async function run() {
     return;
   }
   assert.ok(extension);
-  assert.match(extension.extensionPath, /extensions[\\/]jayanez\.spectorque-/);
+  assert.match(extension.extensionPath, /extensions[\\/]jayanez\.spec-torque-/);
   await extension.activate();
   assert.equal(vscode.workspace.isTrusted, true);
   let codexVersion: string | undefined;

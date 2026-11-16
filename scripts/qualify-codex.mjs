@@ -7,11 +7,11 @@ import { resolve, join } from 'node:path';
 import { startServer } from '../src/node/server.ts';
 
 const repository = resolve(import.meta.dirname, '..');
-process.env.PLAYWRIGHT_BROWSERS_PATH ??= join(repository, '.spectorque/browsers');
+process.env.PLAYWRIGHT_BROWSERS_PATH ??= join(repository, '.spec-torque/browsers');
 const { chromium } = await import('playwright');
 const executable = process.env.CODEX_EXECUTABLE ?? 'codex';
-await mkdir(join(repository, '.spectorque'), { recursive: true });
-const run = await mkdtemp(join(repository, '.spectorque', 'codex-run-'));
+await mkdir(join(repository, '.spec-torque'), { recursive: true });
+const run = await mkdtemp(join(repository, '.spec-torque', 'codex-run-'));
 let inferenceRequests = 0;
 const provider = createServer((req, res) => { inferenceRequests++; res.writeHead(503); res.end(); });
 await new Promise(done => provider.listen(0, '127.0.0.1', done));
@@ -26,7 +26,7 @@ try {
     await mkdir(join(root, '.agents'));
     await cp(join(repository, 'skills'), join(root, '.agents/skills'), { recursive: true });
     await mkdir(join(root, '.codex'));
-    await writeFile(join(root, '.codex/config.toml'), `[mcp_servers.spectorque]\ncommand = ${JSON.stringify(process.execPath)}\nargs = [${JSON.stringify(join(repository, 'dist/mcp.js'))}]\n[mcp_servers.spectorque.env]\nSPECTORQUE_ROOT = ${JSON.stringify(root)}\n`);
+    await writeFile(join(root, '.codex/config.toml'), `[mcp_servers.spec-torque]\ncommand = ${JSON.stringify(process.execPath)}\nargs = [${JSON.stringify(join(repository, 'dist/mcp.js'))}]\n[mcp_servers.spec-torque.env]\nSPECTORQUE_ROOT = ${JSON.stringify(root)}\n`);
     await writeFile(join(home, 'config.toml'), `model_provider = "offline"\nmodel = "offline"\n[model_providers.offline]\nname = "Offline qualification"\nbase_url = ${JSON.stringify(providerUrl)}\nwire_api = "responses"\n[analytics]\nenabled = false\n[feedback]\nenabled = false\n[projects.${JSON.stringify(repository)}]\ntrust_level = "trusted"\n[projects.${JSON.stringify(root)}]\ntrust_level = "trusted"\n`);
     const env = { ...process.env, CODEX_HOME: home };
     delete env.OPENAI_API_KEY; delete env.CODEX_API_KEY;
