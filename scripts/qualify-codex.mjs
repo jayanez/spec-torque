@@ -7,11 +7,11 @@ import { resolve, join } from 'node:path';
 import { startServer } from '../src/node/server.ts';
 
 const repository = resolve(import.meta.dirname, '..');
-process.env.PLAYWRIGHT_BROWSERS_PATH ??= join(repository, '.spectorque/browsers');
+process.env.PLAYWRIGHT_BROWSERS_PATH ??= join(repository, '.spec-torque/browsers');
 const { chromium } = await import('playwright');
 const executable = process.env.CODEX_EXECUTABLE ?? 'codex';
-await mkdir(join(repository, '.spectorque'), { recursive: true });
-const run = await mkdtemp(join(repository, '.spectorque', 'codex-run-'));
+await mkdir(join(repository, '.spec-torque'), { recursive: true });
+const run = await mkdtemp(join(repository, '.spec-torque', 'codex-run-'));
 let inferenceRequests = 0;
 const provider = createServer((req, res) => { inferenceRequests++; res.writeHead(503); res.end(); });
 await new Promise(done => provider.listen(0, '127.0.0.1', done));

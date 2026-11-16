@@ -5,11 +5,11 @@ const language = process.argv[2] ?? 'en';
 if (!['en', 'es'].includes(language)) throw new Error('Use npm run prepare:codex -- en|es.');
 const repository = resolve(import.meta.dirname, '..');
 await access(join(repository, 'dist/mcp.js'));
-const root = join(repository, '.spectorque', `codex-${language}`);
+const root = join(repository, '.spec-torque', `codex-${language}`);
 // Refuse to reset a qualification workspace containing reviewed user edits.
 await mkdir(root, { recursive: false }).catch(async error => {
   if (error.code !== 'ENOENT') throw error;
-  await mkdir(join(repository, '.spectorque'), { recursive: true });
+  await mkdir(join(repository, '.spec-torque'), { recursive: true });
   await mkdir(root);
 });
 await cp(join(repository, 'fixtures', `${language}-draft`), root, { recursive: true });

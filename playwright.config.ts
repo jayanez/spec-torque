@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 import { resolve } from 'node:path';
 
-process.env.PLAYWRIGHT_BROWSERS_PATH ??= resolve('.spectorque/browsers');
+process.env.PLAYWRIGHT_BROWSERS_PATH ??= resolve('.spec-torque/browsers');
 
 export default defineConfig({
   testDir: './tests/browser',
