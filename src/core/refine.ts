@@ -4,7 +4,7 @@ function protectedQuantities(text: string): string[] {
   return (text.replace(/\b[A-Z]{1,8}-\d+\b/gi, '').match(/\d+(?:[.,]\d+)?\s*(?:%|ms|seconds?|segundos?|minutes?|minutos?|hours?|horas?|days?|días?|MB|GB)?/gi) ?? []).map(s => s.replace(/\s+/g, ' ').trim().toLowerCase()).sort();
 }
 function obligations(text: string): string[] {
-  return (text.match(/(?<![\p{L}\p{N}_])(?:MUST NOT|SHALL NOT|SHOULD NOT|NO (?:DEBERÁN|DEBERÁ|DEBEN|DEBE)|MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}_])/giu) ?? []).map(s => s.toUpperCase()).sort();
+  return (text.normalize('NFC').match(/(?<![\p{L}\p{N}\p{M}_])(?:MUST NOT|SHALL NOT|SHOULD NOT|NO (?:DEBERÁN|DEBERÁ|DEBEN|DEBE)|MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/giu) ?? []).map(s => s.toUpperCase()).sort();
 }
 function protectedClauses(text: string): string[] {
   const negative = /(?<![\p{L}\p{N}_])(?:not|no|never|nunca|sin|without|unless|except|excluding|excepto|salvo|ni|neither|nor)(?![\p{L}\p{N}_])/iu;

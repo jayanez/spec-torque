@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Engine 0.1.1 recognizes complete EN/ES normative words, including Spanish plurals and accented forms, consistently with or without requirement IDs. Newly recognized requirements can change findings and evidence ratios; schema, rubric and scoring policy are unchanged. See docs/normative-recognition.md for examples and limits.
 - Exclude concurrent apply/undo/save and ignore stale provider responses without replacing active documents.
 - Reject multiline refinements and changed identifier multisets, including lowercase identifiers.
 - Detect bounded explicit EN/ES mandatory contradictions with never/nunca; return HTTP 413 for oversized requests.
