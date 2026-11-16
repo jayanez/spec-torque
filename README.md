@@ -6,6 +6,8 @@ Create, inspect and refine specifications with a local workbench, a shared TypeS
 
 > **0.1.0 preview:** executable foundations, not the completed December V1. See [tested compatibility](docs/compatibility.md) and [delivery milestones](docs/roadmap.md). Native adapters are qualified separately from core tests.
 
+![SpecTorque workbench with traceable evidence and pending decisions](docs/assets/workbench.jpg)
+
 ## Try it
 
 Requires Node.js **22.20+** and npm. From a source checkout:

@@ -22,7 +22,14 @@
     "README.md",
     "LICENSE",
     "NOTICE",
-    "THIRD_PARTY_NOTICES"
+    "THIRD_PARTY_NOTICES",
+    "docs",
+    "CONSTITUTION.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CITATION.cff",
+    "CHANGELOG.md",
+    "fixtures"
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",

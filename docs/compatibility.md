@@ -14,7 +14,7 @@ Snapshot: **2026-11-16**, preview 0.1.0. “Implemented” means source exists; 
 | Codex desktop MCP Apps | Optional | Protocol metadata is not proof of rendering; no visual acceptance claimed. | Actual desktop rendering and interaction test before enabling a native app surface. |
 | Cursor / Copilot / Gemini CLI | Not qualified | Connection guidance only. | Real host qualification after the committed four-host scope. |
 
-CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. The preview passed all three jobs in [run 43893847067](https://github.com/jayanez/spectorque/actions/runs/43893847067). Consult the repository's actual workflow run before treating a platform as passed. No GPU/provider evaluation, human-scored corpus calibration or defect-reduction claim is included.
+CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. The preview passed all three jobs in [run 43894304803](https://github.com/jayanez/spectorque/actions/runs/43894304803). Consult the repository's actual workflow run before treating a platform as passed. No GPU/provider evaluation, human-scored corpus calibration or defect-reduction claim is included.
 
 ## Detected layout hints
 
