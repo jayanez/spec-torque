@@ -26,6 +26,6 @@ export async function contentHash(content: string): Promise<string> {
   return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function selectFeature(set: ArtifactSet, feature: string): ArtifactSet {
-  return feature === 'all' ? set : { ...set, artifacts: set.artifacts.filter(a => a.featureId === feature || a.role === 'instructions') };
+export function selectFeature(set: ArtifactSet, feature: string | null): ArtifactSet {
+  return feature === null ? set : { ...set, artifacts: set.artifacts.filter(a => a.featureId === feature || a.role === 'instructions') };
 }

@@ -22,3 +22,7 @@ test('exports reject Windows-normalized traversal, reserved names and portable c
 test('export size bound rejects oversized input before creating an archive', () => {
   assert.throws(() => artifactArchive({ name: 'large', artifacts: [classifyArtifact('spec.md', 'a'.repeat(20_000_001))] }), /20 MB/);
 });
+
+test('portable collision detection covers Windows Unicode uppercase equivalence', () => {
+  assert.throws(() => artifactArchive({ name: 'Turkish paths', artifacts: [classifyArtifact('specs/I.md', 'one'), classifyArtifact('specs/ı.md', 'two')] }), /Duplicate/);
+});

@@ -9,9 +9,10 @@ export function artifactArchive(set: ArtifactSet): ArrayBuffer {
   for (const artifact of set.artifacts) {
     const path = artifact.path.replaceAll('\\', '/');
     if (/^(?:\/|[A-Za-z]:)/.test(path) || /[\x00-\x1f<>:\"|?*]/.test(path) || path.split('/').some(p => !p || /[. ]$/.test(p) || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(p.normalize('NFKC')))) throw new Error('Unsafe artifact export path.');
-    const portable = path.normalize('NFKC').toLowerCase().replaceAll('ß', 'ss').replaceAll('ς', 'σ');
-    if (portablePaths.has(portable)) throw new Error('Duplicate artifact export path on a portable filesystem.');
-    portablePaths.add(portable);
+    const normalized = path.normalize('NFKC');
+    const portable = [normalized.toLowerCase(), normalized.toUpperCase()];
+    if (portable.some(key => portablePaths.has(key))) throw new Error('Duplicate artifact export path on a portable filesystem.');
+    portable.forEach(key => portablePaths.add(key));
     const bytes = strToU8(artifact.content);
     size += bytes.length;
     if (size > 20_000_000) throw new Error('Artifact archive exceeds 20 MB. Export one feature at a time.');
