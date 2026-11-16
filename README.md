@@ -13,8 +13,8 @@ Create, inspect and refine specifications with a local workbench, a shared TypeS
 Requires Node.js **22.20+** and npm. From a source checkout:
 
 ```sh
-git clone https://github.com/jayanez/spectorque.git
-cd spectorque
+git clone https://github.com/jayanez/spec-torque.git
+cd spec-torque
 npm ci --ignore-scripts
 npm run build
 node dist/cli.js serve --root /absolute/path/to/your/project
@@ -48,4 +48,4 @@ Creation previews by default; `--apply` writes new files only. Reports refuse to
 
 [Rubric](docs/rubric.md) · [Constitution](CONSTITUTION.md) · [Requirements](docs/requirements.md) · [Architecture](docs/architecture.md) · [Research and article analysis](docs/research.md) · [Integrations](docs/integrations.md) · [Privacy](docs/privacy.md) · [Evaluation](docs/evaluation.md) · [Español](docs/es.md)
 
-Apache-2.0 for original code and documentation. EPIC-derived paraphrases have separate CC BY 4.0 attribution in [NOTICE](NOTICE). No affiliation or endorsement is implied. [Contribute](CONTRIBUTING.md) through the [issue tracker](https://github.com/jayanez/spectorque/issues).
+Apache-2.0 for original code and documentation. EPIC-derived paraphrases have separate CC BY 4.0 attribution in [NOTICE](NOTICE). No affiliation or endorsement is implied. [Contribute](CONTRIBUTING.md) through the [issue tracker](https://github.com/jayanez/spec-torque/issues).

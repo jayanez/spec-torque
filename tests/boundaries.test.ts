@@ -10,7 +10,7 @@ import { requestRewrite } from '../src/node/provider.js';
 import { boundedJson } from '../src/node/http.js';
 
 test('GitHub importer rejects unrelated hosts and invalid traversal', () => {
-  assert.deepEqual(parseGitHubSource('jayanez/spectorque'), { owner: 'jayanez', repo: 'spectorque', ref: undefined, folder: undefined });
+  assert.deepEqual(parseGitHubSource('jayanez/spec-torque'), { owner: 'jayanez', repo: 'spec-torque', ref: undefined, folder: undefined });
   assert.equal(parseGitHubSource('https://github.com/org/repo/tree/main/specs/feature').folder, 'specs/feature');
   for (const url of ['https://127.0.0.1/private', 'https://github.com.evil.test/org/repo', 'https://user@github.com/org/repo', 'https://github.com/org/repo?token=x', 'https://github.com/org/repo/tree/main/%2e%2e']) assert.throws(() => parseGitHubSource(url));
 });
