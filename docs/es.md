@@ -27,3 +27,13 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 Las operaciones de aplicar, deshacer y guardar bloquean temporalmente las mutaciones; las respuestas tardías no sustituyen el documento activo. Las propuestas modifican una sola línea y conservan exactamente los identificadores. Los cuerpos HTTP superiores a 6 MB se rechazan con 413. La detección de contradicciones sigue siendo acotada, no semántica general.
 
 Consulta [las fases, evidencias y condiciones de parada](corrective-gates.md). G5 no se cierra hasta disponer de la revisión independiente final y de los resultados técnicos de la revisión concreta; las aceptaciones de los cuatro agentes siguen siendo independientes.
+
+## Reconocimiento normativo EN/ES
+
+El motor 0.1.1 reconoce palabras normativas completas, incluidas `DEBEN`, `DEBERÁ`,
+`DEBERÁN`, `DEBERÍA`, `DEBERÍAN` y `PUEDEN`, con o sin identificador de requisito.
+Conserva la diferencia entre obligación, recomendación y permiso. Los nuevos casos
+reconocidos pueden cambiar los hallazgos y sus evidencias; no cambia la política de
+puntuación ni convierte desconocidos en resultados aprobados. Consulta los
+[ejemplos y límites](normative-recognition.md). La calibración independiente y el
+resto del corpus siguen pendientes en #2.

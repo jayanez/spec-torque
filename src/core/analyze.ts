@@ -1,22 +1,23 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.0';
+export const ENGINE_VERSION = '0.1.1';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
+// Match complete Unicode words, including accented Spanish and plural forms.
+const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && /\b(?:FR-\d+|NFR-\d+|REQ-\d+|MUST|SHALL|SHOULD|DEBE|DEBERÁ|DEBERÍA)\b/i.test(text);
+    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || modal.test(text));
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
   });
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
-const modal = /\b(MUST(?: NOT)?|SHALL(?: NOT)?|SHOULD(?: NOT)?|MAY|NO DEBE|DEBE(?:RÁ)?|DEBERÍA|PUEDE)\b/iu;
 function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
@@ -106,7 +107,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const behaviors = new Map<string, { line: Line; negative: boolean }>();
   for (const line of requirements) {
     const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').trim();
-    const match = text.match(/^(.*?)\b(?:(MUST|SHALL)\s+(?:(NOT|never)\s+)?|((?:NO|NUNCA)\s+)?(DEBE|DEBEN|DEBERÁ|DEBERÁN)(?:\s+(nunca))?\s+)(.+)$/iu);
+    const match = text.match(/^(.*?)(?<![\p{L}\p{N}\p{M}_])(?:(MUST|SHALL)\s+(?:(NOT|never)\s+)?|((?:NO|NUNCA)\s+)?(DEBE|DEBEN|DEBERÁ|DEBERÁN)(?:\s+(nunca))?\s+)(.+)$/iu);
     if (!match) continue;
     const negative = Boolean(match[3] || match[4] || match[6]);
     const key = line.artifact.featureId + ':mandatory:' + (match[1] + match[7]).replace(/\s+/g, ' ').toLowerCase();
