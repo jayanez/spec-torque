@@ -11,7 +11,15 @@ const test = base.extend<{ workspace: { root: string; url: string } }>({
     const root = await mkdtemp(join(tmpdir(), 'spectorque-browser-'));
     const { server, url } = await startServer(root, 0);
     try { await use({ root, url }); }
-    finally { await new Promise<void>((done, reject) => server.close(e => e ? reject(e) : done())); await rm(root, { recursive: true, force: true }); }
+    finally {
+      // Assertions have finished. Stop accepting connections before closing any
+      // active browser requests, so fixture teardown cannot wait on an open page.
+      await new Promise<void>((done, reject) => {
+        server.close(e => e ? reject(e) : done());
+        server.closeAllConnections();
+      });
+      await rm(root, { recursive: true, force: true });
+    }
   },
 });
 
@@ -93,6 +101,7 @@ test('reviewed disk writes reject stale sources and undo preserves external chan
   await expect(page.getByRole('alert')).toContainText('Source changed');
   expect(await readFile(path, 'utf8')).toBe(source + 'External edit.\n');
   await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue(source + 'External edit.\n');
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
   await page.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
   await page.getByRole('button', { name: 'Review difference', exact: true }).click();
