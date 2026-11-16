@@ -119,3 +119,74 @@ test('connection failure preserves drafts and empty workspace remains unknown', 
   await expect(page.getByRole('alert')).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue(source);
 });
+
+test('pending application excludes repeated writes and workspace mutations', async ({ page, workspace }) => {
+  await writeFile(join(workspace.root, 'spec.md'), 'FR-001: The system MUST be fast.');
+  await page.goto(workspace.url);
+  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
+  await page.getByRole('textbox', { name: 'Proposed wording' }).fill('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
+  await page.getByRole('button', { name: 'Review difference', exact: true }).click();
+  await page.getByRole('checkbox').check();
+  let releaseLoad!: () => void;
+  const loadHold = new Promise<void>(done => { releaseLoad = done; });
+  let loadStarted!: () => void;
+  const loadEntered = new Promise<void>(done => { loadStarted = done; });
+  await page.route('**/api/workspace', async route => { loadStarted(); await loadHold; await route.continue(); });
+  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await loadEntered;
+  let release!: () => void;
+  const hold = new Promise<void>(done => { release = done; });
+  let calls = 0;
+  await page.route('**/api/apply', async route => { calls++; await hold; await route.continue(); });
+  try {
+    await page.getByRole('button', { name: 'Accept change', exact: true }).evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
+    await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeDisabled();
+    await expect(page.getByRole('textbox', { name: 'Source text editor' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Accept change', exact: true })).toBeDisabled();
+    expect(calls).toBe(1);
+    const loaded = page.waitForResponse('**/api/workspace');
+    releaseLoad(); await loaded;
+    await expect(page.getByRole('button', { name: 'Accept change', exact: true })).toBeDisabled();
+  } finally { releaseLoad(); release(); }
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
+  await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeEnabled();
+  let releaseUndo!: () => void;
+  const undoHold = new Promise<void>(done => { releaseUndo = done; });
+  await page.route('**/api/undo', async route => { await undoHold; await route.fulfill({ status: 400, json: { error: 'Source changed: this edit is stale.' } }); });
+  try {
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(page.getByRole('textbox', { name: 'Source text editor' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeDisabled();
+  } finally { releaseUndo(); }
+  await expect(page.getByRole('alert')).toContainText('stale');
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
+  await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeEnabled();
+});
+
+test('late provider response cannot replace the newly selected document', async ({ page, workspace }) => {
+  await page.goto(workspace.url);
+  await page.getByRole('button', { name: 'Paste text', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Specification text', exact: true }).fill('FR-001: The system MUST be fast.');
+  await page.getByRole('button', { name: 'Analyze text', exact: true }).click();
+  await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
+  await page.getByText('Model assistance', { exact: true }).click();
+  await page.getByRole('combobox', { name: /^Model route/ }).selectOption('ollama');
+  await page.getByRole('textbox', { name: 'Model', exact: true }).fill('test');
+  let release!: () => void;
+  const hold = new Promise<void>(done => { release = done; });
+  await page.route('**/api/rewrite', async route => {
+    await hold;
+    await route.fulfill({ json: { id: 'late', path: 'spec.md', line: 1, original: 'FR-001: The system MUST be fast.', replacement: 'LATE RESPONSE', baseHash: '0'.repeat(64), reason: 'test', source: 'provider' } });
+  });
+  await page.getByRole('button', { name: 'Request proposal', exact: true }).click();
+  await page.getByRole('button', { name: 'Paste text', exact: true }).click();
+  const next = 'FR-009: The service MUST be scalable.';
+  await page.getByRole('textbox', { name: 'Specification text', exact: true }).fill(next);
+  await page.getByRole('button', { name: 'Analyze text', exact: true }).click();
+  await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
+  const response = page.waitForResponse('**/api/rewrite');
+  release(); await response;
+  await expect(page.getByRole('textbox', { name: 'Proposed wording' })).toHaveValue(next);
+  await expect(page.getByRole('heading', { name: 'Proposed change', exact: true })).toHaveCount(0);
+});
