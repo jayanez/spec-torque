@@ -24,6 +24,8 @@ Official references: [Mods](https://code.claude.com/docs/en/plugins/mods/create)
 
 ## Codex and VS Code
 
+For a disposable project-scoped Codex installation, run `npm run prepare:codex -- en` or `-- es` after building. The generated workspace contains the host-specific TOML configuration and three local skills. See [qualification](qualification.md) for reproduction and removal; the generic JSON configuration above is not a Codex TOML example.
+
 MCP/skills connect the agent. The visual deliverable is a standard VS Code webview alongside Codex. Install the packaged VSIX or load `integrations/vscode` through VS Code's extension development host, open your project and run **SpecTorque: Open Specification Workbench**. It launches a workspace-scoped local server and displays the same panel. The extension stops its child server when disposed.
 
 The VS Code path uses public extension APIs; it is not a custom panel injected into the Codex desktop application. Desktop MCP Apps rendering needs independent real-client qualification and is additional scope. API metadata alone is insufficient evidence of rendering.
