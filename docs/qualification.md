@@ -77,3 +77,9 @@ Codex's conversational/desktop UI, authenticated IDE workflows, other operating 
 | P2 | `src/node/server.ts`: real VS Code iframe was blocked by frame-ancestors. | Add only the observed desktop ancestor `vscode-file://vscode-app`, retaining loopback Host/Origin/session checks and restricted embedding. The installed VSIX test verifies actual rendering. |
 
 Reviewed filesystem/hash, request/response bounds, explicit providers and read-only MCP boundaries retain their existing guarantees and tests. This bounded review found no additional confirmed bypass there; it does not prove race-free behavior against a hostile process controlling the same filesystem. Regex analysis and exclusion detection remain deliberately incomplete. The EN/ES corpus and human calibration stay in #2.
+
+## Remaining terminal clients
+
+See [the bounded Claude, OpenCode and Pi walkthroughs](host-common-qualification.md)
+for real terminal interactions and the separate `qualify:handoff` browser check.
+These results do not close four-host, package-discovery or cross-platform acceptance.
