@@ -37,3 +37,11 @@ reconocidos pueden cambiar los hallazgos y sus evidencias; no cambia la polític
 puntuación ni convierte desconocidos en resultados aprobados. Consulta los
 [ejemplos y límites](normative-recognition.md). La calibración independiente y el
 resto del corpus siguen pendientes en #2.
+
+## Corpus de formatos
+
+El [corpus original de formatos](format-corpus.md) incorpora catorce casos EN/ES
+con rutas anidadas, archivos archivados e identificadores compartidos. Verifica
+las pistas de clasificación documentadas; no demuestra compatibilidad completa
+con los generadores ni calibración científica. Las variantes ambiguas y las
+etiquetas independientes siguen pendientes en #2.
