@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Exclude concurrent apply/undo/save and ignore stale provider responses without replacing active documents.
+- Reject multiline refinements and changed identifier multisets, including lowercase identifiers.
+- Detect bounded explicit EN/ES mandatory contradictions with never/nunca; return HTTP 413 for oversized requests.
+
 - Reject refinements that remove or relocate detected EN/ES prohibitions or exclusions. Negative clauses must remain verbatim apart from whitespace; ambiguous rewrites require an explicit product decision. This conservative guard does not establish semantic equivalence.
 - Preserve selected files during asynchronous browser imports, improve assessment label contrast and wrap Spanish report controls on narrow screens across system fonts.
 - Restrict the VS Code workbench to trusted local workspaces, reuse its panel, and recover visibly from server startup failures. Permit its exact desktop ancestor in the loopback server's embedding policy.
