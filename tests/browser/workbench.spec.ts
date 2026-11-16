@@ -38,6 +38,7 @@ for (const es of [false, true]) {
     // WebKit on macOS uses Option+Tab for full keyboard access. See
     // https://github.com/microsoft/playwright/issues/5609
     const tabKey = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
+    await expect(page.getByRole('link', { name: /^SpecTorque/ })).toBeVisible();
     await page.keyboard.press(tabKey);
     await expect(page.getByRole('link', { name: /^SpecTorque/ })).toBeFocused();
     await page.keyboard.press(tabKey);
