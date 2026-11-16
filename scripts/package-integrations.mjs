@@ -1,6 +1,8 @@
 import { cp, mkdir, writeFile, access, rm } from 'node:fs/promises';
 import { build } from 'esbuild';
+import { generateLicenseNotices } from './license-notices.mjs';
 await Promise.all(['dist/cli.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md'].map(path => access(path)));
+await generateLicenseNotices();
 for (const name of ['claude', 'vscode', 'opencode', 'pi']) {
   const dir = 'integrations/' + name;
   const runtime = dir + (name === 'claude' ? '/dist' : '/runtime');

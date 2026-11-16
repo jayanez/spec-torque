@@ -3,6 +3,6 @@ message: "Please cite this software and the separately attributed EPIC research.
 title: SpecTorque
 version: 0.1.0
 authors:
-  - name: SpecTorque contributors
+  - name: jayanez
 license: Apache-2.0
 repository-code: https://github.com/jayanez/spectorque

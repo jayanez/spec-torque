@@ -14,3 +14,11 @@ test('artifact exports reject extraction traversal and duplicate normalized path
   for (const path of ['../spec.md', '/spec.md', 'C:/spec.md', 'a/../spec.md']) assert.throws(() => artifactArchive({ name: 'unsafe', artifacts: [classifyArtifact(path, 'text')] }), /Unsafe/);
   assert.throws(() => artifactArchive({ name: 'duplicate', artifacts: [classifyArtifact('a/spec.md', 'a'), classifyArtifact('a\\spec.md', 'b')] }), /Duplicate/);
 });
+
+test('exports reject Windows-normalized traversal, reserved names and portable collisions', () => {
+  for (const path of ['.. /spec.md', 'specs/CON.md', 'specs/spec.md.', 'specs/spec.md ', 'specs/COM¹.md', 'specs/a:b.md']) assert.throws(() => artifactArchive({ name: 'unsafe', artifacts: [classifyArtifact(path, 'text')] }), /Unsafe/);
+  for (const paths of [['specs/A/spec.md', 'specs/a/spec.md'], ['specs/café.md', 'specs/cafe\u0301.md']]) assert.throws(() => artifactArchive({ name: 'colliding', artifacts: paths.map(p => classifyArtifact(p, 'text')) }), /Duplicate/);
+});
+test('export size bound rejects oversized input before creating an archive', () => {
+  assert.throws(() => artifactArchive({ name: 'large', artifacts: [classifyArtifact('spec.md', 'a'.repeat(20_000_001))] }), /20 MB/);
+});

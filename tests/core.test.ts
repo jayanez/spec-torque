@@ -83,3 +83,9 @@ test('Spanish plural obligations and words containing MAY remain protected corre
 test('accented normative words cannot disappear during refinement', async () => {
   await assert.rejects(createProposal('spec.md', 'FR-001: El servicio DEBERÁ rechazar la solicitud.', 1, 'FR-001: El servicio rechaza la solicitud.', 'rewrite'), /obligation/);
 });
+
+test('feature selection applies the same scope to reports and editable exports', async () => {
+  const { selectFeature } = await import('../src/core/artifacts.js');
+  const set = { name: 'features', artifacts: [classifyArtifact('specs/a/spec.md', 'A'), classifyArtifact('specs/b/spec.md', 'B'), classifyArtifact('AGENTS.md', 'Shared')] };
+  assert.deepEqual(selectFeature(set, 'specs/a').artifacts.map(a => a.path), ['specs/a/spec.md', 'AGENTS.md']);
+});

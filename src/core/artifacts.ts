@@ -1,4 +1,4 @@
-import type { Artifact, Framework, Role } from './types.js';
+import type { Artifact, ArtifactSet, Framework, Role } from './types.js';
 export function classifyArtifact(path: string, content: string): Artifact {
   const p = path.replaceAll('\\', '/');
   const lower = p.toLowerCase();
@@ -24,4 +24,8 @@ export async function contentHash(content: string): Promise<string> {
   const bytes = new TextEncoder().encode(content);
   const hash = await globalThis.crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
+}
+
+export function selectFeature(set: ArtifactSet, feature: string): ArtifactSet {
+  return feature === 'all' ? set : { ...set, artifacts: set.artifacts.filter(a => a.featureId === feature || a.role === 'instructions') };
 }

@@ -11,3 +11,5 @@ Optional provider rewriting sends the selected source line and bounded supplied 
 Imported text is untrusted data. It may contain hostile instructions. Prompts label it as source data; no model output is executed. Numbers, identifiers and normative words are mechanically checked, but semantic preservation requires review.
 
 The local API checks Host, Origin and a session token, has request bounds and does not enable CORS. This prevents ordinary cross-origin web access; it is not an authentication boundary against another process running as your user. Do not expose the port publicly. Disk writes require explicit actions, source hashes and path validation. A bounded local undo stack can reject undo if the current file changed.
+
+Editable ZIP exports preserve feature-relative paths and reject unsafe or colliding portable paths. They are bounded to 20 MB of source content; select a single feature for larger workspaces. The selected feature scope also controls the exported source collection.

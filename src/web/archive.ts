@@ -5,10 +5,13 @@ import type { ArtifactSet } from '../core/types.js';
 export function artifactArchive(set: ArtifactSet): ArrayBuffer {
   const files: Record<string, Uint8Array> = Object.create(null);
   let size = 0;
+  const portablePaths = new Set<string>();
   for (const artifact of set.artifacts) {
     const path = artifact.path.replaceAll('\\', '/');
-    if (/^(?:\/|[A-Za-z]:)/.test(path) || path.includes('\0') || path.split('/').some(p => !p || p === '.' || p === '..')) throw new Error('Unsafe artifact export path.');
-    if (Object.hasOwn(files, path)) throw new Error('Duplicate artifact export path.');
+    if (/^(?:\/|[A-Za-z]:)/.test(path) || /[\x00-\x1f<>:\"|?*]/.test(path) || path.split('/').some(p => !p || /[. ]$/.test(p) || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(p.normalize('NFKC')))) throw new Error('Unsafe artifact export path.');
+    const portable = path.normalize('NFKC').toLowerCase().replaceAll('ß', 'ss').replaceAll('ς', 'σ');
+    if (portablePaths.has(portable)) throw new Error('Duplicate artifact export path on a portable filesystem.');
+    portablePaths.add(portable);
     const bytes = strToU8(artifact.content);
     size += bytes.length;
     if (size > 20_000_000) throw new Error('Artifact archive exceeds 20 MB. Export one feature at a time.');
