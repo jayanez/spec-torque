@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import type { PatchProposal } from './types.js';
 function protectedQuantities(text: string): string[] {
-  return (text.replace(/\b[A-Z]{1,8}-\d+\b/g, '').match(/\d+(?:[.,]\d+)?\s*(?:%|ms|seconds?|segundos?|minutes?|minutos?|hours?|horas?|days?|días?|MB|GB)?/gi) ?? []).map(s => s.replace(/\s+/g, ' ').trim().toLowerCase()).sort();
+  return (text.replace(/\b[A-Z]{1,8}-\d+\b/gi, '').match(/\d+(?:[.,]\d+)?\s*(?:%|ms|seconds?|segundos?|minutes?|minutos?|hours?|horas?|days?|días?|MB|GB)?/gi) ?? []).map(s => s.replace(/\s+/g, ' ').trim().toLowerCase()).sort();
 }
 function obligations(text: string): string[] {
   return (text.match(/(?<![\p{L}\p{N}_])(?:MUST NOT|SHALL NOT|SHOULD NOT|NO (?:DEBERÁN|DEBERÁ|DEBEN|DEBE)|MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}_])/giu) ?? []).map(s => s.toUpperCase()).sort();
@@ -15,12 +15,13 @@ function protectedClauses(text: string): string[] {
     .filter(clause => negative.test(clause));
 }
 export function checkPreservation(original: string, replacement: string): void {
+  if (/[\r\n\u2028\u2029]/u.test(replacement)) throw new Error('A proposal must replace a single line.');
   if (!replacement.trim()) throw new Error('A replacement cannot be empty.');
   if (JSON.stringify(protectedQuantities(original)) !== JSON.stringify(protectedQuantities(replacement))) throw new Error('Changed quantities require an explicit product decision; preserve existing quantities.');
   if (JSON.stringify(obligations(original)) !== JSON.stringify(obligations(replacement))) throw new Error('Changed obligation: preserve normative wording.');
-  const ids = original.match(/\b[A-Z]{1,8}-\d+\b/g) ?? [];
-  const replacementIds: string[] = replacement.match(/\b[A-Z]{1,8}-\d+\b/g) ?? [];
-  if (ids.some(id => !replacementIds.includes(id))) throw new Error('Preserve existing identifiers.');
+  const ids = original.match(/\b[A-Z]{1,8}-\d+\b/gi) ?? [];
+  const replacementIds: string[] = replacement.match(/\b[A-Z]{1,8}-\d+\b/gi) ?? [];
+  if (JSON.stringify([...ids].sort()) !== JSON.stringify([...replacementIds].sort())) throw new Error('Preserve existing identifiers.');
   if (JSON.stringify(protectedClauses(original)) !== JSON.stringify(protectedClauses(replacement))) throw new Error('Preserve negative clauses verbatim (apart from whitespace). Rewording prohibitions or exclusions requires an explicit product decision.');
 }
 export async function createProposal(path: string, content: string, line: number, replacement: string, reason: string, source: PatchProposal['source'] = 'human'): Promise<PatchProposal> {
