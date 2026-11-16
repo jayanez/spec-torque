@@ -22,12 +22,6 @@ Para desarrollar y verificar usa Node 22.20.0, fijado en `.nvmrc`. `npm run chec
 
 Los refinamientos conservan literalmente las cláusulas negativas detectadas, salvo espacios. Reformular una prohibición o exclusión exige una decisión explícita; el rechazo conservador no significa que el sistema comprenda toda la semántica del texto.
 
-## Gates de corrección
-
-Las operaciones de aplicar, deshacer y guardar bloquean temporalmente las mutaciones; las respuestas tardías no sustituyen el documento activo. Las propuestas modifican una sola línea y conservan exactamente los identificadores. Los cuerpos HTTP superiores a 6 MB se rechazan con 413. La detección de contradicciones sigue siendo acotada, no semántica general.
-
-Consulta [las fases, evidencias y condiciones de parada](corrective-gates.md). G5 no se cierra hasta disponer de la revisión independiente final y de los resultados técnicos de la revisión concreta; las aceptaciones de los cuatro agentes siguen siendo independientes.
-
 ## Continuación en otros clientes
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).
@@ -35,3 +29,9 @@ Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md)
 traspaso al panel común y las exportaciones después del cambio nativo. Esa prueba
 no automatiza el cliente ni sustituye su aceptación, la de otros sistemas o la
 revisión humana de accesibilidad.
+
+## Gates de corrección
+
+Las operaciones de aplicar, deshacer y guardar bloquean temporalmente las mutaciones; las respuestas tardías no sustituyen el documento activo. Las propuestas modifican una sola línea y conservan exactamente los identificadores. Los cuerpos HTTP superiores a 6 MB se rechazan con 413. La detección de contradicciones sigue siendo acotada, no semántica general.
+
+Consulta [las fases, evidencias y condiciones de parada](corrective-gates.md). G5 no se cierra hasta disponer de la revisión independiente final y de los resultados técnicos de la revisión concreta; las aceptaciones de los cuatro agentes siguen siendo independientes.
