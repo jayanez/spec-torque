@@ -8,7 +8,7 @@ import { startServer } from '../src/node/server.ts';
 
 const repository = resolve(import.meta.dirname, '..');
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= join(repository, '.spec-torque/browsers');
-const { chromium } = await import('playwright');
+const { chromium, expect } = await import('@playwright/test');
 const executable = process.env.CODEX_EXECUTABLE ?? 'codex';
 await mkdir(join(repository, '.spec-torque'), { recursive: true });
 const run = await mkdtemp(join(repository, '.spec-torque', 'codex-run-'));
@@ -84,7 +84,8 @@ try {
       await page.goto(url);
       await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
       await page.getByRole('button').filter({ hasText: finding.message }).click();
-      assert.equal(await page.getByRole('textbox', { name: 'Source text editor' }).evaluate(node => node.value.slice(node.selectionStart, node.selectionEnd)), evidence.text);
+      const editor = page.getByRole('textbox', { name: 'Source text editor' });
+      await expect.poll(() => editor.evaluate(node => node.value.slice(node.selectionStart, node.selectionEnd)), { message: 'Evidence selection must finish before refinement.' }).toBe(evidence.text);
       await page.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
       await page.getByRole('button', { name: 'Review difference', exact: true }).click();
       await page.getByRole('button', { name: 'Reject', exact: true }).click();
