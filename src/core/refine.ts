@@ -7,7 +7,7 @@ function obligations(text: string): string[] {
   return (text.normalize('NFC').match(/(?<![\p{L}\p{N}\p{M}_])(?:MUST NOT|SHALL NOT|SHOULD NOT|NO (?:DEBERÁN|DEBERÁ|DEBEN|DEBE)|MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/giu) ?? []).map(s => s.toUpperCase()).sort();
 }
 function protectedClauses(text: string): string[] {
-  const negative = /(?<![\p{L}\p{N}\p{M}_])(?:not|no|never|nunca|sin|without|unless|except|excluding|excepto|salvo|ni|neither|nor)(?![\p{L}\p{N}\p{M}_])/iu;
+  const negative = /(?<![\p{L}\p{N}_])(?:not|no|never|nunca|sin|without|unless|except|excluding|excepto|salvo|ni|neither|nor)(?![\p{L}\p{N}_])/iu;
   // Deliberately conservative: words alone cannot preserve what a prohibition
   // applies to. Keep its complete sentence/clause, including punctuation.
   return text.split(/(?<=[.!?;])\s+|\r?\n/u)
