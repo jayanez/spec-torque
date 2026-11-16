@@ -13,7 +13,7 @@ for (const name of ['claude', 'vscode', 'opencode', 'pi']) {
   await cp('LICENSE', dir + '/LICENSE');
   await cp('NOTICE', dir + '/NOTICE');
   await cp('THIRD_PARTY_NOTICES', dir + '/THIRD_PARTY_NOTICES');
-  
+
 }
 await build({ entryPoints: ['integrations/vscode/src/extension.ts'], bundle: true, platform: 'node', target: 'node22', format: 'cjs', external: ['vscode'], outfile: 'integrations/vscode/extension.cjs' });
 await mkdir('artifacts', { recursive: true });
