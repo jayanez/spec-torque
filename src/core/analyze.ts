@@ -12,7 +12,7 @@ function linesOf(artifact: Artifact): Line[] {
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || modal.test(text));
+    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || modal.test(text.normalize('NFC')));
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
   });
 }
@@ -25,7 +25,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
     return { status: (!specRequirements.length ? 'unknown' : hits.length === specRequirements.length ? 'supported' : hits.length ? 'partial' : 'missing') as Status, hits };
   };
   if (id === 'E1.2') return ratio(l => /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:ms\b|seconds?\b|segundos?\b|minutes?\b|minutos?\b|%|MB\b|GB\b)|\b(?:MUST|SHALL) (?:reject|deny)\b|\bDEBE(?:RÁ)? (?:rechazar|denegar)\b/i.test(l.text.replace(requirementId, '')) && !new RegExp(vagueTerms.source, 'iu').test(l.text));
-  if (id === 'E1.4') return ratio(l => modal.test(l.text));
+  if (id === 'E1.4') return ratio(l => modal.test(l.text.normalize('NFC')));
   if (id === 'E2.1') return ratio(l => !/;.+\b(?:MUST|SHALL|DEBE)\b|\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(l.text));
   if (id === 'P2.1' || id === 'C1.1') {
     const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && /user|visitor|actor|customer|usuario|visitante|cliente/i.test(l.text));
@@ -106,7 +106,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
   const behaviors = new Map<string, { line: Line; negative: boolean }>();
   for (const line of requirements) {
-    const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').trim();
+    const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').normalize('NFC').trim();
     const match = text.match(/^(.*?)(?<![\p{L}\p{N}\p{M}_])(?:(MUST|SHALL)\s+(?:(NOT|never)\s+)?|((?:NO|NUNCA)\s+)?(DEBE|DEBEN|DEBERÁ|DEBERÁN)(?:\s+(nunca))?\s+)(.+)$/iu);
     if (!match) continue;
     const negative = Boolean(match[3] || match[4] || match[6]);

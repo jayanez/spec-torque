@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { analyze } from '../src/core/analyze.js';
 import { classifyArtifact } from '../src/core/artifacts.js';
+import { createProposal } from '../src/core/refine.js';
 
 const statements = [
   'The service MUST respond quickly.', 'The service SHALL respond quickly.',
@@ -11,6 +12,19 @@ const statements = [
   'El servicio DEBERÍA responder rápido.', 'Los servicios DEBERÍAN responder rápido.',
   'El servicio PUEDE responder rápido.', 'Los servicios PUEDEN responder rápido.',
 ];
+
+test('canonical Unicode accents keep original evidence and mandatory polarity', async () => {
+  for (const word of ['DEBERÁ', 'DEBERÁN', 'DEBERÍA', 'DEBERÍAN']) {
+    const decomposed = word.normalize('NFD');
+    const text = `El servicio ${decomposed} responder rápido.`;
+    const result = await analyze({ name: 'decomposed', artifacts: [classifyArtifact('spec.md', text)] });
+    assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'supported', word);
+    assert.deepEqual(result.practices.find(p => p.id === 'E1.4')?.evidence, [{ path: 'spec.md', line: 1, text }]);
+    await assert.rejects(createProposal('spec.md', text, 1, 'El servicio responder rápido.', 'removed modal'), /obligation/);
+    const opposite = await analyze({ name: 'decomposed opposition', artifacts: [classifyArtifact('spec.md', `El servicio ${decomposed} permitir acceso.\nEl servicio NO ${decomposed} permitir acceso.`)] });
+    assert.equal(opposite.findings.some(f => f.message.includes('Opposite obligations')), word === 'DEBERÁ' || word === 'DEBERÁN', word);
+  }
+});
 
 for (const statement of statements) for (const prefix of ['', 'FR-001: ']) {
   test(`normative evidence with ${prefix ? 'an ID' : 'no ID'}: ${statement}`, async () => {

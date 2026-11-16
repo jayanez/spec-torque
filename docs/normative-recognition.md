@@ -2,7 +2,9 @@
 
 Engine **0.1.1** recognizes complete Unicode words for MUST, SHALL, SHOULD and MAY,
 and DEBE/DEBEN, DEBERÁ/DEBERÁN, DEBERÍA/DEBERÍAN and PUEDE/PUEDEN. Matching is
-case-insensitive. A stable requirement ID is not needed for recognition; a missing
+case-insensitive and uses NFC-normalized text for matching; original source text,
+hashes and evidence are retained. Refinement also protects decomposed accented
+modal words. A stable requirement ID is not needed for recognition; a missing
 ID still produces its own finding. An explicit ID can identify a requirement even
 when no normative word is present.
 
