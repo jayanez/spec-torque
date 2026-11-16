@@ -74,4 +74,3 @@ export function App() {
     <footer>SpecTorque · Apache-2.0 <span>{es ? 'Evidencias antes que suposiciones.' : 'Evidence before assumptions.'}</span></footer>
   </div>;
 }
-

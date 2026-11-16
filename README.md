@@ -44,6 +44,6 @@ Creation previews by default; `--apply` writes new files only. Reports refuse to
 
 ## Documentation
 
-[Constitution](CONSTITUTION.md) · [Requirements](docs/requirements.md) · [Architecture](docs/architecture.md) · [Research and article analysis](docs/research.md) · [Integrations](docs/integrations.md) · [Privacy](docs/privacy.md) · [Evaluation](docs/evaluation.md) · [Español](docs/es.md)
+[Rubric](docs/rubric.md) · [Constitution](CONSTITUTION.md) · [Requirements](docs/requirements.md) · [Architecture](docs/architecture.md) · [Research and article analysis](docs/research.md) · [Integrations](docs/integrations.md) · [Privacy](docs/privacy.md) · [Evaluation](docs/evaluation.md) · [Español](docs/es.md)
 
 Apache-2.0 for original code and documentation. EPIC-derived paraphrases have separate CC BY 4.0 attribution in [NOTICE](NOTICE). No affiliation or endorsement is implied. [Contribute](CONTRIBUTING.md) through the [issue tracker](https://github.com/jayanez/spectorque/issues).

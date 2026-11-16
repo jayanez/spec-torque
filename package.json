@@ -21,7 +21,8 @@
     "integrations",
     "README.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "THIRD_PARTY_NOTICES"
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",

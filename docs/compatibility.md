@@ -6,15 +6,15 @@ Snapshot: **2026-11-16**, preview 0.1.0. “Implemented” means source exists; 
 |---|---|---|---|
 | Node core / CLI | Node 22.20.0; npm scripts also executed under Node 25.6.1 | Contract, bilingual, filesystem, HTTP, CLI and real MCP stdio tests pass; TypeScript and production build pass. | Clean-install macOS/Linux/Windows release matrix. |
 | Common browser workbench | React 19.3.1, Vite 8.3.8; macOS IAB | Sample import, evidence selection, clarification, diff, accept, reanalysis, undo, direct draft undo and guided builder exercised. Narrow-screen width checked. | Broader keyboard/accessibility and browser matrix; durable history is outside this preview. |
-| Claude Code Mod | 2.1.311 | `plugin validate` passes. One native render-harness test covers terminal and desktop with process/UI-call stubs. | Real interactive installation, review/write/export walkthrough. A harness is not an interactive-client pass. |
+| Claude Code Mod | 2.1.311 | `plugin validate` passes. One native render-harness test covers terminal and desktop with process/UI-call stubs. The real terminal client also loads the three hooks and opens the native score pane. | Real interactive finding/refinement/write/export walkthrough. A harness is not an interactive-client pass. |
 | Codex MCP | 0.169.0-alpha.11.1 installed | Shared server passes a real stdio handshake, tools/list and analysis call. | End-to-end agent-driven flow in Codex. Generic protocol tests are not Codex acceptance. |
 | Codex visual surface | VS Code 1.146.0 installed | Extension builds and an installable VSIX is generated. | Real extension-host panel walkthrough and Codex side-by-side interaction. |
 | OpenCode TUI | 2.1.4 | Plugin loads in the real terminal client; commands appear; score/evidence dialog, replacement, before/after confirmation and scratch-file write exercised. | Session panel on an active session, export/common-panel flow and cross-platform packaging. |
-| Pi | 1.5.2, isolated local install | Real terminal extension loads offline with no models; widget, status, finding selection and source editor exercised. | Confirmation/write, full export/common-panel flow and cross-platform installation. |
+| Pi | 1.5.2, isolated local install | Real terminal extension loads offline with no models; widget, status, finding selection, source editor, before/after confirmation, reviewed scratch-file write and refreshed assessment exercised. | Full export/common-panel flow, headless reporting and cross-platform installation. |
 | Codex desktop MCP Apps | Optional | Protocol metadata is not proof of rendering; no visual acceptance claimed. | Actual desktop rendering and interaction test before enabling a native app surface. |
 | Cursor / Copilot / Gemini CLI | Not qualified | Connection guidance only. | Real host qualification after the committed four-host scope. |
 
-CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. Consult the repository's actual workflow run before treating a platform as passed. No GPU/provider evaluation, human-scored corpus calibration or defect-reduction claim is included.
+CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. The initial preview commit passed the Ubuntu and Windows jobs in [run 43892136712](https://github.com/jayanez/spectorque/actions/runs/43892136712); the macOS runner was queued at this snapshot. Consult the repository's actual workflow run before treating a platform as passed. No GPU/provider evaluation, human-scored corpus calibration or defect-reduction claim is included.
 
 ## Detected layout hints
 

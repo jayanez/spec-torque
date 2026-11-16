@@ -12,10 +12,10 @@ for (const name of ['claude', 'vscode', 'opencode', 'pi']) {
   if (['claude', 'pi'].includes(name)) await cp('skills', dir + '/skills', { recursive: true });
   await cp('LICENSE', dir + '/LICENSE');
   await cp('NOTICE', dir + '/NOTICE');
-  if (name !== 'vscode') await cp('README.md', dir + '/README.md');
+  await cp('THIRD_PARTY_NOTICES', dir + '/THIRD_PARTY_NOTICES');
+  
 }
 await build({ entryPoints: ['integrations/vscode/src/extension.ts'], bundle: true, platform: 'node', target: 'node22', format: 'cjs', external: ['vscode'], outfile: 'integrations/vscode/extension.cjs' });
 await mkdir('artifacts', { recursive: true });
 await writeFile('artifacts/README.txt', 'Integration runtime files generated. Run npm pack, or package a host directory according to docs/integrations.md.\n');
 console.log('Packaged shared runtimes for Claude Code, VS Code, OpenCode and Pi.');
-

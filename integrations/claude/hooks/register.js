@@ -64,4 +64,3 @@ export function register(on) {
     return Box({ flexDirection: 'column', rowGap: 1, children });
   });
 }
-
