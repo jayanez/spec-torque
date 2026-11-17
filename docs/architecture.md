@@ -36,4 +36,4 @@ Layout classification is a hint, not proof of framework ownership. Regex signals
 
 ## Reversible implementation choices
 
-Node 22 plus a single TypeScript motor minimizes adapter drift. React/Vite serves a shared local workbench; adapters are thin views. Bounded in-memory session state avoids a database dependency. No ADR workflow or server deployment is required. Meaningful changes to these choices are recorded with their implementation issue/PR.
+Node 22 plus a single TypeScript motor minimizes adapter drift. React/esbuild serves a shared local workbench; adapters are thin views. Bounded in-memory session state avoids a database dependency. No ADR workflow or server deployment is required. Meaningful changes to these choices are recorded with their implementation issue/PR.
