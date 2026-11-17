@@ -80,7 +80,11 @@ and checks command and skill discovery through Pi RPC. It exercises text and JSO
 reports without a model turn, verifies project trust and removal controls, and
 prints the package file digest and runtime versions. The workflow **Qualify
 installed Pi package** runs these checks on macOS, Linux and Windows with Pi
-1.5.2. Interactive acceptance and workbench export are recorded separately.
+1.5.2. The workflow also passes `--terminal-driver /absolute/node-pty` with
+Node PTY 1.1.0 to drive real Pi terminals and then opens the accepted EN/ES
+workspaces in Chromium. It retains JSON/ZIP and browser evidence by platform.
+For local runs with the terminal driver, install Playwright Chromium first
+and make the Node PTY spawn helper executable on macOS if needed.
 
 For a manual walkthrough, create a disposable copy of each bilingual fixture,
 install the generated directory with `pi install /absolute/generated/pi --local`,

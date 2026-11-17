@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - '.github/workflows/qualify-pi.yml'
-      - 'scripts/qualify-pi.mjs'
+      - 'scripts/qualify-pi*.mjs'
+      - 'scripts/qualify-common-handoff.mjs'
+      - 'fixtures/**'
       - 'scripts/package-integrations.mjs'
       - 'integrations/pi/**'
 permissions:
@@ -25,10 +27,26 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run build
       - run: npm run package:integrations
+      - if: runner.os == 'Linux'
+        run: npx --no-install playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: npx --no-install playwright install chromium
       - shell: bash
         run: |
           set -euo pipefail
           pi_prefix="$RUNNER_TEMP/spectorque-pi"
           npm install --prefix "$pi_prefix" --ignore-scripts --no-audit --no-fund @earendil-works/pi-coding-agent@1.5.2
+          pty_prefix="$RUNNER_TEMP/spectorque-pty"
+          npm install --prefix "$pty_prefix" --no-audit --no-fund node-pty@1.1.0
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            chmod u+x "$pty_prefix/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
+          fi
           git rev-parse HEAD
-          npm run qualify:pi -- "$pi_prefix/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js" --installed-package integrations/pi
+          npm run qualify:pi -- "$pi_prefix/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js" --installed-package integrations/pi --terminal-driver "$pty_prefix/node_modules/node-pty"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pi-handoff-${{ matrix.os }}
+          path: .spec-torque/handoff-*/
+          include-hidden-files: true
+          if-no-files-found: ignore

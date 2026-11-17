@@ -2,26 +2,34 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { access, cp, mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { qualifyTerminal } from './qualify-pi-terminal.mjs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { reviewWorkspace, terminalSummary } from '../dist/integration.js';
 
-const [cli, option, packagePath, ...extra] = process.argv.slice(2);
-if (!cli || extra.length || (option !== undefined && (option !== '--installed-package' || !packagePath))) {
-  throw new Error('Usage: qualify:pi -- <pi-cli.js> [--installed-package <generated-folder>]');
+const [cli, option, packagePath, terminalOption, ptyPath, ...extra] = process.argv.slice(2);
+if (!cli || extra.length || (option !== undefined && (option !== '--installed-package' || !packagePath)) ||
+  (terminalOption !== undefined && (terminalOption !== '--terminal-driver' || !ptyPath))) {
+  throw new Error('Usage: qualify:pi -- <pi-cli.js> [--installed-package <generated-folder> [--terminal-driver <node-pty-folder>]]');
 }
 const client = resolve(cli);
+const pty = ptyPath && createRequire(import.meta.url)(resolve(ptyPath));
 const scratch = await mkdtemp(join(tmpdir(), 'spectorque-pi-'));
 
-function runPi(workspace, agent, args, input) {
+function isolatedEnv(agent) {
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) =>
     /^(PATH|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|TEMP|TMP|TMPDIR|TERM|LANG)$/i.test(name)));
   Object.assign(env, {
     HOME: agent, USERPROFILE: agent, XDG_CONFIG_HOME: agent,
-    PI_CODING_AGENT_DIR: agent, PI_OFFLINE: '1', PI_TELEMETRY: '0',
+    PI_CODING_AGENT_DIR: agent, PI_OFFLINE: '1', PI_TELEMETRY: '0', TERM: 'xterm-256color',
   });
+  return env;
+}
+
+function runPi(workspace, agent, args, input) {
   const result = spawnSync(process.execPath, [client, ...args], {
-    cwd: workspace, env, input, encoding: 'utf8', timeout: 60_000,
+    cwd: workspace, env: isolatedEnv(agent), input, encoding: 'utf8', timeout: 60_000,
   });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr || result.stdout);
@@ -108,6 +116,9 @@ try {
       console.log(`${language}/${mode}: exact summary, source unchanged, isolated offline client passed`);
     }
     if (artifact) {
+      if (pty) await qualifyTerminal(pty, {
+        client, args: [...common, '--approve'], env: isolatedEnv(agent), workspace, language,
+      });
       runPi(workspace, agent, ['remove', artifact, '--local', '--approve']);
       verifyDiscovery(workspace, agent, '--approve', false, artifact);
     }
