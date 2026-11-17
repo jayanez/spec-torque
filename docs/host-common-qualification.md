@@ -94,6 +94,32 @@ client controls or prove inference absence. EN native refinement, browser handof
 MCP discovery, headless reporting and broader human accessibility are distinct
 evidence categories. Retain native transcripts/source snapshots separately.
 
+## OpenCode installed package
+
+The OpenCode workflow tests the ZIP at each runner's checkout revision.
+Build with Node 22.20+ in major 22, run `npm run package:integrations` after
+the build, then run `npm run package:opencode`. Install Chromium and provide
+an isolated tools directory containing `node-pty@1.1.0` and
+`@xterm/headless@6.0.0`:
+
+```sh
+npm run qualify:opencode -- /path/to/opencode artifacts/spectorque-opencode-0.1.0.zip /path/to/tools/node_modules darwin-arm64
+```
+
+The walkthrough uses the public `session.create` API on a private loopback
+service to seed empty EN/ES sessions. The driver enters the real TUI, verifies
+source hashes and checks that the sessions have no messages. The driver blocks
+and records HTTP(S) requests routed to its rejecting proxy. Chromium rejects
+non-loopback page requests. That evidence covers those channels.
+
+The browser portion consumes the URL offered by the running terminal plugin.
+It compares the scoped JSON and ZIP against the accepted workspace revision.
+The CI artifacts include the ZIP, its SHA-256, host and release metadata,
+native terminal captures and browser export evidence. A variant without a
+passing native run remains pending in [#6](https://github.com/jayanez/spec-torque/issues/6).
+For musl, the workflow exercises the published musl executable with the musl
+loader on a Linux runner. It records the runner's actual OS and architecture.
+
 ## ThinkRail desktop with Pi package
 
 Follow-up qualification on 2026-11-17 used ThinkRail 0.4.0, Pi 1.5.2,

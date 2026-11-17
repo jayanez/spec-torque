@@ -1,0 +1,83 @@
+name: Qualify installed OpenCode package
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/qualify-opencode.yml'
+      - 'scripts/package-*.mjs'
+      - 'scripts/qualify-opencode*.mjs'
+      - 'scripts/qualify-common-handoff.mjs'
+      - 'fixtures/**'
+      - 'integrations/opencode/**'
+      - 'src/**'
+      - 'package*.json'
+permissions:
+  contents: read
+jobs:
+  qualify:
+    name: ${{ matrix.variant }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-latest, variant: darwin-arm64 }
+          - { runner: ubuntu-latest, variant: linux-x64 }
+          - { runner: windows-latest, variant: windows-x64 }
+          - { runner: macos-15-intel, variant: darwin-x64 }
+          - { runner: ubuntu-24.04-arm, variant: linux-arm64 }
+          - { runner: windows-11-arm, variant: windows-arm64 }
+          - { runner: macos-15-intel, variant: darwin-x64-baseline }
+          - { runner: ubuntu-latest, variant: linux-x64-baseline }
+          - { runner: windows-latest, variant: windows-x64-baseline }
+          - { runner: ubuntu-latest, variant: linux-x64-musl }
+          - { runner: ubuntu-latest, variant: linux-x64-baseline-musl }
+          - { runner: ubuntu-24.04-arm, variant: linux-arm64-musl }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run package:integrations
+      - run: npm run package:opencode
+      - run: npm audit --audit-level=low
+      - if: runner.os == 'Linux'
+        run: npm run browsers:install -- --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: npm run browsers:install -- chromium
+      - if: endsWith(matrix.variant, '-musl')
+        run: sudo apt-get update && sudo apt-get install -y musl
+      - name: Install pinned OpenCode and terminal driver, then run the native walkthrough
+        shell: bash
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          opencode_dir="$RUNNER_TEMP/opencode-qualification"
+          mkdir -p "$opencode_dir"
+          package="$(npm pack --quiet --ignore-scripts --pack-destination "$opencode_dir" "@opencode/cli-$OPENCODE_VARIANT@2.1.4")"
+          tar -xzf "$opencode_dir/$package" -C "$opencode_dir"
+          npm install --prefix "$opencode_dir/tools" --no-audit --no-fund node-pty@1.1.0 @xterm/headless@6.0.0
+          executable="$opencode_dir/package/bin/opencode"
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            chmod u+x "$opencode_dir/tools/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
+          elif [[ "$RUNNER_OS" == Windows ]]; then
+            executable="$executable.exe"
+          fi
+          npm run qualify:opencode -- "$executable" artifacts/spectorque-opencode-0.1.0.zip "$opencode_dir/tools/node_modules" "$OPENCODE_VARIANT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opencode-${{ matrix.variant }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            artifacts/spectorque-opencode-*.zip
+            .spec-torque/opencode-*/
+            .spec-torque/handoff-*/
