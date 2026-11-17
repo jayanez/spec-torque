@@ -341,9 +341,11 @@ async function walkthrough(language) {
   }
 }
 
+const sourceStatus = (await run('git', ['status', '--porcelain'])).stdout.trim();
 const metadata = {
   commit: (await run('git', ['rev-parse', 'HEAD'])).stdout.trim(),
-  cleanSource: !(await run('git', ['status', '--porcelain'])).stdout.trim(),
+  cleanSource: !sourceStatus,
+  sourceStatus,
   node: process.version,
   platform: process.platform,
   architecture: process.arch,
@@ -357,6 +359,7 @@ const metadata = {
   blockedProxyDestinations: blocked,
 };
 try {
+  if (process.env.CI === 'true') assert.equal(sourceStatus, '', 'Build the qualification archive from a clean checkout.');
   const clean = await profile('version', false);
   metadata.opencode = (await run(executable, ['--version'], { env: clean.env, cwd: scratch, timeout: 10_000 })).stdout.trim();
   assert.equal(metadata.opencode, 'opencode v2.1.4');

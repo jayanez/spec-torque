@@ -97,6 +97,8 @@ evidence categories. Retain native transcripts/source snapshots separately.
 ## OpenCode installed package
 
 The OpenCode workflow tests the ZIP at each runner's checkout revision.
+The checkout preserves the committed line endings on every runner, and the
+CI driver checks that generating the archive left its source checkout clean.
 Build with Node 22.20+ in major 22, run `npm run package:integrations` after
 the build, then run `npm run package:opencode`. Install Chromium and provide
 an isolated tools directory containing `node-pty@1.1.0` and
