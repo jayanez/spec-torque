@@ -70,6 +70,7 @@ jobs:
           npm install --prefix "$opencode_dir/tools" --no-audit --no-fund node-pty@1.1.0 @xterm/headless@6.0.0
           executable="$opencode_dir/package/bin/opencode"
           tools="$opencode_dir/tools/node_modules"
+          musl_loader=""
           if [[ "$RUNNER_OS" == macOS ]]; then
             chmod u+x "$opencode_dir/tools/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
           elif [[ "$RUNNER_OS" == Windows ]]; then
@@ -81,7 +82,9 @@ jobs:
             docker run --rm -v "$libraries:/out" alpine:3.22@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f sh -ec '
               apk add --no-cache libstdc++
               cp -L /usr/lib/libstdc++.so.6 /usr/lib/libgcc_s.so.1 /out
+              cp -L "/lib/ld-musl-$(uname -m).so.1" /out/alpine-loader
             '
+            musl_loader="$libraries/alpine-loader"
             launcher="$opencode_dir/musl-opencode"
             cat > "$launcher" <<EOF
           #!/bin/sh
@@ -91,18 +94,21 @@ jobs:
             chmod u+x "$launcher"
             executable="$launcher"
           fi
-          printf 'OPENCODE_EXE=%s\nOPENCODE_TOOLS=%s\n' "$executable" "$tools" >> "$GITHUB_ENV"
+          printf 'OPENCODE_EXE=%s\nOPENCODE_TOOLS=%s\nOPENCODE_MUSL_LOADER=%s\n' "$executable" "$tools" "$musl_loader" >> "$GITHUB_ENV"
       - name: Qualify Linux in a loopback-only network namespace
         if: runner.os == 'Linux'
         env:
           OPENCODE_VARIANT: ${{ matrix.variant }}
         run: |
-          sudo unshare --net bash -c '
+          sudo unshare --net --mount --propagation private bash -c '
             set -e
             ip link set lo up
+            if [[ -n "$5" ]]; then
+              mount --bind "$5" "$(readlink -f "/lib/ld-musl-$(uname -m).so.1")"
+            fi
             exec runuser -u "$SUDO_USER" -- env PATH="$1" SPECTORQUE_OPENCODE_NETWORK=linux-netns \
               npm run qualify:opencode -- "$2" artifacts/spectorque-opencode-0.1.0.zip "$3" "$4"
-          ' _ "$PATH" "$OPENCODE_EXE" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT"
+          ' _ "$PATH" "$OPENCODE_EXE" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT" "$OPENCODE_MUSL_LOADER"
       - name: Qualify macOS with terminal and service egress restricted
         if: runner.os == 'macOS'
         env:
