@@ -64,3 +64,31 @@ reporting, not package/skill discovery, other client versions, other systems or
 human accessibility. Those remain tracked in #7.
 
 API behavior reference: [Pi extension modes](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md).
+
+### Pi installed package qualification
+
+Generate the package using the build commands above, then run:
+
+```sh
+npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js --installed-package integrations/pi
+```
+
+The check stages the generated directory outside the checkout and registers it
+with Pi's project-local package manager in disposable EN/ES workspaces. It uses
+an isolated agent directory, trusts each project only for the relevant commands,
+and checks command and skill discovery through Pi RPC. It exercises text and JSON
+reports without a model turn, verifies project trust and removal controls, and
+prints the package file digest and runtime versions. The workflow **Qualify
+installed Pi package** runs these checks on macOS, Linux and Windows with Pi
+1.5.2. Interactive acceptance and workbench export are recorded separately.
+
+For a manual walkthrough, create a disposable copy of each bilingual fixture,
+install the generated directory with `pi install /absolute/generated/pi --local`,
+then open Pi offline with an isolated agent profile and approve the scratch
+project. Run `/spectorque`, verify evidence navigation, reject a proposal, accept
+a reviewed proposal that leaves a pending decision, and verify stale-source
+rejection by editing the selected file before accepting a second proposal.
+Run `npm run qualify:handoff -- /absolute/scratch-workspace` from the SpecTorque
+checkout after the first acceptance and before the stale-source exercise.
+Remove the package with `pi remove /absolute/generated/pi --local --approve`
+and discard the isolated workspace and profile.

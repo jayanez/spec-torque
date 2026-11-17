@@ -1,33 +1,98 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { cp, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { reviewWorkspace, terminalSummary } from '../dist/integration.js';
 
-// Use an existing client; never install a client or load a user's agent profile.
-const cli = process.argv[2];
-if (!cli) throw new Error('Usage: node scripts/qualify-pi.mjs /absolute/path/to/pi/cli.js');
+const [cli, option, packagePath, ...extra] = process.argv.slice(2);
+if (!cli || extra.length || (option !== undefined && (option !== '--installed-package' || !packagePath))) {
+  throw new Error('Usage: qualify:pi -- <pi-cli.js> [--installed-package <generated-folder>]');
+}
 const client = resolve(cli);
 const scratch = await mkdtemp(join(tmpdir(), 'spectorque-pi-'));
+
+function runPi(workspace, agent, args, input) {
+  const env = Object.fromEntries(Object.entries(process.env).filter(([name]) =>
+    /^(PATH|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|TEMP|TMP|TMPDIR|TERM|LANG)$/i.test(name)));
+  Object.assign(env, {
+    HOME: agent, USERPROFILE: agent, XDG_CONFIG_HOME: agent,
+    PI_CODING_AGENT_DIR: agent, PI_OFFLINE: '1', PI_TELEMETRY: '0',
+  });
+  const result = spawnSync(process.execPath, [client, ...args], {
+    cwd: workspace, env, input, encoding: 'utf8', timeout: 60_000,
+  });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  return result;
+}
+
+const common = ['--offline', '--no-session', '--no-context-files', '--no-mcp'];
+const skills = ['spec-author', 'spec-refine', 'spec-review'];
+const resources = ['spectorque', ...skills.map(name => 'skill:' + name)];
+
+function verifyDiscovery(workspace, agent, trust, installed, artifact) {
+  const { stdout } = runPi(workspace, agent, [...common, trust, '--mode', 'rpc'],
+    JSON.stringify({ type: 'get_commands' }) + '\n');
+  const response = stdout.trim().split('\n').filter(Boolean).map(line => JSON.parse(line))
+    .find(event => event.type === 'response' && event.command === 'get_commands');
+  assert.equal(response?.success, true, stdout);
+  const discovered = response.data.commands.filter(command => resources.includes(command.name));
+  assert.deepEqual(discovered.map(command => command.name).sort(), installed ? [...resources].sort() : []);
+  for (const command of discovered) {
+    assert.equal(command.source, command.name === 'spectorque' ? 'extension' : 'skill');
+    const path = command.sourceInfo?.path ?? command.path;
+    assert.ok(path, 'Pi must report resource provenance');
+    const fromArtifact = relative(artifact, path);
+    assert.ok(fromArtifact && !isAbsolute(fromArtifact) && !fromArtifact.startsWith('..'), path);
+    console.log(`discovered ${command.name} from ${fromArtifact}`);
+  }
+}
+
 try {
+  let artifact;
+  if (packagePath) {
+    artifact = join(scratch, 'pi-spectorque');
+    await cp(resolve(packagePath), artifact, { recursive: true, filter: path => !path.split(/[\\/]/).includes('node_modules') });
+    const manifest = JSON.parse(await readFile(join(artifact, 'package.json'), 'utf8'));
+    assert.equal(manifest.name, 'pi-spectorque');
+    for (const path of ['index.ts', 'runtime/integration.js', 'runtime/cli.js', 'web-dist/index.html',
+      'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES', ...skills.map(name => `skills/${name}/SKILL.md`)]) {
+      await access(join(artifact, path));
+    }
+    const digest = createHash('sha256');
+    const files = await readdir(artifact, { recursive: true, withFileTypes: true });
+    const paths = files.filter(entry => entry.isFile())
+      .map(entry => relative(artifact, join(entry.parentPath, entry.name)).split('\\').join('/')).sort();
+    for (const path of paths) {
+      const hash = createHash('sha256').update(await readFile(join(artifact, path))).digest('hex');
+      digest.update(JSON.stringify([path, hash]) + '\n');
+    }
+    console.log(`Package file digest (SHA-256): ${digest.digest('hex')}`);
+    console.log(`Pi ${runPi(scratch, scratch, ['--version']).stdout.trim()} / ${manifest.name}@${manifest.version} / Node ${process.version} / ${process.platform}/${process.arch}`);
+  }
   for (const language of ['en', 'es']) {
     const workspace = join(scratch, language);
+    const agent = join(scratch, language + '-agent');
+    await mkdir(agent);
     await cp(resolve('fixtures/' + language + '-draft'), workspace, { recursive: true });
     const source = join(workspace, 'specs/booking/spec.md');
-    const before = await readFile(source, 'utf8');
+    const before = await readFile(source);
     const expected = terminalSummary(await reviewWorkspace(workspace)).join('\n');
+    if (artifact) {
+      runPi(workspace, agent, ['install', artifact, '--local', '--approve']);
+      const settings = JSON.parse(await readFile(join(workspace, '.pi', 'settings.json'), 'utf8'));
+      assert.equal(settings.packages.length, 1);
+      await assert.rejects(access(join(agent, 'settings.json')), { code: 'ENOENT' });
+      verifyDiscovery(workspace, agent, '--no-approve', false, artifact);
+      verifyDiscovery(workspace, agent, '--approve', true, artifact);
+    }
     for (const mode of ['text', 'json']) {
-      const agent = join(scratch, language + '-' + mode);
-      await mkdir(agent);
-      const result = spawnSync(process.execPath, [client, '--offline', '--no-session',
-        '--no-extensions', '--no-skills', '--no-context-files', '--no-mcp',
-        '--extension', resolve('integrations/pi/index.ts'), '--mode', mode, '-p', '/spectorque'], {
-        cwd: workspace, env: { ...process.env, PI_CODING_AGENT_DIR: agent },
-        encoding: 'utf8', timeout: 60_000,
-      });
-      assert.ifError(result.error);
-      assert.equal(result.status, 0, result.stderr);
+      const load = artifact ? ['--approve'] : [
+        '--no-extensions', '--no-skills', '--extension', resolve('integrations/pi/index.ts'),
+      ];
+      const result = runPi(workspace, agent, [...common, ...load, '--mode', mode, '-p', '/spectorque']);
       assert.equal(result.stderr, '');
       if (mode === 'text') assert.equal(result.stdout, expected + '\n');
       else {
@@ -39,8 +104,12 @@ try {
         assert.equal(messages[0].content, expected);
         assert.ok(!events.some(event => event.type === 'agent_start'), 'No model turn may start');
       }
-      assert.equal(await readFile(source, 'utf8'), before);
+      assert.deepEqual(await readFile(source), before);
       console.log(`${language}/${mode}: exact summary, source unchanged, isolated offline client passed`);
+    }
+    if (artifact) {
+      runPi(workspace, agent, ['remove', artifact, '--local', '--approve']);
+      verifyDiscovery(workspace, agent, '--approve', false, artifact);
     }
   }
 } finally {
