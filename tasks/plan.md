@@ -21,3 +21,11 @@ For each increment: reproduce defects first, verify focused regressions, run
 `npm run check` and `npm run package:integrations`, require the three-OS and browser
 CI checks, and obtain independent Luna Latest review before merge. Unsupported
 client/OS combinations and human labels remain explicit pending evidence.
+
+PRs #13–#17 are integrated. #1 is currently closed in GitHub; its documented
+package/OS limits remain qualification boundaries, with client-specific remaining
+work tracked in #4–#7. The next bounded correction addresses #7's reproduced empty
+Pi print output and adds an explicit offline EN/ES text/JSON qualification route.
+Package/skill discovery and supported-OS acceptance remain pending. Continue the
+real-producer/independent-label corpus in #2 and human acceptance in #3 alongside
+these client corrections.
