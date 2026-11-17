@@ -307,9 +307,9 @@ async function walkthrough(language) {
     });
     await assertDisconnected(browserUrl);
 
-    const messages = await api(service, workspace, env, 'session.messages', '--param', 'sessionID=' + session.id);
+    const messages = await api(service, workspace, env, 'GET', '/api/session/' + session.id + '/message');
     assert.deepEqual(messages.data, [], 'The seed session must have no model or user messages');
-    const secondaryMessages = await api(service, secondary, env, 'session.messages', '--param', 'sessionID=' + otherSession.id);
+    const secondaryMessages = await api(service, secondary, env, 'GET', '/api/session/' + otherSession.id + '/message');
     assert.deepEqual(secondaryMessages.data, [], 'The secondary session must have no model or user messages');
     const after = await readFile(source);
     const separate = await profile(language + '-separate', false);
