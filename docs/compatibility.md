@@ -1,6 +1,6 @@
 # Compatibility and observed qualification
 
-Snapshot: **2026-11-16**, preview 0.1.0. “Implemented” means source exists; “exercised” describes an observed check. Neither means full December acceptance. No provider inference was required for the checks below.
+Snapshot: **2026-11-17**, preview 0.1.0. “Implemented” means source exists; “exercised” describes an observed check. Neither means full December acceptance. No provider inference was required for the checks below.
 
 | Surface | Version observed | Observed evidence | Remaining qualification |
 |---|---|---|---|
@@ -10,7 +10,8 @@ Snapshot: **2026-11-16**, preview 0.1.0. “Implemented” means source exists; 
 | Codex MCP | 0.169.0-alpha.11.1 | Real Codex app-server discovers three project skills and six tools; EN/ES source → proposal → common-panel reject/apply → reanalysis/export passed without inference. | Conversational/desktop UI and other OS remain pending. See [qualification and limits](qualification.md). |
 | Codex visual surface | VS Code 1.146.0, bundled Node 24.22.1 | Installed VSIX in isolated real extension host: iframe, source/evidence, reject/apply, JSON export, singleton and shutdown passed. Actual Restricted Mode blocks its command. | Codex IDE 26.51111.21308 sidebar coexists in an isolated profile without a submitted turn. Authenticated agent interaction, ES native walkthrough and other OS remain pending. |
 | OpenCode TUI | 2.1.4 | Plugin loads in the real terminal client; commands appear; score/evidence dialog, replacement, before/after confirmation and scratch-file write exercised. | Session panel on an active session, export/common-panel flow and cross-platform packaging. |
-| Pi | 1.5.2, isolated local install | Real terminal extension loads offline with no models; widget, status, finding selection, source editor, before/after confirmation, reviewed scratch-file write and refreshed assessment exercised. | Full export/common-panel flow, headless reporting and cross-platform installation. |
+| ThinkRail desktop with Pi package | ThinkRail 0.4.0; `pi-spectorque` 0.1.0; macOS 27.2.1 arm64 | Repository-only package install from generated `integrations/pi`; `/spectorque` and all three skills are discovered. In an isolated scratch project, EN/ES proposals were reviewed, accepted and rejected; a concurrent edit caused stale-proposal rejection; assessment refreshed. Common-panel JSON and ZIP exports matched the current assessment and source artifacts. No model prompt was submitted. | Other ThinkRail/Pi versions and operating systems, model-backed skill invocation and human accessibility. See [ThinkRail/Pi qualification](host-common-qualification.md#thinkrail-desktop-with-pi-package). |
+| Pi CLI | 1.5.2, installed under a temporary npm prefix with isolated HOME, agent and session directories | `npm run qualify:pi` passes EN/ES in text and JSON modes offline; output matches the engine, source files remain unchanged and JSON contains no model-turn event. | Package loading inside standalone Pi, model-backed skills, other client versions and operating systems. |
 | Codex desktop MCP Apps | Optional | Protocol metadata is not proof of rendering; no visual acceptance claimed. | Actual desktop rendering and interaction test before enabling a native app surface. |
 | Cursor / Copilot / Gemini CLI | Not qualified | Connection guidance only. | Real host qualification after the committed four-host scope. |
 

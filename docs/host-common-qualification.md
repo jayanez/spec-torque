@@ -93,3 +93,37 @@ It checks real browser UI and downloaded artifacts; it does not automate native
 client controls or prove inference absence. EN native refinement, browser handoff,
 MCP discovery, headless reporting and broader human accessibility are distinct
 evidence categories. Retain native transcripts/source snapshots separately.
+
+## ThinkRail desktop with Pi package
+
+Follow-up qualification on 2026-11-17 used ThinkRail 0.4.0, Pi 1.5.2,
+`pi-spectorque` 0.1.0, Node 22.20.0 and macOS 27.2.1 arm64. The generated
+`integrations/pi` package was installed for the private testbed repository only.
+ThinkRail listed `/spectorque` and the `spec-author`, `spec-refine` and
+`spec-review` skills. The project trust gate was explicitly enabled for the
+disposable scratch project.
+
+The interactive walkthrough ran against copied EN/ES fixtures, never the
+original repository. Both languages exercised evidence selection, before/after
+review, rejection and explicit application of a replacement preserving FR-001
+and MUST/DEBE while leaving the response-time limit as a pending clarification.
+The assessment refreshed from ten findings and no pending decisions to eight
+findings and two pending decisions. A separate EN proposal was made stale by an
+external scratch edit; ThinkRail rejected it with a stale-source error and
+preserved the external edit. The scratch documents were restored after
+verification.
+
+The common browser handoff was then qualified against the same scratch state:
+downloaded JSON matched the engine assessment, the ZIP contained exactly the
+expected artifacts and their on-disk contents, and the browser recorded no
+external requests or page errors. Pi 1.5.2 headless qualification separately
+passed all EN/ES × text/JSON combinations offline, with exact engine output,
+unchanged source documents and no model-turn events. Core checks passed 100/100
+and integration packaging passed under Node 22.20.0.
+
+ThinkRail showed one unrelated global Agent Braid MCP server as failed because
+its configured launcher path was missing. This did not prevent SpecTorque's
+Pi package workflow; no SpecTorque MCP server was configured in this host. No
+model-backed skill was invoked. These results qualify this ThinkRail/Pi/macOS
+combination only; other host versions, operating systems and human accessibility
+remain unqualified. Tracking remains in [#7](https://github.com/jayanez/spec-torque/issues/7).
