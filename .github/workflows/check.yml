@@ -18,6 +18,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run package:integrations
+      - run: node scripts/package-vscode.mjs
       - run: npm audit --audit-level=high
   browser:
     runs-on: ubuntu-latest

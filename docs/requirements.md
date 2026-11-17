@@ -21,7 +21,7 @@ Version 1.0 · Canonical language: English
 
 | ID | Constraint |
 |---|---|
-| NFR-001 | Node.js 22, TypeScript, React/Vite; local loopback server. |
+| NFR-001 | Node.js 22, TypeScript, React/esbuild; local loopback server. |
 | NFR-002 | No AI credentials, GPU or telemetry required for deterministic analysis. |
 | NFR-003 | Test essential installation on macOS, Linux and Windows within host-supported surfaces. |
 | NFR-004 | Bound document, traversal, request and provider output sizes. Reject symlink/path escapes. |
