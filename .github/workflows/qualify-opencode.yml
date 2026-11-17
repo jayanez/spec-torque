@@ -46,31 +46,78 @@ jobs:
       - run: npm run build
       - run: npm run package:integrations
       - run: npm run package:opencode
-      - run: npm audit --audit-level=low
+      - run: npm audit
       - if: runner.os == 'Linux'
-        run: npm run browsers:install -- --with-deps chromium
+        run: npx --no-install playwright install --with-deps chromium
       - if: runner.os != 'Linux'
-        run: npm run browsers:install -- chromium
+        run: npx --no-install playwright install chromium
       - if: endsWith(matrix.variant, '-musl')
         run: sudo apt-get update && sudo apt-get install -y musl
-      - name: Install pinned OpenCode and terminal driver, then run the native walkthrough
+      - name: Install pinned OpenCode and terminal driver
         shell: bash
         env:
           OPENCODE_VARIANT: ${{ matrix.variant }}
         run: |
           set -euo pipefail
           opencode_dir="$RUNNER_TEMP/opencode-qualification"
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            opencode_dir="$(cygpath -u "$opencode_dir")"
+          fi
           mkdir -p "$opencode_dir"
           package="$(npm pack --quiet --ignore-scripts --pack-destination "$opencode_dir" "@opencode/cli-$OPENCODE_VARIANT@2.1.4")"
-          tar -xzf "$opencode_dir/$package" -C "$opencode_dir"
+          tar -xzf - -C "$opencode_dir" < "$opencode_dir/$package"
           npm install --prefix "$opencode_dir/tools" --no-audit --no-fund node-pty@1.1.0 @xterm/headless@6.0.0
           executable="$opencode_dir/package/bin/opencode"
+          tools="$opencode_dir/tools/node_modules"
           if [[ "$RUNNER_OS" == macOS ]]; then
             chmod u+x "$opencode_dir/tools/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
           elif [[ "$RUNNER_OS" == Windows ]]; then
-            executable="$executable.exe"
+            executable="$(cygpath -m "$executable.exe")"
+            tools="$(cygpath -m "$tools")"
           fi
-          npm run qualify:opencode -- "$executable" artifacts/spectorque-opencode-0.1.0.zip "$opencode_dir/tools/node_modules" "$OPENCODE_VARIANT"
+          printf 'OPENCODE_EXE=%s\nOPENCODE_TOOLS=%s\n' "$executable" "$tools" >> "$GITHUB_ENV"
+      - name: Qualify Linux in a loopback-only network namespace
+        if: runner.os == 'Linux'
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+        run: |
+          sudo unshare --net bash -c '
+            set -e
+            ip link set lo up
+            exec runuser -u "$SUDO_USER" -- env PATH="$1" SPECTORQUE_OPENCODE_NETWORK=linux-netns \
+              npm run qualify:opencode -- "$2" artifacts/spectorque-opencode-0.1.0.zip "$3" "$4"
+          ' _ "$PATH" "$OPENCODE_EXE" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT"
+      - name: Qualify macOS with terminal and service egress restricted
+        if: runner.os == 'macOS'
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+          SPECTORQUE_OPENCODE_NETWORK: macos-sandbox
+        run: |
+          launcher="$RUNNER_TEMP/opencode-qualification/isolated-opencode"
+          cat > "$launcher" <<EOF
+          #!/bin/sh
+          exec /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:*"))' "$OPENCODE_EXE" "\$@"
+          EOF
+          chmod u+x "$launcher"
+          npm run qualify:opencode -- "$launcher" artifacts/spectorque-opencode-0.1.0.zip "$OPENCODE_TOOLS" "$OPENCODE_VARIANT"
+      - name: Qualify Windows with egress blocked for the test executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+          SPECTORQUE_OPENCODE_NETWORK: windows-firewall
+        run: |
+          $program = (Resolve-Path $env:OPENCODE_EXE).ProviderPath
+          $rule = 'SpecTorque-' + [guid]::NewGuid()
+          New-NetFirewallRule -Name $rule -DisplayName $rule -Direction Outbound -Action Block -Program $program `
+            -RemoteAddress '0.0.0.0-126.255.255.255','128.0.0.0-255.255.255.255','::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' | Out-Null
+          try {
+            npm run qualify:opencode -- $program artifacts/spectorque-opencode-0.1.0.zip $env:OPENCODE_TOOLS $env:OPENCODE_VARIANT
+            $result = $LASTEXITCODE
+          } finally {
+            Remove-NetFirewallRule -Name $rule
+          }
+          exit $result
       - uses: actions/upload-artifact@v4
         if: always()
         with:

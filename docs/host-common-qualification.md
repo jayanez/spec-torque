@@ -110,7 +110,10 @@ The walkthrough uses the public `session.create` API on a private loopback
 service to seed empty EN/ES sessions. The driver enters the real TUI, verifies
 source hashes and checks that the sessions have no messages. The driver blocks
 and records HTTP(S) requests routed to its rejecting proxy. Chromium rejects
-non-loopback page requests. That evidence covers those channels.
+non-loopback page requests. Hosted runs also enforce a loopback-only network
+namespace on Linux, an outbound sandbox on macOS and a scoped outbound firewall
+rule for the extracted Windows executable. The evidence identifies the boundary
+used and the destinations observed by the rejecting proxy.
 
 The browser portion consumes the URL offered by the running terminal plugin.
 It compares the scoped JSON and ZIP against the accepted workspace revision.

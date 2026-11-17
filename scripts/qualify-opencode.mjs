@@ -58,7 +58,7 @@ async function profile(name, installed) {
     XDG_CONFIG_HOME: config, XDG_DATA_HOME: join(home, 'data'), XDG_CACHE_HOME: join(home, 'cache'),
     XDG_STATE_HOME: join(home, 'state'), TERM: 'xterm-256color', COLORTERM: 'truecolor',
     OPENCODE_PASSWORD: randomBytes(32).toString('hex'), OPENCODE_DISABLE_MODELS_FETCH: '1',
-    OPENCODE_DISABLE_AUTOUPDATE: '1', OPENCODE_DISABLE_TELEMETRY: '1',
+    OPENCODE_DISABLE_AUTOUPDATE: '1', OPENCODE_DISABLE_FREE_MODELS: '1',
     HTTP_PROXY: reject, HTTPS_PROXY: reject, ALL_PROXY: reject, NO_PROXY: '127.0.0.1,localhost',
   });
   const directory = join(config, 'opencode');
@@ -189,6 +189,10 @@ async function walkthrough(language) {
     });
     let browserUrl;
     await terminal('active', [...homeArgs, '--session', session.id], async ({ see, key, slash, text }) => {
+      async function closePanel() {
+        await key('q');
+        await see(/^(?![\s\S]*specification review)[\s\S]*ctrl\+p commands/);
+      }
       await see('SpecTorque native ' + language);
       await slash('spectorque', 'Open SpecTorque');
       await see('SpecTorque · specification review');
@@ -252,7 +256,7 @@ async function walkthrough(language) {
       await key('\x1b');
 
       await writeFile(source, initial);
-      await key('q');
+      await closePanel();
       await slash('spectorque', 'Open SpecTorque');
       await see((await expected(workspace, scope)).id);
       await propose();
@@ -262,7 +266,7 @@ async function walkthrough(language) {
       await see('proposal is stale');
       assert.equal(await readFile(source, 'utf8'), initial + external);
       await key('\r');
-      await key('q');
+      await closePanel();
 
       const failed = connection.hold(session.id);
       await slash('spectorque', 'Open SpecTorque');
@@ -271,25 +275,29 @@ async function walkthrough(language) {
       await see('OpenCode session unavailable.');
       await key('\r');
       assert.equal(await readFile(source, 'utf8'), initial + external);
-      await key('q');
+      await closePanel();
       await slash('spectorque', 'Open SpecTorque');
       await see((await expected(workspace, scope)).id);
 
-      await key('q');
+      await closePanel();
       const delayed = connection.hold(session.id);
       const alternate = await expected(secondary);
       try {
         await slash('spectorque', 'Open SpecTorque');
         await Promise.race([delayed.arrived, delay(3000).then(() => assert.fail('Session lookup did not reach the gate'))]);
-        await key('q');
+        await closePanel();
         await slash('sessions', 'Switch session');
         await see('Sessions');
         await key('\x01');
         await key('Secondary workspace ' + language);
         await see('Secondary workspace ' + language);
         await key('\r');
-        await see('Secondary workspace ' + language);
-        await slash('spectorque', 'Open SpecTorque');
+        await see(new RegExp(language + '-secondary[^\\n]*ctrl\\+p commands'));
+        await key('\x10');
+        await see('Commands');
+        await key('Open SpecTorque');
+        await see('Open SpecTorque');
+        await key('\r');
         await see(alternate.id);
       } finally {
         delayed.complete(true);
@@ -318,9 +326,12 @@ async function walkthrough(language) {
       // Each profile has its own local service password. Standalone avoids cross-profile service attachment.
       await terminal(name, ['--standalone', workspace], async ({ see, key, text }) => {
         await see('ctrl+p');
-        await key('/');
-        await see('/help');
-        assert.ok(!text().includes('/spectorque'), name + ' profile discovered SpecTorque');
+        await key('/spectorque');
+        await see('/spectorque');
+        assert.ok(!text().includes('Open SpecTorque'), name + ' profile discovered /spectorque');
+        await key('-review');
+        await see('/spectorque-review');
+        assert.ok(!text().includes('Review SpecTorque evidence'), name + ' profile discovered /spectorque-review');
       }, profileEnv);
     }
     assert.deepEqual(await readFile(source), after);
@@ -342,6 +353,7 @@ const metadata = {
   sha256: createHash('sha256').update(bytes).digest('hex'),
   resources,
   results: {},
+  networkBoundary: process.env.SPECTORQUE_OPENCODE_NETWORK ?? 'rejecting-proxy',
   blockedProxyDestinations: blocked,
 };
 try {
