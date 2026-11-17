@@ -51,7 +51,8 @@ jobs:
         run: npx --no-install playwright install --with-deps chromium
       - if: runner.os != 'Linux'
         run: npx --no-install playwright install chromium
-      - if: endsWith(matrix.variant, '-musl')
+      - name: Install the musl loader on the Linux runner
+        if: endsWith(matrix.variant, '-musl')
         run: sudo apt-get update && sudo apt-get install -y musl
       - name: Install pinned OpenCode and terminal driver
         shell: bash
@@ -74,6 +75,21 @@ jobs:
           elif [[ "$RUNNER_OS" == Windows ]]; then
             executable="$(cygpath -m "$executable.exe")"
             tools="$(cygpath -m "$tools")"
+          elif [[ "$OPENCODE_VARIANT" == *-musl ]]; then
+            libraries="$opencode_dir/musl-lib"
+            mkdir "$libraries"
+            docker run --rm -v "$libraries:/out" alpine:3.22@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f sh -ec '
+              apk add --no-cache libstdc++
+              cp -L /usr/lib/libstdc++.so.6 /usr/lib/libgcc_s.so.1 /out
+            '
+            launcher="$opencode_dir/musl-opencode"
+            cat > "$launcher" <<EOF
+          #!/bin/sh
+          export LD_LIBRARY_PATH="$libraries"
+          exec "$executable" "\$@"
+          EOF
+            chmod u+x "$launcher"
+            executable="$launcher"
           fi
           printf 'OPENCODE_EXE=%s\nOPENCODE_TOOLS=%s\n' "$executable" "$tools" >> "$GITHUB_ENV"
       - name: Qualify Linux in a loopback-only network namespace

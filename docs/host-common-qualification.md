@@ -120,8 +120,10 @@ It compares the scoped JSON and ZIP against the accepted workspace revision.
 The CI artifacts include the ZIP, its SHA-256, host and release metadata,
 native terminal captures and browser export evidence. A variant without a
 passing native run remains pending in [#6](https://github.com/jayanez/spec-torque/issues/6).
-For musl, the workflow exercises the published musl executable with the musl
-loader on a Linux runner. It records the runner's actual OS and architecture.
+For musl, the workflow exercises the published executable with the runner's
+musl loader and musl-linked C++ libraries from Alpine. The browser and Node
+test driver use the Linux runner's glibc userspace. The evidence records the
+runner's actual OS and architecture.
 
 ## ThinkRail desktop with Pi package
 
