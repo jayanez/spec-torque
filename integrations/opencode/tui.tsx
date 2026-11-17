@@ -3,8 +3,8 @@ import { Plugin } from '@opencode/plugin/tui';
 import { createEffect, createMemo, createRoot, createSignal, For, Show } from 'solid-js';
 import type { ArtifactSet, Assessment, Evidence, Finding } from '../../src/core/types.js';
 import {
-  analyze, applyWorkspaceProposal, createProposal, discoverWorkspace, readWorkspaceArtifact,
-  selectFeature, terminalSummary,
+  analyze, applyWorkspaceProposal, contentHash, createProposal, discoverWorkspace, openWorkbench,
+  readWorkspaceArtifact, selectFeature, terminalSummary,
 } from './runtime/integration.js';
 
 type Target = { sessionID?: string; directory?: string };
@@ -32,6 +32,13 @@ export default Plugin.define({
     let generation = 0;
     let scope: string | null = null;
     let disposed = false;
+    let workbench: { root: string; opened: Awaited<ReturnType<typeof openWorkbench>> } | undefined;
+
+    function closeWorkbench() {
+      if (!workbench) return;
+      workbench.opened.server.close();
+      workbench = undefined;
+    }
 
     function readTarget(): Target {
       const route = context.ui.router.current();
@@ -46,6 +53,8 @@ export default Plugin.define({
         equals: (previous, next) => previous.sessionID === next.sessionID && previous.directory === next.directory,
       });
       createEffect(() => {
+        if (workbench && target().directory !== workbench.root) closeWorkbench();
+        // Track the route even before a workbench is opened.
         target();
         generation++;
         scope = null;
@@ -156,7 +165,11 @@ export default Plugin.define({
       if (!selected || !current(location, request)) return;
       const { finding, evidence } = selected;
       const content: string = await readWorkspaceArtifact(view.root, evidence.path);
-      const original = content.split(/\r?\n/)[evidence.line - 1];
+      const source = view.report.artifacts.find(artifact => artifact.path === evidence.path);
+      if (!source || await contentHash(content) !== source.hash) {
+        throw new Error('Source changed since this assessment. Run /spectorque to analyze again.');
+      }
+      const original = sourceLine(view, evidence);
       if (original === undefined) throw new Error('Evidence line is unavailable. Run /spectorque to analyze again.');
       if (!current(location, request)) return;
       const replacement = await context.ui.dialog.prompt({
@@ -170,8 +183,33 @@ export default Plugin.define({
         message: 'Before:\n' + proposal.original + '\n\nAfter:\n' + proposal.replacement,
       });
       if (!accepted || !current(location, request)) return;
+      const root = await rootFor(location);
+      if (!current(location, request)) return;
+      if (root !== view.root) throw new Error('OpenCode workspace changed. Run /spectorque to analyze again.');
       await applyWorkspaceProposal(view.root, proposal);
       if (current(location, request)) await refresh(location, request, view.scope);
+    });
+
+    const handoff = () => act(async (location, request) => {
+      const view = snapshot();
+      if (!view) return;
+      const root = await rootFor(location);
+      if (!current(location, request)) return;
+      if (root !== view.root) throw new Error('OpenCode workspace changed. Run /spectorque to analyze again.');
+      if (workbench?.root !== root || !workbench.opened.server.listening) {
+        closeWorkbench();
+        const opened: Awaited<ReturnType<typeof openWorkbench>> = await openWorkbench(root);
+        if (!current(location, request)) {
+          opened.server.close();
+          return;
+        }
+        workbench = { root, opened };
+      }
+      await context.ui.dialog.prompt({
+        title: 'SpecTorque · common workbench',
+        description: 'Copy this local URL into your browser. Load the workspace and select: ' + (view.scope ?? allDocuments),
+        value: workbench.opened.url,
+      });
     });
 
     function ReviewPanel() {
@@ -180,6 +218,8 @@ export default Plugin.define({
           { id: 'spectorque.scope', title: 'Select scope', bind: 's', enabled: () => (snapshot()?.scopes.length ?? 0) > 1, run: changeScope },
           { id: 'spectorque.evidence', title: 'Inspect evidence', bind: 'e', enabled: () => Boolean(snapshot()), run: inspect },
           { id: 'spectorque.panel.review', title: 'Review change', bind: 'r', enabled: () => Boolean(snapshot()), run: review },
+          { id: 'spectorque.workbench', title: 'Open common workbench', bind: 'w', enabled: () => Boolean(snapshot()), run: handoff },
+          { id: 'spectorque.close', title: 'Close SpecTorque', bind: 'q', run: () => context.ui.panel.close() },
         ],
       }));
       return <box flexDirection="column" padding={1}>
@@ -194,8 +234,9 @@ export default Plugin.define({
             <text>{evidence.path}:{evidence.line} {evidence.text}</text>
           }</For>
           <Show when={view.scopes.length > 1}><text>s Select scope</text></Show>
-          <text>e Inspect evidence · r Review change</text>
+          <text>e Inspect evidence · r Review change · w Common workbench</text>
         </>}</Show>
+        <text>q Close panel</text>
       </box>;
     }
 
@@ -204,6 +245,6 @@ export default Plugin.define({
       { id: 'spectorque.open', title: 'Open SpecTorque', palette: true, slash: { name: 'spectorque' }, run: open },
       { id: 'spectorque.review', title: 'Review SpecTorque evidence', palette: true, slash: { name: 'spectorque-review' }, run: review },
     ] }));
-    return () => { disposed = true; stopWatching(); };
+    return () => { disposed = true; stopWatching(); closeWorkbench(); };
   },
 });
