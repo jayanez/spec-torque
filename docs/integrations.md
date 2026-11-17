@@ -45,3 +45,22 @@ Load `integrations/pi/index.ts` with Pi's extension option, or install the gener
 Cursor and Copilot in VS Code can use the standard extension and their documented MCP setup; no custom branded panel is promised. Gemini CLI uses local MCP/skills and the common panel. Connection configuration shapes differ between hosts: use their current official schema rather than copying the wrapper object blindly. Full acceptance of these additional hosts is post-V1.
 
 See [compatibility](compatibility.md) for observed versions and limits; package generation is not native qualification.
+
+### Pi headless qualification
+
+After `npm run check` and `npm run package:integrations`, run
+`npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js` with an existing
+Pi installation. This opt-in check creates disposable EN/ES workspaces and empty
+agent directories, disables extension/skill/context/MCP discovery and runs the
+explicit local extension offline in text and JSON modes. It compares the complete
+summary with the shared engine, checks the source is unchanged, and rejects JSON
+model-turn events. No client installation or provider request is required.
+
+Observed with Pi 1.5.2, Node 22.20.0, macOS 27.2.1 arm64: all four language/mode
+combinations pass. Previously print mode exited successfully with empty stdout;
+the extension now writes its summary explicitly in print mode. JSON retains Pi's
+custom-message event stream. This qualifies the explicit extension's headless
+reporting, not package/skill discovery, other client versions, other systems or
+human accessibility. Those remain tracked in #7.
+
+API behavior reference: [Pi extension modes](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md).

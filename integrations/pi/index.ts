@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { reviewWorkspace, terminalSummary, readWorkspaceArtifact, createProposal, applyWorkspaceProposal } from './runtime/integration.js';
 export default function (pi: ExtensionAPI) {
@@ -6,7 +7,14 @@ export default function (pi: ExtensionAPI) {
     handler: async (_args, ctx) => {
       try {
         let report = await reviewWorkspace(ctx.cwd);
-        if (!ctx.hasUI) { pi.sendMessage({ customType: 'spectorque', content: terminalSummary(report).join('\n'), display: true }, { triggerTurn: false }); return; }
+        if (!ctx.hasUI) {
+          const summary = terminalSummary(report).join('\n');
+          // Pi print mode only renders assistant messages and redirects console output
+          // to stderr. Write the report to stdout explicitly; JSON keeps host events.
+          if (ctx.mode === 'print') writeFileSync(1, summary + '\n');
+          else await pi.sendMessage({ customType: 'spectorque', content: summary, display: true }, { triggerTurn: false });
+          return;
+        }
         ctx.ui.setWidget('spectorque', terminalSummary(report).slice(0, 13));
         ctx.ui.setStatus('spectorque', report.summary.score === null ? 'Specs: incomplete' : 'Specs: ' + report.summary.score + '/30');
         const choices = report.findings.map((f, i) => String(i + 1) + '. ' + f.message + ' · ' + f.evidence[0].path + ':' + f.evidence[0].line);
