@@ -30,11 +30,11 @@ test('workspace discovery and write boundaries exclude secrets and escaped symli
 test('workspace patches preserve newlines, reject stale writes and never overwrite authoring output', async () => {
   const root = await mkdtemp(join(tmpdir(), 'spectorque-'));
   try {
-    const content = '# Spec\r\nFR-001: The system MUST respond in 2 seconds.\r\n';
+    const content = '# Spec\r\nFR-001: The system MUST respond in 2 seconds.\n\r\nKeep this line.\n';
     await writeFile(join(root, 'spec.md'), content);
     const proposal = await createProposal('spec.md', content, 2, 'FR-001: The booking system MUST respond in 2 seconds.', 'name actor');
     await applyWorkspaceProposal(root, proposal);
-    assert.ok((await readFile(join(root, 'spec.md'), 'utf8')).includes('\r\n'));
+    assert.deepEqual(await readFile(join(root, 'spec.md')), Buffer.from(content.replace(proposal.original, proposal.replacement)));
     await assert.rejects(applyWorkspaceProposal(root, proposal), /changed|stale/i);
     await assert.rejects(writeNewArtifacts(root, [classifyArtifact('spec.md', 'overwrite')]), /exist/i);
   } finally { await rm(root, { recursive: true, force: true }); }
