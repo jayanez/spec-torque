@@ -101,17 +101,35 @@ prints the package file digest and runtime versions. The workflow **Qualify
 installed Pi package** runs these checks on macOS, Linux and Windows with Pi
 1.5.2. The workflow also passes `--terminal-driver /absolute/node-pty` with
 Node PTY 1.1.0 to drive real Pi terminals and then opens the accepted EN/ES
-workspaces in Chromium. It retains JSON/ZIP and browser evidence by platform.
+feature in Chromium. It compares each scope's visible widget and finding paths
+with the shared engine and retains JSON/ZIP and browser evidence by platform.
 For local runs with the terminal driver, install Playwright Chromium first
 and make the Node PTY spawn helper executable on macOS if needed.
 
-For a manual walkthrough, create a disposable copy of each bilingual fixture,
+For a manual walkthrough, copy each bilingual draft fixture into its own
+disposable workspace. In each workspace copy `fixtures/en-complete/specs/booking`
+to `specs/other`,
 install the generated directory with `pi install /absolute/generated/pi --local`,
 then open Pi offline with an isolated agent profile and approve the scratch
-project. Run `/spectorque`, verify evidence navigation, reject a proposal, accept
+project. Run `/spectorque` and check the widget and evidence paths for **All
+documents** and both feature scopes. Choose `specs/booking`, reject a proposal, accept
 a reviewed proposal that leaves a pending decision, and verify stale-source
 rejection by editing the selected file before accepting a second proposal.
-Run `npm run qualify:handoff -- /absolute/scratch-workspace` from the SpecTorque
-checkout after the first acceptance and before the stale-source exercise.
+Run `npm run qualify:handoff -- /absolute/scratch-workspace --feature specs/booking`
+from the SpecTorque checkout after the first acceptance and before the stale-source exercise.
 Remove the package with `pi remove /absolute/generated/pi --local --approve`
 and discard the isolated workspace and profile.
+
+The feature selector for [#24](https://github.com/jayanez/spec-torque/issues/24)
+passed installed-package qualification on 2026-11-18 at
+`3783beb8fed401242b0f7e20b6448c65ba487257`. The run used Pi 1.5.2,
+`pi-spectorque` 0.1.0, Node 22.20.0 and macOS 27.2.1 (26B131) arm64.
+The package file digest was
+`287f8b5c9f0e86e779152bb7b8a5ff81ec6f29e9c9b8ff54fda681fa4c943ae2` (SHA-256).
+Both EN and ES terminal runs showed 7 findings across all documents, 6 in
+`specs/booking` and 2 in `specs/other`. Both feature lists included shared
+`AGENTS.md` evidence. The six companion practices were `unknown` across both
+features and `partial` in the complete feature. Approved changes refreshed
+`specs/booking` with one open decision, which was also verified in the workbench
+and JSON export. Scope cancellation, proposal rejection, sibling bytes,
+stale-source rejection and the four headless language/mode combinations passed.
