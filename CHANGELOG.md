@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Record the Claude Code terminal matrix: the same plugin ZIP passed `qualify:claude` on darwin-arm64/x64, linux-x64/arm64 and win32-x64/arm64 with an isolated profile and OS-enforced egress, and no inference request.
 - Workbench: reveal a selected finding's source line during the selection commit instead of on a deferred timer, which could move focus after typing had started and replace that line in memory without review (the intermittent `Review difference` browser-test timeout).
 - Record Claude Desktop qualification (bundled Claude Code 2.1.325, macOS arm64): project-scoped install of the ZIP; EN pane walkthrough including stale-source rejection, handoff and server shutdown, and ES pane rendering.
 - `qualify:claude` also checks host discovery of the plugin MCP server and skills, and the driver itself calls all six MCP tools over stdio from the ZIP runtime in EN/ES without writes (a protocol check, not use by Claude). Separately, the qualification guide records a manually observed headless turn per language in which Claude used the `spec-review` skill and the MCP tools.

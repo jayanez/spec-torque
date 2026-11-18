@@ -173,6 +173,39 @@ the protocol level. Desktop and other operating systems and architectures
 remain pending in
 [#4](https://github.com/jayanez/spec-torque/issues/4).
 
+### Claude Code terminal matrix in CI
+
+The [Claude Code qualification workflow](../.github/workflows/qualify-claude.yml)
+runs `qualify:claude` with `SPECTORQUE_CLAUDE_ISOLATED=1` against the pinned
+`@anthropic-ai/claude-code-<variant>@2.1.311` native package. The isolated
+profile has onboarding completed, an approved dummy API key and pre-accepted
+workspace trust; child sessions get a controlled `PATH`. A loopback trap is the
+API endpoint and HTTP(S) proxy: it rejects and records what it receives, and an
+inference request (`POST /v1/messages`) fails the run. Egress is enforced by the
+OS as in the OpenCode workflow: a loopback-only network namespace on Linux,
+`sandbox-exec` allowing only localhost on macOS, and an outbound firewall rule
+for the client executable on Windows (Node.js child processes are not covered
+by that rule).
+
+Observed in [run 44298839122](https://github.com/jayanez/spec-torque/actions/runs/44298839122) at `1944dfe`, ZIP SHA-256
+`c1e71ed6783d8c40343acc71694b718ba21bcccf6024461134f1c0e42ba56ca4`:
+
+| Variant | Runner OS release | Node.js | Boundary | Cases | Result |
+|---|---|---|---|---|---|
+| darwin-arm64 | macOS (Darwin 25.6.0) | 22.23.4 | macos-sandbox | 21 | passed |
+| darwin-x64 | macOS (Darwin 24.6.0) | 22.23.2 | macos-sandbox | 21 | passed |
+| linux-x64 | Ubuntu (kernel 7.0.0-1019-azure) | 22.23.4 | linux-netns | 21 | passed |
+| linux-arm64 | Ubuntu (kernel 7.0.0-1017-azure) | 22.23.4 | linux-netns | 21 | passed |
+| win32-x64 | Windows 10.0.26100 | 22.23.4 | windows-firewall-client | 20 | passed |
+| win32-arm64 | Windows 10.0.26200 | 22.23.5 | windows-firewall-client | 20 | passed |
+
+Windows runs 20 cases because the unreadable-source case uses POSIX permissions.
+Every variant's trap recorded only rejected requests: `CONNECT
+downloads.claude.ai:443` (and `CONNECT github.com:443` outside Windows), plus two
+`POST /v1/messages/count_tokens` made by `plugin details` for its token-cost
+estimate; none was inference. The run artifacts hold the ZIP, evidence, terminal
+frames and handoff exports for each variant. musl builds are not in the matrix.
+
 ## Claude Desktop
 
 Observed on 2026-11-18 on macOS 27.2.1 arm64 with the operator's usual profile.
