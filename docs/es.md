@@ -30,6 +30,9 @@ En Claude Code, genera el paquete con `npm run package:integrations` y
 `npm run package:claude`; el script imprime el SHA-256 del ZIP determinista.
 Cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-0.1.0.zip`
 y ejecuta `/spectorque`. El panel usa el `node` del `PATH` (Node 22.20+).
+Si el workspace tiene varias funcionalidades, el panel ofrece **All documents** o
+una funcionalidad concreta, como en OpenCode. Una propuesta se rechaza si el
+archivo ya no coincide con el hash evaluado.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
 
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
