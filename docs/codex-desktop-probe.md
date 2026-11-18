@@ -79,7 +79,7 @@ SPECTORQUE_ROOT = "/absolute/path/to/this/worktree"
 
 Copy `fixtures/en-draft/specs/booking` to the scratch workspace and add the Spanish booking spec as `specs/other/spec.md`. Add a shared `AGENTS.md` with synthetic instructions. Open a new local Codex Desktop chat and, using synthetic documents only, request `open_spectorque` from `spectorque-workspace`. The open tool returns a generic acknowledgement. The app-only assessment tool puts the source excerpts and report in UI metadata.
 
-Verify that **All documents** is initially selected, that both features are offered, and that each scope matches the shared engine. Open a finding and check the path, line and excerpt against the fixture. Repeat for the other feature and use **Refresh** to reload the selected scope. The sandboxed browser control exercises English and Spanish UI via the host locale. Desktop qualification records the observed locale separately. This increment covers read-only analysis and evidence.
+Verify that **All documents** is initially selected, that both features are offered, and that each scope matches the shared engine. Use the finding selector and check the path, line and excerpt against the fixture. The inline view shows one finding at a time. Expand **Assessment details** for the full revision, worktree path and dimensions. Repeat for the other feature and use **Refresh** to reload the selected scope. The sandboxed browser control exercises English and Spanish UI via the host locale. Desktop qualification records the observed locale separately. This increment covers read-only analysis and evidence.
 
 ## Clean up
 

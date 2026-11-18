@@ -7,7 +7,7 @@ interface AssessmentView {
   assessment: Assessment;
 }
 
-const root = document.querySelector<HTMLParagraphElement>('#root')!;
+const main = document.querySelector<HTMLElement>('main')!;
 const scope = document.querySelector<HTMLSelectElement>('#scope')!;
 const scopeLabel = document.querySelector<HTMLLabelElement>('#scope-label')!;
 const refresh = document.querySelector<HTMLButtonElement>('#refresh')!;
@@ -17,6 +17,7 @@ const pending = new Map<number, { receive: (value: unknown) => void; fail: () =>
 let nextId = 0;
 let hostOrigin: string | undefined;
 let feature: string | null = null;
+let selectedFinding: string | undefined;
 let isSpanish = navigator.language.toLowerCase().startsWith('es');
 
 function label(en: string, es: string) { return isSpanish ? es : en; }
@@ -59,46 +60,89 @@ function element<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) {
 
 function source(evidence: Evidence) {
   const block = element('div');
-  block.append(element('p', evidence.path + ':' + evidence.line), element('pre', evidence.text));
+  const path = element('p', evidence.path + ':' + evidence.line);
+  path.className = 'path';
+  block.append(path, element('pre', evidence.text));
   return block;
 }
 
 function draw(view: AssessmentView) {
+  if (feature !== view.feature) selectedFinding = undefined;
   feature = view.feature;
-  root.textContent = view.root;
-  root.hidden = false;
   scope.replaceChildren(new Option(label('All documents', 'Todos los documentos'), ''),
     ...view.features.map(id => new Option(id, id)));
   scope.value = feature ?? '';
   scopeLabel.hidden = view.features.length < 2 && feature === null;
+
   const result = view.assessment;
   const score = result.summary.score;
+  const scoreText = score === null ? label('Incomplete', 'Incompleta') : score + '/' + result.summary.maximum;
+  const summary = element('p', [
+    scoreText,
+    result.findings.length + label(' findings', ' hallazgos'),
+    result.summary.unknown + label(' unknown', ' desconocidas'),
+  ].join(' · '));
+  report.replaceChildren(summary);
+
+  if (result.findings.length) {
+    const picker = element('label');
+    picker.id = 'finding-field';
+    picker.className = 'field';
+    const choices = element('select');
+    const evidence = element('div');
+    choices.replaceChildren(...result.findings.map((finding, index) =>
+      new Option((index + 1) + '. ' + finding.message, finding.id)));
+    if (selectedFinding && result.findings.some(finding => finding.id === selectedFinding)) choices.value = selectedFinding;
+    function showFinding() {
+      const finding = result.findings.find(item => item.id === choices.value);
+      selectedFinding = finding?.id;
+      evidence.replaceChildren();
+      if (finding) evidence.append(...finding.evidence.map(source), element('p', finding.suggestion));
+    }
+    choices.addEventListener('change', showFinding);
+    picker.append(element('span', label('Finding', 'Hallazgo')), choices);
+    report.append(picker, evidence);
+    showFinding();
+  } else {
+    selectedFinding = undefined;
+    report.append(element('p', label('No findings in this scope.', 'Sin hallazgos en este alcance.')));
+  }
+
+  const decisions = element('details');
+  decisions.append(element('summary', label('Pending decisions', 'Decisiones pendientes') + ' (' + result.decisions.length + ')'));
+  if (!result.decisions.length) decisions.append(element('p', label('No pending decisions.', 'Sin decisiones pendientes.')));
+  for (const decision of result.decisions) decisions.append(source(decision));
+
+  const overview = element('details');
+  const root = element('p', view.root);
+  root.className = 'path';
   const dimensions = element('ul');
   for (const dim of result.dimensions) {
     dimensions.append(element('li', dim.title + ' · ' + (dim.score ?? label('Unknown', 'Desconocido'))));
   }
-  report.replaceChildren(
-    element('p', label('Revision ', 'Revisión ') + result.id),
-    element('h2', score === null ? label('Incomplete assessment', 'Evaluación incompleta') : score + '/' + result.summary.maximum),
-    dimensions,
-    element('p', label('Unknown practices: ', 'Prácticas desconocidas: ') + result.summary.unknown),
-    element('h2', label('Findings', 'Hallazgos')),
-  );
-  if (!result.findings.length) report.append(element('p', label('No findings in this scope.', 'Sin hallazgos en este alcance.')));
-  for (const finding of result.findings) {
-    const details = element('details');
-    details.append(element('summary', finding.message), ...finding.evidence.map(source), element('p', finding.suggestion));
-    report.append(details);
-  }
-  report.append(element('h2', label('Pending decisions', 'Decisiones pendientes')));
-  if (!result.decisions.length) report.append(element('p', label('No pending decisions.', 'Sin decisiones pendientes.')));
-  for (const decision of result.decisions) report.append(source(decision));
+  overview.append(element('summary', label('Assessment details', 'Detalles de la evaluación')),
+    dimensions, element('p', label('Revision ', 'Revisión ') + result.id), root);
+  report.append(decisions, overview);
+}
+
+function observeSize() {
+  let lastWidth = 0;
+  let lastHeight = 0;
+  new ResizeObserver(() => {
+    const width = Math.ceil(main.getBoundingClientRect().width);
+    const height = Math.ceil(main.getBoundingClientRect().height);
+    if (!width || !height || (width === lastWidth && height === lastHeight)) return;
+    lastWidth = width;
+    lastHeight = height;
+    send({ method: 'ui/notifications/size-changed', params: { width, height } });
+  }).observe(main);
 }
 
 async function load(selected: string | null) {
   scope.disabled = true;
   refresh.disabled = true;
   report.replaceChildren();
+  status.classList.remove('screen-reader-only');
   status.textContent = label('Assessing local documents…', 'Analizando documentos locales…');
   try {
     const result = await request('tools/call', { name: 'assess_worktree', arguments: { feature: selected } }) as {
@@ -108,6 +152,7 @@ async function load(selected: string | null) {
     const view = result?._meta?.assessmentView;
     if (result?.isError || !view || typeof view.root !== 'string' || !Array.isArray(view.features) || typeof view.assessment?.id !== 'string') throw new Error('Invalid assessment response');
     draw(view);
+    status.classList.add('screen-reader-only');
     status.textContent = label('Assessment loaded.', 'Evaluación cargada.');
   } catch {
     scope.value = feature ?? '';
@@ -136,6 +181,7 @@ async function initialize() {
     document.querySelector('#scope-caption')!.textContent = label('Artifact scope', 'Alcance de documentos');
     refresh.textContent = label('Refresh', 'Actualizar');
     send({ method: 'ui/notifications/initialized', params: {} });
+    observeSize();
     await load(null);
   } catch {
     status.textContent = label('Connection failed. Reopen the viewer to retry.', 'Falló la conexión. Vuelve a abrir el visor.');
