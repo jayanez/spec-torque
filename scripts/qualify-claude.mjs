@@ -39,6 +39,11 @@ const output = await mkdtemp(resolve('.spec-torque/claude-'));
 // SPECTORQUE_CLAUDE_ISOLATED=1 (CI) uses a fresh profile with a dummy API key and a
 // loopback trap as the API endpoint and proxy; otherwise the operator's profile is used.
 const isolated = process.env.SPECTORQUE_CLAUDE_ISOLATED === '1';
+// The CI workflow enforces egress at the OS layer and names it here; the trap only observes.
+const boundary = process.env.SPECTORQUE_CLAUDE_NETWORK ?? (isolated ? 'none enforced; loopback trap observes proxy-honoring requests only' : 'operator profile; network not restricted or captured');
+const systemDirs = process.platform === 'win32'
+  ? [join(process.env.SystemRoot ?? 'C:\\Windows', 'System32'), process.env.SystemRoot ?? 'C:\\Windows']
+  : ['/usr/bin', '/bin'];
 const requests = [];
 let trap, configFile;
 // Child sessions must not inherit this process's own Claude Code session markers.
@@ -55,8 +60,11 @@ if (isolated) {
   const key = 'sk-ant-api03-spectorque-qualification-0000000000000000000000000000';
   configFile = join(config, '.claude.json');
   await writeFile(configFile, JSON.stringify({ hasCompletedOnboarding: true, theme: 'dark', customApiKeyResponses: { approved: [key.slice(-20)], rejected: [] }, projects: {} }));
-  env = Object.fromEntries(Object.entries(env).filter(([name]) => /^(PATH|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|TEMP|TMP|TMPDIR|LANG|USER|USERNAME|LOGNAME|SHELL)$/i.test(name)));
+  env = Object.fromEntries(Object.entries(env).filter(([name]) => /^(SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|TEMP|TMP|TMPDIR|LANG|USER|USERNAME|LOGNAME|SHELL)$/i.test(name)));
+  // A controlled PATH: this Node.js, the client's own directory and system directories only.
+  const separator = process.platform === 'win32' ? ';' : ':';
   Object.assign(env, {
+    PATH: [dirname(process.execPath), dirname(await realpath(executable)), ...systemDirs].join(separator),
     HOME: home, USERPROFILE: home, APPDATA: join(home, 'roaming'), LOCALAPPDATA: join(home, 'local'), XDG_CONFIG_HOME: join(home, 'config'), XDG_CACHE_HOME: join(home, 'cache'),
     CLAUDE_CONFIG_DIR: config, ANTHROPIC_API_KEY: key, ANTHROPIC_BASE_URL: endpoint,
     HTTP_PROXY: endpoint, HTTPS_PROXY: endpoint, ALL_PROXY: endpoint, NO_PROXY: '127.0.0.1,localhost',
@@ -362,7 +370,6 @@ try {
   const noNode = join(scratch, 'no-node');
   await cp('fixtures/en-draft/specs', join(noNode, 'specs'), { recursive: true });
   const bin = dirname(await realpath(executable));
-  const systemDirs = process.platform === 'win32' ? [join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')] : ['/usr/bin', '/bin'];
   const nodeElsewhere = [];
   for (const dir of [bin, ...systemDirs]) if ((await readdir(dir).catch(() => [])).some(name => /^node(\.exe)?$/i.test(name))) nodeElsewhere.push(dir);
   const pathWithoutNode = [bin, ...systemDirs].join(process.platform === 'win32' ? ';' : ':');
@@ -437,8 +444,8 @@ try {
 } finally {
   evidence.output = output;
   evidence.network = isolated
-    ? { boundary: 'loopback trap as ANTHROPIC_BASE_URL and HTTP(S)_PROXY; requests rejected and recorded', requests }
-    : { boundary: 'operator profile; network not restricted or captured' };
+    ? { boundary, observer: 'loopback trap as ANTHROPIC_BASE_URL and HTTP(S)_PROXY; observed requests rejected and recorded', requests }
+    : { boundary };
   // Inference is POST /v1/messages; count_tokens and other rejected requests are only recorded.
   if (isolated && requests.some(entry => /^POST \/v1\/messages(\?|$)/.test(entry))) {
     evidence.result = 'failed';
