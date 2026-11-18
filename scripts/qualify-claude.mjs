@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { appendFile, chmod, cp, mkdir, mkdtemp, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
+import { appendFile, chmod, cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { connect } from 'node:net';
 import { release, tmpdir } from 'node:os';
@@ -270,8 +270,12 @@ try {
     await claude(['plugin', 'uninstall', 'spectorque@spectorque-qualification', '--scope', 'project']).catch(() => {});
     await claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification', '--scope', 'project']).catch(() => {});
   };
+  // A repository root of its own keeps project-scoped settings inside the scratch project.
+  await run('git', ['init', '-q'], { cwd: project });
   await claude(['plugin', 'marketplace', 'add', market, '--scope', 'project']);
   try {
+  const declared = JSON.parse(await readFile(join(project, '.claude/settings.json'), 'utf8').catch(() => '{}'));
+  assert.ok(declared.extraKnownMarketplaces?.['spectorque-qualification'], 'The marketplace must be declared in the scratch project settings.');
   await claude(['plugin', 'install', 'spectorque@spectorque-qualification', '--scope', 'project']);
   const installed = JSON.parse((await claude(['plugin', 'list', '--json'])).stdout);
   const entry = installed.find(plugin => String(plugin.id ?? plugin.name).startsWith('spectorque@spectorque-qualification'));
@@ -309,7 +313,8 @@ try {
   process.exitCode = 1;
 } finally {
   evidence.output = output;
-  evidence.scratch = scratch;
   await writeFile(join(output, 'evidence.json'), JSON.stringify(evidence, null, 2));
+  // Evidence and terminal frames stay in the output directory; the scratch copies do not.
+  await rm(scratch, { recursive: true, force: true });
   console.log(JSON.stringify({ result: evidence.result, sha256, claude: version, cases: evidence.cases.length, output, error: evidence.error?.split('\n').slice(0, 6).join('\n') }, null, 2));
 }
