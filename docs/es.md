@@ -45,6 +45,11 @@ También comprueba que el host conecta el servidor MCP del plugin y lista las tr
 skills, y llama a las seis herramientas MCP en EN/ES sin escribir archivos. El uso
 por Claude (skill `spec-review` y herramientas MCP) se comprueba aparte con un
 turno de modelo por idioma; consulta la guía de cualificación.
+En CI, el workflow `qualify-claude.yml` ejecuta `qualify:claude` en macOS (arm64 y
+x64), Linux (x64 y arm64) y Windows (x64 y arm64) con un perfil aislado, una clave
+ficticia y salida de red bloqueada por el sistema operativo; consulta la tabla en
+la guía de cualificación.
+
 En Claude Desktop (Claude Code 2.1.325 integrado), instala el ZIP desde un
 marketplace local con ámbito de proyecto, abre una sesión del Code tab en esa
 carpeta y escribe `/spectorque` en el cuadro de mensajes: el primer mensaje de
