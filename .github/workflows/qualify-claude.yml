@@ -1,0 +1,91 @@
+name: Qualify installed Claude Code plugin
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/qualify-claude.yml'
+      - 'scripts/package-*.mjs'
+      - 'scripts/qualify-claude.mjs'
+      - 'scripts/qualify-common-handoff.mjs'
+      - 'fixtures/**'
+      - 'integrations/claude/**'
+      - 'skills/**'
+      - 'src/**'
+      - 'package*.json'
+permissions:
+  contents: read
+jobs:
+  qualify:
+    name: ${{ matrix.variant }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-latest, variant: darwin-arm64 }
+          - { runner: macos-15-intel, variant: darwin-x64 }
+          - { runner: ubuntu-latest, variant: linux-x64 }
+          - { runner: ubuntu-24.04-arm, variant: linux-arm64 }
+          - { runner: windows-latest, variant: win32-x64 }
+          - { runner: windows-11-arm, variant: win32-arm64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run package:integrations
+      - run: npm run package:claude
+      - run: npm audit
+      - if: runner.os == 'Linux'
+        run: npx --no-install playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: npx --no-install playwright install chromium
+      - name: Install pinned Claude Code and terminal driver
+        shell: bash
+        env:
+          CLAUDE_VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          claude_dir="$RUNNER_TEMP/claude-qualification"
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            claude_dir="$(cygpath -u "$claude_dir")"
+          fi
+          mkdir -p "$claude_dir"
+          package="$(npm pack --quiet --ignore-scripts --pack-destination "$claude_dir" "@anthropic-ai/claude-code-$CLAUDE_VARIANT@2.1.311")"
+          tar -xzf - -C "$claude_dir" < "$claude_dir/$package"
+          npm install --prefix "$claude_dir/tools" --no-audit --no-fund node-pty@1.1.0 @xterm/headless@6.0.0
+          executable="$claude_dir/package/claude"
+          tools="$claude_dir/tools/node_modules"
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            chmod u+x "$claude_dir/tools/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
+          elif [[ "$RUNNER_OS" == Windows ]]; then
+            executable="$(cygpath -m "$executable.exe")"
+            tools="$(cygpath -m "$tools")"
+          fi
+          "$executable" --version
+          printf 'CLAUDE_EXE=%s\nCLAUDE_TOOLS=%s\n' "$executable" "$tools" >> "$GITHUB_ENV"
+      - name: Qualify with an isolated profile and a loopback trap
+        shell: bash
+        env:
+          SPECTORQUE_CLAUDE_ISOLATED: '1'
+        run: npm run qualify:claude -- "$CLAUDE_EXE" artifacts/spectorque-claude-0.1.0.zip "$CLAUDE_TOOLS"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: claude-${{ matrix.variant }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            artifacts/spectorque-claude-*.zip
+            .spec-torque/claude-*/
+            .spec-torque/handoff-*/

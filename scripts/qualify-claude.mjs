@@ -3,6 +3,7 @@ import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { appendFile, chmod, cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { createServer } from 'node:http';
 import { connect } from 'node:net';
 import { createInterface } from 'node:readline';
 import { release, tmpdir } from 'node:os';
@@ -35,16 +36,49 @@ const version = (await run(executable, ['--version'])).stdout.trim();
 const scratch = await mkdtemp(join(tmpdir(), 'spectorque-claude-'));
 await mkdir('.spec-torque', { recursive: true });
 const output = await mkdtemp(resolve('.spec-torque/claude-'));
+// SPECTORQUE_CLAUDE_ISOLATED=1 (CI) uses a fresh profile with a dummy API key and a
+// loopback trap as the API endpoint and proxy; otherwise the operator's profile is used.
+const isolated = process.env.SPECTORQUE_CLAUDE_ISOLATED === '1';
+const requests = [];
+let trap, configFile;
 // Child sessions must not inherit this process's own Claude Code session markers.
-const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^CLAUDE_?CODE/.test(key)));
+let env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^CLAUDE_?CODE/.test(key)));
+if (isolated) {
+  trap = createServer((req, res) => { requests.push(req.method + ' ' + req.url); res.writeHead(403, { 'content-type': 'application/json' }).end('{}'); });
+  trap.on('connect', (req, socket) => { socket.on('error', () => {}); requests.push('CONNECT ' + req.url); socket.end('HTTP/1.1 403 Forbidden\r\n\r\n'); });
+  trap.on('connection', socket => socket.on('error', () => {}));
+  await new Promise(done => trap.listen(0, '127.0.0.1', done));
+  const endpoint = 'http://127.0.0.1:' + trap.address().port;
+  const home = join(scratch, 'home');
+  const config = join(home, 'claude-config');
+  await mkdir(config, { recursive: true });
+  const key = 'sk-ant-api03-spectorque-qualification-0000000000000000000000000000';
+  configFile = join(config, '.claude.json');
+  await writeFile(configFile, JSON.stringify({ hasCompletedOnboarding: true, theme: 'dark', customApiKeyResponses: { approved: [key.slice(-20)], rejected: [] }, projects: {} }));
+  env = Object.fromEntries(Object.entries(env).filter(([name]) => /^(PATH|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|TEMP|TMP|TMPDIR|LANG|USER|USERNAME|LOGNAME|SHELL)$/i.test(name)));
+  Object.assign(env, {
+    HOME: home, USERPROFILE: home, APPDATA: join(home, 'roaming'), LOCALAPPDATA: join(home, 'local'), XDG_CONFIG_HOME: join(home, 'config'), XDG_CACHE_HOME: join(home, 'cache'),
+    CLAUDE_CONFIG_DIR: config, ANTHROPIC_API_KEY: key, ANTHROPIC_BASE_URL: endpoint,
+    HTTP_PROXY: endpoint, HTTPS_PROXY: endpoint, ALL_PROXY: endpoint, NO_PROXY: '127.0.0.1,localhost',
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1', DISABLE_AUTOUPDATER: '1',
+  });
+}
 Object.assign(env, { TERM: 'xterm-256color', COLORTERM: 'truecolor' });
-const evidence = { zip: relative(process.cwd(), zip), sha256, claude: version, node: process.version, platform: `${process.platform}/${process.arch}`, osRelease: release(), modelPrompts: 0, cases: [] };
+// Pre-accept workspace trust in the isolated profile, as documented for ~/.claude.json.
+async function trust(workspace) {
+  if (!isolated) return;
+  const config = JSON.parse(await readFile(configFile, 'utf8'));
+  config.projects[await realpath(workspace)] = { hasTrustDialogAccepted: true };
+  await writeFile(configFile, JSON.stringify(config));
+}
+const evidence = { zip: relative(process.cwd(), zip), sha256, claude: version, node: process.version, platform: `${process.platform}/${process.arch}`, osRelease: release(), profile: isolated ? 'isolated' : 'operator', modelPrompts: 0, cases: [] };
 const record = (name, details = {}) => { evidence.cases.push({ name, ...details }); console.log('✓ ' + name); };
 
 const cols = 186, rows = 48;
 // Pane text wraps at narrow widths, so plain markers are compared without whitespace.
 const matches = (view, marker) => typeof marker === 'string' ? view.replace(/\s+/g, '').includes(marker.replace(/\s+/g, '')) : marker.test(view);
 async function session(name, workspace, args, exercise, sessionEnv = env) {
+  await trust(workspace);
   const screen = new Terminal({ cols, rows, scrollback: 0, allowProposedApi: true });
   const client = pty.spawn(executable, args, { cwd: workspace, env: sessionEnv, name: 'xterm-256color', cols, rows });
   let exited = false;
@@ -230,12 +264,15 @@ try {
   }
   const mcpWorkspace = join(scratch, 'mcp-host');
   await cp('fixtures/en-draft/specs', join(mcpWorkspace, 'specs'), { recursive: true });
+  const beforeDiscovery = requests.length;
   const hostMcp = (await run(executable, ['--plugin-dir', zip, 'mcp', 'list'], { cwd: mcpWorkspace, env, timeout: 120_000 })).stdout;
+  const afterMcpList = requests.length;
   assert.match(hostMcp, /plugin:spectorque:spectorque: .*dist[\\/]mcp\.js.*Connected/);
   const details = (await run(executable, ['--plugin-dir', zip, 'plugin', 'details', 'spectorque@inline'], { cwd: mcpWorkspace, env, timeout: 120_000 })).stdout;
   assert.match(details, /Skills \(3\)\s+spec-author, spec-refine, spec-review/);
   assert.match(details, /MCP servers \(1\)\s+spectorque/);
-  record('host discovers and connects the plugin MCP server and lists three skills', { mcp: hostMcp.split('\n').find(line => line.includes('spectorque'))?.trim() });
+  // `plugin details` estimates token cost; its count_tokens calls are recorded, not inference.
+  record('host discovers and connects the plugin MCP server and lists three skills', { mcp: hostMcp.split('\n').find(line => line.includes('spectorque'))?.trim(), requestsDuringMcpList: requests.slice(beforeDiscovery, afterMcpList), requestsDuringPluginDetails: requests.slice(afterMcpList) });
 
   for (const language of ['en', 'es']) {
     const workspace = join(scratch, 'mcp-' + language);
@@ -325,13 +362,19 @@ try {
   const noNode = join(scratch, 'no-node');
   await cp('fixtures/en-draft/specs', join(noNode, 'specs'), { recursive: true });
   const bin = dirname(await realpath(executable));
-  assert.ok(!(await readdir(bin)).some(name => /^node(\.exe)?$/i.test(name)), 'The Claude Code directory must not contain node for this case.');
-  const pathWithoutNode = [bin, ...(process.platform === 'win32' ? [join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')] : ['/usr/bin', '/bin'])].join(process.platform === 'win32' ? ';' : ':');
-  await session('missing-node', noNode, ['--plugin-dir', zip], async ui => {
-    await openPane(ui);
-    await ui.see(/Analysis failed: Node\.js 22\.20 or later is required on PATH/);
-  }, { ...env, PATH: pathWithoutNode });
-  record('missing Node.js on PATH is reported');
+  const systemDirs = process.platform === 'win32' ? [join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')] : ['/usr/bin', '/bin'];
+  const nodeElsewhere = [];
+  for (const dir of [bin, ...systemDirs]) if ((await readdir(dir).catch(() => [])).some(name => /^node(\.exe)?$/i.test(name))) nodeElsewhere.push(dir);
+  const pathWithoutNode = [bin, ...systemDirs].join(process.platform === 'win32' ? ';' : ':');
+  if (nodeElsewhere.length) {
+    record('missing Node.js on PATH: skipped, a node executable is in a required system directory', { skipped: true, nodeElsewhere });
+  } else {
+    await session('missing-node', noNode, ['--plugin-dir', zip], async ui => {
+      await openPane(ui);
+      await ui.see(/Analysis failed: Node\.js 22\.20 or later is required on PATH/);
+    }, { ...env, PATH: pathWithoutNode });
+    record('missing Node.js on PATH is reported');
+  }
 
   // Installed through a public marketplace path, scoped to one scratch project.
   const project = join(scratch, 'marketplace-project');
@@ -393,8 +436,18 @@ try {
   process.exitCode = 1;
 } finally {
   evidence.output = output;
+  evidence.network = isolated
+    ? { boundary: 'loopback trap as ANTHROPIC_BASE_URL and HTTP(S)_PROXY; requests rejected and recorded', requests }
+    : { boundary: 'operator profile; network not restricted or captured' };
+  // Inference is POST /v1/messages; count_tokens and other rejected requests are only recorded.
+  if (isolated && requests.some(entry => /^POST \/v1\/messages(\?|$)/.test(entry))) {
+    evidence.result = 'failed';
+    evidence.error = (evidence.error ? evidence.error + '\n' : '') + 'A model request reached the trap.';
+    process.exitCode = 1;
+  }
+  trap?.close();
   await writeFile(join(output, 'evidence.json'), JSON.stringify(evidence, null, 2));
   // Evidence and terminal frames stay in the output directory; the scratch copies do not.
   await rm(scratch, { recursive: true, force: true });
-  console.log(JSON.stringify({ result: evidence.result, sha256, claude: version, cases: evidence.cases.length, output, error: evidence.error?.split('\n').slice(0, 6).join('\n') }, null, 2));
+  console.log(JSON.stringify({ result: evidence.result, sha256, claude: version, profile: evidence.profile, cases: evidence.cases.length, network: evidence.network, output, error: evidence.error?.split('\n').slice(0, 6).join('\n') }, null, 2));
 }
