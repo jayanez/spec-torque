@@ -91,7 +91,9 @@ Start the existing workbench with `node dist/cli.js serve --root /absolute/path/
 
 ### Export the visible scope
 
-In the viewer, expand **Export** and request **Download JSON** and **Download ZIP**. Confirm the JSON matches the displayed assessment and the ZIP contains only the scoped artifact paths and exact bytes. If an inline download is unavailable, open **Export in local workbench**, copy the selection and paste it into the workbench loopback page with `?export=1`. The workbench checks the exact worktree and assessment revision before export. If the scope changed, refresh the viewer and copy a new selection. The native ZIP request limits the source bytes to 512 KiB. The local workbench supports the shared 20 MB archive limit.
+In the viewer, expand **Export in local workbench** and choose **Select export data**. Copy the selection and paste it into the workbench loopback page with `?export=1`, then choose **Download JSON** or **Download ZIP**. The workbench checks the exact worktree and assessment revision before export. If the scope changed, refresh the viewer and copy a new selection. ZIP export uses the shared 20 MB archive limit.
+
+On macOS arm64 with Desktop `26.1111.21308`, the user reported that the inline JSON and ZIP download controls did not start either download. Both files downloaded from the local workbench in the integrated browser. The JSON matched the engine assessment for `specs/other`; the ZIP contained `AGENTS.md` and `specs/other/spec.md`, both byte-identical to the fixture. The viewer now offers the observed workbench route directly.
 
 ## Clean up
 

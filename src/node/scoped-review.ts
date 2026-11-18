@@ -44,7 +44,7 @@ export async function bindWorkspace(configuredRoot: string | undefined) {
       const { assessment, features } = await load(feature);
       return { root, feature, features, assessment };
     },
-    async exportScope(selection: ScopedExport, format: 'json' | 'zip', archiveLimit = 20_000_000) {
+    async exportScope(selection: ScopedExport, format: 'json' | 'zip') {
       if (selection.root !== root) throw new Error('The export belongs to another worktree.');
       const { scope, assessment } = await load(selection.feature);
       if (assessment.id !== selection.revision) throw new StaleAssessmentError('The assessment is stale. Refresh before exporting.');
@@ -58,7 +58,7 @@ export async function bindWorkspace(configuredRoot: string | undefined) {
         if (!bytes.equals(Buffer.from(decoded))) throw new Error('An artifact is not valid UTF-8.');
         if (decoded !== artifact.content) throw new StaleAssessmentError('An artifact changed. Refresh before exporting.');
         size += bytes.length;
-        if (size > archiveLimit) throw new Error('The archive exceeds the limit for this export.');
+        if (size > 20_000_000) throw new Error('Artifact archive exceeds 20 MB. Export one feature at a time.');
         files.push({ path: artifact.path, bytes });
       }
       return { archive: Buffer.from(zipArtifactBytes(files)).toString('base64') };

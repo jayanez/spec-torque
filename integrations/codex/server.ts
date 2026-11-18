@@ -3,7 +3,6 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { z } from 'zod';
 import { bindWorkspace, StaleAssessmentError } from '../../src/node/scoped-review.js';
-import { scopedExportSchema } from '../../src/node/schemas.js';
 
 const workspace = await bindWorkspace(process.env.SPECTORQUE_ROOT);
 const uri = 'ui://spectorque/viewer.html';
@@ -62,27 +61,6 @@ server.registerTool('preview_refinement', {
     return {
       isError: true,
       content: [{ type: 'text', text: 'The change could not be previewed.' }],
-      _meta: { stale: error instanceof StaleAssessmentError },
-    };
-  }
-});
-
-server.registerTool('export_worktree_zip', {
-  description: 'Prepare the ZIP of the visible SpecTorque scope.',
-  inputSchema: scopedExportSchema,
-  annotations,
-  _meta: { ui: { visibility: ['app'] } },
-}, async selection => {
-  try {
-    const exported = await workspace.exportScope(selection, 'zip', 512 * 1024);
-    return {
-      content: [{ type: 'text', text: 'Scoped archive available in the viewer.' }],
-      _meta: exported,
-    };
-  } catch (error) {
-    return {
-      isError: true,
-      content: [{ type: 'text', text: 'The archive could not be prepared in the viewer.' }],
       _meta: { stale: error instanceof StaleAssessmentError },
     };
   }
