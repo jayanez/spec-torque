@@ -455,6 +455,9 @@ try {
   trap?.close();
   await writeFile(join(output, 'evidence.json'), JSON.stringify(evidence, null, 2));
   // Evidence and terminal frames stay in the output directory; the scratch copies do not.
-  await rm(scratch, { recursive: true, force: true });
+  await rm(scratch, { recursive: true, force: true, maxRetries: 3 }).catch(error => console.warn('Scratch cleanup failed: ' + error.message));
   console.log(JSON.stringify({ result: evidence.result, sha256, claude: version, profile: evidence.profile, cases: evidence.cases.length, network: evidence.network, output, error: evidence.error?.split('\n').slice(0, 6).join('\n') }, null, 2));
+  // Pseudo-terminal and child handles can outlive their sessions on Windows; the
+  // evidence is written, so end explicitly with the recorded status.
+  process.exit(process.exitCode ?? 0);
 }
