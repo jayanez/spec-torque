@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `npm run qualify:claude`, a real-terminal walkthrough of the installed Claude Code ZIP (EN/ES scope, evidence, reject, apply, stale source, handoff, errors, marketplace install and removal) with saved evidence; no model prompt is submitted.
 - Claude Code pane: open the common workbench for the session workspace from the pane, copy its loopback address with the scope to select, report startup failures or an unexpected exit, and stop the server on close, pane close or session end; a second press cancels a pending startup.
 - Claude Code pane: select All documents or one feature when a workspace has several, as in OpenCode; bind proposals to the assessed source hash; report an unsuitable or missing Node.js 22.20+ runtime and label analysis, proposal and apply failures. CLI: `analyze --feature <id>` (unknown features are rejected) and `refine --expect-hash <sha256>`.
 - Package the Claude Code plugin as a deterministic ZIP with `npm run package:claude`, sharing the archive helper with OpenCode (OpenCode bytes unchanged).

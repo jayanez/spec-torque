@@ -94,6 +94,43 @@ client controls or prove inference absence. EN native refinement, browser handof
 MCP discovery, headless reporting and broader human accessibility are distinct
 evidence categories. Retain native transcripts/source snapshots separately.
 
+## Claude Code installed package
+
+`npm run qualify:claude` drives the installed plugin ZIP in a real Claude Code
+terminal through a pseudo-terminal. Build with Node 22.20+ in major 22, run
+`npm run package:integrations` and `npm run package:claude`, install Chromium,
+and provide an isolated tools directory with `node-pty@1.1.0` and
+`@xterm/headless@6.0.0`:
+
+```sh
+npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-0.1.0.zip /path/to/tools/node_modules
+```
+
+For EN and ES, the driver copies the draft fixture into two features
+(`specs/booking`, `specs/payments`) in a disposable workspace and loads the ZIP
+with `--plugin-dir`. It selects one feature in the pane, matches the nested
+evidence path, line and text with the file, reviews and rejects a proposal
+(every file byte-identical), applies a clarification that keeps `FR-001` and
+`MUST`/`DEBE` (the other feature unchanged, a pending decision and new revision
+shown), makes a proposal stale with an external edit (rejected, edit
+preserved), refreshes and proposes again, then opens the common workbench and
+runs `qualify:handoff --url <address> --feature specs/booking`. Escape closes
+the pane and the driver checks that the server port stops listening. It also
+checks an empty workspace, an unreadable source, Node.js missing from `PATH`,
+and a project-scoped marketplace install: the installed plugin loads the pane,
+another profile in another directory does not list it, and after removal the
+client reports `No commands match "/spectorque"`. Evidence, terminal frames and
+the ZIP SHA-256 are saved under an ignored `.spec-torque/claude-*` directory.
+
+Observed on 2026-11-18 with Claude Code 2.1.311, macOS 27.2.1 arm64 and Node
+22.20.0: 18/18 cases passed for ZIP SHA-256
+`c1e71ed6783d8c40343acc71694b718ba21bcccf6024461134f1c0e42ba56ca4`. The run used
+the operator's usual signed-in profile; no model prompt was submitted and
+network traffic was not restricted or captured. Uninstalling unregistered the
+plugin but left its copy in the user plugin cache. Desktop, other operating
+systems and architectures, and MCP/skill use by Claude remain pending in
+[#4](https://github.com/jayanez/spec-torque/issues/4).
+
 ## OpenCode installed package
 
 The OpenCode workflow tests the ZIP at each runner's checkout revision.
