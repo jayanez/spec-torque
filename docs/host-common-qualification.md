@@ -156,13 +156,21 @@ tools over the protocol in EN and ES) passed for ZIP SHA-256
 `c1e71ed6783d8c40343acc71694b718ba21bcccf6024461134f1c0e42ba56ca4`. The run used
 the operator's usual signed-in profile; no model prompt was submitted and
 network traffic was not restricted or captured. Uninstalling unregistered the
-plugin but left its copy in the user plugin cache. One headless model turn per
-language (`claude-opus-5-5`, signed-in session via
+plugin but left its copy in the user plugin cache. The driver's evidence records
+`modelPrompts: 0`; it contains no model-turn evidence.
+
+Separately and manually, on the same machine and ZIP, one headless model turn
+per language was run with the level-3 command in disposable copies of
+`fixtures/<lang>-draft` (`claude-opus-5-5`, signed-in session via
 `--setting-sources project,local` because the operator's user settings pointed
-at an API key without credit) invoked `Skill` `spectorque:spec-review`, then
-`discover_specs` and `analyze_specs`, cited `specs/booking/spec.md:5` and left
-every file unchanged in both EN and ES; no permission was denied. Desktop and
-other operating systems and architectures remain pending in
+at an API key without credit). Their `stream-json` transcripts were kept
+locally and summarized in [PR #29](https://github.com/jayanez/spec-torque/pull/29):
+in EN and ES, Claude invoked `Skill` `spectorque:spec-review`, then
+`discover_specs` and `analyze_specs`, cited `specs/booking/spec.md:5`, had no
+permission denied and left every file hash unchanged. `refinement_context`,
+`propose_refinement`, `create_specs` and `export_report` were exercised only at
+the protocol level. Desktop and other operating systems and architectures
+remain pending in
 [#4](https://github.com/jayanez/spec-torque/issues/4).
 
 ## OpenCode installed package

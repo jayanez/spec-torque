@@ -251,9 +251,13 @@ try {
       pending.set(requestId, message => { clearTimeout(timer); done(message); });
       child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: requestId, method, params }) + '\n');
     });
+    // Accept only a well-formed JSON-RPC success whose tool result is not an error.
     const call = async (name, args) => {
       const response = await request('tools/call', { name, arguments: args });
-      assert.ok(!response.result?.isError, name + ' failed: ' + JSON.stringify(response).slice(0, 400));
+      assert.equal(response.jsonrpc, '2.0', name + ': not a JSON-RPC 2.0 response');
+      assert.equal(response.error, undefined, name + ' returned a JSON-RPC error: ' + JSON.stringify(response.error));
+      assert.ok(response.result && !response.result.isError, name + ' failed: ' + JSON.stringify(response).slice(0, 400));
+      assert.equal(response.result.content?.[0]?.type, 'text', name + ': expected text content');
       const text = response.result.content[0].text;
       try { return JSON.parse(text); } catch { return text; }
     };
@@ -284,7 +288,16 @@ try {
       assert.equal(escaped.result.isError, true);
       assert.deepEqual(await snapshot(workspace), before, 'MCP calls must not write files.');
       record(language + ': all six MCP tools answer from the ZIP runtime without writing files', { revision: analyzed.id, created: created.map(a => a.path) });
-    } finally { child.kill(); }
+    } finally {
+      // Close stdio, then wait for exit with a bounded escalation.
+      const exited = new Promise(done => child.once('exit', done));
+      child.stdin.end();
+      child.kill();
+      if (await Promise.race([exited.then(() => true), delay(3000).then(() => false)]) === false) {
+        child.kill('SIGKILL');
+        await Promise.race([exited, delay(3000)]);
+      }
+    }
   }
 
   const empty = join(scratch, 'empty');
