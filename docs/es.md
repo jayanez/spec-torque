@@ -26,6 +26,12 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).
 
+En Claude Code, genera el paquete con `npm run package:integrations` y
+`npm run package:claude`; el script imprime el SHA-256 del ZIP determinista.
+Cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-0.1.0.zip`
+y ejecuta `/spectorque`. El panel usa el `node` del `PATH` (Node 22.20+).
+`claude plugin validate` solo valida carpetas: valida una copia extraída.
+
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
 `plugins` en el `cli.json` del perfil CLI. En una sesión existente del
 workspace local, ejecuta `/spectorque`. Con el panel enfocado, usa **s**
