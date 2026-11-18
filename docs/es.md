@@ -35,7 +35,8 @@ una funcionalidad concreta, como en OpenCode. Una propuesta se rechaza si el
 archivo ya no coincide con el hash evaluado.
 **Open common workbench** inicia el panel común en loopback para el workspace de la
 sesión, copia su dirección e indica el alcance que hay que seleccionar; se detiene
-al cerrarlo o al terminar la sesión.
+al cerrarlo, al cerrar el panel o al terminar la sesión. Pulsarlo mientras arranca
+cancela ese arranque.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
 
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a

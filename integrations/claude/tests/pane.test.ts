@@ -196,3 +196,31 @@ test('common workbench reports startup failure and an unexpected exit', async ($
   expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
   await ui.unmount();
 });
+
+test('a second press cancels a pending workbench startup without starting another server', async ($, on) => {
+  stubHost(on, emptyReport);
+  let spawns = 0;
+  let ready!: () => void;
+  on('ui.copy', () => ({ value: undefined }));
+  on('process.spawn', async function* () {
+    spawns++;
+    await new Promise<void>(done => { ready = done; });
+    yield READY;
+    await new Promise(() => {});
+  });
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  const starting = ui.press({ key: 'workbench' });
+  for (let i = 0; i < 100 && (await ui.find({ key: 'workbench' }))?.props.label !== 'Cancel common workbench startup'; i++) await new Promise(done => setTimeout(done, 5));
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Cancel common workbench startup');
+  await ui.press({ key: 'workbench' });
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+  for (let i = 0; i < 100 && !ready; i++) await new Promise(done => setTimeout(done, 5));
+  ready();
+  await starting;
+  expect(spawns).toBe(1);
+  expect(await ui.find({ type: 'Text', text: /Common workbench/ })).toBeUndefined();
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+  await ui.unmount();
+});
+
