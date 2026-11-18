@@ -13,3 +13,8 @@ export function download(name: string, content: string | ArrayBuffer, type = 'te
   const url = URL.createObjectURL(new Blob([content], { type })); const link = document.createElement('a');
   link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export function downloadZip(name: string, base64: string) {
+  const bytes = Uint8Array.from(atob(base64), value => value.charCodeAt(0));
+  download(name, bytes.buffer, 'application/zip');
+}

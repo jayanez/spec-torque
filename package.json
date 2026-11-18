@@ -50,8 +50,12 @@
     "qualify:pi": "npm run verify:node && node scripts/qualify-pi.mjs",
     "qualify:claude": "npm run verify:node && node scripts/qualify-claude.mjs",
     "package:opencode": "npm run verify:node && node scripts/package-opencode.mjs",
+    "verify:codex-package": "npm run verify:node && node scripts/verify-codex-package.mjs",
+    "package:codex": "npm run verify:node && node scripts/package-codex.mjs",
     "package:claude": "npm run verify:node && node scripts/package-claude.mjs",
-    "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs"
+    "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs",
+    "prepare:codex-desktop-probe": "npm run verify:node && node scripts/prepare-codex-desktop-probe.mjs",
+    "qualify:codex-desktop-probe": "npm run verify:node && node scripts/qualify-codex-desktop-probe.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",

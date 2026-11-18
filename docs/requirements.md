@@ -16,7 +16,7 @@ Version 1.0 · Canonical language: English
 | FR-010 | Export editable artifacts, Markdown/JSON reports and revision-bound badges. | IDs and feature paths survive export. |
 | FR-011 | Offer CLI, skills and read-only MCP operations. | Protocol and command tests plus real host qualification. |
 | FR-012 | Connect Claude Code, Codex, OpenCode and Pi to one motor and common panel by Dec 1. | Real client walkthrough: create/import → analyze → refine → export. |
-| FR-013 | Complete Claude Mod, VS Code webview, OpenCode TUI and Pi review widgets by Dec 4. | Select findings, inspect evidence and conduct refinement inside each supported client. |
+| FR-013 | Complete the Claude Code Mod, Codex Desktop viewer, OpenCode TUI and Pi review widgets by Dec 4. | Select findings, inspect evidence and review refinements inside each supported client. Record installed-package evidence and any qualified local workbench handoff. |
 | FR-014 | Keep session revision history and visible pending decisions. | Comparisons identify revision and rubric; drafts can be undone. |
 
 | ID | Constraint |

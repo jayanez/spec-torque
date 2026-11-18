@@ -37,6 +37,10 @@ npm run qualify:codex
 
 This opt-in script requires a local `codex` executable (or `CODEX_EXECUTABLE`). It uses a fresh project, separate `CODEX_HOME`, ephemeral app-server thread and a loopback-only model-provider trap. It starts no model turn. In both languages the real client discovers all three skills and six tools, creates a draft, discovers/analyzes source, reads refinement context, proposes without writing, rejects once in the actual browser, explicitly applies another proposal through the common workbench, reanalyzes and exports through Codex. It also checks an escaped source path. The trap must receive zero inference requests. Evidence and scratch files remain under the printed `.spec-torque/codex-run-*` directory.
 
+## Codex Desktop viewer probe
+
+The [Codex Desktop probe runbook](codex-desktop-probe.md) tracks the installed local plugin and MCP Apps rendering experiment for #27. It also provides a separate app-server and synthetic browser control.
+
 ## Installed VS Code qualification
 
 After `npm run package:vscode`, set `VSCODE_EXECUTABLE` to the actual installed editor executable and run:

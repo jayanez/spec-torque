@@ -18,6 +18,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run package:integrations
+      - run: npm run package:codex
+      - run: npm run verify:codex-package
       - run: node scripts/package-vscode.mjs
       - run: npm audit --audit-level=high
   browser:

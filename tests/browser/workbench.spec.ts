@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { unzipSync, strFromU8 } from 'fflate';
 import { startServer } from '../../src/node/server.js';
+import { bindWorkspace } from '../../src/node/scoped-review.js';
 
 const test = base.extend<{ workspace: { root: string; url: string } }>({
   workspace: async ({}, use) => {
@@ -200,3 +201,69 @@ test('late provider response cannot replace the newly selected document', async 
   await expect(page.getByRole('textbox', { name: 'Proposed wording' })).toHaveValue(next);
   await expect(page.getByRole('heading', { name: 'Proposed change', exact: true })).toHaveCount(0);
 });
+
+for (const es of [false, true]) {
+  test(`${es ? 'ES' : 'EN'} Codex handoff verifies, rejects, saves and exports a scoped change`, async ({ page, workspace }) => {
+    const dir = join(workspace.root, 'specs', 'booking');
+    const other = join(workspace.root, 'specs', 'other');
+    await mkdir(dir, { recursive: true });
+    await mkdir(other, { recursive: true });
+    const original = es ? 'FR-001: El sistema DEBE ser rápido.' : 'FR-001: The system MUST be fast.';
+    const word = es ? 'rápido' : 'fast';
+    const replacement = original.replace(word, `[NEEDS CLARIFICATION: ${es ? 'definir rápido' : 'define fast'}]`);
+    const file = join(dir, 'spec.md');
+    const sibling = join(other, 'spec.md');
+    const content = '# Booking\r\n\n' + original + '\n';
+    await writeFile(file, content);
+    const siblingContent = '# Other\nFR-001: The system MUST list bookings.\n';
+    await writeFile(sibling, siblingContent);
+    const binding = await bindWorkspace(workspace.root);
+    const view = await binding.assess('specs/booking');
+    const finding = view.assessment.findings.find(item => item.evidence[0]?.text === original);
+    expect(finding).toBeDefined();
+    const context = { feature: view.feature, revision: view.assessment.id, findingId: finding!.id };
+    const proposal = await binding.propose({ ...context, replacement });
+    const review = { ...context, root: view.root, proposal };
+
+    await page.goto(workspace.url + '/?review=1');
+    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    const approve = page.getByRole('button', { name: es ? 'Aprobar y escribir en disco' : 'Approve and write to disk' });
+    async function verify() {
+      await page.getByRole('textbox').fill(JSON.stringify(review));
+      await page.getByRole('button', { name: es ? 'Verificar revisión' : 'Verify review' }).click();
+      await expect(page.getByText(replacement, { exact: true })).toBeVisible();
+    }
+    await verify();
+    await page.getByRole('button', { name: es ? 'Rechazar cambio' : 'Reject change' }).click();
+    await expect(approve).toHaveCount(0);
+    expect(await readFile(file)).toEqual(Buffer.from(content));
+    await verify();
+    const external = content + '\nExternal revision\n';
+    await writeFile(file, external);
+    await approve.click();
+    await expect(page.getByRole('status')).toContainText('stale');
+    expect(await readFile(file)).toEqual(Buffer.from(external));
+    await writeFile(file, content);
+    await verify();
+    await approve.click();
+    await expect(page.getByRole('status')).toContainText(es ? 'Cambio guardado' : 'Change saved');
+    expect(await readFile(file)).toEqual(Buffer.from(content.replace(original, () => replacement)));
+    expect(await readFile(sibling)).toEqual(Buffer.from(siblingContent));
+
+    const updated = await binding.assess(view.feature);
+    expect(updated.assessment.id).not.toBe(view.assessment.id);
+    expect(updated.assessment.decisions.some(item => item.path === 'specs/booking/spec.md' && item.line === 3)).toBe(true);
+    await page.goto(workspace.url + '/?export=1');
+    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    await page.getByRole('textbox').fill(JSON.stringify({ root: view.root, feature: view.feature,
+      revision: updated.assessment.id, createdAt: updated.assessment.createdAt }));
+    const reportDownload = page.waitForEvent('download');
+    await page.getByRole('button', { name: es ? 'Descargar JSON' : 'Download JSON' }).click();
+    expect(JSON.parse(await readFile(await (await reportDownload).path(), 'utf8'))).toEqual(updated.assessment);
+    const zipDownload = page.waitForEvent('download');
+    await page.getByRole('button', { name: es ? 'Descargar ZIP' : 'Download ZIP' }).click();
+    const zip = unzipSync(await readFile(await (await zipDownload).path()));
+    expect(Object.keys(zip)).toEqual(['specs/booking/spec.md']);
+    expect(Buffer.from(zip['specs/booking/spec.md'])).toEqual(await readFile(file));
+  });
+}

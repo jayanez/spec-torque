@@ -1,4 +1,4 @@
-import { cp, mkdir, writeFile, access, rm } from 'node:fs/promises';
+import { cp, mkdir, writeFile, access, rm, readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 import { generateLicenseNotices } from './license-notices.mjs';
 await Promise.all(['dist/cli.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md'].map(path => access(path)));
@@ -18,6 +18,33 @@ for (const name of ['claude', 'vscode', 'opencode', 'pi']) {
 
 }
 await build({ entryPoints: ['integrations/vscode/src/extension.ts'], bundle: true, platform: 'node', target: 'node22', format: 'cjs', external: ['vscode'], outfile: 'integrations/vscode/extension.cjs' });
+const codexRuntime = 'integrations/codex/runtime';
+await rm(codexRuntime, { recursive: true, force: true });
+await build({
+  entryPoints: ['integrations/codex/server.ts'], bundle: true, platform: 'node', target: 'node22',
+  format: 'esm', outfile: codexRuntime + '/server.mjs',
+  banner: { js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);" },
+});
+await build({
+  entryPoints: ['src/cli.ts'], bundle: true, platform: 'node', target: 'node22',
+  format: 'esm', outfile: codexRuntime + '/workbench.mjs',
+  banner: { js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);" },
+});
+const codexRoot = 'integrations/codex';
+for (const dir of ['web-dist', 'skills']) {
+  await rm(codexRoot + '/' + dir, { recursive: true, force: true });
+  await cp(dir, codexRoot + '/' + dir, { recursive: true });
+}
+for (const filename of ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) {
+  await cp(filename, codexRoot + '/' + filename);
+}
+const widget = await build({
+  entryPoints: ['integrations/codex/viewer.ts'], bundle: true, platform: 'browser', target: 'es2022',
+  format: 'iife', write: false,
+});
+const template = await readFile('integrations/codex/viewer.html', 'utf8');
+await writeFile(codexRuntime + '/viewer.html', template.replace('<!-- VIEWER_SCRIPT -->',
+  () => '<script>' + widget.outputFiles[0].text + '</script>'));
 await mkdir('artifacts', { recursive: true });
 await writeFile('artifacts/README.txt', 'Integration runtime files generated. Run npm pack, or package a host directory according to docs/integrations.md.\n');
-console.log('Packaged shared runtimes for Claude Code, VS Code, OpenCode and Pi.');
+console.log('Packaged shared runtimes for Claude Code, Codex, VS Code, OpenCode and Pi.');

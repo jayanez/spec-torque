@@ -22,6 +22,12 @@ Para desarrollar y verificar usa Node 22.20.0, fijado en `.nvmrc`. `npm run chec
 
 Los refinamientos conservan literalmente las cláusulas negativas detectadas, salvo espacios. Reformular una prohibición o exclusión exige una decisión explícita; el rechazo conservador no significa que el sistema comprenda toda la semántica del texto.
 
+## Visor de Codex Desktop
+
+Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el archivo reubicado fuera del checkout. Instala el ZIP desde un marketplace local y ejecuta `setup-workspace.mjs` desde la copia instalada, con la ruta del worktree confiable. Incorpora el bloque TOML que imprime al proyecto. Para actualizar, reinstala el ZIP verificado y vuelve a generar ese bloque. Para retirarlo, elimina el bloque de SpecTorque, detén el workbench y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
+
+Abre un chat local e invoca `open_spectorque` del servidor `spectorque-workspace`. Selecciona el alcance y revisa la evidencia y la diferencia. Para guardar o exportar, inicia el workbench con el comando impreso por el instalador y usa su dirección local en el navegador integrado. Los datos de revisión requieren una aprobación explícita y se rechazan si cambió la revisión. Consulta las rutas observadas en la [cualificación de Desktop](codex-desktop-probe.md). El [seguimiento de Windows](https://github.com/jayanez/spec-torque/issues/34) registra sus variantes por separado.
+
 ## Continuación en otros clientes
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).

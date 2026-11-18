@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpecTorque</title>
+<style>
+  :root { color-scheme: light dark; font: 13px/1.35 system-ui, sans-serif; }
+  body { margin: 0; overflow-wrap: anywhere; }
+  main { padding: .45rem .65rem; }
+  h1 { font-size: 1.15rem; margin: 0; }
+  p, ul { margin: .25rem 0; }
+  .controls, header { display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .45rem; }
+  header { justify-content: space-between; margin-bottom: .3rem; }
+  .controls { flex-wrap: nowrap; }
+  .field { display: flex; align-items: center; gap: .35rem; min-width: 0; }
+  [hidden] { display: none !important; }
+  select, button { font: inherit; max-width: 100%; padding: .14rem .3rem; }
+  select { min-width: 0; }
+  textarea { display: block; box-sizing: border-box; width: 100%; margin: .2rem 0; font: inherit; }
+  button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  #finding-field { margin-top: .35rem; }
+  #finding-field select { flex: 1 1 0; }
+  details { border-top: 1px solid GrayText; margin-top: .35rem; padding-top: .25rem; }
+  summary { cursor: pointer; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: .2rem 0; padding: .15rem .4rem; border-inline-start: 2px solid GrayText; }
+  .path { font-family: ui-monospace, monospace; font-size: .92em; }
+  .screen-reader-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+</style>
+<main>
+  <header>
+    <h1>SpecTorque</h1>
+    <div class="controls">
+      <label id="scope-label" class="field" hidden><span id="scope-caption" class="screen-reader-only">Artifact scope</span><select id="scope"></select></label>
+      <button id="refresh" type="button" disabled>Refresh</button>
+    </div>
+  </header>
+  <p id="status" role="status" aria-live="polite"></p>
+  <div id="report"></div>
+</main>
+<!-- VIEWER_SCRIPT -->
+</html>
