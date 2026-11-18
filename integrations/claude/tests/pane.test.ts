@@ -135,3 +135,92 @@ test('superseded refreshes and proposals do not replace newer state', async ($, 
   await ui.press({ key: 'scope-all' });
   await ui.unmount();
 });
+
+const READY = { stream: 'stdout', text: 'SpecTorque workbench: http://127.0.0.1:4321\nWorkspace: /sample\nOnly loopback connections are accepted.\n' };
+const emptyReport = () => ok({ name: 'Sample', summary: { score: null }, findings: [], decisions: [], dimensions: [], artifacts: [] });
+
+test('common workbench opens for the session workspace, copies its address and stops on close', async ($, on) => {
+  stubHost(on, emptyReport);
+  const spawned: { argv: string[]; cwd?: string }[] = [];
+  const copied: unknown[] = [];
+  let serverExit!: () => void;
+  on('ui.copy', (_: unknown, e: unknown) => { copied.push(e); return { value: undefined }; });
+  // The harness cannot observe the host stopping a process; the real-client run checks the port closes.
+  on('process.spawn', async function* (_: unknown, e: { argv: string[]; cwd?: string }) {
+    spawned.push(e);
+    yield READY;
+    await new Promise<void>(done => { serverExit = done; });
+    return { value: { exitCode: 0, stdout: '', stderr: '' } };
+  });
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  await ui.press({ key: 'workbench' });
+  expect(spawned).toHaveLength(1);
+  expect(spawned[0].argv.slice(2)).toEqual(['serve', '--root', '/sample', '--port', '0']);
+  expect(spawned[0].cwd).toBe('/sample');
+  expect(JSON.stringify(copied)).toContain('http://127.0.0.1:4321');
+  expect(await ui.find({ type: 'Text', text: /Common workbench \(address copied\): http:\/\/127\.0\.0\.1:4321\nOpen it in a browser, load the local workspace and select: All documents/ })).toBeDefined();
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Close common workbench');
+  await ui.press({ key: 'workbench' });
+  expect(await ui.find({ type: 'Text', text: /Common workbench/ })).toBeUndefined();
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+  serverExit();
+  await new Promise(done => setTimeout(done, 20));
+  expect(await ui.find({ type: 'Text', text: /stopped/ })).toBeUndefined();
+  await ui.unmount();
+});
+
+test('common workbench reports startup failure and an unexpected exit', async ($, on) => {
+  stubHost(on, emptyReport);
+  let mode: 'fail' | 'exit' = 'fail';
+  let exitNow!: () => void;
+  on('ui.copy', () => ({ value: undefined }));
+  on('process.spawn', async function* () {
+    if (mode === 'fail') { yield { stream: 'stderr', text: 'listen EADDRINUSE: address already in use\n' }; return { value: { exitCode: 1, stdout: "", stderr: "" } }; }
+    yield READY;
+    await new Promise<void>(done => { exitNow = done; });
+    return { value: { exitCode: 1, stdout: "", stderr: "" } };
+  });
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  await ui.press({ key: 'workbench' });
+  expect(await ui.find({ type: 'Text', text: 'Common workbench failed: listen EADDRINUSE: address already in use' })).toBeDefined();
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+
+  mode = 'exit';
+  await ui.press({ key: 'workbench' });
+  expect(await ui.find({ type: 'Text', text: /Common workbench \(address copied\): http:\/\/127\.0\.0\.1:4321/ })).toBeDefined();
+  exitNow();
+  for (let i = 0; i < 100 && !(await ui.find({ type: 'Text', text: /stopped/ })); i++) await new Promise(done => setTimeout(done, 5));
+  expect(await ui.find({ type: 'Text', text: 'The common workbench stopped. Open it again to continue.' })).toBeDefined();
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+  await ui.unmount();
+});
+
+test('a second press cancels a pending workbench startup without starting another server', async ($, on) => {
+  stubHost(on, emptyReport);
+  let spawns = 0;
+  let ready!: () => void;
+  on('ui.copy', () => ({ value: undefined }));
+  on('process.spawn', async function* () {
+    spawns++;
+    await new Promise<void>(done => { ready = done; });
+    yield READY;
+    await new Promise(() => {});
+  });
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  const starting = ui.press({ key: 'workbench' });
+  for (let i = 0; i < 100 && (await ui.find({ key: 'workbench' }))?.props.label !== 'Cancel common workbench startup'; i++) await new Promise(done => setTimeout(done, 5));
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Cancel common workbench startup');
+  await ui.press({ key: 'workbench' });
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+  for (let i = 0; i < 100 && !ready; i++) await new Promise(done => setTimeout(done, 5));
+  ready();
+  await starting;
+  expect(spawns).toBe(1);
+  expect(await ui.find({ type: 'Text', text: /Common workbench/ })).toBeUndefined();
+  expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Open common workbench');
+  await ui.unmount();
+});
+

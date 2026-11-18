@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Claude Code pane: open the common workbench for the session workspace from the pane, copy its loopback address with the scope to select, report startup failures or an unexpected exit, and stop the server on close, pane close or session end; a second press cancels a pending startup.
 - Claude Code pane: select All documents or one feature when a workspace has several, as in OpenCode; bind proposals to the assessed source hash; report an unsuitable or missing Node.js 22.20+ runtime and label analysis, proposal and apply failures. CLI: `analyze --feature <id>` (unknown features are rejected) and `refine --expect-hash <sha256>`.
 - Package the Claude Code plugin as a deterministic ZIP with `npm run package:claude`, sharing the archive helper with OpenCode (OpenCode bytes unchanged).
 - Engine 0.1.1 recognizes complete EN/ES normative words, including Spanish plurals and accented forms, consistently with or without requirement IDs. Newly recognized requirements can change findings and evidence ratios; schema, rubric and scoring policy are unchanged. See docs/normative-recognition.md for examples and limits.
