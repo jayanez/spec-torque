@@ -25,6 +25,19 @@ await build({
   format: 'esm', outfile: codexRuntime + '/server.mjs',
   banner: { js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);" },
 });
+await build({
+  entryPoints: ['src/cli.ts'], bundle: true, platform: 'node', target: 'node22',
+  format: 'esm', outfile: codexRuntime + '/workbench.mjs',
+  banner: { js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);" },
+});
+const codexRoot = 'integrations/codex';
+for (const dir of ['web-dist', 'skills']) {
+  await rm(codexRoot + '/' + dir, { recursive: true, force: true });
+  await cp(dir, codexRoot + '/' + dir, { recursive: true });
+}
+for (const filename of ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) {
+  await cp(filename, codexRoot + '/' + filename);
+}
 const widget = await build({
   entryPoints: ['integrations/codex/viewer.ts'], bundle: true, platform: 'browser', target: 'es2022',
   format: 'iife', write: false,

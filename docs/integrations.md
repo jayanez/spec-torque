@@ -22,15 +22,17 @@ Validate with `claude plugin validate integrations/claude` and run the bundled n
 
 Official references: [Mods](https://code.claude.com/docs/en/plugins/mods/create), [interface](https://code.claude.com/docs/en/plugins/mods/interface), [testing](https://code.claude.com/docs/en/plugins/mods/test).
 
-## Codex and VS Code
+## Codex Desktop
 
-For a disposable project-scoped Codex installation, run `npm run prepare:codex -- en` or `-- es` after building. The generated workspace contains the host-specific TOML configuration and three local skills. See [qualification](qualification.md) for reproduction and removal; the generic JSON configuration above is not a Codex TOML example.
+Build the viewer ZIP with `npm run check`, `npm run package:integrations` and `npm run package:codex`. Verify the package with `npm run verify:codex-package`. The ZIP bundles the project MCP runtime, the inline resource, the skills and the loopback workbench. Follow the [package guide](../integrations/codex/README.md) for local marketplace installation, binding a trusted worktree, upgrade and removal.
 
-MCP/skills connect the agent. The visual deliverable is a standard VS Code webview alongside Codex. Install the packaged VSIX or load `integrations/vscode` through VS Code's extension development host, open your project and run **SpecTorque: Open Specification Workbench**. It launches a workspace-scoped local server and displays the same panel. The extension stops its child server when disposed.
+Use the inline viewer for scope, evidence and the exact before/after. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. The tested opening route invokes `open_spectorque` in a local Codex chat. See [Desktop qualification](codex-desktop-probe.md) for observed builds and limits.
 
-The VS Code path uses public extension APIs; it is not a custom panel injected into the Codex desktop application. Desktop MCP Apps rendering needs independent real-client qualification and is additional scope. API metadata alone is insufficient evidence of rendering.
+The independent project-MCP control `npm run prepare:codex -- en` or `-- es` generates a disposable workspace and three local skills. See [qualification](qualification.md) for the app-server run.
 
-Official reference: [VS Code webviews](https://code.visualstudio.com/api/extension-guides/webview).
+## VS Code workbench
+
+Install the packaged VSIX or load `integrations/vscode` through the extension development host. Run **SpecTorque: Open Specification Workbench** from the project. The extension launches and disposes a workspace-scoped loopback server. The shared editor workstream is tracked in [#5](https://github.com/jayanez/spec-torque/issues/5).
 
 ## OpenCode
 

@@ -15,6 +15,6 @@ Target release year: **2026**. Dates describe planned acceptance, not automatic 
 
 Three workstreams: engine/formats; visual experience/builder; integrations/distribution. GitHub Issues records owners, dependencies, checks and state; this document does not duplicate their checklists. Reversible choices are resolved during implementation. New feature intake closes Nov 26; remaining work completes the agreed scope and fixes defects.
 
-V1 excludes code/test implementation verification, model training, advanced enterprise features and additional host-specific visual shells. Cursor, Copilot and Gemini CLI receive connection guides. Codex desktop MCP Apps remain an optional additional qualification; the committed Codex visual surface is a VS Code extension using public interfaces.
+V1 excludes code/test implementation verification, model training, advanced enterprise features and additional host-specific visual shells. Cursor, Copilot and Gemini CLI receive connection guides. The Codex visual deliverable is the Codex Desktop viewer in [#27](https://github.com/jayanez/spec-torque/issues/27). The shared VS Code workbench is tracked separately in [#5](https://github.com/jayanez/spec-torque/issues/5). Windows qualification follows [#34](https://github.com/jayanez/spec-torque/issues/34).
 
 NVIDIA Model Optimizer is a later optimization experiment against the same evaluation corpus, not a prerequisite. Directory publication and model-provider accounts do not determine delivery dates.
