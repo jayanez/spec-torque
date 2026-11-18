@@ -1,21 +1,37 @@
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { McpServer } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 
 const uri = 'ui://spectorque-desktop-probe/probe.html';
 const mimeType = 'text/html;profile=mcp-app';
 const uiExtension = 'io.modelcontextprotocol/ui';
-const version = '0.1.0';
+const version = '0.1.1';
 const server = new McpServer({ name: 'spectorque-desktop-probe', version });
 const annotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
 const tracePath = process.env.SPECTORQUE_PROBE_TRACE;
-const cwdName = basename(process.cwd());
-const cwd = ['project-a', 'project-b', 'project-direct'].includes(cwdName) ? cwdName : 'other';
+function fixtureCategory(path: string) {
+  const name = basename(path);
+  return ['project-a', 'project-b', 'project-direct'].includes(name) ? name : 'other';
+}
+const cwd = fixtureCategory(process.cwd());
 
-async function trace(event: string) {
+async function probeRoots(): Promise<string[]> {
+  if (!server.server.getClientCapabilities()?.roots) return ['not-advertised'];
+  try {
+    const result = await server.server.listRoots(undefined, { timeout: 3000 });
+    return result.roots.slice(0, 10).map(root => {
+      try { return fixtureCategory(fileURLToPath(root.uri)); } catch { return 'other'; }
+    });
+  } catch {
+    return ['unavailable'];
+  }
+}
+
+async function trace(event: string, roots?: string[]) {
   const line = JSON.stringify({
-    event, cwd, pid: process.pid, version,
+    event, cwd, pid: process.pid, version, roots,
     uiAdvertised: Boolean(server.server.getClientCapabilities()?.extensions?.[uiExtension]),
   }) + '\n';
   process.stderr.write(line);
@@ -54,14 +70,15 @@ server.registerTool('open_probe', {
 });
 
 server.registerTool('read_probe', {
-  description: 'Read a synthetic marker and the server working-directory category.',
+  description: 'Read a synthetic marker and the fixture categories of the server cwd and host MCP roots.',
   annotations,
   _meta: { ui: { visibility: ['app'] } },
 }, async () => {
-  await trace('read-probe');
+  const roots = await probeRoots();
+  await trace('read-probe', roots);
   return {
     content: [{ type: 'text', text: 'Probe second read complete.' }],
-    structuredContent: { marker: 'probe-second-read', cwd },
+    structuredContent: { marker: 'probe-second-read', cwd, roots },
   };
 });
 

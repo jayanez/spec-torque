@@ -9,7 +9,7 @@ const repository = resolve(import.meta.dirname, '..');
 const probe = join(import.meta.dirname, 'codex-desktop-probe');
 const name = 'spectorque-desktop-probe';
 const marketplace = 'spectorque-desktop-qualification';
-const version = '0.1.0';
+const version = '0.1.1';
 const parent = resolve(process.argv[2] ?? join(repository, '.spec-torque'));
 if (process.argv.length > 3) throw new Error('Usage: npm run prepare:codex-desktop-probe -- [output-directory]');
 

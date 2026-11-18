@@ -130,7 +130,7 @@ async function exerciseSyntheticBridge(html, call) {
     const frame = page.frameLocator('iframe');
     await expect(frame.getByRole('status').first()).toHaveText('Bridge ready · 2026-01-26 · inline');
     await frame.getByRole('button', { name: 'Read probe marker' }).click();
-    await expect(frame.getByRole('status').last()).toHaveText('probe-second-read · cwd: project-direct');
+    await expect(frame.getByRole('status').last()).toHaveText(/^probe-second-read · cwd: project-direct · roots: /);
     const steps = await page.evaluate(() => window.probeBridgeSteps);
     assert.deepEqual(steps, ['ui/initialize', 'ui/notifications/initialized', 'tools/call']);
     assert.deepEqual(externalRequests, []);
@@ -165,7 +165,7 @@ try {
     const bridge = await exerciseSyntheticBridge(content.text, call);
     const trace = (await readFile(join(probe.run, 'direct-trace.ndjson'), 'utf8')).trim().split('\n').map(JSON.parse);
     assert.deepEqual(trace.slice(-4).map(entry => entry.event), ['server-start', 'open-probe', 'resource-read', 'read-probe']);
-    return { userAgent, trustDenial: true, tools: ['open_probe', 'read_probe'], uri, mimeType, bridge, uiAdvertised: trace.at(-1).uiAdvertised };
+    return { userAgent, trustDenial: true, tools: ['open_probe', 'read_probe'], uri, mimeType, bridge, uiAdvertised: trace.at(-1).uiAdvertised, roots: trace.at(-1).roots };
   });
   assert.equal(inferenceRequests, 0);
   const report = {

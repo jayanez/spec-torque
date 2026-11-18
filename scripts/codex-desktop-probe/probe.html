@@ -54,7 +54,7 @@
     }
     try {
       const handshake = await request('ui/initialize', {
-        appInfo: { name: 'spectorque-desktop-probe', version: '0.1.0' },
+        appInfo: { name: 'spectorque-desktop-probe', version: '0.1.1' },
         appCapabilities: { availableDisplayModes: ['inline', 'fullscreen'] },
         protocolVersion: '2026-01-26',
       });
@@ -76,7 +76,8 @@
       const response = await request('tools/call', { name: 'read_probe', arguments: {} });
       const data = response?.structuredContent;
       if (response?.isError || data?.marker !== 'probe-second-read') throw new Error('Unexpected probe response.');
-      result.textContent = data.marker + ' · cwd: ' + data.cwd;
+      const roots = Array.isArray(data.roots) ? data.roots.join(', ') || 'none' : 'unknown';
+      result.textContent = data.marker + ' · cwd: ' + data.cwd + ' · roots: ' + roots;
     } catch (error) {
       result.textContent = error.message;
     } finally {
