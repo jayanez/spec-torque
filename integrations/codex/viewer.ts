@@ -1,4 +1,4 @@
-import type { Assessment, Evidence } from '../../src/core/types.js';
+import type { Assessment, Evidence, Finding, PatchProposal } from '../../src/core/types.js';
 
 interface AssessmentView {
   root: string;
@@ -66,6 +66,68 @@ function source(evidence: Evidence) {
   return block;
 }
 
+function refinement(view: AssessmentView, finding: Finding) {
+  const section = element('details');
+  const caption = element('summary', label('Preview a change', 'Previsualizar un cambio'));
+  const first = finding.evidence[0];
+  const field = element('label', label('Replacement line', 'Línea propuesta'));
+  const input = element('textarea');
+  input.rows = 2;
+  input.maxLength = 20_000;
+  input.value = first.text;
+  field.append(input);
+  const preview = element('button', label('Show difference', 'Mostrar diferencia'));
+  preview.type = 'button';
+  preview.disabled = true;
+  const feedback = element('p');
+  feedback.setAttribute('role', 'status');
+  feedback.hidden = true;
+  const diff = element('div');
+  function reset() {
+    diff.replaceChildren();
+    feedback.hidden = true;
+    preview.disabled = input.value === first.text || !input.value.trim();
+  }
+  input.addEventListener('input', reset);
+  preview.addEventListener('click', async () => {
+    preview.disabled = true;
+    input.disabled = true;
+    diff.replaceChildren();
+    feedback.hidden = false;
+    feedback.textContent = label('Validating replacement…', 'Validando el texto…');
+    try {
+      const result = await request('tools/call', {
+        name: 'preview_refinement',
+        arguments: { feature: view.feature, revision: view.assessment.id, findingId: finding.id, replacement: input.value },
+      }) as { isError?: boolean; _meta?: { proposal?: PatchProposal; stale?: boolean } };
+      if (result?._meta?.stale) {
+        feedback.textContent = label('The assessment changed. Refresh before reviewing this edit.', 'La evaluación cambió. Actualiza antes de revisar este cambio.');
+        return;
+      }
+      const proposal = result?._meta?.proposal;
+      if (result?.isError || !proposal || proposal.path !== first.path || proposal.line !== first.line ||
+        proposal.original !== first.text || proposal.replacement !== input.value) throw new Error('Invalid proposal');
+      const discard = element('button', label('Discard preview', 'Descartar vista previa'));
+      discard.type = 'button';
+      discard.addEventListener('click', () => { input.value = first.text; reset(); input.focus(); });
+      diff.append(
+        element('p', proposal.path + ':' + proposal.line),
+        element('strong', label('Before', 'Antes')), element('pre', proposal.original),
+        element('strong', label('After', 'Después')), element('pre', proposal.replacement),
+        discard,
+      );
+      feedback.textContent = label('Preview ready. The file is unchanged.', 'Vista previa lista. El archivo sigue intacto.');
+    } catch {
+      feedback.textContent = label('Could not preview this wording. Check that the replacement preserves the requirement.', 'No se pudo previsualizar el texto. Comprueba que el cambio conserva el requisito.');
+    } finally {
+      input.disabled = false;
+      preview.disabled = false;
+    }
+  });
+  section.append(caption, field, preview, feedback, diff);
+  return section;
+}
+
 function draw(view: AssessmentView) {
   if (feature !== view.feature) selectedFinding = undefined;
   feature = view.feature;
@@ -97,7 +159,10 @@ function draw(view: AssessmentView) {
       const finding = result.findings.find(item => item.id === choices.value);
       selectedFinding = finding?.id;
       evidence.replaceChildren();
-      if (finding) evidence.append(...finding.evidence.map(source), element('p', finding.suggestion));
+      if (finding) {
+        evidence.append(...finding.evidence.map(source), element('p', finding.suggestion));
+        if (finding.evidence[0]) evidence.append(refinement(view, finding));
+      }
     }
     choices.addEventListener('change', showFinding);
     picker.append(element('span', label('Finding', 'Hallazgo')), choices);

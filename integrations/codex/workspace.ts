@@ -2,6 +2,8 @@ import { isAbsolute } from 'node:path';
 import { realpath, stat } from 'node:fs/promises';
 import { analyze, createProposal, discoverWorkspace, selectFeature } from '../../src/integration.js';
 
+export class StaleAssessmentError extends Error {}
+
 export async function bindWorkspace(configuredRoot: string | undefined) {
   if (!configuredRoot || !isAbsolute(configuredRoot)) throw new Error('Configure the trusted worktree with an absolute root.');
   const root = await realpath(configuredRoot);
@@ -24,7 +26,7 @@ export async function bindWorkspace(configuredRoot: string | undefined) {
     },
     async propose(input: { feature: string | null; revision: string; findingId: string; replacement: string }) {
       const { scope, assessment } = await load(input.feature);
-      if (assessment.id !== input.revision) throw new Error('The assessment is stale. Refresh and select the finding again.');
+      if (assessment.id !== input.revision) throw new StaleAssessmentError('The assessment is stale. Refresh and select the finding again.');
       const finding = assessment.findings.find(item => item.id === input.findingId);
       const evidence = finding?.evidence[0];
       const artifact = scope.artifacts.find(item => item.path === evidence?.path);
