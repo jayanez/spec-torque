@@ -81,6 +81,8 @@ Copy `fixtures/en-draft/specs/booking` to the scratch workspace and add the Span
 
 Verify that **All documents** is initially selected, that both features are offered, and that each scope matches the shared engine. Use the finding selector and check the path, line and excerpt against the fixture. The inline view shows one finding at a time. Expand **Assessment details** for the full revision, worktree path and dimensions. Repeat for the other feature and use **Refresh** to reload the selected scope. The sandboxed browser control exercises English and Spanish UI via the host locale. Desktop qualification records the observed locale separately. This increment covers read-only analysis and evidence.
 
+On macOS arm64, the compact viewer rendered in Codex Desktop and opened on **All documents**. The displayed ten findings, ten unknown practices and first evidence excerpt at `specs/booking/spec.md:5` matched the shared engine. The initial finding picker and excerpt fit within the host's inline area. Feature switching was exercised in the browser control and still needs Desktop evidence.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.
