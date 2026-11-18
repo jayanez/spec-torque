@@ -1,6 +1,6 @@
 # Compatibility and observed qualification
 
-Snapshot: **2026-11-17**, preview 0.1.0. “Implemented” means source exists; “exercised” describes an observed check. Neither means full December acceptance. No provider inference was required for the checks below.
+Snapshot: **2026-11-18**, preview 0.1.0. “Implemented” means source exists; “exercised” describes an observed check. Neither means full December acceptance. No provider inference was required for the checks below, except the Claude Code rows' model turns: one headless turn per language for MCP/skill use by Claude, and the first message of each Desktop session, which Desktop sends to the model.
 
 | Surface | Version observed | Observed evidence | Remaining qualification |
 |---|---|---|---|

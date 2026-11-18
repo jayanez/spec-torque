@@ -204,8 +204,9 @@ disk and screenshots kept locally.
   `FR-001: El sistema DEBE ser rápido.` at `specs/booking/spec.md:5`. The full ES
   flow is covered in the terminal by `qualify:claude`.
 
-No model prompt was used for these checks; two short model turns occurred only
-because Desktop sends a new session's first message to the model. Uninstalling
+The operator submitted no prompt during these checks, but they were not
+inference-free: Desktop sent each new session's first message to the model, so
+two short model turns occurred (one per session). Uninstalling
 the plugin from one project removed the shared install record while the other
 project's settings still listed it as enabled; that disposable settings file
 was reset by hand. Windows Desktop and automated Desktop runs remain pending in
