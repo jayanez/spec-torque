@@ -19,7 +19,7 @@ The protocol control verifies the package digest and extracted files, then uses 
 
 ## Run in the installed desktop client
 
-1. Use a clean OS test user or VM with its own ChatGPT app data, Codex config, marketplace cache and credentials. Verify that the GUI and local runtime use the isolated account. Record desktop app version, build/channel, runtime version if visible, OS and architecture, Node version and any account or policy requirements.
+1. Use a clean OS test user or VM to measure clean-install behavior. A regular Codex profile can be used for an existing-profile smoke test with the disposable project. Record which profile was used, desktop app version, build/channel, runtime version if visible, OS and architecture, Node version and any account or policy requirements.
 2. Open the generated `project-a` in **Codex** mode. Decline project trust and check that project config cannot activate the probe. Then trust this scratch project, open **Plugins**, find **spectorque-desktop-probe** under **spectorque-desktop-qualification** and install it. Verify that the installed manifest, runtime and HTML bytes match the archive. Record the marketplace source, effective config and digest. If the packaged server fails to start, check GUI Node resolution and placeholder resolution. Record any diagnostic variant and its own digest.
 3. In a new local chat, look for a direct conversation-panel entry. Open it, capture the probe heading and the **Bridge ready** status, then use **Read probe marker** and verify `probe-second-read`. Capture the placement and whether a turn was sent. Check whether the same surface reopens after closing. If an authenticated or model-triggered call is required to test inline or fullscreen, run it only after separate authorization and use this synthetic fixture.
 4. Record the server trace from `PLUGIN_DATA/trace.ndjson` if the host resolves that path, or from the local MCP diagnostics. The expected sequence is `server-start`, `open-probe`, `resource-read`, `read-probe`. Record the observed ordering and any absent stages. The trace includes the standard UI capability advertisement, process ID and a bounded cwd category. The in-view status records the bridge protocol and its reported placement. Keep sanitized screenshots and trace lines. A resource URI in the tool result establishes association. A successful button click and resulting second read establish interaction.
@@ -29,6 +29,18 @@ The protocol control verifies the package digest and extracted files, then uses 
 
 Record the last successful stage and the first error if a case stops. Keep installation, app-server, synthetic browser and native results distinct. Where native rendering is unavailable, record the action and built-in-browser handoff separately.
 
+## Install and open using the CLI
+
+When the installed Codex CLI supports local marketplace installation, run the following from the generated `project-a` directory:
+
+```sh
+codex plugin marketplace add .
+codex plugin add spectorque-desktop-probe@spectorque-desktop-qualification
+codex app .
+```
+
+The CLI installs in the current Codex profile and opens the project in the desktop app on macOS. Continue the rendering and interaction checks in the desktop UI. Compare the archived files with the installed copy before recording the installation. Codex may generate a `.codex-plugin/plugin.json` compatibility overlay in that copy. Record additional files separately. See the [marketplace documentation](https://developers.openai.com/plugins/build/plugins#add-plugins-from-a-local-marketplace) and [CLI reference](https://learn.chatgpt.com/docs/cli/reference#codex-app).
+
 ## Clean up
 
-Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added in the test profile and preserve only sanitized evidence. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.
+Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.
