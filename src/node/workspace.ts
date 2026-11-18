@@ -42,10 +42,15 @@ export async function discoverWorkspace(root: string): Promise<ArtifactSet> {
   await walk(canonicalRoot, 0);
   return { name: basename(canonicalRoot), artifacts };
 }
-export async function readWorkspaceArtifact(root: string, path: string): Promise<string> {
+export async function readWorkspaceArtifactBytes(root: string, path: string): Promise<Buffer> {
   const target = await resolveArtifactPath(root, path);
   if ((await stat(target)).size > 1_000_000) throw new Error('Artifact exceeds 1 MB.');
-  return readFile(target, 'utf8');
+  const bytes = await readFile(target);
+  if (bytes.length > 1_000_000) throw new Error('Artifact exceeds 1 MB.');
+  return bytes;
+}
+export async function readWorkspaceArtifact(root: string, path: string): Promise<string> {
+  return (await readWorkspaceArtifactBytes(root, path)).toString('utf8');
 }
 export async function applyWorkspaceProposal(root: string, proposal: PatchProposal): Promise<string> {
   const content = await readWorkspaceArtifact(root, proposal.path);

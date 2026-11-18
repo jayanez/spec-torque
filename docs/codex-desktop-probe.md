@@ -87,6 +87,12 @@ On macOS arm64, the compact viewer rendered in Codex Desktop and opened on **All
 
 Start the existing workbench with `node dist/cli.js serve --root /absolute/path/to/this/worktree --port 0`. Open the printed loopback URL with `?review=1` in the integrated browser. In the Codex preview, open **Review in local workbench**, copy the review data and paste it into the review page. The workbench reconstructs the proposal against the configured root and revision before displaying a second before/after preview. Choose **Reject change** or **Approve and write to disk**. Approval revalidates the review and uses the existing guarded write. After approval, return to Codex and refresh the same scope. Stop the local workbench process when the test ends.
 
+`specs/other` was approved in the built-in browser and refreshed in Desktop on macOS arm64. The viewer showed four findings and one pending decision at line 5. The reviewed line matched the expected file bytes and the sibling feature was unchanged.
+
+### Export the visible scope
+
+In the viewer, expand **Export** and request **Download JSON** and **Download ZIP**. Confirm the JSON matches the displayed assessment and the ZIP contains only the scoped artifact paths and exact bytes. If an inline download is unavailable, open **Export in local workbench**, copy the selection and paste it into the workbench loopback page with `?export=1`. The workbench checks the exact worktree and assessment revision before export. If the scope changed, refresh the viewer and copy a new selection. The native ZIP request limits the source bytes to 512 KiB. The local workbench supports the shared 20 MB archive limit.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.

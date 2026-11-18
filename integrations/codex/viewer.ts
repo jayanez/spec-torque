@@ -1,3 +1,4 @@
+import { download, downloadZip } from '../../src/web/api.js';
 import type { Assessment, Evidence, Finding, PatchProposal } from '../../src/core/types.js';
 
 interface AssessmentView {
@@ -140,6 +141,51 @@ function refinement(view: AssessmentView, finding: Finding) {
   return section;
 }
 
+function exportControls(view: AssessmentView) {
+  const section = element('details');
+  const filename = 'spectorque-' + view.assessment.id.slice(0, 12);
+  const json = element('button', label('Download JSON', 'Descargar JSON'));
+  const zip = element('button', label('Download ZIP', 'Descargar ZIP'));
+  const status = element('p');
+  status.setAttribute('role', 'status');
+  const selection = { root: view.root, feature: view.feature, revision: view.assessment.id, createdAt: view.assessment.createdAt };
+  json.addEventListener('click', () => {
+    download(filename + '.json', JSON.stringify(view.assessment, null, 2), 'application/json');
+  });
+  zip.addEventListener('click', async () => {
+    zip.disabled = true;
+    status.textContent = label('Preparing archive…', 'Preparando el ZIP…');
+    try {
+      const response = await request('tools/call', { name: 'export_worktree_zip', arguments: selection }) as {
+        isError?: boolean;
+        _meta?: { archive?: string; stale?: boolean };
+      };
+      if (response?._meta?.stale) {
+        status.textContent = label('The assessment changed. Refresh before exporting.', 'La evaluación cambió. Actualiza antes de exportar.');
+        return;
+      }
+      if (response?.isError || typeof response?._meta?.archive !== 'string') throw new Error('Archive unavailable');
+      downloadZip(filename + '.zip', response._meta.archive);
+      status.textContent = label('Download requested.', 'Descarga solicitada.');
+    } catch {
+      status.textContent = label('The ZIP could not be downloaded here. Use the local workbench.', 'No se pudo descargar el ZIP aquí. Usa el workbench local.');
+    } finally {
+      zip.disabled = false;
+    }
+  });
+  const handoff = element('details');
+  const packet = element('textarea');
+  packet.readOnly = true;
+  packet.rows = 2;
+  packet.value = JSON.stringify(selection);
+  const field = element('label', label('Export selection', 'Selección de exportación'));
+  field.append(packet);
+  handoff.append(element('summary', label('Export in local workbench', 'Exportar en el workbench local')),
+    element('p', label('Copy this selection into the local workbench export page.', 'Copia esta selección en la página de exportación del workbench local.')), field);
+  section.append(element('summary', label('Export', 'Exportar')), json, document.createTextNode(' '), zip, status, handoff);
+  return section;
+}
+
 function draw(view: AssessmentView) {
   if (feature !== view.feature) selectedFinding = undefined;
   feature = view.feature;
@@ -199,7 +245,7 @@ function draw(view: AssessmentView) {
   }
   overview.append(element('summary', label('Assessment details', 'Detalles de la evaluación')),
     dimensions, element('p', label('Revision ', 'Revisión ') + result.id), root);
-  report.append(decisions, overview);
+  report.append(decisions, overview, exportControls(view));
 }
 
 function observeSize() {

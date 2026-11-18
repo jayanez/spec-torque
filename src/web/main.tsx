@@ -1,5 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './App.js';
 import { ScopedReview } from './ScopedReview.js';
+import { ScopedExport } from './ScopedExport.js';
 import './styles.css';
-createRoot(document.getElementById('root')!).render(new URLSearchParams(location.search).has('review') ? <ScopedReview/> : <App/>);
+const query = new URLSearchParams(location.search);
+createRoot(document.getElementById('root')!).render(query.has('review') ? <ScopedReview/> : query.has('export') ? <ScopedExport/> : <App/>);

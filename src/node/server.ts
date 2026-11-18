@@ -13,7 +13,7 @@ import { contentHash } from '../core/artifacts.js';
 import { importGitHub } from './github.js';
 import { requestRewrite } from './provider.js';
 import { bindWorkspace } from './scoped-review.js';
-import { parseSet, builderSchema, proposalSchema, rewriteSchema } from './schemas.js';
+import { parseSet, builderSchema, proposalSchema, rewriteSchema, scopedExportSchema } from './schemas.js';
 const mime: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json' };
 class RequestTooLarge extends Error {}
 const scopedReviewSchema = z.object({
@@ -61,6 +61,10 @@ export async function startServer(root: string, requestedPort = 4317) {
           if (original === undefined) throw new Error('Invalid source line.');
           const suggestion = await requestRewrite(value.provider, original, value.context, value.language);
           send(200, await createProposal(value.document.path, value.document.content, value.line, suggestion.replacement, suggestion.reason, 'provider')); return;
+        }
+        if (url.pathname === '/api/scoped-export') {
+          const { selection, format } = z.object({ selection: scopedExportSchema, format: z.enum(['json', 'zip']) }).parse(input);
+          send(200, await (await bindWorkspace(resolve(root))).exportScope(selection, format)); return;
         }
         if (url.pathname === '/api/scoped-review') {
           const review = scopedReviewSchema.parse(input);
