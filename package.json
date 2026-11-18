@@ -48,6 +48,7 @@
     "package:vscode": "npm run package:integrations && node scripts/package-vscode.mjs",
     "qualify:handoff": "npm run verify:node && node --import tsx scripts/qualify-common-handoff.mjs",
     "qualify:pi": "npm run verify:node && node scripts/qualify-pi.mjs",
+    "qualify:claude": "npm run verify:node && node scripts/qualify-claude.mjs",
     "package:opencode": "npm run verify:node && node scripts/package-opencode.mjs",
     "package:claude": "npm run verify:node && node scripts/package-claude.mjs",
     "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs"

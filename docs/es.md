@@ -37,6 +37,10 @@ archivo ya no coincide con el hash evaluado.
 sesión, copia su dirección e indica el alcance que hay que seleccionar; se detiene
 al cerrarlo, al cerrar el panel o al terminar la sesión. Pulsarlo mientras arranca
 cancela ese arranque.
+`npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-0.1.0.zip <node_modules>`
+recorre el ZIP instalado en un cliente real (EN/ES, alcance, rechazo, aplicación,
+fuente obsoleta, traspaso, errores e instalación por marketplace) sin enviar
+prompts al modelo.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
 
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
