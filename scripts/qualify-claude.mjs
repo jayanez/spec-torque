@@ -268,7 +268,7 @@ try {
   // Always unregister the qualification copy, even when a later step fails.
   const removeInstall = async () => {
     await claude(['plugin', 'uninstall', 'spectorque@spectorque-qualification', '--scope', 'project']).catch(() => {});
-    await claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification', '--scope', 'project']).catch(() => claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification'])).catch(() => {});
+    await claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification', '--scope', 'project']).catch(() => {});
   };
   await claude(['plugin', 'marketplace', 'add', market, '--scope', 'project']);
   try {
@@ -286,7 +286,9 @@ try {
   const secondProfile = JSON.parse((await claude(['plugin', 'list', '--json'], { cwd: isolated, env: { ...env, CLAUDE_CONFIG_DIR: join(scratch, 'second-config') } })).stdout);
   assert.ok(!secondProfile.some(plugin => String(plugin.id ?? plugin.name).startsWith('spectorque')), 'Another profile and directory must not inherit the install.');
   await claude(['plugin', 'uninstall', 'spectorque@spectorque-qualification', '--scope', 'project']);
-  await claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification', '--scope', 'project']).catch(() => claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification']));
+  // Every marketplace command stays project-scoped so the operator's user marketplaces are untouched.
+  await claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification', '--scope', 'project']);
+  assert.ok(!(await claude(['plugin', 'marketplace', 'list', '--json'])).stdout.includes('spectorque-qualification'), 'The project marketplace is removed.');
   const after = JSON.parse((await claude(['plugin', 'list', '--json'])).stdout);
   assert.ok(!after.some(plugin => String(plugin.id ?? plugin.name).startsWith('spectorque@spectorque-qualification')), 'Uninstalled plugin is no longer listed.');
   await session('marketplace-removed', project, [], async ui => {
