@@ -34,7 +34,26 @@ Official reference: [VS Code webviews](https://code.visualstudio.com/api/extensi
 
 ## OpenCode
 
-The adapter in `integrations/opencode` targets the public V2 TUI plugin API. Add the absolute generated folder to your client's `cli.json`: `{"plugins":["/absolute/spectorque/integrations/opencode"]}`. Local entries are directories, not individual files; the package exports `./tui`. `/spectorque` refreshes a session panel; `/spectorque-review` opens finding selection and a reviewed refinement flow. The common panel and local MCP remain the fallback while installed-version compatibility is qualified.
+Run `npm run build`, `npm run package:integrations` and `npm run package:opencode`
+to create the host ZIP. Extract it and add its absolute directory to `plugins`
+in your CLI profile: `{"plugins":["/absolute/spectorque-opencode"]}`. OpenCode
+2.1.4 reads the single CLI settings file at
+`$XDG_CONFIG_HOME/opencode/cli.json` when XDG is configured. The entry applies
+across that profile's workspaces. Remove it and restart OpenCode to uninstall.
+The ZIP exports `./tui` and includes the bundled runtime and workbench assets.
+It contains no auto-discovered OpenCode skills.
+
+`/spectorque` opens the native panel for a local, existing session and a summary
+dialog from home. Focus the panel and press **s** for scope, **e** for the exact
+source line, **r** for reviewed changes, **w** for the local workbench URL and
+**q** to close it. `/spectorque-review` remains available from the command
+palette and prompt. The workbench uses the session's local workspace. In the
+browser, load the workspace and select the same feature as the panel.
+
+On a session connection error, reconnect and rerun `/spectorque`. The workbench
+URL expires when the terminal changes workspaces or unloads the adapter.
+Remote filesystems, the minimal CLI and the desktop client are outside the
+observed TUI surface. See [OpenCode qualification](host-common-qualification.md#opencode-installed-package).
 
 ## Pi
 

@@ -25,6 +25,15 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 ## Continuación en otros clientes
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).
+
+En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
+`plugins` en el `cli.json` del perfil CLI. En una sesión existente del
+workspace local, ejecuta `/spectorque`. Con el panel enfocado, usa **s**
+para elegir alcance, **e** para ver la ruta, línea y texto fuente, **r** para
+revisar un cambio, **w** para obtener la URL del panel común y **q** para
+cerrar el panel. En el navegador, carga el workspace y selecciona el mismo
+alcance. Para retirar el plugin, quita la entrada y reinicia el cliente.
+Consulta la [instalación y sus límites](integrations.md#opencode).
 `npm run qualify:handoff -- /ruta/absoluta/al/proyecto-de-prueba` comprueba el
 traspaso al panel común y las exportaciones después del cambio nativo. Esa prueba
 no automatiza el cliente ni sustituye su aceptación, la de otros sistemas o la
