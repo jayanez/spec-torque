@@ -29,10 +29,11 @@ for (const name of ['.claude-plugin/plugin.json', '.mcp.json', 'hooks/hooks.json
   assert.ok(files[name]?.length, 'Required archive entry: ' + name);
 }
 assert.ok(!Object.keys(files).some(name => name.startsWith('tests/')), 'Tests must not be packaged.');
+// Fail on an unusable client before creating any directory.
+const version = (await run(executable, ['--version'])).stdout.trim();
 const scratch = await mkdtemp(join(tmpdir(), 'spectorque-claude-'));
 await mkdir('.spec-torque', { recursive: true });
 const output = await mkdtemp(resolve('.spec-torque/claude-'));
-const version = (await run(executable, ['--version'])).stdout.trim();
 // Child sessions must not inherit this process's own Claude Code session markers.
 const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^CLAUDE_?CODE/.test(key)));
 Object.assign(env, { TERM: 'xterm-256color', COLORTERM: 'truecolor' });
