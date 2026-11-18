@@ -50,9 +50,52 @@ async function refresh($) {
   }
   $.ui.invalidate('ui.render');
 }
+// One loopback common-workbench server per session, owned by this pane.
+let workbench;
+let workbenchNote = '';
+async function closeWorkbench() {
+  const current = workbench;
+  workbench = undefined;
+  // Do not block the pane while the host stops the server process.
+  if (current) current.handle.return().catch(() => {});
+}
+async function openWorkbench($) {
+  const root = await $.session.cwd();
+  if (workbench?.root === root) return workbench;
+  await closeWorkbench();
+  const handle = $.process.spawn({ argv: ['node', cli, 'serve', '--root', root, '--port', '0'], cwd: root });
+  const current = { handle, root, url: '' };
+  workbench = current;
+  let output = '';
+  try {
+    for (;;) {
+      const chunk = await handle.next();
+      if (chunk.done) throw new Error(output.trim() || 'The common workbench exited before it was ready.');
+      output += chunk.value.text;
+      const url = /SpecTorque workbench: (http:\/\/127\.0\.0\.1:\d+)/.exec(output)?.[1];
+      if (url) { current.url = url; break; }
+      if (output.length > 8192) throw new Error('The common workbench did not report its address.');
+    }
+  } catch (e) {
+    if (workbench === current) await closeWorkbench();
+    throw e;
+  }
+  // Drain later output; report an unexpected exit while this server is current.
+  (async () => { for await (const _ of handle); })().catch(() => {}).finally(() => {
+    if (workbench !== current) return;
+    workbench = undefined;
+    workbenchNote = 'The common workbench stopped. Open it again to continue.';
+    $.ui.invalidate('ui.render');
+  });
+  return current;
+}
 export function register(on) {
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: PANE, description: 'Review specification quality and evidence' });
+    return next(e);
+  });
+  on('session.end', async ($, e, next) => {
+    await closeWorkbench();
     return next(e);
   });
   on('command.run', { command: PANE }, async ($) => {
@@ -70,7 +113,18 @@ export function register(on) {
     const children = [
       Text({ children: ['SpecTorque · ' + (assessment?.name || 'Review')] }),
       Button({ key: 'refresh', label: 'Refresh analysis', onPress: () => refresh($) }),
+      Button({ key: 'workbench', label: workbench?.url ? 'Close common workbench' : 'Open common workbench', onPress: async () => {
+        if (workbench?.url) { await closeWorkbench(); workbenchNote = ''; redraw(); return; }
+        try {
+          const opened = await openWorkbench($);
+          workbenchNote = '';
+          try { await $.ui.copy({ text: opened.url }); opened.copied = true; } catch { opened.copied = false; }
+        } catch (e) { workbenchNote = 'Common workbench failed: ' + message(e); }
+        redraw();
+      } }),
     ];
+    if (workbench?.url) children.push(Text({ children: ['Common workbench' + (workbench.copied ? ' (address copied)' : '') + ': ' + workbench.url + '\nOpen it in a browser, load the local workspace and select: ' + (scope ?? ALL)] }));
+    if (workbenchNote) children.push(Text({ children: [workbenchNote] }));
     if (scopes.length > 1) {
       children.push(Text({ children: ['Scope: ' + (scope ?? ALL)] }));
       children.push(Box({ flexDirection: 'row', columnGap: 2, children: [

@@ -33,6 +33,9 @@ y ejecuta `/spectorque`. El panel usa el `node` del `PATH` (Node 22.20+).
 Si el workspace tiene varias funcionalidades, el panel ofrece **All documents** o
 una funcionalidad concreta, como en OpenCode. Una propuesta se rechaza si el
 archivo ya no coincide con el hash evaluado.
+**Open common workbench** inicia el panel común en loopback para el workspace de la
+sesión, copia su dirección e indica el alcance que hay que seleccionar; se detiene
+al cerrarlo o al terminar la sesión.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
 
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
