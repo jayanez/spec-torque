@@ -51,7 +51,9 @@
     "qualify:claude": "npm run verify:node && node scripts/qualify-claude.mjs",
     "package:opencode": "npm run verify:node && node scripts/package-opencode.mjs",
     "package:claude": "npm run verify:node && node scripts/package-claude.mjs",
-    "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs"
+    "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs",
+    "prepare:codex-desktop-probe": "npm run verify:node && node scripts/prepare-codex-desktop-probe.mjs",
+    "qualify:codex-desktop-probe": "npm run verify:node && node scripts/qualify-codex-desktop-probe.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
