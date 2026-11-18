@@ -173,6 +173,44 @@ the protocol level. Desktop and other operating systems and architectures
 remain pending in
 [#4](https://github.com/jayanez/spec-torque/issues/4).
 
+## Claude Desktop
+
+Observed on 2026-11-18 on macOS 27.2.1 arm64 with the operator's usual profile.
+The Desktop app ran its bundled Claude Code 2.1.325 (Mods require 2.1.286 or
+later). For EN and ES, a disposable folder with a copy of the draft fixture was
+made its own git root, and the ZIP from `npm run package:claude` (SHA-256
+`c1e71ed6783d8c40343acc71694b718ba21bcccf6024461134f1c0e42ba56ca4`) was installed
+with that bundled CLI from a local directory marketplace at project scope
+(`plugin marketplace add <dir> --scope project`, then
+`plugin install spectorque@<marketplace> --scope project`).
+
+A Desktop Code-tab session was opened in each folder and the operator typed
+`/spectorque`. Desktop sends a session's first prompt to the model, so the
+command must be typed in the message box; computer-use cannot drive the Claude
+app itself, so Desktop steps were performed by the operator and checked from
+disk and screenshots kept locally.
+
+- EN: the pane showed `5 findings · 0 open decisions` and
+  `specs/booking/spec.md:5`. A clarification was reviewed and rejected, then
+  applied: line 5 contained the replacement and the engine reported 4 findings
+  and the pending decision at `specs/booking/spec.md:5`, as the pane did. A
+  proposal for line 6 was made stale by appending a line from outside; applying
+  it showed `Apply failed: Source changed…`, the file stayed byte-identical to
+  the externally edited version, and **Refresh analysis** reloaded it. **Open
+  common workbench** copied a loopback address; `npm run qualify:handoff --
+  <workspace> --url <address>` passed (JSON and ZIP match, no external
+  requests or page errors), and closing the pane stopped the server.
+- ES: the pane rendered `5 findings · 0 open decisions` and
+  `FR-001: El sistema DEBE ser rápido.` at `specs/booking/spec.md:5`. The full ES
+  flow is covered in the terminal by `qualify:claude`.
+
+No model prompt was used for these checks; two short model turns occurred only
+because Desktop sends a new session's first message to the model. Uninstalling
+the plugin from one project removed the shared install record while the other
+project's settings still listed it as enabled; that disposable settings file
+was reset by hand. Windows Desktop and automated Desktop runs remain pending in
+[#4](https://github.com/jayanez/spec-torque/issues/4).
+
 ## OpenCode installed package
 
 The OpenCode workflow tests the ZIP at each runner's checkout revision.

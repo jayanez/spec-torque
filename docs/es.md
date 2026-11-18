@@ -45,6 +45,10 @@ También comprueba que el host conecta el servidor MCP del plugin y lista las tr
 skills, y llama a las seis herramientas MCP en EN/ES sin escribir archivos. El uso
 por Claude (skill `spec-review` y herramientas MCP) se comprueba aparte con un
 turno de modelo por idioma; consulta la guía de cualificación.
+En Claude Desktop (Claude Code 2.1.325 integrado), instala el ZIP desde un
+marketplace local con ámbito de proyecto, abre una sesión del Code tab en esa
+carpeta y escribe `/spectorque` en el cuadro de mensajes: el primer mensaje de
+una sesión nueva va al modelo, no se ejecuta como comando.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
 
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
