@@ -16,7 +16,7 @@ The three portable skills in `skills/` cover authoring, review and refinement. I
 
 ## Claude Code
 
-Load the generated folder using `claude --plugin-dir /absolute/spectorque/integrations/claude` in your project. Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
+Run `npm run package:integrations` and then `npm run package:claude`. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.1.0.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
 
 Validate with `claude plugin validate integrations/claude` and run the bundled native harness with `claude plugin test integrations/claude`. A harness result and a real interactive/client walkthrough are recorded separately.
 
