@@ -47,6 +47,22 @@ ChatGPT Desktop `26.1111.21308` build `27194`, with bundled Codex `0.169.0-alpha
 
 With the compatibility variant installed, a user-initiated turn invoked `open_probe` and rendered the resource inline in Codex mode. The widget displayed bridge protocol `2026-01-26`. The user clicked **Read probe marker** and received `probe-second-read · cwd: other`. Server traces for the same process confirmed `open-probe`, `resource-read` and `read-probe` with the UI capability advertised. The process cwd pointed at the installed package. Workspace identity, direct launch without a model turn, persistent panel, guarded write and export remain to be qualified.
 
+### Bind the probe to a trusted project
+
+Probe 0.1.1 rendered inline in the same build and returned `roots: not-advertised`. A package-local cwd therefore cannot identify the active worktree in this configuration. To test a project-scoped binding, give each disposable worktree its own `.codex/config.toml` with the same server name as the installed plugin:
+
+```toml
+[mcp_servers.spectorque-desktop-probe]
+command = "/absolute/path/to/node"
+args = ["/absolute/path/to/installed/plugin/runtime/server.mjs"]
+cwd = "/absolute/path/to/this/worktree"
+
+[mcp_servers.spectorque-desktop-probe.env]
+SPECTORQUE_PROBE_TRACE = "/absolute/path/to/this/worktree-probe-trace.ndjson"
+```
+
+Open a new local chat in each trusted worktree. Invoke the probe and use its **Read probe marker** button. Compare the displayed categories and the separate traces. A control using the bundled app-server with an installed legacy-compatible package returned `project-a` and `project-b` from two concurrent threads and read the UI resource in both. Record desktop rendering with the project-scoped configuration separately. The real adapter must derive the workspace from trusted configuration and reject a missing or invalid binding.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.
