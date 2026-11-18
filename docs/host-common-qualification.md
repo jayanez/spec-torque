@@ -122,13 +122,47 @@ another profile in another directory does not list it, and after removal the
 client reports `No commands match "/spectorque"`. Evidence, terminal frames and
 the ZIP SHA-256 are saved under an ignored `.spec-torque/claude-*` directory.
 
+MCP and skills are recorded at three separate levels:
+
+1. **Host discovery (no model).** `claude --plugin-dir <ZIP> mcp list` reports
+   `plugin:spectorque:spectorque … Connected`, and `plugin details
+   spectorque@inline` lists the three skills and the MCP server.
+2. **Direct protocol (no model).** For EN and ES, the driver starts the ZIP's
+   `dist/mcp.js` over stdio, lists exactly six read-only tools, calls
+   `discover_specs`, `analyze_specs` (same revision and findings as the engine),
+   `refinement_context`, `propose_refinement`, `create_specs` and
+   `export_report`, rejects an escaped path, and checks that no workspace file
+   changed.
+3. **Use by Claude (one model turn per language, outside the driver).** In a
+   disposable workspace, run headless with only SpecTorque read tools and
+   `Skill` allowed and file edits and the shell denied:
+
+   ```sh
+   claude -p "Use the spec-review skill to review the specifications in this workspace with the SpecTorque MCP tools. Do not modify any file. Report the first finding with its exact path and line." \
+     --plugin-dir /absolute/artifacts/spectorque-claude-0.1.0.zip --output-format stream-json --verbose \
+     --allowedTools Skill mcp__plugin_spectorque_spectorque__discover_specs mcp__plugin_spectorque_spectorque__analyze_specs mcp__plugin_spectorque_spectorque__refinement_context mcp__plugin_spectorque_spectorque__export_report \
+     --disallowedTools Edit Write MultiEdit NotebookEdit Bash --max-budget-usd 1
+   ```
+
+   Inspect the stream for `Skill` (`spectorque:spec-review`) and
+   `mcp__plugin_spectorque_spectorque__*` tool uses and compare file hashes
+   before and after. If user settings define an API key or gateway that should
+   not be used, add `--setting-sources project,local` to use the signed-in
+   session instead.
+
 Observed on 2026-11-18 with Claude Code 2.1.311, macOS 27.2.1 arm64 and Node
-22.20.0: 18/18 cases passed for ZIP SHA-256
+22.20.0: 21/21 driver cases (including host MCP/skill discovery and the six
+tools over the protocol in EN and ES) passed for ZIP SHA-256
 `c1e71ed6783d8c40343acc71694b718ba21bcccf6024461134f1c0e42ba56ca4`. The run used
 the operator's usual signed-in profile; no model prompt was submitted and
 network traffic was not restricted or captured. Uninstalling unregistered the
-plugin but left its copy in the user plugin cache. Desktop, other operating
-systems and architectures, and MCP/skill use by Claude remain pending in
+plugin but left its copy in the user plugin cache. One headless model turn per
+language (`claude-opus-5-5`, signed-in session via
+`--setting-sources project,local` because the operator's user settings pointed
+at an API key without credit) invoked `Skill` `spectorque:spec-review`, then
+`discover_specs` and `analyze_specs`, cited `specs/booking/spec.md:5` and left
+every file unchanged in both EN and ES; no permission was denied. Desktop and
+other operating systems and architectures remain pending in
 [#4](https://github.com/jayanez/spec-torque/issues/4).
 
 ## OpenCode installed package
