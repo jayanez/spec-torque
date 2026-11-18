@@ -23,22 +23,31 @@ async function run($, args) {
   if (output.exitCode || output.isStdoutTruncated) throw new Error(output.stderr?.trim() || 'Command failed or exceeded the output limit. Select a smaller workspace.');
   return JSON.parse(output.stdout);
 }
-async function analyzeScope($, cwd) {
-  return run($, ['analyze', cwd, '--json', ...(scope === null ? [] : ['--feature', scope])]);
-}
+// Each refresh starts a generation; results from a superseded one are discarded.
+let generation = 0;
+const analyzeScope = ($, cwd, feature) => run($, ['analyze', cwd, '--json', ...(feature === null ? [] : ['--feature', feature])]);
 async function refresh($) {
+  const request = ++generation;
+  let feature = scope;
+  proposal = undefined;
   try {
     await checkNode($);
     const cwd = await $.session.cwd();
-    try { assessment = await analyzeScope($, cwd); }
+    let result;
+    try { result = await analyzeScope($, cwd, feature); }
     catch (e) {
-      if (scope === null || !/Unknown feature/.test(message(e))) throw e;
-      scope = null;
-      assessment = await analyzeScope($, cwd);
+      if (feature === null || !/Unknown feature/.test(message(e))) throw e;
+      feature = null;
+      result = await analyzeScope($, cwd, feature);
     }
-    if (scope === null) scopes = [...new Set(assessment.artifacts.filter(a => !a.archived && a.role !== 'instructions').map(a => a.featureId))].sort();
+    if (request !== generation) return;
+    assessment = result; scope = feature;
+    if (feature === null) scopes = [...new Set(result.artifacts.filter(a => !a.archived && a.role !== 'instructions').map(a => a.featureId))].sort();
     selected = 0; proposal = undefined; error = '';
-  } catch (e) { assessment = undefined; proposal = undefined; error = 'Analysis failed: ' + message(e); }
+  } catch (e) {
+    if (request !== generation) return;
+    assessment = undefined; proposal = undefined; error = 'Analysis failed: ' + message(e);
+  }
   $.ui.invalidate('ui.render');
 }
 export function register(on) {
@@ -82,13 +91,18 @@ export function register(on) {
       ] }));
       children.push(Text({ children: [ev.path + ':' + ev.line + '\n' + finding.message + '\n' + ev.text + '\n' + finding.suggestion] }));
       children.push(Input({ key: 'replacement-' + selected, label: 'Proposed wording', value: ev.text, submitLabel: 'review', onSubmit: async replacement => {
+        // Drop a proposal whose assessment or selected finding changed meanwhile.
+        const request = generation, at = selected;
+        const current = () => request === generation && at === selected;
+        let result, failure;
         try {
           const cwd = await $.session.cwd();
           const source = assessment.artifacts.find(a => a.path === ev.path);
           if (!source) throw new Error('Evidence source is not in this assessment. Refresh the analysis.');
-          proposal = (await run($, ['refine', cwd + '/' + ev.path, '--root', cwd, '--line', String(ev.line), '--replacement', replacement, '--expect-hash', source.hash])).proposal;
-          error = '';
-        } catch (e) { proposal = undefined; error = 'Proposal failed: ' + message(e); }
+          result = (await run($, ['refine', cwd + '/' + ev.path, '--root', cwd, '--line', String(ev.line), '--replacement', replacement, '--expect-hash', source.hash])).proposal;
+        } catch (e) { failure = 'Proposal failed: ' + message(e); }
+        if (!current()) return;
+        proposal = result; error = failure ?? '';
         redraw();
       } }));
     }

@@ -11,7 +11,7 @@ const report = (scope: string | null) => ({
   findings: [finding(scope === 'specs/payments' ? 'specs/payments/spec.md' : 'specs/booking/spec.md')],
 });
 
-function stubHost(on: any, cli: (args: string[]) => unknown) {
+function stubHost(on: any, cli: (args: string[]) => unknown | Promise<unknown>) {
   const calls: string[][] = [];
   on('session.cwd', () => ({ value: '/sample' }));
   on('ui.open', () => ({ value: undefined }));
@@ -92,5 +92,46 @@ test('scope selection, hash-bound proposal, rejection, application and stale rej
 
   await ui.press({ key: 'scope-all' });
   expect(calls.at(-1)).toEqual(['analyze', '/sample', '--json']);
+  await ui.unmount();
+});
+
+test('superseded refreshes and proposals do not replace newer state', async ($, on) => {
+  let releaseAnalysis!: () => void, releaseRefine!: () => void;
+  const analysisGate = new Promise<void>(done => { releaseAnalysis = done; });
+  const refineGate = new Promise<void>(done => { releaseRefine = done; });
+  const calls = stubHost(on, async args => {
+    if (args[0] === 'analyze') {
+      const at = args.indexOf('--feature');
+      const feature = at < 0 ? null : args[at + 1];
+      if (feature === 'specs/payments') await analysisGate;
+      return ok(report(feature));
+    }
+    if (args[0] === 'refine') {
+      await refineGate;
+      return ok({ applied: false, proposal: { id: 'late', path: 'specs/booking/spec.md', line: 5, original: 'FR-001: The system MUST be fast.', replacement: 'late', baseHash: 'a'.repeat(64) } });
+    }
+    return fail('unexpected ' + args.join(' '));
+  });
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+
+  const slowScope = ui.press({ key: 'scope-1' });
+  await ui.press({ key: 'scope-0' });
+  releaseAnalysis();
+  await slowScope;
+  expect(await ui.find({ type: 'Text', text: 'Scope: specs/booking' })).toBeDefined();
+  expect(await ui.find({ type: 'Text', text: /specs\/booking\/spec\.md:5/ })).toBeDefined();
+  expect(await ui.find({ type: 'Text', text: /specs\/payments\/spec\.md/ })).toBeUndefined();
+
+  const lateProposal = ui.input({ key: 'replacement-0', text: 'late' });
+  for (let i = 0; i < 100 && !calls.some(args => args[0] === 'refine'); i++) await new Promise(done => setTimeout(done, 5));
+  expect(calls.some(args => args[0] === 'refine')).toBe(true);
+  await ui.press({ key: 'refresh' });
+  releaseRefine();
+  await lateProposal;
+  expect(await ui.find({ key: 'apply' })).toBeUndefined();
+  expect(await ui.find({ type: 'Text', text: /After: late/ })).toBeUndefined();
+
+  await ui.press({ key: 'scope-all' });
   await ui.unmount();
 });
