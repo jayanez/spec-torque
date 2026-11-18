@@ -3,6 +3,7 @@ import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { appendFile, chmod, cp, mkdir, mkdtemp, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { connect } from 'node:net';
 import { release, tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -122,7 +123,13 @@ async function snapshot(root) {
 }
 const expected = async (root, feature) => analyze(selectFeature(await discoverWorkspace(root), feature));
 const counts = report => report.findings.length + ' findings · ' + report.decisions.length + ' open decisions';
-const listening = async port => (await run('lsof', ['-nP', '-iTCP:' + port, '-sTCP:LISTEN']).then(r => r.stdout, () => '')).trim() !== '';
+// Portable listener check: a loopback TCP connection succeeds only while the server listens.
+const listening = port => new Promise(done => {
+  const socket = connect({ host: '127.0.0.1', port: Number(port) });
+  socket.setTimeout(2000, () => { socket.destroy(); done(false); });
+  socket.once('connect', () => { socket.destroy(); done(true); });
+  socket.once('error', () => done(false));
+});
 
 const wording = {
   en: { word: 'MUST', replacement: 'FR-001: The system MUST respond within [NEEDS CLARIFICATION: maximum response time?].', question: ' [NEEDS CLARIFICATION: which cases?]' },
@@ -258,7 +265,13 @@ try {
   await mkdir(join(market, '.claude-plugin'));
   await writeFile(join(market, '.claude-plugin/marketplace.json'), JSON.stringify({ name: 'spectorque-qualification', owner: { name: 'SpecTorque qualification' }, plugins: [{ name: 'spectorque', source: './spectorque', description: 'SpecTorque qualification copy' }] }, null, 2));
   const claude = (args, options = {}) => run(executable, args, { cwd: project, env, timeout: 120_000, ...options });
+  // Always unregister the qualification copy, even when a later step fails.
+  const removeInstall = async () => {
+    await claude(['plugin', 'uninstall', 'spectorque@spectorque-qualification', '--scope', 'project']).catch(() => {});
+    await claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification', '--scope', 'project']).catch(() => claude(['plugin', 'marketplace', 'remove', 'spectorque-qualification'])).catch(() => {});
+  };
   await claude(['plugin', 'marketplace', 'add', market, '--scope', 'project']);
+  try {
   await claude(['plugin', 'install', 'spectorque@spectorque-qualification', '--scope', 'project']);
   const installed = JSON.parse((await claude(['plugin', 'list', '--json'])).stdout);
   const entry = installed.find(plugin => String(plugin.id ?? plugin.name).startsWith('spectorque@spectorque-qualification'));
@@ -283,6 +296,9 @@ try {
   // Observed host behavior: uninstall unregisters the plugin but may keep its cached copy.
   const cacheRetained = await readdir(entry.installPath).then(() => true, () => false);
   record('project-scoped marketplace install loads the pane; another profile does not inherit it; removal unloads it', { installed: entry, enabledPlugins: projectSettings.enabledPlugins, cacheRetainedAfterUninstall: cacheRetained });
+  } finally {
+    await removeInstall();
+  }
 
   evidence.result = 'passed';
 } catch (error) {
