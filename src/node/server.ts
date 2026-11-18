@@ -12,9 +12,17 @@ import { discoverWorkspace, applyWorkspaceProposal, readWorkspaceArtifact, write
 import { contentHash } from '../core/artifacts.js';
 import { importGitHub } from './github.js';
 import { requestRewrite } from './provider.js';
+import { bindWorkspace } from './scoped-review.js';
 import { parseSet, builderSchema, proposalSchema, rewriteSchema } from './schemas.js';
 const mime: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json' };
 class RequestTooLarge extends Error {}
+const scopedReviewSchema = z.object({
+  root: z.string().min(1).max(32768),
+  feature: z.string().max(4096).nullable(),
+  revision: z.string().regex(/^[a-f0-9]{64}$/),
+  findingId: z.string().min(1).max(4096),
+  proposal: proposalSchema,
+});
 async function body(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []; let size = 0;
   for await (const chunk of req) { size += chunk.length; if (size > 6_000_000) throw new RequestTooLarge('Request exceeds 6 MB.'); chunks.push(Buffer.from(chunk)); }
@@ -54,13 +62,24 @@ export async function startServer(root: string, requestedPort = 4317) {
           const suggestion = await requestRewrite(value.provider, original, value.context, value.language);
           send(200, await createProposal(value.document.path, value.document.content, value.line, suggestion.replacement, suggestion.reason, 'provider')); return;
         }
-        if (url.pathname === '/api/apply') {
-          const value = z.object({ proposal: proposalSchema, approved: z.literal(true) }).parse(input);
-          const before = await readWorkspaceArtifact(root, value.proposal.path);
-          const content = await applyWorkspaceProposal(root, value.proposal);
+        if (url.pathname === '/api/scoped-review') {
+          const review = scopedReviewSchema.parse(input);
+          const proposal = await (await bindWorkspace(resolve(root))).validateReview(review);
+          send(200, { ...review, proposal }); return;
+        }
+        if (url.pathname === '/api/apply' || url.pathname === '/api/scoped-apply') {
+          let proposal;
+          if (url.pathname === '/api/scoped-apply') {
+            const { review } = z.object({ review: scopedReviewSchema, approved: z.literal(true) }).parse(input);
+            proposal = await (await bindWorkspace(resolve(root))).validateReview(review);
+          } else {
+            proposal = z.object({ proposal: proposalSchema, approved: z.literal(true) }).parse(input).proposal;
+          }
+          const before = await readWorkspaceArtifact(root, proposal.path);
+          const content = await applyWorkspaceProposal(root, proposal);
           const undoId = randomBytes(20).toString('hex');
           if (undo.size >= 20) undo.delete(undo.keys().next().value!);
-          undo.set(undoId, { path: value.proposal.path, before, afterHash: await contentHash(content) });
+          undo.set(undoId, { path: proposal.path, before, afterHash: await contentHash(content) });
           send(200, { content, undoId }); return;
         }
         if (url.pathname === '/api/undo') {

@@ -110,11 +110,23 @@ function refinement(view: AssessmentView, finding: Finding) {
       const discard = element('button', label('Discard preview', 'Descartar vista previa'));
       discard.type = 'button';
       discard.addEventListener('click', () => { input.value = first.text; reset(); input.focus(); });
+      const transfer = element('details');
+      const packet = element('textarea');
+      packet.readOnly = true;
+      packet.rows = 3;
+      packet.value = JSON.stringify({ root: view.root, feature: view.feature, revision: view.assessment.id, findingId: finding.id, proposal });
+      const packetField = element('label', label('Review data', 'Datos de revisión'));
+      packetField.append(packet);
+      transfer.append(
+        element('summary', label('Review in local workbench', 'Revisar en el workbench local')),
+        element('p', label('Copy the review data and paste it on the workbench review page for this worktree.', 'Copia los datos y pégalos en la página de revisión del workbench de este worktree.')),
+        packetField,
+      );
       diff.append(
         element('p', proposal.path + ':' + proposal.line),
         element('strong', label('Before', 'Antes')), element('pre', proposal.original),
         element('strong', label('After', 'Después')), element('pre', proposal.replacement),
-        discard,
+        discard, transfer,
       );
       feedback.textContent = label('Preview ready. The file is unchanged.', 'Vista previa lista. El archivo sigue intacto.');
     } catch {

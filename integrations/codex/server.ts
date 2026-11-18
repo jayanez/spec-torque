@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { McpServer } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { z } from 'zod';
-import { bindWorkspace, StaleAssessmentError } from './workspace.js';
+import { bindWorkspace, StaleAssessmentError } from '../../src/node/scoped-review.js';
 
 const workspace = await bindWorkspace(process.env.SPECTORQUE_ROOT);
 const uri = 'ui://spectorque/viewer.html';

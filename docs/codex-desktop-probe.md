@@ -83,6 +83,10 @@ Verify that **All documents** is initially selected, that both features are offe
 
 On macOS arm64, the compact viewer rendered in Codex Desktop and opened on **All documents**. The displayed ten findings, ten unknown practices and first evidence excerpt at `specs/booking/spec.md:5` matched the shared engine. The initial finding picker and excerpt fit within the host's inline area. Changing to `specs/other` in Desktop produced five findings and showed the exact Spanish excerpt at `specs/other/spec.md:5`, matching the engine.
 
+### Approve a preview in the local workbench
+
+Start the existing workbench with `node dist/cli.js serve --root /absolute/path/to/this/worktree --port 0`. Open the printed loopback URL with `?review=1` in the integrated browser. In the Codex preview, open **Review in local workbench**, copy the review data and paste it into the review page. The workbench reconstructs the proposal against the configured root and revision before displaying a second before/after preview. Choose **Reject change** or **Approve and write to disk**. Approval revalidates the review and uses the existing guarded write. After approval, return to Codex and refresh the same scope. Stop the local workbench process when the test ends.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.

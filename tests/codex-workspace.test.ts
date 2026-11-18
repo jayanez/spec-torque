@@ -3,8 +3,8 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { bindWorkspace } from '../integrations/codex/workspace.js';
-import { analyze, discoverWorkspace, selectFeature } from '../src/integration.js';
+import { bindWorkspace } from '../src/node/scoped-review.js';
+import { analyze, discoverWorkspace, selectFeature, openWorkbench } from '../src/integration.js';
 
 test('Codex scopes the review to its configured root and rejects stale proposals', async () => {
   await assert.rejects(bindWorkspace(undefined), /absolute root/);
@@ -27,8 +27,34 @@ test('Codex scopes the review to its configured root and rejects stale proposals
     const proposal = await workspace.propose(input);
     assert.equal(proposal.original, evidence.text);
     assert.deepEqual(await readFile(file), original);
-    await writeFile(file, Buffer.concat([original, Buffer.from('\nExternal edit\n')]));
-    await assert.rejects(workspace.propose(input), /stale/);
+    const review = { root: all.root, feature, revision: assessment.id, findingId: finding.id, proposal };
+    const { server, token, url } = await openWorkbench(root);
+    const send = (route: string, payload: unknown) => fetch(url + '/api/' + route, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-SpecTorque-Token': token },
+      body: JSON.stringify(payload),
+    });
+    try {
+      const checked = await send('scoped-review', review);
+      assert.equal(checked.status, 200);
+      assert.deepEqual((await checked.json()).proposal, proposal);
+      assert.equal((await send('scoped-apply', { review })).status, 400);
+      for (const invalid of [{ ...review, root: all.root + '/other' }, { ...review, proposal: { ...proposal, path: 'another.md' } }]) {
+        assert.equal((await send('scoped-apply', { review: invalid, approved: true })).status, 400);
+      }
+      assert.deepEqual(await readFile(file), original);
+      const external = Buffer.concat([original, Buffer.from('\nExternal edit\n')]);
+      await writeFile(file, external);
+      await assert.rejects(workspace.propose(input), /stale/);
+      assert.equal((await send('scoped-apply', { review, approved: true })).status, 400);
+      assert.deepEqual(await readFile(file), external);
+      await writeFile(file, original);
+      assert.equal((await send('scoped-apply', { review, approved: true })).status, 200);
+      assert.deepEqual(await readFile(file), Buffer.from(original.toString('utf8').replace(proposal.original, () => proposal.replacement)));
+      assert.equal((await send('scoped-apply', { review, approved: true })).status, 400);
+    } finally {
+      await new Promise<void>(done => server.close(() => done()));
+    }
   } finally {
     await rm(root, { recursive: true, force: true });
   }
