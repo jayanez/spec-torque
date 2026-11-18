@@ -61,7 +61,7 @@ cwd = "/absolute/path/to/this/worktree"
 SPECTORQUE_PROBE_TRACE = "/absolute/path/to/this/worktree-probe-trace.ndjson"
 ```
 
-Open a new local chat in each trusted worktree. Invoke the probe and use its **Read probe marker** button. Compare the displayed categories and the separate traces. A control using the bundled app-server with an installed legacy-compatible package returned `project-a` and `project-b` from two concurrent threads and read the UI resource in both. Record desktop rendering with the project-scoped configuration separately. The real adapter must derive the workspace from trusted configuration and reject a missing or invalid binding.
+Open a new local chat in each trusted worktree. Invoke the probe and use its **Read probe marker** button. Compare the displayed categories and the separate traces. A control using the bundled app-server with an installed legacy-compatible package returned `project-a` and `project-b` from two concurrent threads and read the UI resource in both. In Desktop, the installed plugin continued to handle requests while both routes were available. After uninstalling the probe plugin and giving the project MCP server its own name, the desktop UI rendered inline and the button returned `project-a` and `project-b` in their respective chats. Both traces recorded the resource read and second tool call. Each launch used a user-initiated model turn. The real adapter must derive the workspace from trusted configuration and reject a missing or invalid binding.
 
 ## Clean up
 
