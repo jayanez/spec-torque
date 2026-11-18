@@ -1,0 +1,145 @@
+import type { Assessment, Evidence } from '../../src/core/types.js';
+
+interface AssessmentView {
+  root: string;
+  feature: string | null;
+  features: string[];
+  assessment: Assessment;
+}
+
+const root = document.querySelector<HTMLParagraphElement>('#root')!;
+const scope = document.querySelector<HTMLSelectElement>('#scope')!;
+const scopeLabel = document.querySelector<HTMLLabelElement>('#scope-label')!;
+const refresh = document.querySelector<HTMLButtonElement>('#refresh')!;
+const status = document.querySelector<HTMLParagraphElement>('#status')!;
+const report = document.querySelector<HTMLDivElement>('#report')!;
+const pending = new Map<number, { receive: (value: unknown) => void; fail: () => void; timer: number }>();
+let nextId = 0;
+let hostOrigin: string | undefined;
+let feature: string | null = null;
+let isSpanish = navigator.language.toLowerCase().startsWith('es');
+
+function label(en: string, es: string) { return isSpanish ? es : en; }
+
+function send(message: Record<string, unknown>) {
+  parent.postMessage({ jsonrpc: '2.0', ...message }, hostOrigin && hostOrigin !== 'null' ? hostOrigin : '*');
+}
+
+function request(method: string, params: object): Promise<unknown> {
+  const id = ++nextId;
+  return new Promise((receive, reject) => {
+    const fail = () => reject(new Error('MCP Apps request failed'));
+    const timer = window.setTimeout(() => {
+      pending.delete(id);
+      fail();
+    }, 15_000);
+    pending.set(id, { receive, fail, timer });
+    send({ method, params, id });
+  });
+}
+
+addEventListener('message', event => {
+  if (event.source !== parent || (hostOrigin !== undefined && event.origin !== hostOrigin)) return;
+  const message = event.data;
+  if (message?.jsonrpc !== '2.0') return;
+  const handler = pending.get(message.id);
+  if (!handler || (!Object.hasOwn(message, 'result') && !Object.hasOwn(message, 'error'))) return;
+  hostOrigin ??= event.origin;
+  clearTimeout(handler.timer);
+  pending.delete(message.id);
+  if (message.error) handler.fail();
+  else handler.receive(message.result);
+});
+
+function element<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function source(evidence: Evidence) {
+  const block = element('div');
+  block.append(element('p', evidence.path + ':' + evidence.line), element('pre', evidence.text));
+  return block;
+}
+
+function draw(view: AssessmentView) {
+  feature = view.feature;
+  root.textContent = view.root;
+  root.hidden = false;
+  scope.replaceChildren(new Option(label('All documents', 'Todos los documentos'), ''),
+    ...view.features.map(id => new Option(id, id)));
+  scope.value = feature ?? '';
+  scopeLabel.hidden = view.features.length < 2 && feature === null;
+  const result = view.assessment;
+  const score = result.summary.score;
+  const dimensions = element('ul');
+  for (const dim of result.dimensions) {
+    dimensions.append(element('li', dim.title + ' · ' + (dim.score ?? label('Unknown', 'Desconocido'))));
+  }
+  report.replaceChildren(
+    element('p', label('Revision ', 'Revisión ') + result.id),
+    element('h2', score === null ? label('Incomplete assessment', 'Evaluación incompleta') : score + '/' + result.summary.maximum),
+    dimensions,
+    element('p', label('Unknown practices: ', 'Prácticas desconocidas: ') + result.summary.unknown),
+    element('h2', label('Findings', 'Hallazgos')),
+  );
+  if (!result.findings.length) report.append(element('p', label('No findings in this scope.', 'Sin hallazgos en este alcance.')));
+  for (const finding of result.findings) {
+    const details = element('details');
+    details.append(element('summary', finding.message), ...finding.evidence.map(source), element('p', finding.suggestion));
+    report.append(details);
+  }
+  report.append(element('h2', label('Pending decisions', 'Decisiones pendientes')));
+  if (!result.decisions.length) report.append(element('p', label('No pending decisions.', 'Sin decisiones pendientes.')));
+  for (const decision of result.decisions) report.append(source(decision));
+}
+
+async function load(selected: string | null) {
+  scope.disabled = true;
+  refresh.disabled = true;
+  report.replaceChildren();
+  status.textContent = label('Assessing local documents…', 'Analizando documentos locales…');
+  try {
+    const result = await request('tools/call', { name: 'assess_worktree', arguments: { feature: selected } }) as {
+      isError?: boolean;
+      _meta?: { assessmentView?: AssessmentView };
+    };
+    const view = result?._meta?.assessmentView;
+    if (result?.isError || !view || typeof view.root !== 'string' || !Array.isArray(view.features) || typeof view.assessment?.id !== 'string') throw new Error('Invalid assessment response');
+    draw(view);
+    status.textContent = label('Assessment loaded.', 'Evaluación cargada.');
+  } catch {
+    scope.value = feature ?? '';
+    status.textContent = label('Could not load the assessment. Select a scope or refresh.', 'No se pudo cargar la evaluación. Selecciona un alcance o actualiza.');
+  } finally {
+    scope.disabled = false;
+    refresh.disabled = false;
+  }
+}
+
+scope.addEventListener('change', () => void load(scope.value || null));
+refresh.addEventListener('click', () => void load(scope.value || null));
+
+async function initialize() {
+  status.textContent = label('Connecting to Codex…', 'Conectando con Codex…');
+  try {
+    const result = await request('ui/initialize', {
+      appInfo: { name: 'spectorque', version: '0.1.0' },
+      appCapabilities: { availableDisplayModes: ['inline', 'fullscreen'] },
+      protocolVersion: '2026-01-26',
+    }) as { protocolVersion?: string; hostContext?: { locale?: string } };
+    if (result?.protocolVersion !== '2026-01-26') throw new Error('Unsupported bridge protocol');
+    const locale = result.hostContext?.locale;
+    if (typeof locale === 'string') isSpanish = locale.toLowerCase().startsWith('es');
+    document.documentElement.lang = isSpanish ? 'es' : 'en';
+    document.querySelector('#scope-caption')!.textContent = label('Artifact scope', 'Alcance de documentos');
+    refresh.textContent = label('Refresh', 'Actualizar');
+    send({ method: 'ui/notifications/initialized', params: {} });
+    await load(null);
+  } catch {
+    status.textContent = label('Connection failed. Reopen the viewer to retry.', 'Falló la conexión. Vuelve a abrir el visor.');
+  }
+}
+
+void initialize();

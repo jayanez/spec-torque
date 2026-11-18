@@ -63,6 +63,24 @@ SPECTORQUE_PROBE_TRACE = "/absolute/path/to/this/worktree-probe-trace.ndjson"
 
 Open a new local chat in each trusted worktree. Invoke the probe and use its **Read probe marker** button. Compare the displayed categories and the separate traces. A control using the bundled app-server with an installed legacy-compatible package returned `project-a` and `project-b` from two concurrent threads and read the UI resource in both. In Desktop, the installed plugin continued to handle requests while both routes were available. After uninstalling the probe plugin and giving the project MCP server its own name, the desktop UI rendered inline and the button returned `project-a` and `project-b` in their respective chats. Both traces recorded the resource read and second tool call. Each launch used a user-initiated model turn. The real adapter must derive the workspace from trusted configuration and reject a missing or invalid binding.
 
+## Exercise the scoped assessment viewer
+
+Run `npm run check` and `npm run package:integrations` from the SpecTorque checkout. The latter generates the desktop server and HTML under `integrations/codex/runtime`. In a trusted disposable project, add the following project-local configuration using absolute paths appropriate for that machine and worktree:
+
+```toml
+[mcp_servers.spectorque-workspace]
+command = "/absolute/path/to/node"
+args = ["/absolute/path/to/integrations/codex/runtime/server.mjs"]
+cwd = "/absolute/path/to/this/worktree"
+
+[mcp_servers.spectorque-workspace.env]
+SPECTORQUE_ROOT = "/absolute/path/to/this/worktree"
+```
+
+Copy `fixtures/en-draft/specs/booking` to the scratch workspace and add the Spanish booking spec as `specs/other/spec.md`. Add a shared `AGENTS.md` with synthetic instructions. Open a new local Codex Desktop chat and, using synthetic documents only, request `open_spectorque` from `spectorque-workspace`. The open tool returns a generic acknowledgement. The app-only assessment tool puts the source excerpts and report in UI metadata.
+
+Verify that **All documents** is initially selected, that both features are offered, and that each scope matches the shared engine. Open a finding and check the path, line and excerpt against the fixture. Repeat for the other feature and use **Refresh** to reload the selected scope. The sandboxed browser control exercises English and Spanish UI via the host locale. Desktop qualification records the observed locale separately. This increment covers read-only analysis and evidence.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.

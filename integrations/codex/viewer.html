@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpecTorque</title>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { margin: 0; padding: 1rem; line-height: 1.5; overflow-wrap: anywhere; }
+  h1, h2 { margin: .5rem 0; }
+  .controls { display: flex; flex-wrap: wrap; align-items: end; gap: .6rem; }
+  label { display: grid; gap: .2rem; min-width: 0; max-width: 100%; }
+  [hidden] { display: none !important; }
+  select, button { font: inherit; max-width: 100%; padding: .25rem .5rem; }
+  button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+  details { border-top: 1px solid GrayText; padding: .4rem 0; }
+  summary { cursor: pointer; }
+  pre { white-space: pre-wrap; padding: .4rem; border-inline-start: 2px solid GrayText; }
+  #root { font-family: ui-monospace, monospace; }
+</style>
+<main>
+  <h1>SpecTorque</h1>
+  <p id="root" hidden></p>
+  <div class="controls">
+    <label id="scope-label" hidden><span id="scope-caption">Artifact scope</span><select id="scope"></select></label>
+    <button id="refresh" type="button" disabled>Refresh</button>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+  <div id="report"></div>
+</main>
+<!-- VIEWER_SCRIPT -->
+</html>
