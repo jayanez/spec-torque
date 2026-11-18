@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `qualify:claude` also checks host discovery of the plugin MCP server and skills, and the driver itself calls all six MCP tools over stdio from the ZIP runtime in EN/ES without writes (a protocol check, not use by Claude). Separately, the qualification guide records a manually observed headless turn per language in which Claude used the `spec-review` skill and the MCP tools.
 - Add `npm run qualify:claude`, a real-terminal walkthrough of the installed Claude Code ZIP (EN/ES scope, evidence, reject, apply, stale source, handoff, errors, marketplace install and removal) with saved evidence; no model prompt is submitted.
 - Claude Code pane: open the common workbench for the session workspace from the pane, copy its loopback address with the scope to select, report startup failures or an unexpected exit, and stop the server on close, pane close or session end; a second press cancels a pending startup.
 - Claude Code pane: select All documents or one feature when a workspace has several, as in OpenCode; bind proposals to the assessed source hash; report an unsuitable or missing Node.js 22.20+ runtime and label analysis, proposal and apply failures. CLI: `analyze --feature <id>` (unknown features are rejected) and `refine --expect-hash <sha256>`.

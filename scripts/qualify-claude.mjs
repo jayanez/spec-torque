@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { appendFile, chmod, cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { connect } from 'node:net';
+import { createInterface } from 'node:readline';
 import { release, tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -219,6 +220,84 @@ try {
       assert.ok(!(await listening(port)), 'Closing the pane must stop the workbench.');
       record(language + ': common-workbench handoff exports match and the server stops with the pane', { url, handoff: handoff.output });
     });
+  }
+
+  // MCP and skills from the same ZIP: host discovery, then direct protocol calls.
+  const plugin = join(scratch, 'plugin');
+  for (const [name, content] of Object.entries(files)) {
+    await mkdir(dirname(join(plugin, name)), { recursive: true });
+    await writeFile(join(plugin, name), content);
+  }
+  const mcpWorkspace = join(scratch, 'mcp-host');
+  await cp('fixtures/en-draft/specs', join(mcpWorkspace, 'specs'), { recursive: true });
+  const hostMcp = (await run(executable, ['--plugin-dir', zip, 'mcp', 'list'], { cwd: mcpWorkspace, env, timeout: 120_000 })).stdout;
+  assert.match(hostMcp, /plugin:spectorque:spectorque: .*dist[\\/]mcp\.js.*Connected/);
+  const details = (await run(executable, ['--plugin-dir', zip, 'plugin', 'details', 'spectorque@inline'], { cwd: mcpWorkspace, env, timeout: 120_000 })).stdout;
+  assert.match(details, /Skills \(3\)\s+spec-author, spec-refine, spec-review/);
+  assert.match(details, /MCP servers \(1\)\s+spectorque/);
+  record('host discovers and connects the plugin MCP server and lists three skills', { mcp: hostMcp.split('\n').find(line => line.includes('spectorque'))?.trim() });
+
+  for (const language of ['en', 'es']) {
+    const workspace = join(scratch, 'mcp-' + language);
+    await cp(`fixtures/${language}-draft/specs`, join(workspace, 'specs'), { recursive: true });
+    const before = await snapshot(workspace);
+    const child = spawn(process.execPath, [join(plugin, 'dist/mcp.js')], { cwd: workspace, env: { ...env, SPECTORQUE_ROOT: workspace }, stdio: ['pipe', 'pipe', 'pipe'] });
+    const pending = new Map();
+    createInterface({ input: child.stdout }).on('line', line => { const message = JSON.parse(line); pending.get(message.id)?.(message); pending.delete(message.id); });
+    let id = 0;
+    const request = (method, params) => new Promise((done, fail) => {
+      const requestId = ++id;
+      const timer = setTimeout(() => fail(new Error('MCP ' + method + ' timed out')), 15_000);
+      pending.set(requestId, message => { clearTimeout(timer); done(message); });
+      child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: requestId, method, params }) + '\n');
+    });
+    // Accept only a well-formed JSON-RPC success whose tool result is not an error.
+    const call = async (name, args) => {
+      const response = await request('tools/call', { name, arguments: args });
+      assert.equal(response.jsonrpc, '2.0', name + ': not a JSON-RPC 2.0 response');
+      assert.equal(response.error, undefined, name + ' returned a JSON-RPC error: ' + JSON.stringify(response.error));
+      assert.ok(response.result && !response.result.isError, name + ' failed: ' + JSON.stringify(response).slice(0, 400));
+      assert.equal(response.result.content?.[0]?.type, 'text', name + ': expected text content');
+      const text = response.result.content[0].text;
+      try { return JSON.parse(text); } catch { return text; }
+    };
+    try {
+      const init = await request('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'spectorque-qualification', version: '1' } });
+      assert.equal(init.result.serverInfo.name, 'spectorque');
+      child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
+      const tools = (await request('tools/list', {})).result.tools;
+      assert.deepEqual(tools.map(tool => tool.name).sort(), ['analyze_specs', 'create_specs', 'discover_specs', 'export_report', 'propose_refinement', 'refinement_context']);
+      assert.ok(tools.every(tool => tool.annotations.readOnlyHint && !tool.annotations.destructiveHint));
+      const engine = await expected(workspace, null);
+      const discovered = await call('discover_specs', {});
+      assert.deepEqual(discovered.artifacts.map(a => a.path), ['specs/booking/spec.md']);
+      const analyzed = await call('analyze_specs', {});
+      assert.equal(analyzed.id, engine.id);
+      assert.deepEqual(analyzed.findings, engine.findings);
+      const first = engine.findings[0].evidence[0];
+      const context = await call('refinement_context', { path: first.path, line: first.line, language });
+      assert.ok(JSON.stringify(context).includes(first.text));
+      const proposal = await call('propose_refinement', { path: first.path, line: first.line, replacement: wording[language].replacement, reason: 'qualification' });
+      assert.equal(proposal.original, first.text);
+      assert.match(proposal.baseHash, /^[a-f0-9]{64}$/);
+      const created = await call('create_specs', { name: 'Qualification', purpose: language === 'es' ? 'Validar el borrador.' : 'Validate the draft.', actors: '', behavior: language === 'es' ? 'El sistema DEBE registrar reservas.' : 'The system MUST record bookings.', success: '', exclusions: '', dependencies: '', failures: '', privacy: '', language });
+      assert.ok(Array.isArray(created) && created.length > 0);
+      const report = await call('export_report', {});
+      assert.ok(String(report).includes(first.path));
+      const escaped = await request('tools/call', { name: 'refinement_context', arguments: { path: '../outside.md', line: 1 } });
+      assert.equal(escaped.result.isError, true);
+      assert.deepEqual(await snapshot(workspace), before, 'MCP calls must not write files.');
+      record(language + ': all six MCP tools answer from the ZIP runtime without writing files', { revision: analyzed.id, created: created.map(a => a.path) });
+    } finally {
+      // Close stdio, then wait for exit with a bounded escalation.
+      const exited = new Promise(done => child.once('exit', done));
+      child.stdin.end();
+      child.kill();
+      if (await Promise.race([exited.then(() => true), delay(3000).then(() => false)]) === false) {
+        child.kill('SIGKILL');
+        await Promise.race([exited, delay(3000)]);
+      }
+    }
   }
 
   const empty = join(scratch, 'empty');

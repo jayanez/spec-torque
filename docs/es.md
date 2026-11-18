@@ -41,6 +41,10 @@ cancela ese arranque.
 recorre el ZIP instalado en un cliente real (EN/ES, alcance, rechazo, aplicación,
 fuente obsoleta, traspaso, errores e instalación por marketplace) sin enviar
 prompts al modelo.
+También comprueba que el host conecta el servidor MCP del plugin y lista las tres
+skills, y llama a las seis herramientas MCP en EN/ES sin escribir archivos. El uso
+por Claude (skill `spec-review` y herramientas MCP) se comprueba aparte con un
+turno de modelo por idioma; consulta la guía de cualificación.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
 
 En OpenCode 2.1.4, extrae el ZIP de SpecTorque y añade su directorio a
