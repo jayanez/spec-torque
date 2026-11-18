@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { analyze, applyProposal, badgeSvg, classifyArtifact, markdownReport } from '../core.js';
 import type { ArtifactSet, Assessment, Finding, Language, PatchProposal } from '../core/types.js';
 import { api, connectLocal, download } from './api.js';
@@ -50,10 +50,17 @@ export function App() {
     setUndo([]); replaceSet(next); setDisk(fromDisk); setSelected(next.artifacts[0]?.path ?? '');
     setFinding(undefined); setFeature(null); setError(''); setStatus(es ? 'Documentos cargados.' : 'Artifacts loaded.'); setTab('analyze');
   }
+  // Reveal the evidence line as part of the selection commit. A deferred timer could move
+  // focus after the user starts typing elsewhere and replace that line without review.
+  const [reveal, setReveal] = useState<{ line: number }>();
+  useLayoutEffect(() => {
+    const node = editor.current; if (!reveal || !node) return;
+    const lines = node.value.split(/\r?\n/); const start = lines.slice(0, reveal.line - 1).reduce((n, l) => n + l.length + 1, 0);
+    node.focus(); node.setSelectionRange(start, start + (lines[reveal.line - 1]?.length ?? 0));
+  }, [reveal]);
   function pickFinding(f: Finding) {
     if (operation.current) return;
-    setFinding(f); setSelected(f.evidence[0]?.path ?? '');
-    setTimeout(() => { const node = editor.current; if (!node) return; const lines = node.value.split(/\r?\n/); const start = lines.slice(0, (f.evidence[0]?.line ?? 1) - 1).reduce((n, l) => n + l.length + 1, 0); node.focus(); node.setSelectionRange(start, start + (lines[(f.evidence[0]?.line ?? 1) - 1]?.length ?? 0)); }, 0);
+    setFinding(f); setSelected(f.evidence[0]?.path ?? ''); setReveal({ line: f.evidence[0]?.line ?? 1 });
   }
   async function accept(p: PatchProposal, persist: boolean) {
     await exclusive(async initial => {
