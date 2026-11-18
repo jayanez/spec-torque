@@ -218,6 +218,8 @@ try {
 
       await ui.propose(evidenceLine.text, replacement);
       await ui.press('Apply reviewed change');
+      // The pane writes asynchronously; wait for the write before deriving the expected state.
+      for (let i = 0; i < 200 && (await readFile(target, 'utf8')).split(/\r?\n/)[evidenceLine.line - 1] !== replacement; i++) await delay(100);
       const applied = await expected(workspace, scope);
       await ui.see(counts(applied));
       const lines = (await readFile(target, 'utf8')).split(/\r?\n/);
