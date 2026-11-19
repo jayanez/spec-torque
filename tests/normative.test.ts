@@ -89,10 +89,12 @@ test('bilingual measurement recognizes explicit rates and plural denial with ori
     ['The service SHOULD reject unauthorized requests.', 'supported'],
     ['Los servicios DEBERI\u0301AN denegar el acceso.', 'supported'],
     ['Los registros DEBEN guardar el lote al menos 2 semanas.', 'supported'],
+    ['El servicio tarda 12 segundos.', 'supported'],
     ['The catalog SHOULD show the release marked v2.4.', 'missing'],
     ['Los avisos PUEDEN aparecer en el capítulo 3.', 'missing'],
     ['Los servicios PUEDEN rechazar solicitudes no autorizadas.', 'missing'],
     ['Los servicios DEBEN enviar ≤ 120 turnos por minutoé.', 'missing'],
+    ['El servicio tarda 12 segundosé.', 'missing'],
     ['Los puestos DEBEN enviar un resumen cuando sea necesario.', 'missing'],
   ];
   for (const [statement, status] of samples) {
