@@ -20,6 +20,8 @@ Browser binaries live in ignored `.spec-torque/browsers`, with results in `test-
 
 Tool versions: Playwright 1.65.1, axe-core/Playwright 4.14.0, test-electron 3.1.0 and vsce 4.1.1. The scoped vsce override pins minimatch 11.0.1 because its default dependency was affected by [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). The generated VSIX was installed and exercised with this override. No forced bulk dependency upgrade was used.
 
+For standalone package installation, browser evidence and the manual accessibility procedure for #3, see [common workbench qualification](common-workbench-qualification.md).
+
 ## Codex project installation and removal
 
 ```sh

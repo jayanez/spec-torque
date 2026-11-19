@@ -15,6 +15,10 @@ export default defineConfig({
   projects: ['chromium', 'firefox', 'webkit'].flatMap(browserName =>
     [375, 768, 1280].map(width => ({
       name: `${browserName}-${width}`,
-      use: { browserName: browserName as 'chromium' | 'firefox' | 'webkit', viewport: { width, height: 900 } },
+      use: {
+        browserName: browserName as 'chromium' | 'firefox' | 'webkit',
+        ...(browserName === 'chromium' && process.env.SPECTORQUE_TEST_CHROME === '1' ? { channel: 'chrome' } : {}),
+        viewport: { width, height: 900 },
+      },
     }))),
 });

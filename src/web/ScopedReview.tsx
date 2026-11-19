@@ -49,7 +49,7 @@ export function ScopedReview() {
   }
 
   return <main style={{ maxWidth: '48rem', margin: '2rem auto', padding: '0 1rem' }}>
-    <button type="button" onClick={() => setSpanish(!es)}>{es ? 'English' : 'Español'}</button>
+    <button type="button" onClick={() => setSpanish(!es)}>{es ? 'English' : 'Spanish'}</button>
     <h1>{t('Review a Codex change', 'Revisar un cambio de Codex')}</h1>
     <label className="field">
       <span>{t('Review data from the Codex viewer', 'Datos de revisión del visor de Codex')}</span>
