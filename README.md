@@ -10,15 +10,43 @@ SpecTorque is a local workbench for writing and reviewing software specification
 
 ## Explore the workbench
 
-Click any capture to see it full size.
+Expand a view to read its description and see the capture. Click the image for the original size.
 
-| Analyze | Build a spec |
-| :---: | :---: |
-| [![Analyze view with the EPIC radar, dimension scores and findings](docs/assets/workbench/analyze.jpg)](docs/assets/workbench/analyze.jpg) | [![Build a spec view with the four guided steps and a sample project](docs/assets/workbench/build.jpg)](docs/assets/workbench/build.jpg) |
-| Inspect exact evidence and see which dimensions are still unknown. | Turn a project brief into a spec, plan and tasks. |
-| **History** | **Connect agents** |
-| [![Assessment history showing revisions and rubric versions](docs/assets/workbench/history.jpg)](docs/assets/workbench/history.jpg) | [![Connect agents view showing supported hosts and the local MCP configuration](docs/assets/workbench/connect.jpg)](docs/assets/workbench/connect.jpg) |
-| Revisit assessments and export a specific revision. | Find the host integrations and the local MCP entry point. |
+<details open>
+<summary><strong>Analyze</strong></summary>
+
+Inspect findings at their exact source lines and see which dimensions are still unknown.
+
+[![Analyze view with the EPIC radar, dimension scores and findings](docs/assets/workbench/analyze.jpg)](docs/assets/workbench/analyze.jpg)
+
+</details>
+
+<details>
+<summary><strong>Build a spec</strong></summary>
+
+Answer guided questions to turn a project brief into a spec, plan and tasks.
+
+[![Guided builder showing the four steps and a sample project](docs/assets/workbench/build.jpg)](docs/assets/workbench/build.jpg)
+
+</details>
+
+<details>
+<summary><strong>History</strong></summary>
+
+Revisit earlier assessments, check their revision and rubric version, and export the report you need.
+
+[![Assessment history showing revisions and rubric versions](docs/assets/workbench/history.jpg)](docs/assets/workbench/history.jpg)
+
+</details>
+
+<details>
+<summary><strong>Connect agents</strong></summary>
+
+Find the host integration guides and copy the local MCP configuration for your project.
+
+[![Integration cards and local MCP configuration](docs/assets/workbench/connect.jpg)](docs/assets/workbench/connect.jpg)
+
+</details>
 
 ## See the difference
 
