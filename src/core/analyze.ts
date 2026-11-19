@@ -1,31 +1,45 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.2';
+export const ENGINE_VERSION = '0.1.3';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
 const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
+const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
+const hasNormativeModal = (text: string) => modal.test(text.normalize('NFC').replace(calendarMay, ' '));
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || modal.test(text.normalize('NFC')));
+    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
   });
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
+const boundedQuantity = /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:ms\b|seconds?\b|segundos?\b|minutes?\b|minutos?\b|%|MB\b|GB\b)/iu;
+const minimumDuration = /\bal menos\s+\d+(?:[.,]\d+)?\s+(?:segundos?|minutos?|horas?|días?|semanas?)\b/iu;
+const boundedRate = /[≤≥]\s*\d+(?:[.,]\d+)?\s+(?:entr(?:y|ies)|tickets?|requests?|turnos?|lecturas?|solicitudes?)\s+(?:per|por)\s+(?:second|minute|hour|segundo|minuto|hora)\b/iu;
+const observableDenial = /\b(?:MUST|SHALL)\s+(?:reject|deny)\b|\bDEBE(?:N|RÁN?)?\s+(?:rechazar|denegar)\b/iu;
+const unboundedWording = new RegExp(vagueTerms.source, 'iu');
+
+function hasObservableCue(text: string): boolean {
+  const clause = text.normalize('NFC').replace(requirementId, '');
+  return !unboundedWording.test(clause) &&
+    (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
+}
+
 function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
     const hits = specRequirements.filter(predicate);
     return { status: (!specRequirements.length ? 'unknown' : hits.length === specRequirements.length ? 'supported' : hits.length ? 'partial' : 'missing') as Status, hits };
   };
-  if (id === 'E1.2') return ratio(l => /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:ms\b|seconds?\b|segundos?\b|minutes?\b|minutos?\b|%|MB\b|GB\b)|\b(?:MUST|SHALL) (?:reject|deny)\b|\bDEBE(?:RÁ)? (?:rechazar|denegar)\b/i.test(l.text.replace(requirementId, '')) && !new RegExp(vagueTerms.source, 'iu').test(l.text));
-  if (id === 'E1.4') return ratio(l => modal.test(l.text.normalize('NFC')));
+  if (id === 'E1.2') return ratio(line => hasObservableCue(line.text));
+  if (id === 'E1.4') return ratio(line => hasNormativeModal(line.text));
   if (id === 'E2.1') return ratio(l => !/;.+\b(?:MUST|SHALL|DEBE)\b|\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(l.text));
   if (id === 'P2.1' || id === 'C1.1') {
     const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && /user|visitor|actor|customer|usuario|visitante|cliente/i.test(l.text));
