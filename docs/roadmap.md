@@ -20,8 +20,8 @@ V1 excludes code/test implementation verification, model training, advanced ente
 The [common-workbench qualification](common-workbench-qualification.md) records the clean installed-package browser checks on macOS. [#3](https://github.com/jayanez/spec-torque/issues/3) tracks the remaining Safari viewport and VoiceOver evidence.
 
 The [EN/ES format corpus](format-corpus.md) has a reproducible comparison
-procedure. Independent labeling and calibration are tracked in
-[#2](https://github.com/jayanez/spec-torque/issues/2).
+with blind agent annotations and adjudication. Human validation remains
+separate from the corpus evidence in [#2](https://github.com/jayanez/spec-torque/issues/2).
 
 The proposed [local-model experiment](research.md#offline-model-research)
 requires separate authorization and a reserved evaluation sample. Directory

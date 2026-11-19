@@ -85,9 +85,9 @@ Codex's conversational/desktop UI, authenticated IDE workflows, other operating 
 Reviewed filesystem/hash, request/response bounds, explicit providers and read-only MCP boundaries retain their existing guarantees and tests. This bounded review found no additional confirmed bypass there; it does not prove race-free behavior against a hostile process controlling the same filesystem. Regex analysis and exclusion detection remain deliberately incomplete. The EN/ES corpus and human calibration stay in #2.
 
 The [corpus reproduction procedure](format-corpus.md#reproduce) checks
-format evidence and measurements against a pinned engine revision. Its
-unlabeled run is an inspection of rule predictions. Independent human
-labels are required for the corpus accuracy rates.
+format evidence and measurements against a pinned engine revision. The
+current accuracy rates use separately produced agent judgments and report
+their provenance and abstentions. Human validation remains separate.
 
 ## Remaining terminal clients
 

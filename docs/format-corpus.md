@@ -54,7 +54,7 @@ for both affected families.
 | --- | --- |
 | Spec Kit | Numbered feature folders, data model, acceptance criteria and a bare `specs/` attribution control. |
 | Spec Kitty | `kitty-specs/<mission>/`, Markdown work packages under `tasks/`, and a YAML discovery negative. |
-| OpenSpec | Proposal, design, delta specs, current specs and dated archives. The external control is a published EN conventions spec at revision `e6539de023915e36848b351ea737ca8e192e8538`. Its [MIT license](../fixtures/calibration/external/openspec-conventions/LICENSE) accompanies the exact source bytes. |
+| OpenSpec | Proposal context, design, delta specs, current specs and dated archives. The external control is a published EN conventions spec at revision `e6539de023915e36848b351ea737ca8e192e8538`. Its [MIT license](../fixtures/calibration/external/openspec-conventions/LICENSE) accompanies the exact source bytes. |
 | Kiro | Requirements, design, tasks and conditional requirement lines. |
 | BMAD | PRD, architecture, epics and stories within documented output shapes. Cross-directory story ownership remains unverified. |
 | ZeeSpec | `.spec/` question files and upstream/downstream context. `what.md` supplies the spec and `how.md` the plan for the sampled layout. |
@@ -82,7 +82,7 @@ With the locked project dependencies available and Node 22.20 or newer, run:
 ```sh
 node --import tsx --test tests/formats.test.ts tests/normative.test.ts
 npm run corpus:report -- --packet
-npm run corpus:report -- --baseline 8c1ace3cf0e8b562af4f3bf99c4bc16220ac98b8
+npm run corpus:report -- --baseline 8c1ace3cf0e8b562af4f3bf99c4bc16220ac98b8 --labels fixtures/calibration/agent-reviews.json
 ```
 
 The report uses Git and tar to read both engines from their committed
@@ -110,3 +110,33 @@ Independent sessions hide other judgments and detector output, though
 reviewers using the same model can still make correlated errors. Agent
 metrics describe model judgments on this bounded sample. Human review is
 a separate basis for claims about requirements quality.
+
+## Observed agent comparison
+
+[Agent annotations](../fixtures/calibration/agent-reviews.json) preserve both
+blind sessions and the adjudication session. All three used OpenAI Luna Latest
+(`gpt-6-luna`). The two independent sessions agreed on 689 of 716 propositions
+(351/363 EN, 336/351 ES, 2/2 language-neutral). A third session adjudicated 27
+disagreements. The final labels comprise 422 positive, 291 negative and
+three `unknown` references. The latter concern possible permission versus
+descriptive possibility and the ownership of a bare `specs/` hierarchy.
+
+The following counts compare engine 0.1.1 at `8c1ace3` to engine 0.1.3 on the
+reserved lexical sample. Each row reports the same propositions before and
+after. The full report retains the per-framework breakdown and each error.
+
+| Rule | Language | Units | TP | FP | TN | FN | Negative-reference abstentions |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| E1.2 | EN | 21 | 6 → 6 | 0 → 0 | 12 → 11 | 1 → 1 | 2 → 3 |
+| E1.2 | ES | 21 | 3 → 6 | 0 → 0 | 7 → 7 | 4 → 1 | 7 → 7 |
+| E1.4 | EN | 21 | 14 → 14 | 4 → 3 | 1 → 1 | 0 → 0 | 2 → 3 |
+| E1.4 | ES | 21 | 14 → 14 | 0 → 0 | 0 → 0 | 0 → 0 | 7 → 7 |
+
+These rows have zero positive-reference abstentions. EN date phrases can now
+abstain when there is no other requirement signal, which lowers evaluated
+coverage. Remaining errors include English uses of `May` as a name or noun
+modifier, a written-out timing unit and a Spanish rate whose comparator comes
+after the unit. The reserved lexical cases were held out of rule selection.
+The documented OpenSpec proposal path was also a discovery regression in the
+development sample. The broader comparison uses a directed corpus with small
+denominators and potentially correlated model judgments.

@@ -16,7 +16,8 @@ Use original examples and licensed public material with reproducible revisions. 
 
 The [corpus protocol](corpus-labeling.md) defines the blind annotation packet,
 disagreement handling and adjudication. The [local evaluator](format-corpus.md)
-compares engine revisions with those labels when available and reports the
-coverage lost to abstentions.
+compares engine revisions and reports the coverage lost to abstentions.
+The current comparison declares agent reference provenance. Human labels
+are required for claims about human agreement or requirements quality.
 
 The stable demonstration must include before/after documents, exact commands, reports, rubric/version identifiers and a statement of unresolved limitations. Badge scores identify a specific revision and must not be described as live certification.

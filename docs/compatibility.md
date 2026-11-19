@@ -24,7 +24,7 @@ CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. 
 |---|---|---|
 | Spec Kit | `.specify/`, `specs/<feature>/` | A generic `specs/` directory is not proof of framework ownership. |
 | Spec Kitty | `kitty-specs/<mission>/`, `.kittify/` or explicit header marker | Markdown work packages are grouped by mission. YAML manifests are outside this input path. |
-| OpenSpec | `openspec/` and change folders | Dated archive changes have distinct feature IDs and stay outside active analysis. |
+| OpenSpec | `openspec/` and change folders | Change proposals are discovered as context. Dated archives have distinct feature IDs and stay outside active analysis. |
 | Kiro | `.kiro/specs/<feature>/` | Requirement, design and task basenames determine roles. |
 | BMAD | `_bmad/`, `_bmad-output/` | Complex cross-folder story grouping needs explicit selection. |
 | ZeeSpec | `.spec/` and question-named Markdown | Direct `what.md` and `how.md` are the spec and plan. Other documented question and dependency files provide context. |
@@ -35,4 +35,5 @@ All detections and all heuristic statuses remain visible in exported assessments
 The [format and linguistic corpus](format-corpus.md) records the original
 fourteen probes, 28 format-based project sets, focused controls and a
 published OpenSpec example. The resulting compatibility evidence is scoped
-to the supplied Markdown variants. Human calibration remains pending.
+to the supplied Markdown variants. The lexical comparison uses blind agent
+labels. Human calibration remains pending.

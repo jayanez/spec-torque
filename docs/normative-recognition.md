@@ -34,12 +34,18 @@ unchanged. The assessment ID identifies source/options; compare engine and rubri
 versions as well when comparing reports across engine revisions.
 
 Reproduce with `node --import tsx --test tests/normative.test.ts` after installing
-the project's locked dependencies. Ambiguous-case labels and quality metrics
-remain open in [#2](https://github.com/jayanez/spec-torque/issues/2).
+the project's locked dependencies.
 
 The [calibration corpus](format-corpus.md) records contrast cases for modality
 and observable measurement, including NFC/NFD Spanish, decimal separators,
 nonbreaking spaces, comparison symbols, quantities per time period, plural
 rejection or denial, dates, identifiers, examples and ambiguous wording.
-These are inputs for independent evaluation. Changes to the measurement and
-modality predicates await adjudicated labels.
+Engine **0.1.3** uses NFC for E1.2 comparisons, including plural
+`DEBEN rechazar` and `DEBERÁN denegar`, an explicit Spanish minimum
+duration, and bounded rate phrases such as `≤ 120 turnos por minuto`.
+E1.4 excludes clear English dates such as `May 12 is …` and `in May`
+while preserving a permission in the same line. The analyzed line's bytes,
+hash and evidence remain unchanged. Unlisted units, other uses of `May` and
+discourse-level interpretation can still yield errors or abstentions. The
+[agent comparison](format-corpus.md#observed-agent-comparison) records
+the affected corpus counts and limits.
