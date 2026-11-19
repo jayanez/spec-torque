@@ -32,6 +32,17 @@ mkdir -p "$OUT"
 npm pack --ignore-scripts --pack-destination "$OUT"
 ```
 
-Copy the four versioned ZIPs from `artifacts/` to the output directory. Compare their SHA-256 values and the TGZ value between builds. Inspect archive contents, licenses, notices and version metadata. Compare installed dependencies against the recorded test environment. Generate the demonstration with the exact TGZ and add a manifest linking all installer digests and the source SHA. The recorded video and report creation times may vary between demonstrations. Archive the reviewed demonstration files and generate `SHA256SUMS` over the actual release files. Verify it from a new directory.
+Compare the five installer digests between builds. Inspect archive contents, licenses, notices and version metadata. Compare installed dependencies against the recorded test environment. With Chromium provisioned and a new absolute `DEMO_OUT` directory, assemble the release:
+
+```sh
+cp artifacts/spectorque-claude-0.2.0.zip artifacts/spectorque-codex-0.2.0.zip "$OUT/"
+cp artifacts/spectorque-opencode-0.2.0.zip artifacts/spectorque-pi-0.2.0.zip "$OUT/"
+npm run browsers:install -- chromium
+npm run pilot:demo -- "$OUT/spectorque-0.2.0.tgz" "$DEMO_OUT"
+npm run package:pilot -- "$OUT" "$DEMO_OUT"
+(cd "$OUT" && shasum -a 256 -c SHA256SUMS)
+```
+
+The assembly command checks the recorded TGZ digest, adds all five installer digests to the demo manifest, packages the reviewed demo file list and computes `SHA256SUMS`. Video and report creation times may vary between recordings. The manifest records the source SHA and the reproducible report and source checks.
 
 Run the installed workbench browser suite, host-specific terminal qualifiers and the Desktop walkthrough as described in [qualification](qualification.md) and [integrations](integrations.md). Record the commit, artifact digest, exact client, OS and architecture, Node, fixture, result and evidence location for each advertised route. Keep CI, browser, installed client, manual accessibility and participant observations separate. A release requires approval of the exact candidate and its public assets.
