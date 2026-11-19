@@ -65,6 +65,7 @@ async function withWorkbench(browser, root, recordVideo, fn) {
         return route.abort();
       });
       const page = await context.newPage();
+      page.setDefaultTimeout(10_000);
       page.on('pageerror', error => errors.push(error.message));
       await page.goto(url);
       const result = await fn(page);
@@ -162,6 +163,11 @@ async function capture(browser, lang, manifest) {
     await flow.button('Decisions', 'Decisiones').click();
     await expect(page.getByRole('button').filter({ hasText: fixtureFile + ':5' })).toBeVisible();
     await caption(3);
+    await flow.button('40 practices', '40 prácticas').click();
+    const unknown = page.locator('summary').filter({ hasText: 'I2.3' });
+    await expect(unknown).toContainText('unknown');
+    await unknown.scrollIntoViewIfNeeded();
+    await delay(1200);
     const after = JSON.parse(await flow.save(join(root, 'after.json'), '↓ JSON', '↓ JSON'));
     await flow.save(join(root, 'after.md'), '↓ Report', '↓ Informe');
     compareReport(after, workspace);
@@ -230,9 +236,13 @@ try {
     examples: {},
   };
   for (const lang of ['en', 'es']) await capture(browser, lang, manifest);
-  for (const file of ['pilot.md', 'pilot.es.md', 'pilot-feedback.md', 'releases.md', 'privacy.md', 'common-workbench-qualification.md', 'compatibility.md']) {
+  for (const file of ['pilot.md', 'pilot.es.md', 'pilot-feedback.md', 'pilot-operations.md', 'privacy.md', 'common-workbench-qualification.md', 'compatibility.md']) {
     await cp(join('docs', file), join(output, file));
   }
+  await mkdir(join(output, 'integrations/codex'), { recursive: true });
+  await cp('integrations/codex/README.md', join(output, 'integrations/codex/README.md'));
+  const releaseGuide = await readFile('docs/releases.md', 'utf8');
+  await writeFile(join(output, 'releases.md'), releaseGuide.replace('../integrations/codex/README.md', 'integrations/codex/README.md'));
   await cp('LICENSE', join(output, 'LICENSE'));
   await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   console.log(output);

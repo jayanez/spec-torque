@@ -25,7 +25,7 @@ Open the printed loopback URL. The rest of the walkthrough needs only local file
    ```
 
 3. Preview again. Select **Write this change to the local workspace** and click **Accept change**. Verify that line 5 is the only changed line. FR-002, FR-003 and the payment-data exclusion retain their original wording.
-4. Open **Decisions** and verify the unanswered question on line 5. Open **Practices** and check an `unknown` such as I2.3, which needs companion documents. Download **JSON**, **Report** and **Artifacts**. The analysis now has a new revision. The ZIP contains `specs/booking/spec.md`, with the same bytes as the approved file. Compare with the versioned demonstration by revision, practice states and file bytes. The JSON time of creation will vary.
+4. Open **Decisions** and verify the unanswered question on line 5. Open **40 practices** and check an `unknown` such as I2.3, which needs companion documents. Download **JSON**, **Report** and **Artifacts**. The analysis now has a new revision. The ZIP contains `specs/booking/spec.md`, with the same bytes as the approved file. Compare with the versioned demonstration by revision, practice states and file bytes. The JSON time of creation will vary.
 5. Use a second disposable copy for recovery. Prepare the same proposed change, select disk writing and append a line to the actual source file externally before clicking **Accept change**. Verify the stale-source error and that the external line survives. Reload the workspace, dismiss the old proposal, select the finding again and create a fresh proposal. Verify that the new approved edit preserves the external line.
 
 You can compare the displayed assessment against the installed CLI from the second terminal with these commands. Use a new output path for each Markdown report.
@@ -47,3 +47,5 @@ npm run pilot:demo -- "$TGZ" "$DEMO_OUT"
 ```
 
 The runner installs into a disposable prefix, records the EN/ES browser interaction with timed WebVTT captions, compares exports with the installed CLI, and writes a manifest. Player support for WebVTT varies. Load the matching `captions.vtt` alongside each `walkthrough.webm`, or follow this written script. Video is illustrative. The archive checks, sources and JSON revisions provide replay evidence. The labels and sequence can also be exercised by keyboard in the browser. See the [workbench qualification](common-workbench-qualification.md) for browser and accessibility limits.
+
+For operator responsibilities, participant intake and release gates, see [pilot operations](pilot-operations.md).
