@@ -50,6 +50,11 @@ jobs:
       - run: npm run build
       - run: npm run package:integrations
       - run: npm run package:opencode
+      - name: Locate the versioned opencode archive
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          printf 'OPENCODE_ZIP=artifacts/spectorque-opencode-%s.zip\n' "$version" >> "$GITHUB_ENV"
       - run: npm audit
       - if: runner.os == 'Linux'
         run: npx --no-install playwright install --with-deps chromium
@@ -111,8 +116,8 @@ jobs:
               mount --bind "$5" "$(readlink -f "/lib/ld-musl-$(uname -m).so.1")"
             fi
             exec runuser -u "$SUDO_USER" -- env PATH="$1" SPECTORQUE_OPENCODE_NETWORK=linux-netns \
-              npm run qualify:opencode -- "$2" artifacts/spectorque-opencode-0.1.0.zip "$3" "$4"
-          ' _ "$PATH" "$OPENCODE_EXE" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT" "$OPENCODE_MUSL_LOADER"
+              npm run qualify:opencode -- "$2" "$6" "$3" "$4"
+          ' _ "$PATH" "$OPENCODE_EXE" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT" "$OPENCODE_MUSL_LOADER" "$OPENCODE_ZIP"
       - name: Qualify macOS with terminal and service egress restricted
         if: runner.os == 'macOS'
         env:
@@ -125,7 +130,7 @@ jobs:
           exec /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:*"))' "$OPENCODE_EXE" "\$@"
           EOF
           chmod u+x "$launcher"
-          npm run qualify:opencode -- "$launcher" artifacts/spectorque-opencode-0.1.0.zip "$OPENCODE_TOOLS" "$OPENCODE_VARIANT"
+          npm run qualify:opencode -- "$launcher" "$OPENCODE_ZIP" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT"
       - name: Qualify Windows with egress blocked for the test executable
         if: runner.os == 'Windows'
         shell: pwsh
@@ -138,7 +143,7 @@ jobs:
           New-NetFirewallRule -Name $rule -DisplayName $rule -Direction Outbound -Action Block -Program $program `
             -RemoteAddress '0.0.0.0-126.255.255.255','128.0.0.0-255.255.255.255','::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' | Out-Null
           try {
-            npm run qualify:opencode -- $program artifacts/spectorque-opencode-0.1.0.zip $env:OPENCODE_TOOLS $env:OPENCODE_VARIANT
+            npm run qualify:opencode -- $program $env:OPENCODE_ZIP $env:OPENCODE_TOOLS $env:OPENCODE_VARIANT
             $result = $LASTEXITCODE
           } finally {
             Remove-NetFirewallRule -Name $rule

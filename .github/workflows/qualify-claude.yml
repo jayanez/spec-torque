@@ -45,6 +45,11 @@ jobs:
       - run: npm run build
       - run: npm run package:integrations
       - run: npm run package:claude
+      - name: Locate the versioned claude archive
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          printf 'CLAUDE_ZIP=artifacts/spectorque-claude-%s.zip\n' "$version" >> "$GITHUB_ENV"
       - run: npm audit
       - if: runner.os == 'Linux'
         run: npx --no-install playwright install --with-deps chromium
@@ -81,8 +86,8 @@ jobs:
             set -e
             ip link set lo up
             exec runuser -u "$SUDO_USER" -- env PATH="$1" SPECTORQUE_CLAUDE_ISOLATED=1 SPECTORQUE_CLAUDE_NETWORK=linux-netns \
-              npm run qualify:claude -- "$2" artifacts/spectorque-claude-0.1.0.zip "$3"
-          ' _ "$PATH" "$CLAUDE_EXE" "$CLAUDE_TOOLS"
+              npm run qualify:claude -- "$2" "$4" "$3"
+          ' _ "$PATH" "$CLAUDE_EXE" "$CLAUDE_TOOLS" "$CLAUDE_ZIP"
       - name: Qualify macOS with outbound traffic limited to loopback
         if: runner.os == 'macOS'
         env:
@@ -96,7 +101,7 @@ jobs:
           exec /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:*"))' "$CLAUDE_EXE" "\$@"
           EOF
           chmod u+x "$launcher"
-          npm run qualify:claude -- "$launcher" artifacts/spectorque-claude-0.1.0.zip "$CLAUDE_TOOLS"
+          npm run qualify:claude -- "$launcher" "$CLAUDE_ZIP" "$CLAUDE_TOOLS"
       - name: Qualify Windows with egress blocked for the client executable
         if: runner.os == 'Windows'
         shell: pwsh
@@ -109,7 +114,7 @@ jobs:
           New-NetFirewallRule -Name $rule -DisplayName $rule -Direction Outbound -Action Block -Program $program `
             -RemoteAddress '0.0.0.0-126.255.255.255','128.0.0.0-255.255.255.255','::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' | Out-Null
           try {
-            npm run qualify:claude -- $program artifacts/spectorque-claude-0.1.0.zip $env:CLAUDE_TOOLS
+            npm run qualify:claude -- $program $env:CLAUDE_ZIP $env:CLAUDE_TOOLS
             $result = $LASTEXITCODE
           } finally {
             Remove-NetFirewallRule -Name $rule

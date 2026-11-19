@@ -1,3 +1,4 @@
+import { PRODUCT_VERSION } from '../../src/version.js';
 import { readFile } from 'node:fs/promises';
 import { McpServer } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
@@ -8,7 +9,7 @@ const workspace = await bindWorkspace(process.env.SPECTORQUE_ROOT);
 const uri = 'ui://spectorque/viewer.html';
 const mimeType = 'text/html;profile=mcp-app';
 const html = await readFile(new URL('./viewer.html', import.meta.url), 'utf8');
-const server = new McpServer({ name: 'spectorque-workspace', version: '0.1.0' });
+const server = new McpServer({ name: 'spectorque-workspace', version: PRODUCT_VERSION });
 const annotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
 
 server.registerResource('SpecTorque viewer', uri, { mimeType }, async () => ({
