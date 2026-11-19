@@ -8,7 +8,7 @@ The [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/t
 | `spectorque-claude-0.2.0.zip` | In the test project run `claude --plugin-dir /absolute/path/to/archive.zip`, then `/spectorque`. Closing that session unloads the session-only plugin. |
 | `spectorque-opencode-0.2.0.zip` | Extract into an isolated profile and add its absolute directory to `plugins` in the profile's `opencode/cli.json`. Open a local session and run `/spectorque`. Remove the entry and restart to uninstall. |
 | `spectorque-pi-0.2.0.zip` | Extract and run `pi install /absolute/extracted/package --local` in the test project. Open Pi offline, trust the scratch project and run `/spectorque`. Remove with `pi remove /absolute/extracted/package --local --approve`. |
-| `spectorque-codex-0.2.0.zip` | Use the [local marketplace and project setup](../integrations/codex/README.md). The observed native opening requires a user-initiated turn. The standalone workbench offers a fully local route. |
+| `spectorque-codex-0.2.0.zip` | For operator qualification, use the [local marketplace and project setup](../integrations/codex/README.md). Pilot participants use the standalone local workbench. |
 | `spectorque-demo-0.2.0.zip` | Contains the EN/ES walkthrough and versioned evidence. Follow [English](pilot.md) or [Español](pilot.es.md). |
 | `SHA256SUMS` | Verify with `shasum -a 256 -c SHA256SUMS` or compare using `Get-FileHash -Algorithm SHA256` on Windows. |
 

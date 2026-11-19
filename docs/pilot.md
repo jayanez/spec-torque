@@ -1,6 +1,6 @@
 # SpecTorque pilot walkthrough
 
-Use the release candidate's matching tarball, checksum file and demonstration bundle. The walkthrough is for specification authors and reviewers. It uses the deterministic local workbench with a synthetic room-booking example. The optional native routes are listed in the [installation guide](releases.md) and depend on the candidate's qualification record.
+Use the release candidate's matching tarball, checksum file and demonstration bundle. The walkthrough is for specification authors and reviewers. It uses the deterministic local workbench with a synthetic room-booking example. Participants follow this local route. The [installation guide](releases.md) also lists the native integration paths used in qualification.
 
 ## Install and open
 
