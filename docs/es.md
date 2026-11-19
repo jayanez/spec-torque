@@ -34,7 +34,7 @@ Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md)
 
 En Claude Code, genera el paquete con `npm run package:integrations` y
 `npm run package:claude`; el script imprime el SHA-256 del ZIP determinista.
-Cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-0.1.0.zip`
+Cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-0.2.0.zip`
 y ejecuta `/spectorque`. El panel usa el `node` del `PATH` (Node 22.20+).
 Si el workspace tiene varias funcionalidades, el panel ofrece **All documents** o
 una funcionalidad concreta, como en OpenCode. Una propuesta se rechaza si el
@@ -43,7 +43,7 @@ archivo ya no coincide con el hash evaluado.
 sesión, copia su dirección e indica el alcance que hay que seleccionar; se detiene
 al cerrarlo, al cerrar el panel o al terminar la sesión. Pulsarlo mientras arranca
 cancela ese arranque.
-`npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-0.1.0.zip <node_modules>`
+`npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-0.2.0.zip <node_modules>`
 recorre el ZIP instalado en un cliente real (EN/ES, alcance, rechazo, aplicación,
 fuente obsoleta, traspaso, errores e instalación por marketplace) sin enviar
 prompts al modelo.
@@ -98,3 +98,5 @@ con rutas anidadas, archivos archivados e identificadores compartidos. Verifica
 las pistas de clasificación documentadas; no demuestra compatibilidad completa
 con los generadores ni calibración científica. Las variantes ambiguas y las
 etiquetas independientes siguen pendientes en #2.
+
+[Recorrido del piloto y demostración bilingüe](pilot.es.md)

@@ -16,7 +16,7 @@ The three portable skills in `skills/` cover authoring, review and refinement. I
 
 ## Claude Code
 
-Run `npm run package:integrations` and then `npm run package:claude`. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.1.0.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. When the workspace has several features, the pane offers **All documents** or one feature, like OpenCode; companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. **Open common workbench** starts the loopback workbench for the session workspace, copies its address and names the scope to select; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
+Run `npm run package:integrations` and then `npm run package:claude`. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.2.0.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. When the workspace has several features, the pane offers **All documents** or one feature, like OpenCode; companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. **Open common workbench** starts the loopback workbench for the session workspace, copies its address and names the scope to select; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
 
 Validate with `claude plugin validate integrations/claude` and run the bundled native harness with `claude plugin test integrations/claude`. A harness result and a real interactive/client walkthrough are recorded separately.
 
@@ -88,13 +88,13 @@ API behavior reference: [Pi extension modes](https://github.com/earendil-works/p
 
 ### Pi installed package qualification
 
-Generate the package using the build commands above, then run:
+Generate the package using the build commands above and `npm run package:pi`, then run:
 
 ```sh
-npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js --installed-package integrations/pi
+npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js --installed-archive artifacts/spectorque-pi-0.2.0.zip
 ```
 
-The check stages the generated directory outside the checkout and registers it
+The check extracts the exact archive outside the checkout and registers it
 with Pi's project-local package manager in disposable EN/ES workspaces. It uses
 an isolated agent directory, trusts each project only for the relevant commands,
 and checks command and skill discovery through Pi RPC. It exercises text and JSON
