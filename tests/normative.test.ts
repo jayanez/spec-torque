@@ -79,6 +79,49 @@ test('normative recognition still excludes headings, quotes, fenced code and sce
   }
 });
 
+test('bilingual measurement recognizes explicit rates and plural denial with original evidence', async () => {
+  const samples = [
+    ['The terminal SHALL accept ≤ 120 entries per minute.', 'supported'],
+    ['Los puestos DEBERA\u0301N enviar ≤ 120\u202fturnos por minuto.', 'supported'],
+    ['Los paneles DEBEN rechazar recorridos por un portal clausurado.', 'supported'],
+    ['Los lectores DEBERA\u0301N denegar el acceso.', 'supported'],
+    ['Los servicios DEBERÍAN rechazar solicitudes no autorizadas.', 'supported'],
+    ['The service SHOULD reject unauthorized requests.', 'supported'],
+    ['Los servicios DEBERI\u0301AN denegar el acceso.', 'supported'],
+    ['Los registros DEBEN guardar el lote al menos 2 semanas.', 'supported'],
+    ['El servicio tarda 12 segundos.', 'supported'],
+    ['The catalog SHOULD show the release marked v2.4.', 'missing'],
+    ['Los avisos PUEDEN aparecer en el capítulo 3.', 'missing'],
+    ['Los servicios PUEDEN rechazar solicitudes no autorizadas.', 'missing'],
+    ['Los servicios DEBEN enviar ≤ 120 turnos por minutoé.', 'missing'],
+    ['El servicio tarda 12 segundosé.', 'missing'],
+    ['Los puestos DEBEN enviar un resumen cuando sea necesario.', 'missing'],
+  ];
+  for (const [statement, status] of samples) {
+    const text = `FR-001: ${statement}`;
+    const result = await analyze({ name: 'measurement', artifacts: [classifyArtifact('prd.md', text)] });
+    const measurement = result.practices.find(item => item.id === 'E1.2')!;
+    assert.equal(measurement.status, status, text);
+    assert.deepEqual(measurement.evidence, status === 'supported' ? [{ path: 'prd.md', line: 1, text }] : []);
+  }
+});
+
+test('clear May date phrases do not count as permission, while real permission remains visible', async () => {
+  for (const [text, status] of [
+    ['FR-001: May 12 is the inventory date.', 'missing'],
+    ['FR-001: May 2027 is the deployment month.', 'missing'],
+    ['The west studio opened in May.', 'unknown'],
+    ['In May, the branch moved to the library.', 'unknown'],
+    ['The operator May publish the register in May.', 'supported'],
+    ['The operator MAY notify the team when May 12 is a working day.', 'supported'],
+  ]) {
+    const result = await analyze({ name: 'May boundary', artifacts: [classifyArtifact('prd.md', text)] });
+    const normative = result.practices.find(item => item.id === 'E1.4')!;
+    assert.equal(normative.status, status, text);
+    assert.deepEqual(normative.evidence, status === 'supported' ? [{ path: 'prd.md', line: 1, text }] : []);
+  }
+});
+
 test('unidentified Spanish mandatory opposites are detected in both orders', async () => {
   for (const modal of ['DEBE', 'DEBEN', 'DEBERÁ', 'DEBERÁN']) {
     for (const lines of [[`El servicio ${modal} permitir acceso.`, `El servicio NO ${modal} permitir acceso.`], [`El servicio NO ${modal} permitir acceso.`, `El servicio ${modal} permitir acceso.`]]) {

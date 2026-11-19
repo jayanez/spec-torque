@@ -1,6 +1,6 @@
 # EN/ES normative recognition
 
-Engine **0.1.1** recognizes complete Unicode words for MUST, SHALL, SHOULD and MAY,
+Since engine **0.1.1**, recognition covers complete Unicode words for MUST, SHALL, SHOULD and MAY,
 and DEBE/DEBEN, DEBERÁ/DEBERÁN, DEBERÍA/DEBERÍAN and PUEDE/PUEDEN. Matching is
 case-insensitive and uses NFC-normalized text for matching; original source text,
 hashes and evidence are retained. Refinement also protects decomposed accented
@@ -34,6 +34,19 @@ unchanged. The assessment ID identifies source/options; compare engine and rubri
 versions as well when comparing reports across engine revisions.
 
 Reproduce with `node --import tsx --test tests/normative.test.ts` after installing
-the project's locked dependencies. These original cases and automated regressions
-are not an independently labelled corpus or scientific calibration. Seven-format
-coverage, ambiguous-case labels and quality metrics remain in GitHub issue #2.
+the project's locked dependencies.
+
+The [calibration corpus](format-corpus.md) records contrast cases for modality
+and observable measurement, including NFC/NFD Spanish, decimal separators,
+nonbreaking spaces, comparison symbols, quantities per time period, plural
+rejection or denial, dates, identifiers, examples and ambiguous wording.
+Engine **0.1.3** uses NFC for E1.2 comparisons, including plural
+`DEBEN rechazar` and `DEBERÁN denegar`, explicit denial in EN/ES
+recommendations, a Spanish minimum
+duration, and bounded rate phrases such as `≤ 120 turnos por minuto`.
+E1.4 excludes clear English dates such as `May 12 is …`, `May 2027 is …` and `in May`
+while preserving a permission in the same line. The analyzed line's bytes,
+hash and evidence remain unchanged. Unlisted units, other uses of `May` and
+discourse-level interpretation can still yield errors or abstentions. The
+[agent comparison](format-corpus.md#observed-agent-comparison) records
+the affected corpus counts and limits.

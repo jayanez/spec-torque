@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { classifyArtifact, selectFeature } from '../src/core/artifacts.js';
+import { fileURLToPath } from 'node:url';
+import { classifyArtifact, isSpecCandidate, selectFeature } from '../src/core/artifacts.js';
 import { analyze } from '../src/core/analyze.js';
 import type { Framework, Role } from '../src/core/types.js';
 import { discoverWorkspace } from '../src/node/workspace.js';
@@ -57,4 +58,83 @@ test('shared IDs across the format/language corpus resolve only within the selec
   const missing = artifacts.filter((a: { path: string }) => a.path !== artifacts[0].path);
   const incomplete = await analyze({ ...set, artifacts: missing });
   assert.equal(incomplete.traceability.filter(t => !t.resolved).length, 2, 'other features must not supply the missing FR-001 definition');
+});
+
+const calibrationRoot = new URL('../fixtures/calibration/', import.meta.url);
+
+test('documented producer companions reach the shared classifier through workspace discovery', async () => {
+  const cases = [
+    {
+      root: 'development/spec-kitty-development-es',
+      path: 'kitty-specs/wayfinding-01M20JM4/tasks/WP01-intake.md',
+      framework: 'spec-kitty', role: 'tasks', feature: 'kitty-specs/wayfinding-01M20JM4',
+    },
+    {
+      root: 'development/spec-kit-development-es',
+      path: 'specs/011-availability/data-model.md',
+      framework: 'spec-kit', role: 'context', feature: 'specs/011-availability',
+    },
+    {
+      root: 'development/openspec-development-en',
+      path: 'openspec/changes/delivery-receipt/proposal.md',
+      framework: 'openspec', role: 'context', feature: 'openspec/changes/delivery-receipt',
+    },
+    {
+      root: 'development/bmad-development-es',
+      path: '_bmad-output/implementation-artifacts/1-1-first-visit.md',
+      framework: 'bmad', role: 'tasks', feature: '_bmad-output/implementation-artifacts',
+    },
+    {
+      root: 'controls/bmad-structural-controls-en',
+      path: '_bmad-output/initiatives/food-pantry/epics.md',
+      framework: 'bmad', role: 'tasks', feature: '_bmad-output/initiatives/food-pantry',
+    },
+    {
+      root: 'development/zeespec-development-es',
+      path: '.spec/how.md',
+      framework: 'zeespec', role: 'plan', feature: '.spec',
+    },
+    {
+      root: 'development/zeespec-development-es',
+      path: '.spec/upstream.md',
+      framework: 'zeespec', role: 'context', feature: '.spec',
+    },
+  ];
+  for (const { root, path, framework, role, feature } of cases) {
+    const set = await discoverWorkspace(fileURLToPath(new URL(root, calibrationRoot)));
+    const artifact = set.artifacts.find(item => item.path === path);
+    assert.ok(artifact, path);
+    assert.deepEqual([artifact.framework, artifact.role, artifact.featureId], [framework, role, feature], path);
+    const fromWindows = classifyArtifact(`apps/sample/${path}`.replaceAll('/', '\\'), artifact.content);
+    assert.deepEqual([fromWindows.framework, fromWindows.role, fromWindows.featureId], [framework, role, `apps/sample/${feature}`], path);
+    assert.equal(isSpecCandidate(path), true, path);
+  }
+  assert.equal(isSpecCandidate('docs/tasks/WP01-intake.md', true), false);
+  assert.equal(isSpecCandidate('kitty-specs/mission/wps.yaml'), false);
+  assert.equal(isSpecCandidate('docs/upstream.md'), false);
+});
+
+test('documented OpenSpec archive names keep unrelated changes distinct', async () => {
+  const directory = new URL('controls/openspec-structural-controls-en', calibrationRoot);
+  const set = await discoverWorkspace(fileURLToPath(directory));
+  assert.deepEqual(new Set(set.artifacts.filter(item => item.archived).map(item => item.featureId)), new Set([
+    'openspec/changes/archive/2026-08-18-legacy-intake',
+    'openspec/changes/archive/2026-09-08-legacy-log',
+  ]));
+  const result = await analyze(set);
+  assert.equal(result.findings.some(finding => /Duplicate requirement|Opposite obligations/.test(finding.message)), false);
+});
+
+test('scoped discovery inherits root and ancestor instructions without importing siblings or historical instructions', async () => {
+  const set = await discoverWorkspace(fileURLToPath(new URL('controls/nested-projects', calibrationRoot)));
+  for (const project of ['east', 'west']) {
+    const scoped = selectFeature(set, `apps/${project}/specs/intake`);
+    assert.deepEqual(scoped.artifacts.filter(artifact => artifact.role === 'instructions').map(artifact => artifact.path).sort(),
+      ['AGENTS.md', `apps/${project}/AGENTS.md`]);
+  }
+  const result = await analyze(set);
+  assert.deepEqual(result.traceability.filter(edge => !edge.resolved).map(edge => [edge.from, edge.to]), [
+    ['apps/east/specs/intake/tasks.md', 'FR-002'],
+  ]);
+  assert.equal(result.findings.filter(finding => finding.message.startsWith('Duplicate requirement identifier')).length, 1);
 });

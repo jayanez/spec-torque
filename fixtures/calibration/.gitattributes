@@ -1,0 +1,3 @@
+* text eol=lf
+external/openspec-conventions/LICENSE whitespace=-blank-at-eof
+external/openspec-conventions/openspec/specs/openspec-conventions/spec.md whitespace=-blank-at-eol

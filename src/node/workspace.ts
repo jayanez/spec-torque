@@ -32,10 +32,12 @@ export async function discoverWorkspace(root: string): Promise<ArtifactSet> {
       if (entry.isSymbolicLink() || excluded.has(entry.name) || entry.name.startsWith('.env')) continue;
       const full = join(directory, entry.name);
       if (entry.isDirectory()) await walk(full, depth + 1);
-      else if (entry.isFile() && isSpecCandidate(entry.name)) {
+      else if (entry.isFile()) {
+        const path = relative(canonicalRoot, full).replaceAll('\\', '/');
+        if (!isSpecCandidate(path, true)) continue;
         if ((await stat(full)).size > 1_000_000) throw new Error(`Artifact exceeds 1 MB: ${entry.name}`);
         if (artifacts.length >= 500) throw new Error('More than 500 artifacts; select a feature folder.');
-        artifacts.push(classifyArtifact(relative(canonicalRoot, full).replaceAll('\\', '/'), await readFile(full, 'utf8')));
+        artifacts.push(classifyArtifact(path, await readFile(full, 'utf8')));
       }
     }
   }

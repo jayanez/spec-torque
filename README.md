@@ -99,6 +99,8 @@ The basic workflow runs locally without an account, a model, a GPU or telemetry.
 
 SpecTorque turns the EPIC practices into explainable EN/ES heuristics and makes unresolved decisions visible for human review. Scores are advisory. The studies support the design rationale, while the accuracy of SpecTorque’s checks and their effect on project outcomes require separate evaluation. [Research and limitations](docs/research.md) · [Rubric](docs/rubric.md)
 
+The EN/ES corpus covers seven Markdown layout families, nested workspaces, and ambiguous wording. Its reproducible comparison reports false positives, false negatives, and abstentions by rule, family, and language. The current reference labels come from blind agent review and describe the sampled cases. [Corpus, results and reproduction](docs/format-corpus.md)
+
 ## Browser, CLI and coding agents
 
 The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode and Pi. The project also provides a VS Code workbench preview. Check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
