@@ -97,6 +97,24 @@ for (const es of [false, true]) {
     await expect(page.getByRole('alert')).toBeVisible();
     await expect(editor).toHaveValue(new RegExp(obligation));
     expect(await readFile(join(target, 'spec.md'), 'utf8')).toBe('Existing file\n');
+
+    const other = join(workspace.root, 'specs', 'other');
+    await mkdir(other, { recursive: true });
+    const otherSource = es ? 'FR-009: El sistema DEBE ser rápido.\n' : 'FR-009: The system MUST be fast.\n';
+    await writeFile(join(other, 'spec.md'), otherSource);
+    page.once('dialog', dialog => dialog.accept());
+    await load.click();
+    const scope = page.getByRole('combobox', { name: es ? 'Conjunto de documentos' : 'Artifact set' });
+    await expect(scope).toHaveValue('');
+    await scope.selectOption('specs/other');
+    await expect(editor).toHaveValue(otherSource);
+    const finding = page.getByRole('button').filter({ hasText: 'Unbounded wording:' });
+    await expect(finding).toContainText('specs/other/spec.md:1');
+    const scopedDownload = page.waitForEvent('download');
+    await page.getByRole('button', { name: es ? '↓ Documentos' : '↓ Artifacts', exact: true }).click();
+    const scopedArchive = unzipSync(await readFile(await (await scopedDownload).path()));
+    expect(Object.keys(scopedArchive)).toEqual(['specs/other/spec.md']);
+    expect(strFromU8(scopedArchive['specs/other/spec.md'])).toBe(otherSource);
   });
 
   test(`${es ? 'ES' : 'EN'} import, evidence, reject, accept, reanalyze, export and undo`, async ({ page, workspace, browserName }) => {

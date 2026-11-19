@@ -31,6 +31,7 @@ export function ReviewPanel({ artifact, finding, local, disk, language, active, 
   useLayoutEffect(() => {
     if (active && proposal) differenceHeading.current?.focus();
   }, [active, proposal]);
+  useLayoutEffect(() => { if (!active) setKey(''); }, [active]);
   function updateWording(value: string) {
     epoch.current++;
     setReplacement(value); setProposal(undefined); setPersist(false);
