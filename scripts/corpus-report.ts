@@ -29,7 +29,7 @@ const fixture = z.object({
   transformations: z.string().min(1),
   notice: path.optional(),
   probe: z.object({ path, lines: z.array(z.number().int().positive()).min(1) }).optional(),
-  files: z.array(z.object({ path, sha256: digest })).min(1),
+  files: z.array(z.object({ path, sha256: digest, language: z.enum(['en', 'es', 'mixed', 'und']) })).min(1),
 }).strict().refine(value => value.provenance !== 'published' ||
   (value.revision && value.notice && value.files.some(file => file.path === value.notice)),
   'Published fixtures require a revision and an included license notice.');
@@ -43,6 +43,7 @@ interface Unit {
   case: string;
   rule: Rule;
   path: string;
+  language: Fixture['files'][number]['language'];
   line?: number;
   target?: string;
 }
@@ -83,8 +84,12 @@ async function loadExample(entry: Fixture): Promise<Example> {
 
 function unitsFor(entry: Example): Unit[] {
   const units: Unit[] = [];
+  const languages = new Map(entry.files.map(file => [file.path, file.language]));
   const add = (rule: Rule, path: string, target?: string, line?: number) =>
-    units.push({ id: [entry.id, rule, path, line, target].join('|'), case: entry.id, rule, path, line, target });
+    units.push({
+      id: [entry.id, rule, path, line, target].join('|'), case: entry.id, rule, path,
+      language: languages.get(path) ?? 'und', line, target,
+    });
 
   for (const { path } of entry.files) {
     add('discovery', path);
@@ -282,7 +287,7 @@ if (values.packet) {
     const groups = new Map<string, ObservationUnit[]>();
     for (const observation of observations) {
       for (const unit of observation.units) {
-        const key = [observation.split, unit.rule, observation.framework, observation.language].join(' / ');
+        const key = [observation.split, unit.rule, observation.framework, unit.language].join(' / ');
         const group = groups.get(key) ?? [];
         group.push(unit);
         groups.set(key, group);

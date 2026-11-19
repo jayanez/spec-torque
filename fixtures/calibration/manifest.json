@@ -2,622 +2,6 @@
   "version": 1,
   "cases": [
     {
-      "id": "spec-kit-development-en",
-      "root": "development/spec-kit-development-en",
-      "framework": "spec-kit",
-      "language": "en",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
-      "context": "Documented Markdown layout, consulted 2026-11-19; 011-availability.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "specs/011-availability/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "specs/011-availability/plan.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": "specs/011-availability/spec.md",
-          "sha256": "5a1270cb9e7fadc50f2f829b0edd23985f7f4c5c41f00508f3a5244b7f5a75ad"
-        },
-        {
-          "path": "specs/011-availability/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        }
-      ]
-    },
-    {
-      "id": "spec-kit-development-es",
-      "root": "development/spec-kit-development-es",
-      "framework": "spec-kit",
-      "language": "es",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
-      "context": "Documented Markdown layout, consulted 2026-11-19; 011-availability.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "specs/011-availability/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "AGENTS.md",
-          "sha256": "9212876a6acbb3c7548f3f039a9e8151c165bdfee71eba89d7793697250db339"
-        },
-        {
-          "path": "specs/011-availability/data-model.md",
-          "sha256": "8fa80df9b297be0652371c8847a1905b6cae271ee98945bb2062a5ebebd453d5"
-        },
-        {
-          "path": "specs/011-availability/plan.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": "specs/011-availability/spec.md",
-          "sha256": "2facab49ca956592c274f0fe834fe6450d6ac054f1e911636f45a228b0bf69e9"
-        },
-        {
-          "path": "specs/011-availability/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        }
-      ]
-    },
-    {
-      "id": "spec-kit-evaluation-en",
-      "root": "evaluation/spec-kit-evaluation-en",
-      "framework": "spec-kit",
-      "language": "en",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
-      "context": "Documented Markdown layout, consulted 2026-11-19; 043-handoff.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "specs/043-handoff/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "AGENTS.md",
-          "sha256": "f4d20fbff13d32f81b7c02f41f4129c58780281b43e36cca0e9a0600e70ddb78"
-        },
-        {
-          "path": "specs/043-handoff/data-model.md",
-          "sha256": "673d0bda72f46cae5278a9f73a99b29586a7904b899bd532555f042a4267f519"
-        },
-        {
-          "path": "specs/043-handoff/plan.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": "specs/043-handoff/spec.md",
-          "sha256": "9c534866fb34dad578e8a009486eac0807d02b3988ad495d58e368e85bec85c5"
-        },
-        {
-          "path": "specs/043-handoff/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        }
-      ]
-    },
-    {
-      "id": "spec-kit-evaluation-es",
-      "root": "evaluation/spec-kit-evaluation-es",
-      "framework": "spec-kit",
-      "language": "es",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
-      "context": "Documented Markdown layout, consulted 2026-11-19; 043-handoff.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "specs/043-handoff/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "specs/043-handoff/plan.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": "specs/043-handoff/spec.md",
-          "sha256": "d80c25f9309afa8f95320ee90e49f13ab4ae007450ee2391e25c8e2abe7bc2be"
-        },
-        {
-          "path": "specs/043-handoff/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        }
-      ]
-    },
-    {
-      "id": "spec-kitty-development-en",
-      "root": "development/spec-kitty-development-en",
-      "framework": "spec-kitty",
-      "language": "en",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; wayfinding-01M20JM4.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/plan.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
-          "sha256": "6c7b812777c113cdac0dbf3b0123aa1056fec4afa2dd6aac67a476dc213ed5d6"
-        },
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/tasks/WP01-intake.md",
-          "sha256": "2f30ee0abbf3f1bf22a8443ffc3a36fcc4ced1d7cda24fe748787c6e912f27b8"
-        }
-      ]
-    },
-    {
-      "id": "spec-kitty-development-es",
-      "root": "development/spec-kitty-development-es",
-      "framework": "spec-kitty",
-      "language": "es",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; wayfinding-01M20JM4.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/plan.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
-          "sha256": "bfb3e02d61fd6da1bef724d727c827069a29c28a2909fd6161586dea669f5791"
-        },
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/tasks/WP01-intake.md",
-          "sha256": "1f23b72f1c7610ebc11a9d6ea634b9ff9cca4ff1938bcffaf0e7cfcebd51e79b"
-        },
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/tasks.md",
-          "sha256": "72a6315b2900e33ffae6b41b87d0869955dbf13c14964de0482078eb5e59d946"
-        },
-        {
-          "path": "kitty-specs/wayfinding-01M20JM4/wps.yaml",
-          "sha256": "a48e3eb881828e62ce634340bb8bdae12267eff34d05040de544fa724f0560cf"
-        }
-      ]
-    },
-    {
-      "id": "spec-kitty-evaluation-en",
-      "root": "evaluation/spec-kitty-evaluation-en",
-      "framework": "spec-kitty",
-      "language": "en",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; water-meter-01M20JN8.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "kitty-specs/water-meter-01M20JN8/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/plan.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/spec.md",
-          "sha256": "9dc454c7f588a16c78ca84617e72a399bb93b0f6f698fb52fc70c41e51ddaff0"
-        },
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/tasks/WP01-intake.md",
-          "sha256": "2f30ee0abbf3f1bf22a8443ffc3a36fcc4ced1d7cda24fe748787c6e912f27b8"
-        },
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/tasks.md",
-          "sha256": "1538250af738252f64e82f6607f65111cc721f987b935d811230940ae8b6b739"
-        },
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/wps.yaml",
-          "sha256": "a48e3eb881828e62ce634340bb8bdae12267eff34d05040de544fa724f0560cf"
-        }
-      ]
-    },
-    {
-      "id": "spec-kitty-evaluation-es",
-      "root": "evaluation/spec-kitty-evaluation-es",
-      "framework": "spec-kitty",
-      "language": "es",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; water-meter-01M20JN8.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "kitty-specs/water-meter-01M20JN8/spec.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/plan.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/spec.md",
-          "sha256": "8a2ab979d7b6009741476792b6cd91d107ee935433fc5d139e87ec4fb020b00a"
-        },
-        {
-          "path": "kitty-specs/water-meter-01M20JN8/tasks/WP01-intake.md",
-          "sha256": "1f23b72f1c7610ebc11a9d6ea634b9ff9cca4ff1938bcffaf0e7cfcebd51e79b"
-        }
-      ]
-    },
-    {
-      "id": "openspec-development-en",
-      "root": "development/openspec-development-en",
-      "framework": "openspec",
-      "language": "en",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
-      "context": "Documented Markdown layout, consulted 2026-11-19; delivery-receipt.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
-        "lines": [
-          8,
-          10,
-          12
-        ]
-      },
-      "files": [
-        {
-          "path": "openspec/changes/delivery-receipt/proposal.md",
-          "sha256": "c87d8c66799e590435ee33a89eb64e5a1d6b3ec37a213c3dfa8ab5b347c129fc"
-        },
-        {
-          "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
-          "sha256": "038aba5e4ff99c55d4d93b327a56d0b734c84d17f4971d61287c23dc4a579933"
-        },
-        {
-          "path": "openspec/changes/delivery-receipt/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        }
-      ]
-    },
-    {
-      "id": "openspec-development-es",
-      "root": "development/openspec-development-es",
-      "framework": "openspec",
-      "language": "es",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
-      "context": "Documented Markdown layout, consulted 2026-11-19; delivery-receipt.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
-        "lines": [
-          8,
-          10,
-          12
-        ]
-      },
-      "files": [
-        {
-          "path": "openspec/changes/archive/2026-08-18-legacy-intake/specs/delivery-receipt/spec.md",
-          "sha256": "a1c70e2237515047999dffd0e50a9f52fe649e38a90c9bf1c66169a24d6f0e2b"
-        },
-        {
-          "path": "openspec/changes/archive/2026-09-08-legacy-log/specs/delivery-receipt/spec.md",
-          "sha256": "a1c70e2237515047999dffd0e50a9f52fe649e38a90c9bf1c66169a24d6f0e2b"
-        },
-        {
-          "path": "openspec/changes/delivery-receipt/design.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": "openspec/changes/delivery-receipt/proposal.md",
-          "sha256": "cdd1e469249d214c2af0cd10d37d9e4664e12f3755b45159a2ffa03c31fc4536"
-        },
-        {
-          "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
-          "sha256": "b845d77c1e39837ace478b125486357dc48d06aca112f6d80200848e49a93fb7"
-        },
-        {
-          "path": "openspec/changes/delivery-receipt/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        },
-        {
-          "path": "openspec/specs/delivery-receipt/spec.md",
-          "sha256": "c968d6c9e5ef4fb8effb374e302490359b93be6f71c52ba0470b34ca4d2ac4e4"
-        }
-      ]
-    },
-    {
-      "id": "openspec-evaluation-en",
-      "root": "evaluation/openspec-evaluation-en",
-      "framework": "openspec",
-      "language": "en",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
-      "context": "Documented Markdown layout, consulted 2026-11-19; rain-reading.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
-        "lines": [
-          8,
-          10,
-          12
-        ]
-      },
-      "files": [
-        {
-          "path": "openspec/changes/archive/2026-08-18-legacy-intake/specs/rain-reading/spec.md",
-          "sha256": "74fdc2b3edb63c34158a76f3e26a65f5e723cc944814c5a7117701f1462c26ef"
-        },
-        {
-          "path": "openspec/changes/archive/2026-09-08-legacy-log/specs/rain-reading/spec.md",
-          "sha256": "74fdc2b3edb63c34158a76f3e26a65f5e723cc944814c5a7117701f1462c26ef"
-        },
-        {
-          "path": "openspec/changes/rain-reading/design.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": "openspec/changes/rain-reading/proposal.md",
-          "sha256": "c87d8c66799e590435ee33a89eb64e5a1d6b3ec37a213c3dfa8ab5b347c129fc"
-        },
-        {
-          "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
-          "sha256": "dbba53388109832fdc1782d94b771d91fbb36af8a8b50cf384bc258baeef3fa3"
-        },
-        {
-          "path": "openspec/changes/rain-reading/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        },
-        {
-          "path": "openspec/specs/rain-reading/spec.md",
-          "sha256": "f568e6754095f50651e2bc12e9418bdae34d18821e2e1ad8ccfb3e15805d7344"
-        }
-      ]
-    },
-    {
-      "id": "openspec-evaluation-es",
-      "root": "evaluation/openspec-evaluation-es",
-      "framework": "openspec",
-      "language": "es",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
-      "context": "Documented Markdown layout, consulted 2026-11-19; rain-reading.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
-        "lines": [
-          8,
-          10,
-          12
-        ]
-      },
-      "files": [
-        {
-          "path": "openspec/changes/rain-reading/proposal.md",
-          "sha256": "cdd1e469249d214c2af0cd10d37d9e4664e12f3755b45159a2ffa03c31fc4536"
-        },
-        {
-          "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
-          "sha256": "16e1739c56ae8dbe6f403af1f7bffd31b73c5d857cfdcc0f93615644e62ab25b"
-        },
-        {
-          "path": "openspec/changes/rain-reading/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        }
-      ]
-    },
-    {
-      "id": "kiro-development-en",
-      "root": "development/kiro-development-en",
-      "framework": "kiro",
-      "language": "en",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://kiro.dev/docs/specs/feature-specs/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; equipment-checkout.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".kiro/specs/equipment-checkout/requirements.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".kiro/specs/equipment-checkout/design.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": ".kiro/specs/equipment-checkout/requirements.md",
-          "sha256": "fce1f3e9e776f322ce410ce9c8d4f178e5239e15023bcb1f3b89d49d4fbf89e7"
-        },
-        {
-          "path": ".kiro/specs/equipment-checkout/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        }
-      ]
-    },
-    {
-      "id": "kiro-development-es",
-      "root": "development/kiro-development-es",
-      "framework": "kiro",
-      "language": "es",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://kiro.dev/docs/specs/feature-specs/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; equipment-checkout.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".kiro/specs/equipment-checkout/requirements.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".kiro/specs/equipment-checkout/design.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": ".kiro/specs/equipment-checkout/requirements.md",
-          "sha256": "011d65e8d509b3af6e477a67bcb791fac3c6b72d5b89a1b4ab90610804f0a098"
-        },
-        {
-          "path": ".kiro/specs/equipment-checkout/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        },
-        {
-          "path": "AGENTS.md",
-          "sha256": "9212876a6acbb3c7548f3f039a9e8151c165bdfee71eba89d7793697250db339"
-        }
-      ]
-    },
-    {
-      "id": "kiro-evaluation-en",
-      "root": "evaluation/kiro-evaluation-en",
-      "framework": "kiro",
-      "language": "en",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://kiro.dev/docs/specs/feature-specs/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; storm-warning.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".kiro/specs/storm-warning/requirements.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".kiro/specs/storm-warning/design.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": ".kiro/specs/storm-warning/requirements.md",
-          "sha256": "e5f7b801bade85c18f66b7b338ece0ed5fc2b880ead1ac13f61b83e9b0c000d3"
-        },
-        {
-          "path": ".kiro/specs/storm-warning/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        },
-        {
-          "path": "AGENTS.md",
-          "sha256": "f4d20fbff13d32f81b7c02f41f4129c58780281b43e36cca0e9a0600e70ddb78"
-        }
-      ]
-    },
-    {
-      "id": "kiro-evaluation-es",
-      "root": "evaluation/kiro-evaluation-es",
-      "framework": "kiro",
-      "language": "es",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://kiro.dev/docs/specs/feature-specs/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; storm-warning.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".kiro/specs/storm-warning/requirements.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".kiro/specs/storm-warning/design.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": ".kiro/specs/storm-warning/requirements.md",
-          "sha256": "f22de407d93d6b4f125bdd8ecb0242d267e6b1fd53aef95ebd2845ad6ee84519"
-        },
-        {
-          "path": ".kiro/specs/storm-warning/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        }
-      ]
-    },
-    {
       "id": "bmad-development-en",
       "root": "development/bmad-development-en",
       "framework": "bmad",
@@ -639,15 +23,18 @@
       "files": [
         {
           "path": "_bmad-output/planning-artifacts/architecture.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
         },
         {
           "path": "_bmad-output/planning-artifacts/epics.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
         },
         {
           "path": "_bmad-output/planning-artifacts/prd.md",
-          "sha256": "61413824010167353b0f0164b6338e3b66160efe270a68f9495088dc35c3ea4a"
+          "sha256": "61413824010167353b0f0164b6338e3b66160efe270a68f9495088dc35c3ea4a",
+          "language": "en"
         }
       ]
     },
@@ -673,259 +60,23 @@
       "files": [
         {
           "path": "_bmad-output/implementation-artifacts/1-1-first-visit.md",
-          "sha256": "87c71503e243290dcea9ee585f7b84799f49efffa82af47fe79c80baf0b99c27"
+          "sha256": "87c71503e243290dcea9ee585f7b84799f49efffa82af47fe79c80baf0b99c27",
+          "language": "es"
         },
         {
           "path": "_bmad-output/planning-artifacts/architecture.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
         },
         {
           "path": "_bmad-output/planning-artifacts/epics.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
         },
         {
           "path": "_bmad-output/planning-artifacts/prd.md",
-          "sha256": "09b6ef432631d4811a3bbcc436fd3d60df4ead0411fbc8e552c3935ff3511fcd"
-        }
-      ]
-    },
-    {
-      "id": "bmad-evaluation-en",
-      "root": "evaluation/bmad-evaluation-en",
-      "framework": "bmad",
-      "language": "en",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.com/bmad-code-org/bmad-method-ui/blob/main/docs/source-tree-analysis.md",
-      "context": "Documented Markdown layout, consulted 2026-11-19; food-pantry.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "_bmad-output/initiatives/food-pantry/prd.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "_bmad-output/initiatives/food-pantry/architecture.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": "_bmad-output/initiatives/food-pantry/epic-intake/story-first-pass/story.md",
-          "sha256": "822e712d244b505588a5dc1dc37dd2e97b74bc03a9483ea471ded8ef0388ed81"
-        },
-        {
-          "path": "_bmad-output/initiatives/food-pantry/epics.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
-        },
-        {
-          "path": "_bmad-output/initiatives/food-pantry/prd.md",
-          "sha256": "43434d255c566ac46984e40d5307d0cba41e6c65c2cc4932612c2394ff6439ab"
-        }
-      ]
-    },
-    {
-      "id": "bmad-evaluation-es",
-      "root": "evaluation/bmad-evaluation-es",
-      "framework": "bmad",
-      "language": "es",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://github.com/bmad-code-org/bmad-method-ui/blob/main/docs/source-tree-analysis.md",
-      "context": "Documented Markdown layout, consulted 2026-11-19; food-pantry.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": "_bmad-output/initiatives/food-pantry/prd.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": "_bmad-output/initiatives/food-pantry/architecture.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": "_bmad-output/initiatives/food-pantry/epics.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
-        },
-        {
-          "path": "_bmad-output/initiatives/food-pantry/prd.md",
-          "sha256": "99a6247e6b3ac34d7aca7bf2840b25f243fe9157a5272a2b74fb34679b86740a"
-        }
-      ]
-    },
-    {
-      "id": "zeespec-development-en",
-      "root": "development/zeespec-development-en",
-      "framework": "zeespec",
-      "language": "en",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://vishalmysore.github.io/zeespec/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; seed-tray.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".spec/what.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".spec/how.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": ".spec/what.md",
-          "sha256": "baa83a684021835e389e2ea84a5004cb3331aba2cd7d681256137609a4d2ee55"
-        }
-      ]
-    },
-    {
-      "id": "zeespec-development-es",
-      "root": "development/zeespec-development-es",
-      "framework": "zeespec",
-      "language": "es",
-      "split": "development",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://vishalmysore.github.io/zeespec/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; seed-tray.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".spec/what.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".spec/downstream.md",
-          "sha256": "55cee6b254dc99b9f22adf10363fc456ea7687faecfb6af94860f453146f36ad"
-        },
-        {
-          "path": ".spec/how.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": ".spec/upstream.md",
-          "sha256": "4facc168c2709b016e7c4d6355c605fe163ae4d0c5fe5047519db737f2ba3c20"
-        },
-        {
-          "path": ".spec/what.md",
-          "sha256": "a0c74ddec1d29934aa27424799f790a43857e4f7aa63e37d0912da79bd68bf8c"
-        },
-        {
-          "path": ".spec/when.md",
-          "sha256": "9931ace7a036cff1fdfb41d6587f74d7a6ce621dbbbcf87e18dbd9ff0ff5a168"
-        },
-        {
-          "path": ".spec/where.md",
-          "sha256": "a0b25e84ec23c83e5a6eeb86c00f93b63b87aed84442d67dfeb803145215f0d4"
-        },
-        {
-          "path": ".spec/who.md",
-          "sha256": "aeab942be3474fcf5ff19198ca32c5067fb5d416cb3b8595f93d1fe854dbbdb0"
-        },
-        {
-          "path": ".spec/why.md",
-          "sha256": "ce9e854b0e022e9924d95e3ea4edbe1f08f2a9285668b3d0300f882aafc57341"
-        }
-      ]
-    },
-    {
-      "id": "zeespec-evaluation-en",
-      "root": "evaluation/zeespec-evaluation-en",
-      "framework": "zeespec",
-      "language": "en",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://vishalmysore.github.io/zeespec/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; tide-window.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".spec/what.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".spec/downstream.md",
-          "sha256": "848232407759139e51714a3c706747ceb29980c44c4cf80381585806090f34a6"
-        },
-        {
-          "path": ".spec/how.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
-        },
-        {
-          "path": ".spec/upstream.md",
-          "sha256": "77e76e0a1c26fd4046de94a30c476f60b8d458436a7a98e30fa10d5e01b9925d"
-        },
-        {
-          "path": ".spec/what.md",
-          "sha256": "05b9f368ae09689061f27126a0039ec50ccf853e08348c4fdd993dd0db078929"
-        },
-        {
-          "path": ".spec/when.md",
-          "sha256": "fd7a83fd4aa0e0a0f12e694be17732188ed10cdf3e4776d53fe024cb81e9ddaa"
-        },
-        {
-          "path": ".spec/where.md",
-          "sha256": "1c56b40e2dc4a189c0f9f727440755ebd6f3b5cbdb4b633671e797104ef0ef9f"
-        },
-        {
-          "path": ".spec/who.md",
-          "sha256": "8d916fddfce4b542c224340a7daae3c5254e9af08dea51f1cafd44d6fad840ed"
-        },
-        {
-          "path": ".spec/why.md",
-          "sha256": "ea00da558e4a2b22a23527a97e4384d8f9c415805a0099d326b9b30b687937b1"
-        }
-      ]
-    },
-    {
-      "id": "zeespec-evaluation-es",
-      "root": "evaluation/zeespec-evaluation-es",
-      "framework": "zeespec",
-      "language": "es",
-      "split": "evaluation",
-      "provenance": "original",
-      "license": "Apache-2.0",
-      "reference": "https://vishalmysore.github.io/zeespec/",
-      "context": "Documented Markdown layout, consulted 2026-11-19; tide-window.",
-      "transformations": "Original text; format-adapted filenames and headings.",
-      "probe": {
-        "path": ".spec/what.md",
-        "lines": [
-          5,
-          7,
-          9
-        ]
-      },
-      "files": [
-        {
-          "path": ".spec/how.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
-        },
-        {
-          "path": ".spec/what.md",
-          "sha256": "56b7c36910300e5bd8d4e54e09e8c3a7ce3e02a1f2ffcefd47e90545034fc2dd"
+          "sha256": "09b6ef432631d4811a3bbcc436fd3d60df4ead0411fbc8e552c3935ff3511fcd",
+          "language": "es"
         }
       ]
     },
@@ -951,7 +102,8 @@
       "files": [
         {
           "path": "product/streetlights/prd.md",
-          "sha256": "50fa51a394536e2ceac1d5b392a0d4c3008d5483f23f4f222248c55a41a49d9a"
+          "sha256": "50fa51a394536e2ceac1d5b392a0d4c3008d5483f23f4f222248c55a41a49d9a",
+          "language": "en"
         }
       ]
     },
@@ -977,19 +129,537 @@
       "files": [
         {
           "path": "AGENTS.md",
-          "sha256": "9212876a6acbb3c7548f3f039a9e8151c165bdfee71eba89d7793697250db339"
+          "sha256": "9212876a6acbb3c7548f3f039a9e8151c165bdfee71eba89d7793697250db339",
+          "language": "es"
         },
         {
           "path": "product/streetlights/plan.md",
-          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6"
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
         },
         {
           "path": "product/streetlights/prd.md",
-          "sha256": "f264c5ae1756b6d8591affc24c63d5d30b662d94a2c63981a4903fec2265b2ca"
+          "sha256": "f264c5ae1756b6d8591affc24c63d5d30b662d94a2c63981a4903fec2265b2ca",
+          "language": "es"
         },
         {
           "path": "product/streetlights/tasks.md",
-          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225"
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "kiro-development-en",
+      "root": "development/kiro-development-en",
+      "framework": "kiro",
+      "language": "en",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://kiro.dev/docs/specs/feature-specs/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; equipment-checkout.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".kiro/specs/equipment-checkout/requirements.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".kiro/specs/equipment-checkout/design.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": ".kiro/specs/equipment-checkout/requirements.md",
+          "sha256": "fce1f3e9e776f322ce410ce9c8d4f178e5239e15023bcb1f3b89d49d4fbf89e7",
+          "language": "en"
+        },
+        {
+          "path": ".kiro/specs/equipment-checkout/tasks.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "kiro-development-es",
+      "root": "development/kiro-development-es",
+      "framework": "kiro",
+      "language": "es",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://kiro.dev/docs/specs/feature-specs/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; equipment-checkout.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".kiro/specs/equipment-checkout/requirements.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".kiro/specs/equipment-checkout/design.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": ".kiro/specs/equipment-checkout/requirements.md",
+          "sha256": "011d65e8d509b3af6e477a67bcb791fac3c6b72d5b89a1b4ab90610804f0a098",
+          "language": "es"
+        },
+        {
+          "path": ".kiro/specs/equipment-checkout/tasks.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
+        },
+        {
+          "path": "AGENTS.md",
+          "sha256": "9212876a6acbb3c7548f3f039a9e8151c165bdfee71eba89d7793697250db339",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "openspec-development-en",
+      "root": "development/openspec-development-en",
+      "framework": "openspec",
+      "language": "en",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; delivery-receipt.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
+        "lines": [
+          8,
+          10,
+          12
+        ]
+      },
+      "files": [
+        {
+          "path": "openspec/changes/delivery-receipt/proposal.md",
+          "sha256": "c87d8c66799e590435ee33a89eb64e5a1d6b3ec37a213c3dfa8ab5b347c129fc",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
+          "sha256": "038aba5e4ff99c55d4d93b327a56d0b734c84d17f4971d61287c23dc4a579933",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/delivery-receipt/tasks.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "openspec-development-es",
+      "root": "development/openspec-development-es",
+      "framework": "openspec",
+      "language": "es",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; delivery-receipt.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
+        "lines": [
+          8,
+          10,
+          12
+        ]
+      },
+      "files": [
+        {
+          "path": "openspec/changes/archive/2026-08-18-legacy-intake/specs/delivery-receipt/spec.md",
+          "sha256": "a1c70e2237515047999dffd0e50a9f52fe649e38a90c9bf1c66169a24d6f0e2b",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/archive/2026-09-08-legacy-log/specs/delivery-receipt/spec.md",
+          "sha256": "a1c70e2237515047999dffd0e50a9f52fe649e38a90c9bf1c66169a24d6f0e2b",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/delivery-receipt/design.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/delivery-receipt/proposal.md",
+          "sha256": "cdd1e469249d214c2af0cd10d37d9e4664e12f3755b45159a2ffa03c31fc4536",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/delivery-receipt/specs/delivery-receipt/spec.md",
+          "sha256": "b845d77c1e39837ace478b125486357dc48d06aca112f6d80200848e49a93fb7",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/delivery-receipt/tasks.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
+        },
+        {
+          "path": "openspec/specs/delivery-receipt/spec.md",
+          "sha256": "c968d6c9e5ef4fb8effb374e302490359b93be6f71c52ba0470b34ca4d2ac4e4",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "spec-kit-development-en",
+      "root": "development/spec-kit-development-en",
+      "framework": "spec-kit",
+      "language": "en",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
+      "context": "Documented Markdown layout, consulted 2026-11-19; 011-availability.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "specs/011-availability/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "specs/011-availability/plan.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": "specs/011-availability/spec.md",
+          "sha256": "5a1270cb9e7fadc50f2f829b0edd23985f7f4c5c41f00508f3a5244b7f5a75ad",
+          "language": "en"
+        },
+        {
+          "path": "specs/011-availability/tasks.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "spec-kit-development-es",
+      "root": "development/spec-kit-development-es",
+      "framework": "spec-kit",
+      "language": "es",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
+      "context": "Documented Markdown layout, consulted 2026-11-19; 011-availability.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "specs/011-availability/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "9212876a6acbb3c7548f3f039a9e8151c165bdfee71eba89d7793697250db339",
+          "language": "es"
+        },
+        {
+          "path": "specs/011-availability/data-model.md",
+          "sha256": "8fa80df9b297be0652371c8847a1905b6cae271ee98945bb2062a5ebebd453d5",
+          "language": "es"
+        },
+        {
+          "path": "specs/011-availability/plan.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": "specs/011-availability/spec.md",
+          "sha256": "2facab49ca956592c274f0fe834fe6450d6ac054f1e911636f45a228b0bf69e9",
+          "language": "es"
+        },
+        {
+          "path": "specs/011-availability/tasks.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "spec-kitty-development-en",
+      "root": "development/spec-kitty-development-en",
+      "framework": "spec-kitty",
+      "language": "en",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; wayfinding-01M20JM4.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/plan.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
+          "sha256": "6c7b812777c113cdac0dbf3b0123aa1056fec4afa2dd6aac67a476dc213ed5d6",
+          "language": "en"
+        },
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/tasks/WP01-intake.md",
+          "sha256": "2f30ee0abbf3f1bf22a8443ffc3a36fcc4ced1d7cda24fe748787c6e912f27b8",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "spec-kitty-development-es",
+      "root": "development/spec-kitty-development-es",
+      "framework": "spec-kitty",
+      "language": "es",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; wayfinding-01M20JM4.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/plan.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/spec.md",
+          "sha256": "bfb3e02d61fd6da1bef724d727c827069a29c28a2909fd6161586dea669f5791",
+          "language": "es"
+        },
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/tasks/WP01-intake.md",
+          "sha256": "1f23b72f1c7610ebc11a9d6ea634b9ff9cca4ff1938bcffaf0e7cfcebd51e79b",
+          "language": "es"
+        },
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/tasks.md",
+          "sha256": "72a6315b2900e33ffae6b41b87d0869955dbf13c14964de0482078eb5e59d946",
+          "language": "es"
+        },
+        {
+          "path": "kitty-specs/wayfinding-01M20JM4/wps.yaml",
+          "sha256": "a48e3eb881828e62ce634340bb8bdae12267eff34d05040de544fa724f0560cf",
+          "language": "und"
+        }
+      ]
+    },
+    {
+      "id": "zeespec-development-en",
+      "root": "development/zeespec-development-en",
+      "framework": "zeespec",
+      "language": "en",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://vishalmysore.github.io/zeespec/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; seed-tray.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".spec/what.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".spec/how.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": ".spec/what.md",
+          "sha256": "baa83a684021835e389e2ea84a5004cb3331aba2cd7d681256137609a4d2ee55",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "zeespec-development-es",
+      "root": "development/zeespec-development-es",
+      "framework": "zeespec",
+      "language": "es",
+      "split": "development",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://vishalmysore.github.io/zeespec/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; seed-tray.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".spec/what.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".spec/downstream.md",
+          "sha256": "55cee6b254dc99b9f22adf10363fc456ea7687faecfb6af94860f453146f36ad",
+          "language": "es"
+        },
+        {
+          "path": ".spec/how.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": ".spec/upstream.md",
+          "sha256": "4facc168c2709b016e7c4d6355c605fe163ae4d0c5fe5047519db737f2ba3c20",
+          "language": "es"
+        },
+        {
+          "path": ".spec/what.md",
+          "sha256": "a0c74ddec1d29934aa27424799f790a43857e4f7aa63e37d0912da79bd68bf8c",
+          "language": "es"
+        },
+        {
+          "path": ".spec/when.md",
+          "sha256": "9931ace7a036cff1fdfb41d6587f74d7a6ce621dbbbcf87e18dbd9ff0ff5a168",
+          "language": "es"
+        },
+        {
+          "path": ".spec/where.md",
+          "sha256": "a0b25e84ec23c83e5a6eeb86c00f93b63b87aed84442d67dfeb803145215f0d4",
+          "language": "es"
+        },
+        {
+          "path": ".spec/who.md",
+          "sha256": "aeab942be3474fcf5ff19198ca32c5067fb5d416cb3b8595f93d1fe854dbbdb0",
+          "language": "es"
+        },
+        {
+          "path": ".spec/why.md",
+          "sha256": "ce9e854b0e022e9924d95e3ea4edbe1f08f2a9285668b3d0300f882aafc57341",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "bmad-evaluation-en",
+      "root": "evaluation/bmad-evaluation-en",
+      "framework": "bmad",
+      "language": "en",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/bmad-code-org/bmad-method-ui/blob/main/docs/source-tree-analysis.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; community-translation.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "_bmad-output/initiatives/community-translation/prd.md",
+        "lines": [
+          3,
+          5,
+          7
+        ]
+      },
+      "files": [
+        {
+          "path": "_bmad-output/initiatives/community-translation/architecture.md",
+          "sha256": "a3cb09703d220e75686ddea693a80cd7ae051c987d19f1e4615640b5917fadae",
+          "language": "en"
+        },
+        {
+          "path": "_bmad-output/initiatives/community-translation/epic-requests/story-queue/story.md",
+          "sha256": "d113c4aba9cf3b8a10158bee75d0645310b1f6a9773c99fa02ba657a4dd8a9c4",
+          "language": "en"
+        },
+        {
+          "path": "_bmad-output/initiatives/community-translation/epics.md",
+          "sha256": "d6fd056d623784d11aca86b6b3c3dcf214f30ce397b88f57a6daa26310a48cdb",
+          "language": "en"
+        },
+        {
+          "path": "_bmad-output/initiatives/community-translation/prd.md",
+          "sha256": "73e421b0c6e07eae17e8d212b42ce32689ac174ca0aba5839f5aa5a454c33995",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "bmad-evaluation-es",
+      "root": "evaluation/bmad-evaluation-es",
+      "framework": "bmad",
+      "language": "es",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/bmad-code-org/bmad-method-ui/blob/main/docs/source-tree-analysis.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; mesa-de-traduccion.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "_bmad-output/initiatives/mesa-de-traduccion/prd.md",
+        "lines": [
+          3,
+          5,
+          7
+        ]
+      },
+      "files": [
+        {
+          "path": "_bmad-output/initiatives/mesa-de-traduccion/architecture.md",
+          "sha256": "810d44521a332a12fd0de2c26414717c2ffa64f907087a4febde60599709d8f6",
+          "language": "es"
+        },
+        {
+          "path": "_bmad-output/initiatives/mesa-de-traduccion/epics.md",
+          "sha256": "921f5ec50fcb56a6081baad02401bcb0a0f50ce7567d0f9c2e5dce8d2b2303d0",
+          "language": "es"
+        },
+        {
+          "path": "_bmad-output/initiatives/mesa-de-traduccion/prd.md",
+          "sha256": "0fb2ff0585660796007b63f2aed3989bd6edd641db84897dbfcb4411cbb64905",
+          "language": "es"
         }
       ]
     },
@@ -1015,19 +685,23 @@
       "files": [
         {
           "path": "AGENTS.md",
-          "sha256": "f4d20fbff13d32f81b7c02f41f4129c58780281b43e36cca0e9a0600e70ddb78"
+          "sha256": "f4d20fbff13d32f81b7c02f41f4129c58780281b43e36cca0e9a0600e70ddb78",
+          "language": "en"
         },
         {
           "path": "product/artifact-shipment/plan.md",
-          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201"
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
         },
         {
           "path": "product/artifact-shipment/prd.md",
-          "sha256": "164b504b52863f2c08afd442c1d20c3215c80dc8290a29a07567b7f3ee7c4d22"
+          "sha256": "164b504b52863f2c08afd442c1d20c3215c80dc8290a29a07567b7f3ee7c4d22",
+          "language": "en"
         },
         {
           "path": "product/artifact-shipment/tasks.md",
-          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508"
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
         }
       ]
     },
@@ -1053,7 +727,428 @@
       "files": [
         {
           "path": "product/artifact-shipment/prd.md",
-          "sha256": "dddda537afab9c59e8b795b438a2ec8d839fa2aa4336756ed73379e2a622a415"
+          "sha256": "dddda537afab9c59e8b795b438a2ec8d839fa2aa4336756ed73379e2a622a415",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "kiro-evaluation-en",
+      "root": "evaluation/kiro-evaluation-en",
+      "framework": "kiro",
+      "language": "en",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://kiro.dev/docs/specs/feature-specs/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; storm-warning.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".kiro/specs/storm-warning/requirements.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".kiro/specs/storm-warning/design.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": ".kiro/specs/storm-warning/requirements.md",
+          "sha256": "e5f7b801bade85c18f66b7b338ece0ed5fc2b880ead1ac13f61b83e9b0c000d3",
+          "language": "en"
+        },
+        {
+          "path": ".kiro/specs/storm-warning/tasks.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
+        },
+        {
+          "path": "AGENTS.md",
+          "sha256": "f4d20fbff13d32f81b7c02f41f4129c58780281b43e36cca0e9a0600e70ddb78",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "kiro-evaluation-es",
+      "root": "evaluation/kiro-evaluation-es",
+      "framework": "kiro",
+      "language": "es",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://kiro.dev/docs/specs/feature-specs/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; storm-warning.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".kiro/specs/storm-warning/requirements.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".kiro/specs/storm-warning/design.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": ".kiro/specs/storm-warning/requirements.md",
+          "sha256": "f22de407d93d6b4f125bdd8ecb0242d267e6b1fd53aef95ebd2845ad6ee84519",
+          "language": "es"
+        },
+        {
+          "path": ".kiro/specs/storm-warning/tasks.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "openspec-evaluation-en",
+      "root": "evaluation/openspec-evaluation-en",
+      "framework": "openspec",
+      "language": "en",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; depot-lockout.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "openspec/changes/depot-lockout/specs/access/spec.md",
+        "lines": [
+          7,
+          9,
+          11
+        ]
+      },
+      "files": [
+        {
+          "path": "openspec/changes/depot-lockout/design.md",
+          "sha256": "382ca8b41303948390ad7fa840d3ec5afec6203610a621b3288840ee542c0bee",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/depot-lockout/proposal.md",
+          "sha256": "33fbc75226d4326ade999a1f5e2185d68d4ad3b8317c221224eba8a4d444eceb",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/depot-lockout/specs/access/spec.md",
+          "sha256": "48a56483cce6ff59702976a7d230db1fb8baba7b099c5ccd3fcbd6312b920542",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/depot-lockout/tasks.md",
+          "sha256": "d83ab111f17e72ff1302b3e6840405077152300ed72ecd6a4b7c2d67ee2ee246",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "openspec-evaluation-es",
+      "root": "evaluation/openspec-evaluation-es",
+      "framework": "openspec",
+      "language": "es",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; deposito-de-bicicletas.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "openspec/changes/deposito-de-bicicletas/specs/access/spec.md",
+        "lines": [
+          7,
+          9,
+          11
+        ]
+      },
+      "files": [
+        {
+          "path": "openspec/changes/deposito-de-bicicletas/proposal.md",
+          "sha256": "c7e2f5b9167dfee813e8f9b15e26aa9b3a0db5b4d890c8ea1ead5c4e284122a4",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/deposito-de-bicicletas/specs/access/spec.md",
+          "sha256": "6c774e2b390cd3c21500d7f82d9751f9c996fbbdc4e5a5819dbde566c527a97a",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/deposito-de-bicicletas/tasks.md",
+          "sha256": "8386af663e03f74335ba4e434c7a789a6b2208710216243439cca6e3ce80395a",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "spec-kit-evaluation-en",
+      "root": "evaluation/spec-kit-evaluation-en",
+      "framework": "spec-kit",
+      "language": "en",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
+      "context": "Documented Markdown layout, consulted 2026-11-19; 043-handoff.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "specs/043-handoff/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "f4d20fbff13d32f81b7c02f41f4129c58780281b43e36cca0e9a0600e70ddb78",
+          "language": "en"
+        },
+        {
+          "path": "specs/043-handoff/data-model.md",
+          "sha256": "673d0bda72f46cae5278a9f73a99b29586a7904b899bd532555f042a4267f519",
+          "language": "en"
+        },
+        {
+          "path": "specs/043-handoff/plan.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": "specs/043-handoff/spec.md",
+          "sha256": "9c534866fb34dad578e8a009486eac0807d02b3988ad495d58e368e85bec85c5",
+          "language": "en"
+        },
+        {
+          "path": "specs/043-handoff/tasks.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "spec-kit-evaluation-es",
+      "root": "evaluation/spec-kit-evaluation-es",
+      "framework": "spec-kit",
+      "language": "es",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.github.com/spec-kit/how-to/evolving-specs.html",
+      "context": "Documented Markdown layout, consulted 2026-11-19; 043-handoff.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "specs/043-handoff/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "specs/043-handoff/plan.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": "specs/043-handoff/spec.md",
+          "sha256": "d80c25f9309afa8f95320ee90e49f13ab4ae007450ee2391e25c8e2abe7bc2be",
+          "language": "es"
+        },
+        {
+          "path": "specs/043-handoff/tasks.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "spec-kitty-evaluation-en",
+      "root": "evaluation/spec-kitty-evaluation-en",
+      "framework": "spec-kitty",
+      "language": "en",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; water-meter-01M20JN8.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "kitty-specs/water-meter-01M20JN8/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/plan.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/spec.md",
+          "sha256": "9dc454c7f588a16c78ca84617e72a399bb93b0f6f698fb52fc70c41e51ddaff0",
+          "language": "en"
+        },
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/tasks/WP01-intake.md",
+          "sha256": "2f30ee0abbf3f1bf22a8443ffc3a36fcc4ced1d7cda24fe748787c6e912f27b8",
+          "language": "en"
+        },
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/tasks.md",
+          "sha256": "1538250af738252f64e82f6607f65111cc721f987b935d811230940ae8b6b739",
+          "language": "en"
+        },
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/wps.yaml",
+          "sha256": "a48e3eb881828e62ce634340bb8bdae12267eff34d05040de544fa724f0560cf",
+          "language": "und"
+        }
+      ]
+    },
+    {
+      "id": "spec-kitty-evaluation-es",
+      "root": "evaluation/spec-kitty-evaluation-es",
+      "framework": "spec-kitty",
+      "language": "es",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://docs.spec-kitty.ai/api/file-structure/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; water-meter-01M20JN8.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "kitty-specs/water-meter-01M20JN8/spec.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/plan.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/spec.md",
+          "sha256": "8a2ab979d7b6009741476792b6cd91d107ee935433fc5d139e87ec4fb020b00a",
+          "language": "es"
+        },
+        {
+          "path": "kitty-specs/water-meter-01M20JN8/tasks/WP01-intake.md",
+          "sha256": "1f23b72f1c7610ebc11a9d6ea634b9ff9cca4ff1938bcffaf0e7cfcebd51e79b",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "zeespec-evaluation-en",
+      "root": "evaluation/zeespec-evaluation-en",
+      "framework": "zeespec",
+      "language": "en",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://vishalmysore.github.io/zeespec/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; tide-window.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".spec/what.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".spec/downstream.md",
+          "sha256": "848232407759139e51714a3c706747ceb29980c44c4cf80381585806090f34a6",
+          "language": "en"
+        },
+        {
+          "path": ".spec/how.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": ".spec/upstream.md",
+          "sha256": "77e76e0a1c26fd4046de94a30c476f60b8d458436a7a98e30fa10d5e01b9925d",
+          "language": "en"
+        },
+        {
+          "path": ".spec/what.md",
+          "sha256": "05b9f368ae09689061f27126a0039ec50ccf853e08348c4fdd993dd0db078929",
+          "language": "en"
+        },
+        {
+          "path": ".spec/when.md",
+          "sha256": "fd7a83fd4aa0e0a0f12e694be17732188ed10cdf3e4776d53fe024cb81e9ddaa",
+          "language": "en"
+        },
+        {
+          "path": ".spec/where.md",
+          "sha256": "1c56b40e2dc4a189c0f9f727440755ebd6f3b5cbdb4b633671e797104ef0ef9f",
+          "language": "en"
+        },
+        {
+          "path": ".spec/who.md",
+          "sha256": "8d916fddfce4b542c224340a7daae3c5254e9af08dea51f1cafd44d6fad840ed",
+          "language": "en"
+        },
+        {
+          "path": ".spec/why.md",
+          "sha256": "ea00da558e4a2b22a23527a97e4384d8f9c415805a0099d326b9b30b687937b1",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "zeespec-evaluation-es",
+      "root": "evaluation/zeespec-evaluation-es",
+      "framework": "zeespec",
+      "language": "es",
+      "split": "evaluation",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://vishalmysore.github.io/zeespec/",
+      "context": "Documented Markdown layout, consulted 2026-11-19; tide-window.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": ".spec/what.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": ".spec/how.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
+        },
+        {
+          "path": ".spec/what.md",
+          "sha256": "56b7c36910300e5bd8d4e54e09e8c3a7ce3e02a1f2ffcefd47e90545034fc2dd",
+          "language": "es"
         }
       ]
     },
@@ -1073,61 +1168,92 @@
       "files": [
         {
           "path": "LICENSE",
-          "sha256": "2351e1e9ba9604dfdd59e4fe588bbe98ee227057094ba72be40b94357d6fcbb2"
+          "sha256": "2351e1e9ba9604dfdd59e4fe588bbe98ee227057094ba72be40b94357d6fcbb2",
+          "language": "en"
         },
         {
           "path": "openspec/specs/openspec-conventions/spec.md",
-          "sha256": "48d33b199f528f8c1f85a90fb116d7b9bb52f1b5d88b031393bc7725992a47c5"
+          "sha256": "48d33b199f528f8c1f85a90fb116d7b9bb52f1b5d88b031393bc7725992a47c5",
+          "language": "en"
         }
       ]
     },
     {
-      "id": "nested-projects",
-      "root": "controls/nested-projects",
-      "framework": "generic",
-      "language": "mixed",
+      "id": "bmad-structural-controls-en",
+      "root": "controls/bmad-structural-controls-en",
+      "framework": "bmad",
+      "language": "en",
       "split": "controls",
       "provenance": "original",
       "license": "Apache-2.0",
-      "reference": "Repository-original mixed workspace; producer ownership intentionally unspecified.",
-      "context": "Two nested projects share basename, requirement IDs and root review instructions.",
-      "transformations": "None.",
+      "reference": "https://github.com/bmad-code-org/bmad-method-ui/blob/main/docs/source-tree-analysis.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; food-pantry. Moved out of evaluation before the candidate report because a related variant informed structural changes.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "_bmad-output/initiatives/food-pantry/prd.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
       "files": [
         {
-          "path": "AGENTS.md",
-          "sha256": "966921f23caf8ce96f524e957887fc2e42156572f159167243d3b559cdfe2bee"
+          "path": "_bmad-output/initiatives/food-pantry/architecture.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
         },
         {
-          "path": "apps/east/AGENTS.md",
-          "sha256": "a9d2cd6ca14330936ba51a2d2beacb69fdc77c345d3e03dc47b5b719627142cc"
+          "path": "_bmad-output/initiatives/food-pantry/epic-intake/story-first-pass/story.md",
+          "sha256": "822e712d244b505588a5dc1dc37dd2e97b74bc03a9483ea471ded8ef0388ed81",
+          "language": "en"
         },
         {
-          "path": "apps/east/specs/intake/spec.md",
-          "sha256": "a4b800f5e2738a8364d047d6dc34f3024ebfe92a3122305ff1529c7c92908bb1"
+          "path": "_bmad-output/initiatives/food-pantry/epics.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
         },
         {
-          "path": "apps/east/specs/intake/tasks.md",
-          "sha256": "caa953e779027edf25312f41bf7b6f9838d581b87a845c13a046b79992971d07"
+          "path": "_bmad-output/initiatives/food-pantry/prd.md",
+          "sha256": "43434d255c566ac46984e40d5307d0cba41e6c65c2cc4932612c2394ff6439ab",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "bmad-structural-controls-es",
+      "root": "controls/bmad-structural-controls-es",
+      "framework": "bmad",
+      "language": "es",
+      "split": "controls",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/bmad-code-org/bmad-method-ui/blob/main/docs/source-tree-analysis.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; food-pantry. Moved out of evaluation before the candidate report because a related variant informed structural changes.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "_bmad-output/initiatives/food-pantry/prd.md",
+        "lines": [
+          5,
+          7,
+          9
+        ]
+      },
+      "files": [
+        {
+          "path": "_bmad-output/initiatives/food-pantry/architecture.md",
+          "sha256": "fe3b9ded3909448a87bc2dfad370dbabdbc724e36458ebc607bfaa5a838ca7b6",
+          "language": "es"
         },
         {
-          "path": "apps/west/AGENTS.md",
-          "sha256": "c266b66ec79986827c8b8ab4f61aaf771a9b684de3ebf3d40929c1917e01fe26"
+          "path": "_bmad-output/initiatives/food-pantry/epics.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
         },
         {
-          "path": "apps/west/specs/intake/archive/AGENTS.md",
-          "sha256": "a5483bc86ac810377e2fe33aa0e9478fd77113b3a7ba10de64f14d5a5623691d"
-        },
-        {
-          "path": "apps/west/specs/intake/archive/spec.md",
-          "sha256": "8d2e9162e26a3ce26d8496203f08e45377f4452c660d7f8a27b73e96a2e58eb9"
-        },
-        {
-          "path": "apps/west/specs/intake/spec.md",
-          "sha256": "fe3039e250d0362947b95e994563f234f798bf4f8d93bd12837b6499f9103399"
-        },
-        {
-          "path": "apps/west/specs/intake/tasks.md",
-          "sha256": "53d8fc3065d4bbdc5058ee07c4713fe0ffbe7368b3a39d501f0ce34b4872c05b"
+          "path": "_bmad-output/initiatives/food-pantry/prd.md",
+          "sha256": "99a6247e6b3ac34d7aca7bf2840b25f243fe9157a5272a2b74fb34679b86740a",
+          "language": "es"
         }
       ]
     },
@@ -1157,7 +1283,8 @@
       "files": [
         {
           "path": "prd.md",
-          "sha256": "7f1347580ccdb9e6178b180c83e726c5570a3b18d36560e3dedc152b298d4938"
+          "sha256": "7f1347580ccdb9e6178b180c83e726c5570a3b18d36560e3dedc152b298d4938",
+          "language": "en"
         }
       ]
     },
@@ -1187,7 +1314,161 @@
       "files": [
         {
           "path": "prd.md",
-          "sha256": "2edd2e276d64ceb00830c77624ffd67fa2057105e121e42433ffdff9f4d1ecd3"
+          "sha256": "2edd2e276d64ceb00830c77624ffd67fa2057105e121e42433ffdff9f4d1ecd3",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "nested-projects",
+      "root": "controls/nested-projects",
+      "framework": "generic",
+      "language": "mixed",
+      "split": "controls",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "Repository-original mixed workspace; producer ownership intentionally unspecified.",
+      "context": "Two nested projects share basename, requirement IDs and root review instructions.",
+      "transformations": "None.",
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "966921f23caf8ce96f524e957887fc2e42156572f159167243d3b559cdfe2bee",
+          "language": "en"
+        },
+        {
+          "path": "apps/east/AGENTS.md",
+          "sha256": "a9d2cd6ca14330936ba51a2d2beacb69fdc77c345d3e03dc47b5b719627142cc",
+          "language": "en"
+        },
+        {
+          "path": "apps/east/specs/intake/spec.md",
+          "sha256": "a4b800f5e2738a8364d047d6dc34f3024ebfe92a3122305ff1529c7c92908bb1",
+          "language": "en"
+        },
+        {
+          "path": "apps/east/specs/intake/tasks.md",
+          "sha256": "caa953e779027edf25312f41bf7b6f9838d581b87a845c13a046b79992971d07",
+          "language": "en"
+        },
+        {
+          "path": "apps/west/AGENTS.md",
+          "sha256": "c266b66ec79986827c8b8ab4f61aaf771a9b684de3ebf3d40929c1917e01fe26",
+          "language": "es"
+        },
+        {
+          "path": "apps/west/specs/intake/archive/AGENTS.md",
+          "sha256": "a5483bc86ac810377e2fe33aa0e9478fd77113b3a7ba10de64f14d5a5623691d",
+          "language": "es"
+        },
+        {
+          "path": "apps/west/specs/intake/archive/spec.md",
+          "sha256": "8d2e9162e26a3ce26d8496203f08e45377f4452c660d7f8a27b73e96a2e58eb9",
+          "language": "es"
+        },
+        {
+          "path": "apps/west/specs/intake/spec.md",
+          "sha256": "fe3039e250d0362947b95e994563f234f798bf4f8d93bd12837b6499f9103399",
+          "language": "es"
+        },
+        {
+          "path": "apps/west/specs/intake/tasks.md",
+          "sha256": "53d8fc3065d4bbdc5058ee07c4713fe0ffbe7368b3a39d501f0ce34b4872c05b",
+          "language": "es"
+        }
+      ]
+    },
+    {
+      "id": "openspec-structural-controls-en",
+      "root": "controls/openspec-structural-controls-en",
+      "framework": "openspec",
+      "language": "en",
+      "split": "controls",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; rain-reading. Moved out of evaluation before the candidate report because a related variant informed structural changes.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
+        "lines": [
+          8,
+          10,
+          12
+        ]
+      },
+      "files": [
+        {
+          "path": "openspec/changes/archive/2026-08-18-legacy-intake/specs/rain-reading/spec.md",
+          "sha256": "74fdc2b3edb63c34158a76f3e26a65f5e723cc944814c5a7117701f1462c26ef",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/archive/2026-09-08-legacy-log/specs/rain-reading/spec.md",
+          "sha256": "74fdc2b3edb63c34158a76f3e26a65f5e723cc944814c5a7117701f1462c26ef",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/rain-reading/design.md",
+          "sha256": "cda53decb0edbf3e63603132bcb03c18a7001ef051dc76d8fc17b76dc10ad201",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/rain-reading/proposal.md",
+          "sha256": "c87d8c66799e590435ee33a89eb64e5a1d6b3ec37a213c3dfa8ab5b347c129fc",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
+          "sha256": "dbba53388109832fdc1782d94b771d91fbb36af8a8b50cf384bc258baeef3fa3",
+          "language": "en"
+        },
+        {
+          "path": "openspec/changes/rain-reading/tasks.md",
+          "sha256": "f7fd30762a17dc161b83b48a48dc22d03f40526902eaa26b413af89a676ba508",
+          "language": "en"
+        },
+        {
+          "path": "openspec/specs/rain-reading/spec.md",
+          "sha256": "f568e6754095f50651e2bc12e9418bdae34d18821e2e1ad8ccfb3e15805d7344",
+          "language": "en"
+        }
+      ]
+    },
+    {
+      "id": "openspec-structural-controls-es",
+      "root": "controls/openspec-structural-controls-es",
+      "framework": "openspec",
+      "language": "es",
+      "split": "controls",
+      "provenance": "original",
+      "license": "Apache-2.0",
+      "reference": "https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md",
+      "context": "Documented Markdown layout, consulted 2026-11-19; rain-reading. Moved out of evaluation before the candidate report because a related variant informed structural changes.",
+      "transformations": "Original text; format-adapted filenames and headings.",
+      "probe": {
+        "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
+        "lines": [
+          8,
+          10,
+          12
+        ]
+      },
+      "files": [
+        {
+          "path": "openspec/changes/rain-reading/proposal.md",
+          "sha256": "cdd1e469249d214c2af0cd10d37d9e4664e12f3755b45159a2ffa03c31fc4536",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/rain-reading/specs/rain-reading/spec.md",
+          "sha256": "16e1739c56ae8dbe6f403af1f7bffd31b73c5d857cfdcc0f93615644e62ab25b",
+          "language": "es"
+        },
+        {
+          "path": "openspec/changes/rain-reading/tasks.md",
+          "sha256": "1563666db67bca4b452f02af15e9e25b78188513abbf063f6bf977878ba09225",
+          "language": "es"
         }
       ]
     }
