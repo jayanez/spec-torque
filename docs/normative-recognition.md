@@ -1,6 +1,6 @@
 # EN/ES normative recognition
 
-Engine **0.1.1** recognizes complete Unicode words for MUST, SHALL, SHOULD and MAY,
+Since engine **0.1.1**, recognition covers complete Unicode words for MUST, SHALL, SHOULD and MAY,
 and DEBE/DEBEN, DEBERÁ/DEBERÁN, DEBERÍA/DEBERÍAN and PUEDE/PUEDEN. Matching is
 case-insensitive and uses NFC-normalized text for matching; original source text,
 hashes and evidence are retained. Refinement also protects decomposed accented
@@ -34,6 +34,12 @@ unchanged. The assessment ID identifies source/options; compare engine and rubri
 versions as well when comparing reports across engine revisions.
 
 Reproduce with `node --import tsx --test tests/normative.test.ts` after installing
-the project's locked dependencies. These original cases and automated regressions
-are not an independently labelled corpus or scientific calibration. Seven-format
-coverage, ambiguous-case labels and quality metrics remain in GitHub issue #2.
+the project's locked dependencies. Ambiguous-case labels and quality metrics
+remain open in [#2](https://github.com/jayanez/spec-torque/issues/2).
+
+The [calibration corpus](format-corpus.md) records contrast cases for modality
+and observable measurement, including NFC/NFD Spanish, decimal separators,
+nonbreaking spaces, comparison symbols, quantities per time period, plural
+rejection or denial, dates, identifiers, examples and ambiguous wording.
+These are inputs for independent evaluation. Changes to the measurement and
+modality predicates await adjudicated labels.

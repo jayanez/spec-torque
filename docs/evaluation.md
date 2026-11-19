@@ -14,4 +14,9 @@ Inside each real client, select a finding, inspect the correct evidence, produce
 
 Use original examples and licensed public material with reproducible revisions. At least two reviewers should label ambiguous cases before quality claims. Report precision/recall per check and language, disagreement and unsupported context. Track time to first analysis, installation failures, false positives, accepted/rejected proposals and usability friction. Do not collect source text or telemetry automatically; participants may voluntarily submit sanitized issue reports.
 
+The [corpus protocol](corpus-labeling.md) defines the blind annotation packet,
+disagreement handling and adjudication. The [local evaluator](format-corpus.md)
+compares engine revisions with those labels when available and reports the
+coverage lost to abstentions.
+
 The stable demonstration must include before/after documents, exact commands, reports, rubric/version identifiers and a statement of unresolved limitations. Badge scores identify a specific revision and must not be described as live certification.

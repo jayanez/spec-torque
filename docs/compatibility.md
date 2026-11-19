@@ -23,15 +23,16 @@ CI is configured for Node 22 on ubuntu-latest, macos-latest and windows-latest. 
 | Family | Main hint | Caveat |
 |---|---|---|
 | Spec Kit | `.specify/`, `specs/<feature>/` | A generic `specs/` directory is not proof of framework ownership. |
-| Spec Kitty | `.kittify/` or explicit header marker | Shared Spec Kit layouts can be ambiguous. |
-| OpenSpec | `openspec/` and change folders | Archives excluded from active analysis. |
+| Spec Kitty | `kitty-specs/<mission>/`, `.kittify/` or explicit header marker | Markdown work packages are grouped by mission. YAML manifests are outside this input path. |
+| OpenSpec | `openspec/` and change folders | Dated archive changes have distinct feature IDs and stay outside active analysis. |
 | Kiro | `.kiro/specs/<feature>/` | Requirement, design and task basenames determine roles. |
 | BMAD | `_bmad/`, `_bmad-output/` | Complex cross-folder story grouping needs explicit selection. |
-| ZeeSpec | `.spec/` and question-named Markdown | Variants may need explicit role overrides in future. |
+| ZeeSpec | `.spec/` and question-named Markdown | Direct `what.md` and `how.md` are the spec and plan. Other documented question and dependency files provide context. |
 | Generic Markdown / PRD | Candidate basename and content | Arbitrary document semantics are not inferred reliably. |
 
 All detections and all heuristic statuses remain visible in exported assessments. Unsupported context must not become a passing result.
 
-The [original format-layout corpus](format-corpus.md) exercises fourteen constructed
-EN/ES cases with nested paths, archives and scoped IDs. It is regression evidence
-for the documented hints, not qualification of files from real framework producers.
+The [format and linguistic corpus](format-corpus.md) records the original
+fourteen probes, 28 format-based project sets, focused controls and a
+published OpenSpec example. The resulting compatibility evidence is scoped
+to the supplied Markdown variants. Human calibration remains pending.
