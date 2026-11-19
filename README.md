@@ -4,11 +4,21 @@
 
 SpecTorque is a local workbench for writing and reviewing software specifications. It takes you from a rough idea or an existing Markdown workspace to a spec, plan and tasks with traceable requirements, reviewable changes and explicit open decisions.
 
-[Quickstart](#quickstart) · [Research](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
+[Quickstart](#quickstart) · [How it works](#how-it-works) · [Research](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
 
 **40 EPIC practice checks · 10 quality dimensions · English and Spanish · One deterministic engine**
 
-![SpecTorque workbench showing the EPIC radar, source evidence and a proposed refinement](docs/assets/workbench.jpg)
+## Explore the workbench
+
+Click any capture to see it full size.
+
+| Analyze | Build a spec |
+| :---: | :---: |
+| [![Analyze view with the EPIC radar, dimension scores and findings](docs/assets/workbench/analyze.jpg)](docs/assets/workbench/analyze.jpg) | [![Build a spec view with the four guided steps and a sample project](docs/assets/workbench/build.jpg)](docs/assets/workbench/build.jpg) |
+| Inspect exact evidence and see which dimensions are still unknown. | Turn a project brief into a spec, plan and tasks. |
+| **History** | **Connect agents** |
+| [![Assessment history showing revisions and rubric versions](docs/assets/workbench/history.jpg)](docs/assets/workbench/history.jpg) | [![Connect agents view showing supported hosts and the local MCP configuration](docs/assets/workbench/connect.jpg)](docs/assets/workbench/connect.jpg) |
+| Revisit assessments and export a specific revision. | Find the host integrations and the local MCP entry point. |
 
 ## See the difference
 
@@ -29,6 +39,16 @@ node dist/cli.js serve --root /absolute/path/to/your/project
 ```
 
 Open the printed loopback URL and try the built-in ambiguous draft. Select a finding to jump to the source, review a clarification, then export the result. Use the [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0) for a packaged starting point. See [qualification](docs/common-workbench-qualification.md) for observed results and remaining checks on this branch.
+
+## How it works
+
+[![SpecTorque workflow from create or import through local analysis, human review, reanalysis and export, with paths for rejection and undo](docs/assets/workbench/workflow.png)](docs/assets/workbench/workflow.png)
+
+1. **Create or import.** Start with guided questions or load existing documents. Select the scope you want the local engine to assess.
+2. **Review and decide.** Follow a finding to its source and compare the exact wording. Rejection leaves the source intact. Approval updates the draft, with a separate opt-in for writing to disk.
+3. **Reanalyze and hand off.** Inspect the new revision and its pending decisions. Export the current assessment and selected artifacts, or undo the change where applicable. You can also export an assessment before proposing an edit.
+
+[Archify diagram source](docs/assets/workbench/workflow.archify.json)
 
 ## From draft to reviewed handoff
 

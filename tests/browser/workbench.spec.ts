@@ -54,7 +54,7 @@ const test = base.extend<{ workspace: { root: string; url: string } }>({
 for (const es of [false, true]) {
   test(`${es ? 'ES' : 'EN'} retains guided authoring across views and protects the generated draft`, async ({ page, workspace }) => {
     await page.goto(workspace.url);
-    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
     const build = page.getByRole('button', { name: es ? 'Crear una spec' : 'Build a spec', exact: true });
     const analyze = page.getByRole('button', { name: es ? 'Analizar' : 'Analyze', exact: true });
     const name = page.getByRole('textbox', { name: es ? 'Nombre del proyecto' : 'Project name' });
@@ -135,8 +135,8 @@ for (const es of [false, true]) {
     await page.keyboard.press(tabKey);
     await expect(page.getByRole('link', { name: /^SpecTorque/ })).toBeFocused();
     await page.keyboard.press(tabKey);
-    await expect(page.getByRole('button', { name: 'Español', exact: true })).toBeFocused();
-    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Spanish', exact: true })).toBeFocused();
+    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
     await page.locator('input[type=file]').setInputFiles({ name: 'spec.md', mimeType: 'text/markdown', buffer: Buffer.from(source) });
     const finding = page.getByRole('button').filter({ hasText: 'Unbounded wording:' });
     await expect(finding).toHaveCount(1);
@@ -335,7 +335,7 @@ for (const es of [false, true]) {
     const review = { ...context, root: view.root, proposal };
 
     await page.goto(workspace.url + '/?review=1');
-    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
     const approve = page.getByRole('button', { name: es ? 'Aprobar y escribir en disco' : 'Approve and write to disk' });
     async function verify() {
       await page.getByRole('textbox').fill(JSON.stringify(review));
@@ -363,7 +363,7 @@ for (const es of [false, true]) {
     expect(updated.assessment.id).not.toBe(view.assessment.id);
     expect(updated.assessment.decisions.some(item => item.path === 'specs/booking/spec.md' && item.line === 3)).toBe(true);
     await page.goto(workspace.url + '/?export=1');
-    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
     await page.getByRole('textbox').fill(JSON.stringify({ root: view.root, feature: view.feature,
       revision: updated.assessment.id, createdAt: updated.assessment.createdAt }));
     const reportDownload = page.waitForEvent('download');

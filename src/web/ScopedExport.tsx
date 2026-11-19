@@ -29,7 +29,7 @@ export function ScopedExport() {
   }
 
   return <main style={{ maxWidth: '48rem', margin: '2rem auto', padding: '0 1rem' }}>
-    <button type="button" onClick={() => setSpanish(!es)}>{es ? 'English' : 'Español'}</button>
+    <button type="button" onClick={() => setSpanish(!es)}>{es ? 'English' : 'Spanish'}</button>
     <h1>{t('Export a Codex assessment', 'Exportar una evaluación de Codex')}</h1>
     <label className="field">
       <span>{t('Export selection from the Codex viewer', 'Selección de exportación del visor de Codex')}</span>
