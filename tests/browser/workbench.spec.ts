@@ -1,30 +1,104 @@
 import { test as base, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createInterface } from 'node:readline';
 import { unzipSync, strFromU8 } from 'fflate';
 import { startServer } from '../../src/node/server.js';
 import { bindWorkspace } from '../../src/node/scoped-review.js';
+import { badgeSvg, markdownReport } from '../../src/core/report.js';
 
 const test = base.extend<{ workspace: { root: string; url: string } }>({
   workspace: async ({}, use) => {
     const root = await mkdtemp(join(tmpdir(), 'spectorque-browser-'));
-    const { server, url } = await startServer(root, 0);
-    try { await use({ root, url }); }
-    finally {
-      // Assertions have finished. Stop accepting connections before closing any
-      // active browser requests, so fixture teardown cannot wait on an open page.
-      await new Promise<void>((done, reject) => {
-        server.close(e => e ? reject(e) : done());
-        server.closeAllConnections();
-      });
+    try {
+      const cli = process.env.SPECTORQUE_INSTALLED_CLI;
+      if (cli) {
+        const child = spawn(process.execPath, [cli, 'serve', '--root', root, '--port', '0'], { cwd: root });
+        const closed = once(child, 'close');
+        const output = createInterface({ input: child.stdout });
+        let stderr = '';
+        child.stderr.on('data', chunk => { stderr += String(chunk); });
+        try {
+          let url: string | undefined;
+          for await (const line of output) {
+            url = /^SpecTorque workbench: (http:\/\/127\.0\.0\.1:\d+)$/.exec(line)?.[1];
+            if (url) break;
+          }
+          if (!url) throw new Error(`Installed workbench did not start: ${stderr}`);
+          await use({ root, url });
+        } finally {
+          output.close();
+          child.kill();
+          await closed;
+        }
+      } else {
+        const { server, url } = await startServer(root, 0);
+        try { await use({ root, url }); }
+        finally {
+          await new Promise<void>((done, reject) => {
+            server.close(e => e ? reject(e) : done());
+            server.closeAllConnections();
+          });
+        }
+      }
+    } finally {
       await rm(root, { recursive: true, force: true });
     }
   },
 });
 
 for (const es of [false, true]) {
+  test(`${es ? 'ES' : 'EN'} retains guided authoring across views and protects the generated draft`, async ({ page, workspace }) => {
+    await page.goto(workspace.url);
+    if (es) await page.getByRole('button', { name: 'Español', exact: true }).click();
+    const build = page.getByRole('button', { name: es ? 'Crear una spec' : 'Build a spec', exact: true });
+    const analyze = page.getByRole('button', { name: es ? 'Analizar' : 'Analyze', exact: true });
+    const name = page.getByRole('textbox', { name: es ? 'Nombre del proyecto' : 'Project name' });
+    const purpose = page.getByRole('textbox', { name: es ? '¿Qué problema resuelve?' : 'What problem does it solve?' });
+    const behavior = page.getByRole('textbox', { name: es ? '¿Qué debe hacer?' : 'What must it do?' });
+    const next = page.getByRole('button', { name: es ? 'Siguiente' : 'Continue', exact: true });
+    const title = es ? 'Reservas' : 'Bookings';
+    const obligation = es ? 'El sistema DEBE registrar la reserva.' : 'The system MUST record the booking.';
+    await build.click();
+    await name.fill(title);
+    await purpose.fill(es ? 'Reservar una sala.' : 'Book a room.');
+    await next.click();
+    await behavior.fill(obligation);
+    await analyze.click();
+    await build.click();
+    await expect(behavior).toHaveValue(obligation);
+    await next.click();
+    await next.click();
+    await page.getByRole('button', { name: es ? 'Crear y analizar borrador' : 'Create and analyze draft' }).click();
+    const editor = page.getByRole('textbox', { name: es ? 'Editor del texto fuente' : 'Source text editor' });
+    await expect(editor).toHaveValue(new RegExp(obligation));
+    await expect(editor).toHaveValue(/NEEDS CLARIFICATION/);
+
+    const load = page.getByRole('button', { name: es ? 'Cargar proyecto local' : 'Load local workspace' });
+    let confirmed = false;
+    page.once('dialog', async dialog => { confirmed = dialog.type() === 'confirm'; await dialog.dismiss(); });
+    await load.click();
+    await expect.poll(() => confirmed).toBe(true);
+    await expect(editor).toHaveValue(new RegExp(obligation));
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: es ? '↓ Documentos' : '↓ Artifacts', exact: true }).click();
+    const archive = unzipSync(await readFile(await (await download).path()));
+    expect(Object.keys(archive).sort()).toEqual(['plan.md', 'spec.md', 'tasks.md'].map(file => `specs/${title.toLowerCase()}/${file}`));
+    for (const bytes of Object.values(archive)) expect(strFromU8(bytes)).toContain('FR-001');
+    const target = join(workspace.root, 'specs', title.toLowerCase());
+    await mkdir(target, { recursive: true });
+    await writeFile(join(target, 'spec.md'), 'Existing file\n');
+    await page.getByRole('button', { name: es ? 'Guardar como archivos nuevos' : 'Save as new files' }).click();
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(editor).toHaveValue(new RegExp(obligation));
+    expect(await readFile(join(target, 'spec.md'), 'utf8')).toBe('Existing file\n');
+  });
+
   test(`${es ? 'ES' : 'EN'} import, evidence, reject, accept, reanalyze, export and undo`, async ({ page, workspace, browserName }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -51,17 +125,26 @@ for (const es of [false, true]) {
     // Enter activates the finding and moves focus to the exact source line.
     await finding.focus();
     await page.keyboard.press('Enter');
-    const editor = page.getByRole('textbox', { name: 'Source text editor' });
+    const editor = page.getByRole('textbox', { name: es ? 'Editor del texto fuente' : 'Source text editor' });
     await expect(editor).toBeFocused();
     expect(await editor.evaluate((node: HTMLTextAreaElement) => node.value.slice(node.selectionStart, node.selectionEnd))).toBe(source.trim().split('\n').at(-1));
     const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed wording' });
     await wording.fill(replacement);
-    await page.getByRole('button', { name: es ? 'Revisar diferencia' : 'Review difference', exact: true }).click();
+    const review = page.getByRole('button', { name: es ? 'Revisar diferencia' : 'Review difference', exact: true });
+    const difference = page.getByRole('heading', { name: es ? 'Cambio propuesto' : 'Proposed change' });
+    await review.click();
+    await expect(difference).toBeFocused();
+    await page.getByRole('button', { name: es ? 'Evolución' : 'History', exact: true }).click();
+    await page.getByRole('button', { name: es ? 'Analizar' : 'Analyze', exact: true }).click();
+    await expect(wording).toHaveValue(replacement);
+    await expect(difference).toBeFocused();
     await page.getByRole('button', { name: es ? 'Rechazar' : 'Reject', exact: true }).click();
+    await expect(review).toBeFocused();
     await expect(editor).toHaveValue(source);
-    await page.getByRole('button', { name: es ? 'Revisar diferencia' : 'Review difference', exact: true }).click();
+    await review.click();
     await page.getByRole('button', { name: es ? 'Aceptar cambio' : 'Accept change', exact: true }).click();
     await expect(editor).toHaveValue(source.replace(source.trim().split('\n').at(-1)!, replacement));
+    await expect(page.getByRole('heading', { name: es ? 'Texto fuente' : 'Source text', exact: true })).toBeFocused();
     await expect(finding).toHaveCount(0);
     await page.getByRole('button', { name: es ? 'Decisiones' : 'Decisions', exact: true }).click();
     await expect(page.getByRole('button').filter({ hasText: 'spec.md:3' })).toHaveCount(1);
@@ -71,6 +154,11 @@ for (const es of [false, true]) {
     expect(report.practices).toHaveLength(40);
     expect(report.summary.score).toBeNull();
     expect(report.decisions[0]).toMatchObject({ path: 'spec.md', line: 3 });
+    for (const [name, contents] of [[es ? '↓ Informe' : '↓ Report', markdownReport(report)], ['↓ Badge', badgeSvg(report)]]) {
+      const download = page.waitForEvent('download');
+      await page.getByRole('button', { name, exact: true }).click();
+      expect(await readFile(await (await download).path(), 'utf8')).toBe(contents);
+    }
     const archiveDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: es ? '↓ Documentos' : '↓ Artifacts', exact: true }).click();
     const archive = unzipSync(await readFile(await (await archiveDownload).path()));
@@ -102,6 +190,8 @@ test('reviewed disk writes reject stale sources and undo preserves external chan
   await page.getByRole('button', { name: 'Accept change', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Source changed');
   expect(await readFile(path, 'utf8')).toBe(source + 'External edit.\n');
+  await expect(page.getByRole('textbox', { name: 'Proposed wording' })).toHaveValue(replacement);
+  page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue(source + 'External edit.\n');
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
@@ -194,6 +284,7 @@ test('late provider response cannot replace the newly selected document', async 
   await page.getByRole('button', { name: 'Paste text', exact: true }).click();
   const next = 'FR-009: The service MUST be scalable.';
   await page.getByRole('textbox', { name: 'Specification text', exact: true }).fill(next);
+  page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Analyze text', exact: true }).click();
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
   const response = page.waitForResponse('**/api/rewrite');
