@@ -140,3 +140,8 @@ after the unit. The reserved lexical cases were held out of rule selection.
 The documented OpenSpec proposal path was also a discovery regression in the
 development sample. The broader comparison uses a directed corpus with small
 denominators and potentially correlated model judgments.
+
+The final code review raised a month/year date and bilingual rejection
+recommendations. Both reviewers independently agreed on three
+[supplemental development controls](../fixtures/calibration/development-agent-reviews.json).
+Those controls are regression evidence outside the 716 reported propositions.

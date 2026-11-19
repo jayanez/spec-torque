@@ -85,9 +85,14 @@ test('bilingual measurement recognizes explicit rates and plural denial with ori
     ['Los puestos DEBERA\u0301N enviar ≤ 120\u202fturnos por minuto.', 'supported'],
     ['Los paneles DEBEN rechazar recorridos por un portal clausurado.', 'supported'],
     ['Los lectores DEBERA\u0301N denegar el acceso.', 'supported'],
+    ['Los servicios DEBERÍAN rechazar solicitudes no autorizadas.', 'supported'],
+    ['The service SHOULD reject unauthorized requests.', 'supported'],
+    ['Los servicios DEBERI\u0301AN denegar el acceso.', 'supported'],
     ['Los registros DEBEN guardar el lote al menos 2 semanas.', 'supported'],
     ['The catalog SHOULD show the release marked v2.4.', 'missing'],
     ['Los avisos PUEDEN aparecer en el capítulo 3.', 'missing'],
+    ['Los servicios PUEDEN rechazar solicitudes no autorizadas.', 'missing'],
+    ['Los servicios DEBEN enviar ≤ 120 turnos por minutoé.', 'missing'],
     ['Los puestos DEBEN enviar un resumen cuando sea necesario.', 'missing'],
   ];
   for (const [statement, status] of samples) {
@@ -102,6 +107,7 @@ test('bilingual measurement recognizes explicit rates and plural denial with ori
 test('clear May date phrases do not count as permission, while real permission remains visible', async () => {
   for (const [text, status] of [
     ['FR-001: May 12 is the inventory date.', 'missing'],
+    ['FR-001: May 2027 is the deployment month.', 'missing'],
     ['The west studio opened in May.', 'unknown'],
     ['In May, the branch moved to the library.', 'unknown'],
     ['The operator May publish the register in May.', 'supported'],

@@ -41,9 +41,10 @@ and observable measurement, including NFC/NFD Spanish, decimal separators,
 nonbreaking spaces, comparison symbols, quantities per time period, plural
 rejection or denial, dates, identifiers, examples and ambiguous wording.
 Engine **0.1.3** uses NFC for E1.2 comparisons, including plural
-`DEBEN rechazar` and `DEBERÁN denegar`, an explicit Spanish minimum
+`DEBEN rechazar` and `DEBERÁN denegar`, explicit denial in EN/ES
+recommendations, a Spanish minimum
 duration, and bounded rate phrases such as `≤ 120 turnos por minuto`.
-E1.4 excludes clear English dates such as `May 12 is …` and `in May`
+E1.4 excludes clear English dates such as `May 12 is …`, `May 2027 is …` and `in May`
 while preserving a permission in the same line. The analyzed line's bytes,
 hash and evidence remain unchanged. Unlisted units, other uses of `May` and
 discourse-level interpretation can still yield errors or abstentions. The

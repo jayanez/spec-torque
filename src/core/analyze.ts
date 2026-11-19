@@ -6,7 +6,7 @@ export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
 const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
-const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
+const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:\d{4}|(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?)(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
 const hasNormativeModal = (text: string) => modal.test(text.normalize('NFC').replace(calendarMay, ' '));
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {
@@ -21,9 +21,9 @@ function linesOf(artifact: Artifact): Line[] {
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
 const boundedQuantity = /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:ms\b|seconds?\b|segundos?\b|minutes?\b|minutos?\b|%|MB\b|GB\b)/iu;
-const minimumDuration = /\bal menos\s+\d+(?:[.,]\d+)?\s+(?:segundos?|minutos?|horas?|días?|semanas?)\b/iu;
-const boundedRate = /[≤≥]\s*\d+(?:[.,]\d+)?\s+(?:entr(?:y|ies)|tickets?|requests?|turnos?|lecturas?|solicitudes?)\s+(?:per|por)\s+(?:second|minute|hour|segundo|minuto|hora)\b/iu;
-const observableDenial = /\b(?:MUST|SHALL)\s+(?:reject|deny)\b|\bDEBE(?:N|RÁN?)?\s+(?:rechazar|denegar)\b/iu;
+const minimumDuration = /(?<![\p{L}\p{N}\p{M}_])al menos\s+\d+(?:[.,]\d+)?\s+(?:segundos?|minutos?|horas?|días?|semanas?)(?![\p{L}\p{N}\p{M}_])/iu;
+const boundedRate = /[≤≥]\s*\d+(?:[.,]\d+)?\s+(?:entr(?:y|ies)|tickets?|requests?|turnos?|lecturas?|solicitudes?)\s+(?:per|por)\s+(?:second|minute|hour|segundo|minuto|hora)(?![\p{L}\p{N}\p{M}_])/iu;
+const observableDenial = /(?<![\p{L}\p{N}\p{M}_])(?:(?:MUST|SHALL|SHOULD)\s+(?:reject|deny)|DEBE(?:N|RÁN?|RÍAN?)?\s+(?:rechazar|denegar))(?![\p{L}\p{N}\p{M}_])/iu;
 const unboundedWording = new RegExp(vagueTerms.source, 'iu');
 
 function hasObservableCue(text: string): boolean {

@@ -1,0 +1,64 @@
+{
+  "split": "supplemental-development",
+  "includedInCorpusMetrics": false,
+  "units": [
+    {
+      "id": "may-year",
+      "rule": "E1.4",
+      "language": "en",
+      "text": "FR-001: May 2027 is the deployment month."
+    },
+    {
+      "id": "denial-es",
+      "rule": "E1.2",
+      "language": "es",
+      "text": "FR-001: Los servicios DEBERÍAN rechazar solicitudes no autorizadas."
+    },
+    {
+      "id": "denial-en",
+      "rule": "E1.2",
+      "language": "en",
+      "text": "FR-001: The service SHOULD reject unauthorized requests."
+    }
+  ],
+  "reviewers": [
+    {
+      "id": "luna-a",
+      "kind": "agent",
+      "model": "gpt-6-luna",
+      "annotations": {
+        "may-year": {
+          "label": "negative",
+          "reason": "The line states a deployment month as a fact; May is part of the date, not a normative MAY permission or obligation."
+        },
+        "denial-es": {
+          "label": "positive",
+          "reason": "DEBERÍAN rechazar solicitudes no autorizadas expresa explícitamente una conducta de rechazo, aunque sea recomendada."
+        },
+        "denial-en": {
+          "label": "positive",
+          "reason": "SHOULD reject unauthorized requests explicitly states rejection behavior, even though it is phrased as a recommendation."
+        }
+      }
+    },
+    {
+      "id": "luna-b",
+      "kind": "agent",
+      "model": "gpt-6-luna",
+      "annotations": {
+        "may-year": {
+          "label": "negative",
+          "reason": "“May 2027” names a deployment month; the line states no normative obligation, recommendation, or permission."
+        },
+        "denial-es": {
+          "label": "positive",
+          "reason": "“DEBERÍAN rechazar solicitudes no autorizadas” explicitly states rejection behavior, even though it is phrased as a recommendation."
+        },
+        "denial-en": {
+          "label": "positive",
+          "reason": "“SHOULD reject unauthorized requests” explicitly states rejection behavior, even though it is phrased as a recommendation."
+        }
+      }
+    }
+  ]
+}
