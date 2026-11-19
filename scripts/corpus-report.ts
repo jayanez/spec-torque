@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
-import { referenceFor, reviewFile, summarize, type Label, type Reviews } from './corpus-metrics.js';
+import { referenceFor, reviewFile, reviewProvenance, summarize, type Label, type Reviews } from './corpus-metrics.js';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtureRoot = join(repository, 'fixtures', 'calibration');
@@ -148,6 +148,13 @@ async function loadEngine(root: string) {
   return { ...rules, ...artifacts, ...workspace };
 }
 
+async function archiveEngine(revision: string, directory: string) {
+  await mkdir(directory);
+  const snapshot = execFileSync('git', ['archive', revision, 'package.json', 'src/core', 'src/node'], { cwd: repository });
+  execFileSync('tar', ['-xf', '-', '-C', directory], { input: snapshot });
+  return loadEngine(directory);
+}
+
 const polarity = (value: boolean): Label => value ? 'positive' : 'negative';
 async function evaluate(engine: Awaited<ReturnType<typeof loadEngine>>, entry: Example, units: Unit[]) {
   const set = await engine.discoverWorkspace(join(fixtureRoot, entry.root));
@@ -260,14 +267,17 @@ if (values.packet) {
   const reviewBytes = values.labels ? await readFile(values.labels) : undefined;
   const reviews = reviewBytes ? reviewFile.parse(JSON.parse(reviewBytes.toString())) : undefined;
   if (reviews) validateReviews(reviews, units, packetId);
+  const referenceProvenance = reviewProvenance(reviews);
   const baseline = commit(values.baseline!);
   const candidate = commit('HEAD');
-  const engineChanges = git('status', '--porcelain', '--', 'src/core', 'src/node');
+  if (git('status', '--porcelain', '--', 'src/core', 'src/node')) {
+    throw new Error('Commit the candidate engine changes before measuring its revision.');
+  }
   const temp = await mkdtemp(join(tmpdir(), 'spectorque-corpus-'));
   try {
-    const snapshot = execFileSync('git', ['archive', baseline, 'package.json', 'src/core', 'src/node'], { cwd: repository });
-    execFileSync('tar', ['-xf', '-', '-C', temp], { input: snapshot });
-    const [before, after] = await Promise.all([loadEngine(temp), loadEngine(repository)]);
+    const [before, after] = await Promise.all([
+      archiveEngine(baseline, join(temp, 'baseline')), archiveEngine(candidate, join(temp, 'candidate')),
+    ]);
     const observations = [];
     for (const entry of examples) {
       const checks = byCase.get(entry.id)!;
@@ -309,7 +319,8 @@ if (values.packet) {
     const report = {
       packet: packetId, manifestHash, guideHash, labelsHash: reviewBytes ? sha256(reviewBytes) : null,
       node: process.version, baseline: { commit: baseline, engine: before.ENGINE_VERSION, rubric: before.RUBRIC_VERSION },
-      candidate: { commit: candidate, engine: after.ENGINE_VERSION, rubric: after.RUBRIC_VERSION, engineChanges },
+      candidate: { commit: candidate, engine: after.ENGINE_VERSION, rubric: after.RUBRIC_VERSION },
+      referenceProvenance,
       reviewAgreement: { numerator: agreed.length, denominator: paired.length },
       disagreements, metrics, observations,
     };
@@ -322,8 +333,12 @@ if (values.packet) {
     ];
     const lines = [
       '# EN/ES corpus comparison', '', `Baseline \`${baseline}\` · engine ${before.ENGINE_VERSION}`,
-      `Candidate \`${candidate}\` · engine ${after.ENGINE_VERSION}${engineChanges ? ' · source changes present' : ''}`, '',
+      `Candidate \`${candidate}\` · engine ${after.ENGINE_VERSION}`, '',
       `Annotation packet \`${packetId}\` · reviewer agreement ${agreed.length}/${paired.length}`, '',
+      `Declared reference provenance · ${referenceProvenance.kind}`, '',
+      ...(referenceProvenance.kind === 'agent' || referenceProvenance.kind === 'mixed'
+        ? ['Agent judgments are provisional and may have correlated errors. No human validity is established here.', '']
+        : []),
       'Pending and disputed cases withhold rates for their group. Results apply to this corpus.', '',
       '| Split / rule / framework / language | Engine | Total | TP | FP | TN | FN | Abstain + | Abstain − | Ref. unknown | Unsupported | Pending | Disputed | FP rate | Precision | Decided recall | Coverage |',
       '|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|',

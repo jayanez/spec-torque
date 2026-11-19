@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { referenceFor, reviewFile, summarize, type Label, type Reference } from '../scripts/corpus-metrics.js';
+import { referenceFor, reviewFile, reviewProvenance, summarize, type Label, type Reference } from '../scripts/corpus-metrics.js';
 
 test('a reference needs two matching judgments or independent adjudication', () => {
   const input = {
@@ -15,8 +15,21 @@ test('a reference needs two matching judgments or independent adjudication', () 
   assert.equal(referenceFor('single', reviews), 'pending');
   assert.equal(referenceFor('contested', reviews), 'disputed');
   assert.equal(referenceFor('contested', {
-    ...reviews, adjudicator: { id: 'c', annotations: { contested: { label: 'unknown', reason: 'Insufficient context' } } },
+    ...reviews, adjudicator: { id: 'c', kind: 'human', annotations: { contested: { label: 'unknown', reason: 'Insufficient context' } } },
   }), 'unknown');
+});
+
+test('agent annotation files declare the model and retain agent provenance', () => {
+  const first = { id: 'agent-a', kind: 'agent', model: 'model-1', annotations: {} };
+  const second = { id: 'agent-b', kind: 'agent', model: 'model-1', annotations: {} };
+  const input = { packet: 'a'.repeat(64), reviewers: [first, second] };
+  assert.equal(reviewFile.safeParse({ ...input, reviewers: [{ ...first, model: undefined }, second] }).success, false);
+  assert.deepEqual(reviewProvenance(reviewFile.parse(input)), {
+    kind: 'agent', reviewers: [
+      { id: 'agent-a', kind: 'agent', model: 'model-1' },
+      { id: 'agent-b', kind: 'agent', model: 'model-1' },
+    ], adjudicator: null,
+  });
 });
 
 test('corpus metrics retain abstentions and suppress rates for incomplete groups', () => {

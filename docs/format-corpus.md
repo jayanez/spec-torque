@@ -85,14 +85,15 @@ npm run corpus:report -- --packet
 npm run corpus:report -- --baseline 8c1ace3cf0e8b562af4f3bf99c4bc16220ac98b8
 ```
 
-The report uses Git and tar to read the baseline's core and workspace source
-in a temporary directory. It exercises filesystem discovery, the shared
+The report uses Git and tar to read both engines from their committed
+revisions in a temporary directory. Commit local engine edits before
+comparing them. The report exercises filesystem discovery, the shared
 classifier and the real analyzer over both engines. Each run prints its
 output directory under `.spec-torque/corpus/`. The JSON includes the unit,
 source line, prediction for both revisions and the reference state. The
 Markdown table reports counts and rates by partition, rule, framework and
 language, with denominators. The report records the commit, engine, rubric,
-manifest and packet identities. A dirty engine tree is marked in its output.
+manifest and packet identities.
 
 Use the [annotation guide](corpus-labeling.md) to collect independent
 judgments, then rerun with `--labels <reviews.json>`. A reference may be
@@ -100,5 +101,12 @@ positive, negative, unknown, unsupported, pending or disputed. The report
 keeps reference unknowns and engine abstentions visible. The precision,
 false-positive and recall denominators cover decided cases and the coverage
 denominator also includes abstentions on binary references. An incomplete
-group withholds rates and a zero denominator is shown as `N/A`. Meaningful
-rates require the independently reviewed labels, which remain pending.
+group withholds rates and a zero denominator is shown as `N/A`.
+
+The same interpretation guide can be applied in a provisional agent review.
+For that path, add `"kind": "agent"` and a `"model"` ID to each agent reviewer
+and adjudicator in the review file. The report records that provenance.
+Independent sessions hide other judgments and detector output, though
+reviewers using the same model can still make correlated errors. Agent
+metrics describe model judgments on this bounded sample. Human review is
+a separate basis for claims about requirements quality.
