@@ -1,0 +1,4 @@
+work_packages:
+  WP01:
+    title: Intake
+    depends_on: []
