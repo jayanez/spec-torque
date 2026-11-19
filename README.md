@@ -1,5 +1,9 @@
 # SpecTorque
 
+[![Latest GitHub release, including previews](https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&label=release)](https://github.com/jayanez/spec-torque/releases)
+[![Checks on develop](https://github.com/jayanez/spec-torque/actions/workflows/check.yml/badge.svg?branch=develop)](https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop)
+[![License Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
 **See where your coding agent would have to guess.**
 
 SpecTorque is a local workbench for writing and reviewing software specifications. It takes you from a rough idea or an existing Markdown workspace to a spec, plan and tasks with traceable requirements, reviewable changes and explicit open decisions.
@@ -66,7 +70,7 @@ npm run build
 node dist/cli.js serve --root /absolute/path/to/your/project
 ```
 
-Open the printed loopback URL and try the built-in ambiguous draft. Select a finding to jump to the source, review a clarification, then export the result. Use the [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0) for a packaged starting point. For the reproducible EN/ES pilot, see [the demonstration](docs/pilot.md) and [the Spanish walkthrough](docs/pilot.es.md). See [qualification](docs/common-workbench-qualification.md) for observed results and remaining checks on this branch.
+Open the printed loopback URL and try the built-in ambiguous draft. Select a finding to jump to the source, review a clarification, then export the result. Download a published package from [GitHub Releases](https://github.com/jayanez/spec-torque/releases) and follow the installation guide for its version. For the reproducible EN/ES pilot, see [the demonstration](docs/pilot.md) and [the Spanish walkthrough](docs/pilot.es.md). See [qualification](docs/common-workbench-qualification.md) for observed results and remaining checks on this branch.
 
 ## How it works
 
