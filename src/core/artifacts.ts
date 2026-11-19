@@ -3,6 +3,7 @@ import type { Artifact, ArtifactSet, Framework, Role } from './types.js';
 const kittyMission = /(?:^|\/)kitty-specs\/[^/]+\//i;
 const kittyWorkPackage = /(?:^|\/)kitty-specs\/[^/]+\/tasks\/WP\d+(?:-[^/]+)?\.md$/i;
 const openSpecArchive = /(?:^|\/)openspec\/changes\/archive\/\d{4}-\d{2}-\d{2}-[^/]+\//i;
+const openSpecProposal = /(?:^|\/)openspec\/changes\/(?:archive\/)?[^/]+\/proposal\.md$/i;
 const bmadTask = /(?:^|\/)_(?:bmad|bmad-output)\/(?:planning-artifacts\/(?:[^/]+\/)*epics\.md|implementation-artifacts\/\d+-\d+-[^/]+\.md|initiatives\/(?:[^/]+\/)+(?:epics\.md|story-[^/]+\/story\.md))$/i;
 const zeeContext = /(?:^|\/)\.spec\/(?:who|where|when|why|upstream|downstream)\.md$/i;
 const zeePlan = /(?:^|\/)\.spec\/how\.md$/i;
@@ -24,7 +25,7 @@ export function classifyArtifact(path: string, content: string): Artifact {
     : (framework === 'spec-kitty' && kittyWorkPackage.test(p)) || (framework === 'bmad' && bmadTask.test(p)) ||
       /task|todo|work.?package/i.test(base) ? 'tasks'
     : (framework === 'zeespec' && zeePlan.test(p)) || /plan|design|architecture/i.test(base) ? 'plan'
-    : framework === 'zeespec' && zeeContext.test(p) ? 'context'
+    : (framework === 'zeespec' && zeeContext.test(p)) || (framework === 'openspec' && openSpecProposal.test(p)) ? 'context'
     : /spec|requirement|prd|proposal|what|who|when|where|why|how/i.test(base) ? 'spec' : 'context';
   const scopedPath = framework === 'spec-kitty' ? mission : framework === 'openspec' ? openSpecArchive.exec(p) : null;
   const marker = framework === 'kiro' ? '.kiro/specs/' : framework === 'openspec' ? 'openspec/changes/' : 'specs/';
@@ -39,7 +40,8 @@ export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const normalized = path.replaceAll('\\', '/');
   const legacyPath = basenameOnly ? normalized.slice(normalized.lastIndexOf('/') + 1) : normalized;
   return /\.md$/i.test(normalized) && (byName.test(legacyPath) || kittyWorkPackage.test(normalized) ||
-    bmadTask.test(normalized) || zeeContext.test(normalized) || specKitDataModel.test(normalized));
+    openSpecProposal.test(normalized) || bmadTask.test(normalized) || zeeContext.test(normalized) ||
+    specKitDataModel.test(normalized));
 }
 export async function contentHash(content: string): Promise<string> {
   const bytes = new TextEncoder().encode(content);

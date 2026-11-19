@@ -75,6 +75,11 @@ test('documented producer companions reach the shared classifier through workspa
       framework: 'spec-kit', role: 'context', feature: 'specs/011-availability',
     },
     {
+      root: 'development/openspec-development-en',
+      path: 'openspec/changes/delivery-receipt/proposal.md',
+      framework: 'openspec', role: 'context', feature: 'openspec/changes/delivery-receipt',
+    },
+    {
       root: 'development/bmad-development-es',
       path: '_bmad-output/implementation-artifacts/1-1-first-visit.md',
       framework: 'bmad', role: 'tasks', feature: '_bmad-output/implementation-artifacts',
