@@ -1,10 +1,11 @@
+import { PRODUCT_VERSION } from '../version.js';
 import { classifyArtifact, isSpecCandidate } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet } from '../core/types.js';
 import { boundedJson } from './http.js';
 interface Repo { default_branch: string; private: boolean }
 interface Entry { path: string; type: string; size?: number; sha: string }
 async function request<T>(url: string): Promise<T> {
-  const response = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'SpecTorque/0.1.0' }, redirect: 'error', signal: AbortSignal.timeout(20_000) });
+  const response = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': `SpecTorque/${PRODUCT_VERSION}` }, redirect: 'error', signal: AbortSignal.timeout(20_000) });
   if (!response.ok) throw new Error(response.status === 403 || response.status === 429 ? 'GitHub rate limit reached. Try again later or import local files.' : `GitHub request failed (${response.status}). Check the repository and revision.`);
   return boundedJson<T>(response, 20_000_000);
 }

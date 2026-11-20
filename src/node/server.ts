@@ -1,3 +1,4 @@
+import { PRODUCT_VERSION } from '../version.js';
 import { createServer, type IncomingMessage } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, relative, isAbsolute } from 'node:path';
@@ -46,7 +47,7 @@ export async function startServer(root: string, requestedPort = 4317) {
     if (!hosts.has(req.headers.host ?? '') || req.headers.origin && !origins.has(req.headers.origin)) { send(403, { error: 'Untrusted origin or host.' }); return; }
     const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`);
     try {
-      if (url.pathname === '/api/session' && req.method === 'GET') { send(200, { token, version: '0.1.0' }); return; }
+      if (url.pathname === '/api/session' && req.method === 'GET') { send(200, { token, version: PRODUCT_VERSION }); return; }
       if (url.pathname.startsWith('/api/')) {
         if (req.headers['x-spectorque-token'] !== token) { send(403, { error: 'Open the workbench to establish a local session.' }); return; }
         if (req.method === 'GET' && url.pathname === '/api/workspace') { send(200, await discoverWorkspace(root)); return; }

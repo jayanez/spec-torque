@@ -1,3 +1,4 @@
+import { PRODUCT_VERSION } from '../../src/version.js';
 import type { Assessment, Evidence, Finding, PatchProposal } from '../../src/core/types.js';
 
 interface AssessmentView {
@@ -278,7 +279,7 @@ async function initialize() {
   status.textContent = label('Connecting to Codex…', 'Conectando con Codex…');
   try {
     const result = await request('ui/initialize', {
-      appInfo: { name: 'spectorque', version: '0.1.0' },
+      appInfo: { name: 'spectorque', version: PRODUCT_VERSION },
       appCapabilities: { availableDisplayModes: ['inline', 'fullscreen'] },
       protocolVersion: '2026-01-26',
     }) as { protocolVersion?: string; hostContext?: { locale?: string } };

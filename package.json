@@ -1,6 +1,6 @@
 {
   "name": "spectorque",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Create, inspect and refine agent-ready specifications with traceable evidence.",
   "type": "module",
   "license": "Apache-2.0",
@@ -49,6 +49,7 @@
     "package:vscode": "npm run package:integrations && node scripts/package-vscode.mjs",
     "qualify:handoff": "npm run verify:node && node --import tsx scripts/qualify-common-handoff.mjs",
     "qualify:pi": "npm run verify:node && node scripts/qualify-pi.mjs",
+    "package:pi": "npm run verify:node && node scripts/package-pi.mjs",
     "qualify:claude": "npm run verify:node && node scripts/qualify-claude.mjs",
     "package:opencode": "npm run verify:node && node scripts/package-opencode.mjs",
     "verify:codex-package": "npm run verify:node && node scripts/verify-codex-package.mjs",
@@ -56,7 +57,9 @@
     "package:claude": "npm run verify:node && node scripts/package-claude.mjs",
     "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs",
     "prepare:codex-desktop-probe": "npm run verify:node && node scripts/prepare-codex-desktop-probe.mjs",
-    "qualify:codex-desktop-probe": "npm run verify:node && node scripts/qualify-codex-desktop-probe.mjs"
+    "qualify:codex-desktop-probe": "npm run verify:node && node scripts/qualify-codex-desktop-probe.mjs",
+    "pilot:demo": "node scripts/pilot-demo.mjs",
+    "package:pilot": "node scripts/package-pilot.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",

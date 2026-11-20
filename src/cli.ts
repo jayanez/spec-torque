@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { PRODUCT_VERSION } from './version.js';
 import { parseArgs } from 'node:util';
 import { resolve, dirname, basename, relative } from 'node:path';
 import { readFile, stat, writeFile } from 'node:fs/promises';
@@ -11,7 +12,7 @@ import { builderSchema, proposalSchema } from './node/schemas.js';
 async function main() {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: { json: { type: 'boolean' }, min: { type: 'string' }, root: { type: 'string' }, port: { type: 'string' }, output: { type: 'string' }, answers: { type: 'string' }, proposal: { type: 'string' }, line: { type: 'string' }, replacement: { type: 'string' }, reason: { type: 'string' }, feature: { type: 'string' }, 'expect-hash': { type: 'string' }, apply: { type: 'boolean' }, 'fail-on-open': { type: 'boolean' }, 'require-complete': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
   const [command = 'help', source = '.'] = positionals;
-  if (values.help || command === 'help') { console.log(`SpecTorque 0.1.0\n\n  spectorque serve [--root .] [--port 4317]\n  spectorque discover [folder] [--json]\n  spectorque analyze [file|folder|owner/repo] [--feature id] [--json] [--min N] [--fail-on-open] [--require-complete]\n  spectorque report [folder] [--output report.md]\n  spectorque badge [folder] [--output badge.svg]\n  spectorque create --answers answers.json [--root .] [--apply]\n  spectorque refine file.md --line N --replacement 'text' [--expect-hash sha256] [--apply]\n  spectorque mcp\n\nAnalysis is heuristic. Scores are not correctness guarantees. Writes require --apply.`); return; }
+  if (values.help || command === 'help') { console.log(`SpecTorque ${PRODUCT_VERSION}\n\n  spectorque serve [--root .] [--port 4317]\n  spectorque discover [folder] [--json]\n  spectorque analyze [file|folder|owner/repo] [--feature id] [--json] [--min N] [--fail-on-open] [--require-complete]\n  spectorque report [folder] [--output report.md]\n  spectorque badge [folder] [--output badge.svg]\n  spectorque create --answers answers.json [--root .] [--apply]\n  spectorque refine file.md --line N --replacement 'text' [--expect-hash sha256] [--apply]\n  spectorque mcp\n\nAnalysis is heuristic. Scores are not correctness guarantees. Writes require --apply.`); return; }
   if (command === 'serve') {
     const port = Number(values.port ?? 4317);
     if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid port.');

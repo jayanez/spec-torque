@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 — candidate
+
+- Prepare independently verifiable CLI and native host packages, including the downloadable Pi archive and local Codex Desktop viewer.
+- Add a reproducible English and Spanish local pilot walkthrough with reviewed edits, stale-source recovery and revision-bound exports.
+- Add original EN/ES format fixtures, scoped structural controls and reproducible, provisional agent annotations with explicit unknowns.
+- Add the OpenCode and Pi feature review paths and document exact versions and limitations.
 
 - Record the Claude Code terminal matrix: the same plugin ZIP passed `qualify:claude` on darwin-arm64/x64, linux-x64/arm64 and win32-x64/arm64 with an isolated profile and OS-enforced egress, and no inference request.
 - Workbench: reveal a selected finding's source line during the selection commit instead of on a deferred timer, which could move focus after typing had started and replace that line in memory without review (the intermittent `Review difference` browser-test timeout).

@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { access, cp, mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { qualifyTerminal } from './qualify-pi-terminal.mjs';
 import { tmpdir } from 'node:os';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { unzipSync } from 'fflate';
 import { reviewWorkspace, terminalSummary } from '../dist/integration.js';
 
 const [cli, option, packagePath, terminalOption, ptyPath, ...extra] = process.argv.slice(2);
-if (!cli || extra.length || (option !== undefined && (option !== '--installed-package' || !packagePath)) ||
+if (!cli || extra.length || (option !== undefined && (!['--installed-package', '--installed-archive'].includes(option) || !packagePath)) ||
   (terminalOption !== undefined && (terminalOption !== '--terminal-driver' || !ptyPath))) {
-  throw new Error('Usage: qualify:pi -- <pi-cli.js> [--installed-package <generated-folder> [--terminal-driver <node-pty-folder>]]');
+  throw new Error('Usage: qualify:pi -- <pi-cli.js> [--installed-package <folder> | --installed-archive <ZIP>] [--terminal-driver <node-pty-folder>]');
 }
 const client = resolve(cli);
 const pty = ptyPath && createRequire(import.meta.url)(resolve(ptyPath));
@@ -58,11 +59,25 @@ function verifyDiscovery(workspace, agent, trust, installed, artifact) {
   }
 }
 
+async function extractPiArchive(archivePath, artifact) {
+  const bytes = await readFile(archivePath);
+  const files = Object.entries(unzipSync(bytes));
+  for (const [path, content] of files) {
+    assert.ok(path.split('/').every(part => /^[a-z0-9_-][a-z0-9_.-]*$/i.test(part) && !part.endsWith('.')),
+      'Unexpected path in Pi archive: ' + path);
+    const target = join(artifact, path);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, content, { flag: 'wx' });
+  }
+  console.log('Package ZIP SHA-256: ' + createHash('sha256').update(bytes).digest('hex'));
+}
+
 try {
   let artifact;
   if (packagePath) {
     artifact = join(scratch, 'pi-spectorque');
-    await cp(resolve(packagePath), artifact, { recursive: true, filter: path => !path.split(/[\\/]/).includes('node_modules') });
+    if (option === '--installed-archive') await extractPiArchive(packagePath, artifact);
+    else await cp(resolve(packagePath), artifact, { recursive: true, filter: path => !path.split(/[\\/]/).includes('node_modules') });
     const manifest = JSON.parse(await readFile(join(artifact, 'package.json'), 'utf8'));
     assert.equal(manifest.name, 'pi-spectorque');
     for (const path of ['index.ts', 'runtime/integration.js', 'runtime/cli.js', 'web-dist/index.html',
