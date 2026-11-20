@@ -96,3 +96,44 @@ test('a feature named all does not widen assessment or export scope', async () =
   assert.deepEqual(selectFeature(set, 'all').artifacts.map(a => a.path), ['all/spec.md']);
   assert.equal(selectFeature(set, null).artifacts.length, 2);
 });
+
+test('month enumerations do not supply a normative cue or admit a requirement', async () => {
+  const lines = [
+    '  - : One of "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" (case-sensitive).',
+    '  - : One of `Jan`, `Feb`, `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, `Dec` (case sensitive).',
+    'Supported months include APRIL, MAY, JUNE.',
+    'Supported months include “April”, “May”, “June”.',
+  ];
+  for (const line of lines) {
+    const result = await analyze({ name: 'months', artifacts: [classifyArtifact('spec.md', '# Calendar\n' + line)] });
+    for (const id of ['E1.2', 'E1.4', 'E2.1', 'I1.2', 'I2.2']) {
+      assert.equal(result.practices.find(practice => practice.id === id)?.status, 'unknown', `${id}: ${line}`);
+    }
+    assert.ok(!result.findings.some(finding => finding.practiceId === 'I1.2'), line);
+    assert.equal(result.artifacts[0]?.hash, await contentHash('# Calendar\n' + line));
+  }
+});
+
+test('month enumeration suppression preserves independent modal and identifier evidence', async () => {
+  for (const line of [
+    'Operators may stop after selecting from Apr, May, Jun.',
+    'Apr, May, Jun are selectable. Operators MAY stop.',
+    'Operators may stop in May.',
+    'After April, operators may stop in June.',
+    'The service MAY accept Apr, May, Jun choices.',
+    'The names April, May, July are selectable.',
+    'El operador PUEDE elegir entre Apr, May, Jun.',
+  ]) {
+    const result = await analyze({ name: 'permission', artifacts: [classifyArtifact('spec.md', line)] });
+    const practice = result.practices.find(row => row.id === 'E1.4');
+    assert.equal(practice?.status, 'supported', line);
+    assert.deepEqual(practice?.evidence, [{ path: 'spec.md', line: 1, text: line }]);
+  }
+  const explicit = await analyze({ name: 'identifier', artifacts: [classifyArtifact('spec.md', 'FR-1: Months are Apr, May, Jun.')] });
+  assert.equal(explicit.practices.find(row => row.id === 'E1.4')?.status, 'missing');
+  assert.equal(explicit.practices.find(row => row.id === 'I1.2')?.status, 'supported');
+
+  const example = await analyze({ name: 'example', artifacts: [classifyArtifact('spec.md',
+    '> Operators may stop. The options are Apr, May, Jun.\n\n```md\nOperators may stop.\n```')] });
+  assert.equal(example.practices.find(row => row.id === 'E1.4')?.status, 'unknown');
+});
