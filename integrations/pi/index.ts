@@ -18,7 +18,7 @@ export default function (pi: ExtensionAPI) {
         const allDocuments = 'All documents';
         const features = [...new Set(workspace.artifacts.filter(a => !a.archived && a.role !== 'instructions').map(a => a.featureId))];
         let feature: string | null = null;
-        if (ctx.mode === 'tui' && features.length > 1) {
+        if (features.length > 1) {
           const scopes = [allDocuments, ...features.map(id => `Feature · ${id}`)];
           const selectedScope = await ctx.ui.select('SpecTorque · select scope', scopes);
           const scopeIndex = scopes.indexOf(selectedScope ?? '');
