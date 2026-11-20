@@ -1,6 +1,6 @@
 {
   "name": "spectorque",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Create, inspect and refine agent-ready specifications with traceable evidence.",
   "type": "module",
   "license": "Apache-2.0",
@@ -32,13 +32,34 @@
     "fixtures"
   ],
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "verify:node": "node scripts/verify-node.mjs",
+    "browsers:install": "node scripts/install-browsers.mjs",
+    "test:browser": "npm run build && playwright test",
+    "prepare:codex": "node scripts/prepare-codex.mjs",
+    "dev": "npm run build && npm start",
     "start": "node dist/cli.js serve",
     "test": "tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && tsup src/cli.ts src/mcp.ts src/core.ts src/integration.ts --format esm --target node22 --out-dir dist --clean && vite build",
-    "check": "npm run test && npm run build",
-    "package:integrations": "node scripts/package-integrations.mjs"
+    "build": "npm run typecheck && node scripts/build.mjs",
+    "check": "npm run verify:node && npm run test && npm run build",
+    "corpus:report": "node --import tsx scripts/corpus-report.ts",
+    "package:integrations": "npm run verify:node && node scripts/package-integrations.mjs",
+    "qualify:codex": "node --import tsx scripts/qualify-codex.mjs",
+    "test:vscode": "node scripts/test-vscode.mjs",
+    "package:vscode": "npm run package:integrations && node scripts/package-vscode.mjs",
+    "qualify:handoff": "npm run verify:node && node --import tsx scripts/qualify-common-handoff.mjs",
+    "qualify:pi": "npm run verify:node && node scripts/qualify-pi.mjs",
+    "package:pi": "npm run verify:node && node scripts/package-pi.mjs",
+    "qualify:claude": "npm run verify:node && node scripts/qualify-claude.mjs",
+    "package:opencode": "npm run verify:node && node scripts/package-opencode.mjs",
+    "verify:codex-package": "npm run verify:node && node scripts/verify-codex-package.mjs",
+    "package:codex": "npm run verify:node && node scripts/package-codex.mjs",
+    "package:claude": "npm run verify:node && node scripts/package-claude.mjs",
+    "qualify:opencode": "npm run verify:node && node scripts/qualify-opencode.mjs",
+    "prepare:codex-desktop-probe": "npm run verify:node && node scripts/prepare-codex-desktop-probe.mjs",
+    "qualify:codex-desktop-probe": "npm run verify:node && node scripts/qualify-codex-desktop-probe.mjs",
+    "pilot:demo": "node scripts/pilot-demo.mjs",
+    "package:pilot": "node scripts/package-pilot.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
@@ -48,20 +69,20 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/vscode": "^1.100.0",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vscode/test-electron": "3.1.0",
     "esbuild": "0.28.1",
-    "tsup": "^8.0.0",
     "tsx": "4.23.15",
-    "typescript": "^6.0.0",
-    "vite": "8.3.8"
+    "typescript": "^6.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jayanez/spectorque.git"
+    "url": "https://github.com/jayanez/spec-torque.git"
   },
   "overrides": {
     "esbuild": "0.28.1"

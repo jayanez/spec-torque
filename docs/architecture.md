@@ -34,6 +34,12 @@ Signals map to supported=1, partial=0.5 and missing=0 within each dimension, the
 
 Layout classification is a hint, not proof of framework ownership. Regex signals do not establish semantic consistency, stakeholder coverage or complete traceability. Only explicit opposite obligations are flagged as contradictions. Code/test implementation checking is outside V1.
 
+Feature scopes include active instruction files from ancestor directories,
+including the workspace root. References remain scoped to the selected
+feature's ID namespace. The local [corpus evaluator](format-corpus.md)
+compares revisions through shared discovery and analysis and tests these
+boundaries independently of the host adapters.
+
 ## Reversible implementation choices
 
-Node 22 plus a single TypeScript motor minimizes adapter drift. React/Vite serves a shared local workbench; adapters are thin views. Bounded in-memory session state avoids a database dependency. No ADR workflow or server deployment is required. Meaningful changes to these choices are recorded with their implementation issue/PR.
+Node 22 plus a single TypeScript motor minimizes adapter drift. React/esbuild serves a shared local workbench; adapters are thin views. Bounded in-memory session state avoids a database dependency. No ADR workflow or server deployment is required. Meaningful changes to these choices are recorded with their implementation issue/PR.

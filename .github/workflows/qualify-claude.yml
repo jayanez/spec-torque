@@ -1,0 +1,132 @@
+name: Qualify installed Claude Code plugin
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/qualify-claude.yml'
+      - 'scripts/package-*.mjs'
+      - 'scripts/qualify-claude.mjs'
+      - 'scripts/qualify-common-handoff.mjs'
+      - 'fixtures/**'
+      - 'integrations/claude/**'
+      - 'skills/**'
+      - 'src/**'
+      - 'package*.json'
+permissions:
+  contents: read
+jobs:
+  qualify:
+    name: ${{ matrix.variant }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-latest, variant: darwin-arm64 }
+          - { runner: macos-15-intel, variant: darwin-x64 }
+          - { runner: ubuntu-latest, variant: linux-x64 }
+          - { runner: ubuntu-24.04-arm, variant: linux-arm64 }
+          - { runner: windows-latest, variant: win32-x64 }
+          - { runner: windows-11-arm, variant: win32-arm64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run package:integrations
+      - run: npm run package:claude
+      - name: Locate the versioned claude archive
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          printf 'CLAUDE_ZIP=artifacts/spectorque-claude-%s.zip\n' "$version" >> "$GITHUB_ENV"
+      - run: npm audit
+      - if: runner.os == 'Linux'
+        run: npx --no-install playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: npx --no-install playwright install chromium
+      - name: Install pinned Claude Code and terminal driver
+        shell: bash
+        env:
+          CLAUDE_VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          claude_dir="$RUNNER_TEMP/claude-qualification"
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            claude_dir="$(cygpath -u "$claude_dir")"
+          fi
+          mkdir -p "$claude_dir"
+          package="$(npm pack --quiet --ignore-scripts --pack-destination "$claude_dir" "@anthropic-ai/claude-code-$CLAUDE_VARIANT@2.1.311")"
+          tar -xzf - -C "$claude_dir" < "$claude_dir/$package"
+          npm install --prefix "$claude_dir/tools" --no-audit --no-fund node-pty@1.1.0 @xterm/headless@6.0.0
+          executable="$claude_dir/package/claude"
+          tools="$claude_dir/tools/node_modules"
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            chmod u+x "$claude_dir/tools/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
+          elif [[ "$RUNNER_OS" == Windows ]]; then
+            executable="$(cygpath -m "$executable.exe")"
+            tools="$(cygpath -m "$tools")"
+          fi
+          "$executable" --version
+          printf 'CLAUDE_EXE=%s\nCLAUDE_TOOLS=%s\n' "$executable" "$tools" >> "$GITHUB_ENV"
+      - name: Qualify Linux in a loopback-only network namespace
+        if: runner.os == 'Linux'
+        run: |
+          sudo unshare --net --mount --propagation private bash -c '
+            set -e
+            ip link set lo up
+            exec runuser -u "$SUDO_USER" -- env PATH="$1" SPECTORQUE_CLAUDE_ISOLATED=1 SPECTORQUE_CLAUDE_NETWORK=linux-netns \
+              npm run qualify:claude -- "$2" "$4" "$3"
+          ' _ "$PATH" "$CLAUDE_EXE" "$CLAUDE_TOOLS" "$CLAUDE_ZIP"
+      - name: Qualify macOS with outbound traffic limited to loopback
+        if: runner.os == 'macOS'
+        env:
+          SPECTORQUE_CLAUDE_ISOLATED: '1'
+          SPECTORQUE_CLAUDE_NETWORK: macos-sandbox
+        run: |
+          launcher="$RUNNER_TEMP/claude-qualification/bin/claude"
+          mkdir -p "$(dirname "$launcher")"
+          cat > "$launcher" <<EOF
+          #!/bin/sh
+          exec /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:*"))' "$CLAUDE_EXE" "\$@"
+          EOF
+          chmod u+x "$launcher"
+          npm run qualify:claude -- "$launcher" "$CLAUDE_ZIP" "$CLAUDE_TOOLS"
+      - name: Qualify Windows with egress blocked for the client executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          SPECTORQUE_CLAUDE_ISOLATED: '1'
+          SPECTORQUE_CLAUDE_NETWORK: windows-firewall-client
+        run: |
+          $program = (Resolve-Path $env:CLAUDE_EXE).ProviderPath
+          $rule = 'SpecTorque-' + [guid]::NewGuid()
+          New-NetFirewallRule -Name $rule -DisplayName $rule -Direction Outbound -Action Block -Program $program `
+            -RemoteAddress '0.0.0.0-126.255.255.255','128.0.0.0-255.255.255.255','::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' | Out-Null
+          try {
+            npm run qualify:claude -- $program $env:CLAUDE_ZIP $env:CLAUDE_TOOLS
+            $result = $LASTEXITCODE
+          } finally {
+            Remove-NetFirewallRule -Name $rule
+          }
+          exit $result
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: claude-${{ matrix.variant }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            artifacts/spectorque-claude-*.zip
+            .spec-torque/claude-*/
+            .spec-torque/handoff-*/

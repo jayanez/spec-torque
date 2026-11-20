@@ -16,23 +16,46 @@ The three portable skills in `skills/` cover authoring, review and refinement. I
 
 ## Claude Code
 
-Load the generated folder using `claude --plugin-dir /absolute/spectorque/integrations/claude` in your project. Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
+Run `npm run package:integrations` and then `npm run package:claude`. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.2.0.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. When the workspace has several features, the pane offers **All documents** or one feature, like OpenCode; companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. **Open common workbench** starts the loopback workbench for the session workspace, copies its address and names the scope to select; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
 
 Validate with `claude plugin validate integrations/claude` and run the bundled native harness with `claude plugin test integrations/claude`. A harness result and a real interactive/client walkthrough are recorded separately.
 
 Official references: [Mods](https://code.claude.com/docs/en/plugins/mods/create), [interface](https://code.claude.com/docs/en/plugins/mods/interface), [testing](https://code.claude.com/docs/en/plugins/mods/test).
 
-## Codex and VS Code
+## Codex Desktop
 
-MCP/skills connect the agent. The visual deliverable is a standard VS Code webview alongside Codex. Install the packaged VSIX or load `integrations/vscode` through VS Code's extension development host, open your project and run **SpecTorque: Open Specification Workbench**. It launches a workspace-scoped local server and displays the same panel. The extension stops its child server when disposed.
+Build the viewer ZIP with `npm run check`, `npm run package:integrations` and `npm run package:codex`. Verify the package with `npm run verify:codex-package`. The ZIP bundles the project MCP runtime, the inline resource, the skills and the loopback workbench. Follow the [package guide](../integrations/codex/README.md) for local marketplace installation, binding a trusted worktree, upgrade and removal.
 
-The VS Code path uses public extension APIs; it is not a custom panel injected into the Codex desktop application. Desktop MCP Apps rendering needs independent real-client qualification and is additional scope. API metadata alone is insufficient evidence of rendering.
+Use the inline viewer for scope, evidence and the exact before/after. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. The tested opening route invokes `open_spectorque` in a local Codex chat. See [Desktop qualification](codex-desktop-probe.md) for observed builds and limits.
 
-Official reference: [VS Code webviews](https://code.visualstudio.com/api/extension-guides/webview).
+The independent project-MCP control `npm run prepare:codex -- en` or `-- es` generates a disposable workspace and three local skills. See [qualification](qualification.md) for the app-server run.
+
+## VS Code workbench
+
+Install the packaged VSIX or load `integrations/vscode` through the extension development host. Run **SpecTorque: Open Specification Workbench** from the project. The extension launches and disposes a workspace-scoped loopback server. The shared editor workstream is tracked in [#5](https://github.com/jayanez/spec-torque/issues/5).
 
 ## OpenCode
 
-The adapter in `integrations/opencode` targets the public V2 TUI plugin API. Add the absolute generated folder to your client's `cli.json`: `{"plugins":["/absolute/spectorque/integrations/opencode"]}`. Local entries are directories, not individual files; the package exports `./tui`. `/spectorque` refreshes a session panel; `/spectorque-review` opens finding selection and a reviewed refinement flow. The common panel and local MCP remain the fallback while installed-version compatibility is qualified.
+Run `npm run build`, `npm run package:integrations` and `npm run package:opencode`
+to create the host ZIP. Extract it and add its absolute directory to `plugins`
+in your CLI profile: `{"plugins":["/absolute/spectorque-opencode"]}`. OpenCode
+2.1.4 reads the single CLI settings file at
+`$XDG_CONFIG_HOME/opencode/cli.json` when XDG is configured. The entry applies
+across that profile's workspaces. Remove it and restart OpenCode to uninstall.
+The ZIP exports `./tui` and includes the bundled runtime and workbench assets.
+It contains no auto-discovered OpenCode skills.
+
+`/spectorque` opens the native panel for a local, existing session and a summary
+dialog from home. Focus the panel and press **s** for scope, **e** for the exact
+source line, **r** for reviewed changes, **w** for the local workbench URL and
+**q** to close it. `/spectorque-review` remains available from the command
+palette and prompt. The workbench uses the session's local workspace. In the
+browser, load the workspace and select the same feature as the panel.
+
+On a session connection error, reconnect and rerun `/spectorque`. The workbench
+URL expires when the terminal changes workspaces or unloads the adapter.
+Remote filesystems, the minimal CLI and the desktop client are outside the
+observed TUI surface. See [OpenCode qualification](host-common-qualification.md#opencode-installed-package).
 
 ## Pi
 
@@ -43,3 +66,72 @@ Load `integrations/pi/index.ts` with Pi's extension option, or install the gener
 Cursor and Copilot in VS Code can use the standard extension and their documented MCP setup; no custom branded panel is promised. Gemini CLI uses local MCP/skills and the common panel. Connection configuration shapes differ between hosts: use their current official schema rather than copying the wrapper object blindly. Full acceptance of these additional hosts is post-V1.
 
 See [compatibility](compatibility.md) for observed versions and limits; package generation is not native qualification.
+
+### Pi headless qualification
+
+After `npm run check` and `npm run package:integrations`, run
+`npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js` with an existing
+Pi installation. This opt-in check creates disposable EN/ES workspaces and empty
+agent directories, disables extension/skill/context/MCP discovery and runs the
+explicit local extension offline in text and JSON modes. It compares the complete
+summary with the shared engine, checks the source is unchanged, and rejects JSON
+model-turn events. No client installation or provider request is required.
+
+Observed with Pi 1.5.2, Node 22.20.0, macOS 27.2.1 arm64: all four language/mode
+combinations pass. Previously print mode exited successfully with empty stdout;
+the extension now writes its summary explicitly in print mode. JSON retains Pi's
+custom-message event stream. This qualifies the explicit extension's headless
+reporting, not package/skill discovery, other client versions, other systems or
+human accessibility. Those remain tracked in #7.
+
+API behavior reference: [Pi extension modes](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md).
+
+### Pi installed package qualification
+
+Generate the package using the build commands above and `npm run package:pi`, then run:
+
+```sh
+npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js --installed-archive artifacts/spectorque-pi-0.2.0.zip
+```
+
+The check extracts the exact archive outside the checkout and registers it
+with Pi's project-local package manager in disposable EN/ES workspaces. It uses
+an isolated agent directory, trusts each project only for the relevant commands,
+and checks command and skill discovery through Pi RPC. It exercises text and JSON
+reports without a model turn, verifies project trust and removal controls, and
+prints the package file digest and runtime versions. The workflow **Qualify
+installed Pi package** runs these checks on macOS, Linux and Windows with Pi
+1.5.2. The workflow also passes `--terminal-driver /absolute/node-pty` with
+Node PTY 1.1.0 to drive real Pi terminals and then opens the accepted EN/ES
+feature in Chromium. It compares each scope's visible widget and finding paths
+with the shared engine and retains JSON/ZIP and browser evidence by platform.
+For local runs with the terminal driver, install Playwright Chromium first
+and make the Node PTY spawn helper executable on macOS if needed.
+
+For a manual walkthrough, copy each bilingual draft fixture into its own
+disposable workspace. In each workspace copy `fixtures/en-complete/specs/booking`
+to `specs/other`,
+install the generated directory with `pi install /absolute/generated/pi --local`,
+then open Pi offline with an isolated agent profile and approve the scratch
+project. Run `/spectorque` and check the widget and evidence paths for **All
+documents** and both feature scopes. Choose `specs/booking`, reject a proposal, accept
+a reviewed proposal that leaves a pending decision, and verify stale-source
+rejection by editing the selected file before accepting a second proposal.
+Run `npm run qualify:handoff -- /absolute/scratch-workspace --feature specs/booking`
+from the SpecTorque checkout after the first acceptance and before the stale-source exercise.
+Remove the package with `pi remove /absolute/generated/pi --local --approve`
+and discard the isolated workspace and profile.
+
+The feature selector for [#24](https://github.com/jayanez/spec-torque/issues/24)
+passed installed-package qualification on 2026-11-18 at
+`3783beb8fed401242b0f7e20b6448c65ba487257`. The run used Pi 1.5.2,
+`pi-spectorque` 0.1.0, Node 22.20.0 and macOS 27.2.1 (26B131) arm64.
+The package file digest was
+`287f8b5c9f0e86e779152bb7b8a5ff81ec6f29e9c9b8ff54fda681fa4c943ae2` (SHA-256).
+Both EN and ES terminal runs showed 7 findings across all documents, 6 in
+`specs/booking` and 2 in `specs/other`. Both feature lists included shared
+`AGENTS.md` evidence. The six companion practices were `unknown` across both
+features and `partial` in the complete feature. Approved changes refreshed
+`specs/booking` with one open decision, which was also verified in the workbench
+and JSON export. Scope cancellation, proposal rejection, sibling bytes,
+stale-source rejection and the four headless language/mode combinations passed.

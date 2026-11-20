@@ -18,4 +18,43 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run package:integrations
+      - run: npm run package:codex
+      - run: npm run verify:codex-package
+      - run: node scripts/package-vscode.mjs
       - run: npm audit --audit-level=high
+      - name: Smoke-test the packaged CLI from an empty installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/npm
+          archive="$(npm pack --ignore-scripts --pack-destination artifacts/npm --quiet)"
+          npm install --no-audit --ignore-scripts --prefix artifacts/install "artifacts/npm/$archive"
+          node artifacts/install/node_modules/spectorque/dist/cli.js --help
+          node artifacts/install/node_modules/spectorque/dist/cli.js analyze fixtures/en-draft --feature specs/booking --json
+          node artifacts/install/node_modules/spectorque/dist/cli.js analyze fixtures/es-draft --feature specs/booking --json
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run browsers:install -- --with-deps
+      - name: Test the installed workbench
+        run: |
+          set -euo pipefail
+          npm run build
+          npm run package:integrations
+          mkdir -p artifacts/npm
+          archive="$(npm pack --ignore-scripts --pack-destination artifacts/npm --quiet)"
+          npm install --no-audit --ignore-scripts --prefix artifacts/install "artifacts/npm/$archive"
+          SPECTORQUE_INSTALLED_CLI="$PWD/artifacts/install/node_modules/spectorque/dist/cli.js" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-evidence
+          path: |
+            playwright-report/
+            test-results/

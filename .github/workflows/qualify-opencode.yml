@@ -1,0 +1,161 @@
+name: Qualify installed OpenCode package
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/qualify-opencode.yml'
+      - 'scripts/package-*.mjs'
+      - 'scripts/qualify-opencode*.mjs'
+      - 'scripts/qualify-common-handoff.mjs'
+      - 'fixtures/**'
+      - 'integrations/opencode/**'
+      - 'src/**'
+      - 'package*.json'
+permissions:
+  contents: read
+jobs:
+  qualify:
+    name: ${{ matrix.variant }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-latest, variant: darwin-arm64 }
+          - { runner: ubuntu-latest, variant: linux-x64 }
+          - { runner: windows-latest, variant: windows-x64 }
+          - { runner: macos-15-intel, variant: darwin-x64 }
+          - { runner: ubuntu-24.04-arm, variant: linux-arm64 }
+          - { runner: windows-11-arm, variant: windows-arm64 }
+          - { runner: macos-15-intel, variant: darwin-x64-baseline }
+          - { runner: ubuntu-latest, variant: linux-x64-baseline }
+          - { runner: windows-latest, variant: windows-x64-baseline }
+          - { runner: ubuntu-latest, variant: linux-x64-musl }
+          - { runner: ubuntu-latest, variant: linux-x64-baseline-musl }
+          - { runner: ubuntu-24.04-arm, variant: linux-arm64-musl }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run package:integrations
+      - run: npm run package:opencode
+      - name: Locate the versioned opencode archive
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          printf 'OPENCODE_ZIP=artifacts/spectorque-opencode-%s.zip\n' "$version" >> "$GITHUB_ENV"
+      - run: npm audit
+      - if: runner.os == 'Linux'
+        run: npx --no-install playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: npx --no-install playwright install chromium
+      - name: Install the musl loader on the Linux runner
+        if: endsWith(matrix.variant, '-musl')
+        run: sudo apt-get update && sudo apt-get install -y musl
+      - name: Install pinned OpenCode and terminal driver
+        shell: bash
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          opencode_dir="$RUNNER_TEMP/opencode-qualification"
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            opencode_dir="$(cygpath -u "$opencode_dir")"
+          fi
+          mkdir -p "$opencode_dir"
+          package="$(npm pack --quiet --ignore-scripts --pack-destination "$opencode_dir" "@opencode/cli-$OPENCODE_VARIANT@2.1.4")"
+          tar -xzf - -C "$opencode_dir" < "$opencode_dir/$package"
+          npm install --prefix "$opencode_dir/tools" --no-audit --no-fund node-pty@1.1.0 @xterm/headless@6.0.0
+          executable="$opencode_dir/package/bin/opencode"
+          tools="$opencode_dir/tools/node_modules"
+          musl_loader=""
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            chmod u+x "$opencode_dir/tools/node_modules/node-pty/prebuilds/darwin-$(node -p 'process.arch')/spawn-helper"
+          elif [[ "$RUNNER_OS" == Windows ]]; then
+            executable="$(cygpath -m "$executable.exe")"
+            tools="$(cygpath -m "$tools")"
+          elif [[ "$OPENCODE_VARIANT" == *-musl ]]; then
+            libraries="$opencode_dir/musl-lib"
+            mkdir "$libraries"
+            docker run --rm -v "$libraries:/out" alpine:3.22@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f sh -ec '
+              apk add --no-cache libstdc++
+              cp -L /usr/lib/libstdc++.so.6 /usr/lib/libgcc_s.so.1 /out
+              cp -L "/lib/ld-musl-$(uname -m).so.1" /out/alpine-loader
+            '
+            musl_loader="$libraries/alpine-loader"
+            launcher="$opencode_dir/musl-opencode"
+            cat > "$launcher" <<EOF
+          #!/bin/sh
+          export LD_LIBRARY_PATH="$libraries"
+          exec "$executable" "\$@"
+          EOF
+            chmod u+x "$launcher"
+            executable="$launcher"
+          fi
+          printf 'OPENCODE_EXE=%s\nOPENCODE_TOOLS=%s\nOPENCODE_MUSL_LOADER=%s\n' "$executable" "$tools" "$musl_loader" >> "$GITHUB_ENV"
+      - name: Qualify Linux in a loopback-only network namespace
+        if: runner.os == 'Linux'
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+        run: |
+          sudo unshare --net --mount --propagation private bash -c '
+            set -e
+            ip link set lo up
+            if [[ -n "$5" ]]; then
+              mount --bind "$5" "$(readlink -f "/lib/ld-musl-$(uname -m).so.1")"
+            fi
+            exec runuser -u "$SUDO_USER" -- env PATH="$1" SPECTORQUE_OPENCODE_NETWORK=linux-netns \
+              npm run qualify:opencode -- "$2" "$6" "$3" "$4"
+          ' _ "$PATH" "$OPENCODE_EXE" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT" "$OPENCODE_MUSL_LOADER" "$OPENCODE_ZIP"
+      - name: Qualify macOS with terminal and service egress restricted
+        if: runner.os == 'macOS'
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+          SPECTORQUE_OPENCODE_NETWORK: macos-sandbox
+        run: |
+          launcher="$RUNNER_TEMP/opencode-qualification/isolated-opencode"
+          cat > "$launcher" <<EOF
+          #!/bin/sh
+          exec /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:*"))' "$OPENCODE_EXE" "\$@"
+          EOF
+          chmod u+x "$launcher"
+          npm run qualify:opencode -- "$launcher" "$OPENCODE_ZIP" "$OPENCODE_TOOLS" "$OPENCODE_VARIANT"
+      - name: Qualify Windows with egress blocked for the test executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          OPENCODE_VARIANT: ${{ matrix.variant }}
+          SPECTORQUE_OPENCODE_NETWORK: windows-firewall
+        run: |
+          $program = (Resolve-Path $env:OPENCODE_EXE).ProviderPath
+          $rule = 'SpecTorque-' + [guid]::NewGuid()
+          New-NetFirewallRule -Name $rule -DisplayName $rule -Direction Outbound -Action Block -Program $program `
+            -RemoteAddress '0.0.0.0-126.255.255.255','128.0.0.0-255.255.255.255','::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' | Out-Null
+          try {
+            npm run qualify:opencode -- $program $env:OPENCODE_ZIP $env:OPENCODE_TOOLS $env:OPENCODE_VARIANT
+            $result = $LASTEXITCODE
+          } finally {
+            Remove-NetFirewallRule -Name $rule
+          }
+          exit $result
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opencode-${{ matrix.variant }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            artifacts/spectorque-opencode-*.zip
+            .spec-torque/opencode-*/
+            .spec-torque/handoff-*/

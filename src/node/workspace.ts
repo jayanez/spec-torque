@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { classifyArtifact, isSpecCandidate, contentHash } from '../core/artifacts.js';
 import { applyProposal } from '../core/refine.js';
 import type { Artifact, ArtifactSet, PatchProposal } from '../core/types.js';
-const excluded = new Set(['.git', 'node_modules', 'dist', 'web-dist', 'coverage', '.venv', 'vendor', '.spectorque']);
+const excluded = new Set(['.git', 'node_modules', 'dist', 'web-dist', 'coverage', '.venv', 'vendor', '.spec-torque', '.spectorque']);
 function lexicalPath(root: string, path: string): string {
   if (!path || isAbsolute(path) || path.includes('\0')) throw new Error('Invalid relative artifact path.');
   const target = resolve(root, path);
@@ -32,20 +32,27 @@ export async function discoverWorkspace(root: string): Promise<ArtifactSet> {
       if (entry.isSymbolicLink() || excluded.has(entry.name) || entry.name.startsWith('.env')) continue;
       const full = join(directory, entry.name);
       if (entry.isDirectory()) await walk(full, depth + 1);
-      else if (entry.isFile() && isSpecCandidate(entry.name)) {
+      else if (entry.isFile()) {
+        const path = relative(canonicalRoot, full).replaceAll('\\', '/');
+        if (!isSpecCandidate(path, true)) continue;
         if ((await stat(full)).size > 1_000_000) throw new Error(`Artifact exceeds 1 MB: ${entry.name}`);
         if (artifacts.length >= 500) throw new Error('More than 500 artifacts; select a feature folder.');
-        artifacts.push(classifyArtifact(relative(canonicalRoot, full).replaceAll('\\', '/'), await readFile(full, 'utf8')));
+        artifacts.push(classifyArtifact(path, await readFile(full, 'utf8')));
       }
     }
   }
   await walk(canonicalRoot, 0);
   return { name: basename(canonicalRoot), artifacts };
 }
-export async function readWorkspaceArtifact(root: string, path: string): Promise<string> {
+export async function readWorkspaceArtifactBytes(root: string, path: string): Promise<Buffer> {
   const target = await resolveArtifactPath(root, path);
   if ((await stat(target)).size > 1_000_000) throw new Error('Artifact exceeds 1 MB.');
-  return readFile(target, 'utf8');
+  const bytes = await readFile(target);
+  if (bytes.length > 1_000_000) throw new Error('Artifact exceeds 1 MB.');
+  return bytes;
+}
+export async function readWorkspaceArtifact(root: string, path: string): Promise<string> {
+  return (await readWorkspaceArtifactBytes(root, path)).toString('utf8');
 }
 export async function applyWorkspaceProposal(root: string, proposal: PatchProposal): Promise<string> {
   const content = await readWorkspaceArtifact(root, proposal.path);

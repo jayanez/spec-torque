@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.2.0 — candidate
+
+- Prepare independently verifiable CLI and native host packages, including the downloadable Pi archive and local Codex Desktop viewer.
+- Add a reproducible English and Spanish local pilot walkthrough with reviewed edits, stale-source recovery and revision-bound exports.
+- Add original EN/ES format fixtures, scoped structural controls and reproducible, provisional agent annotations with explicit unknowns.
+- Add the OpenCode and Pi feature review paths and document exact versions and limitations.
+
+- Codex workbench review and export pages: announce a rejected change and return focus to the review data, and replace the raw network error shown when the local workbench stops with EN/ES restart guidance that states no file was written.
+- Record the Claude Code terminal matrix: the same plugin ZIP passed `qualify:claude` on darwin-arm64/x64, linux-x64/arm64 and win32-x64/arm64 with an isolated profile and OS-enforced egress, and no inference request.
+- Workbench: reveal a selected finding's source line during the selection commit instead of on a deferred timer, which could move focus after typing had started and replace that line in memory without review (the intermittent `Review difference` browser-test timeout).
+- Record Claude Desktop qualification (bundled Claude Code 2.1.325, macOS arm64): project-scoped install of the ZIP; EN pane walkthrough including stale-source rejection, handoff and server shutdown, and ES pane rendering.
+- `qualify:claude` also checks host discovery of the plugin MCP server and skills, and the driver itself calls all six MCP tools over stdio from the ZIP runtime in EN/ES without writes (a protocol check, not use by Claude). Separately, the qualification guide records a manually observed headless turn per language in which Claude used the `spec-review` skill and the MCP tools.
+- Add `npm run qualify:claude`, a real-terminal walkthrough of the installed Claude Code ZIP (EN/ES scope, evidence, reject, apply, stale source, handoff, errors, marketplace install and removal) with saved evidence; no model prompt is submitted.
+- Claude Code pane: open the common workbench for the session workspace from the pane, copy its loopback address with the scope to select, report startup failures or an unexpected exit, and stop the server on close, pane close or session end; a second press cancels a pending startup.
+- Claude Code pane: select All documents or one feature when a workspace has several, as in OpenCode; bind proposals to the assessed source hash; report an unsuitable or missing Node.js 22.20+ runtime and label analysis, proposal and apply failures. CLI: `analyze --feature <id>` (unknown features are rejected) and `refine --expect-hash <sha256>`.
+- Package the Claude Code plugin as a deterministic ZIP with `npm run package:claude`, sharing the archive helper with OpenCode (OpenCode bytes unchanged).
+- Engine 0.1.1 recognizes complete EN/ES normative words, including Spanish plurals and accented forms, consistently with or without requirement IDs. Newly recognized requirements can change findings and evidence ratios; schema, rubric and scoring policy are unchanged. See docs/normative-recognition.md for examples and limits.
+- Exclude concurrent apply/undo/save and ignore stale provider responses without replacing active documents.
+- Reject multiline refinements and changed identifier multisets, including lowercase identifiers.
+- Detect bounded explicit EN/ES mandatory contradictions with never/nunca; return HTTP 413 for oversized requests.
+
+- Reject refinements that remove or relocate detected EN/ES prohibitions or exclusions. Negative clauses must remain verbatim apart from whitespace; ambiguous rewrites require an explicit product decision. This conservative guard does not establish semantic equivalence.
+- Preserve selected files during asynchronous browser imports, improve assessment label contrast and wrap Spanish report controls on narrow screens across system fonts.
+- Restrict the VS Code workbench to trusted local workspaces, reuse its panel, and recover visibly from server startup failures. Permit its exact desktop ancestor in the loopback server's embedding policy.
+- Add project-local browser tooling, reproducible Codex qualification and actual VS Code extension-host checks. Their acceptance limits are documented separately.
+
 ## 0.1.0 — preview foundations
 
 Guided bilingual authoring, bounded artifact discovery/public GitHub import, forty explainable practice checks, feature-scoped references, source evidence and radar, reviewed hash-protected refinements, exports, read-only MCP and four visual adapter implementations. Native qualification and cross-platform acceptance are tracked separately; this preview does not claim completion of the December V1.

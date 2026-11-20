@@ -11,6 +11,13 @@
   "categories": [
     "Other"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "The workbench starts a local server that can apply explicitly reviewed workspace edits. Trust this workspace before opening it."
+    },
+    "virtualWorkspaces": false
+  },
   "main": "./extension.cjs",
   "activationEvents": [
     "onCommand:spectorque.review"
@@ -25,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jayanez/spectorque.git",
+    "url": "https://github.com/jayanez/spec-torque.git",
     "directory": "integrations/vscode"
   }
 }

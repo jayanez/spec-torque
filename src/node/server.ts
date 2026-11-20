@@ -1,3 +1,4 @@
+import { PRODUCT_VERSION } from '../version.js';
 import { createServer, type IncomingMessage } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, relative, isAbsolute } from 'node:path';
@@ -12,11 +13,20 @@ import { discoverWorkspace, applyWorkspaceProposal, readWorkspaceArtifact, write
 import { contentHash } from '../core/artifacts.js';
 import { importGitHub } from './github.js';
 import { requestRewrite } from './provider.js';
-import { parseSet, builderSchema, proposalSchema, rewriteSchema } from './schemas.js';
+import { bindWorkspace } from './scoped-review.js';
+import { parseSet, builderSchema, proposalSchema, rewriteSchema, scopedExportSchema } from './schemas.js';
 const mime: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json' };
+class RequestTooLarge extends Error {}
+const scopedReviewSchema = z.object({
+  root: z.string().min(1).max(32768),
+  feature: z.string().max(4096).nullable(),
+  revision: z.string().regex(/^[a-f0-9]{64}$/),
+  findingId: z.string().min(1).max(4096),
+  proposal: proposalSchema,
+});
 async function body(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []; let size = 0;
-  for await (const chunk of req) { size += chunk.length; if (size > 6_000_000) throw new Error('Request exceeds 6 MB.'); chunks.push(Buffer.from(chunk)); }
+  for await (const chunk of req) { size += chunk.length; if (size > 6_000_000) throw new RequestTooLarge('Request exceeds 6 MB.'); chunks.push(Buffer.from(chunk)); }
   return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
 }
 export async function startServer(root: string, requestedPort = 4317) {
@@ -32,12 +42,12 @@ export async function startServer(root: string, requestedPort = 4317) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self' vscode-webview:; base-uri 'none'; object-src 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self' vscode-webview: vscode-file://vscode-app; base-uri 'none'; object-src 'none'");
     const send = (status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
     if (!hosts.has(req.headers.host ?? '') || req.headers.origin && !origins.has(req.headers.origin)) { send(403, { error: 'Untrusted origin or host.' }); return; }
     const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`);
     try {
-      if (url.pathname === '/api/session' && req.method === 'GET') { send(200, { token, version: '0.1.0' }); return; }
+      if (url.pathname === '/api/session' && req.method === 'GET') { send(200, { token, version: PRODUCT_VERSION }); return; }
       if (url.pathname.startsWith('/api/')) {
         if (req.headers['x-spectorque-token'] !== token) { send(403, { error: 'Open the workbench to establish a local session.' }); return; }
         if (req.method === 'GET' && url.pathname === '/api/workspace') { send(200, await discoverWorkspace(root)); return; }
@@ -53,13 +63,28 @@ export async function startServer(root: string, requestedPort = 4317) {
           const suggestion = await requestRewrite(value.provider, original, value.context, value.language);
           send(200, await createProposal(value.document.path, value.document.content, value.line, suggestion.replacement, suggestion.reason, 'provider')); return;
         }
-        if (url.pathname === '/api/apply') {
-          const value = z.object({ proposal: proposalSchema, approved: z.literal(true) }).parse(input);
-          const before = await readWorkspaceArtifact(root, value.proposal.path);
-          const content = await applyWorkspaceProposal(root, value.proposal);
+        if (url.pathname === '/api/scoped-export') {
+          const { selection, format } = z.object({ selection: scopedExportSchema, format: z.enum(['json', 'zip']) }).parse(input);
+          send(200, await (await bindWorkspace(resolve(root))).exportScope(selection, format)); return;
+        }
+        if (url.pathname === '/api/scoped-review') {
+          const review = scopedReviewSchema.parse(input);
+          const proposal = await (await bindWorkspace(resolve(root))).validateReview(review);
+          send(200, { ...review, proposal }); return;
+        }
+        if (url.pathname === '/api/apply' || url.pathname === '/api/scoped-apply') {
+          let proposal;
+          if (url.pathname === '/api/scoped-apply') {
+            const { review } = z.object({ review: scopedReviewSchema, approved: z.literal(true) }).parse(input);
+            proposal = await (await bindWorkspace(resolve(root))).validateReview(review);
+          } else {
+            proposal = z.object({ proposal: proposalSchema, approved: z.literal(true) }).parse(input).proposal;
+          }
+          const before = await readWorkspaceArtifact(root, proposal.path);
+          const content = await applyWorkspaceProposal(root, proposal);
           const undoId = randomBytes(20).toString('hex');
           if (undo.size >= 20) undo.delete(undo.keys().next().value!);
-          undo.set(undoId, { path: value.proposal.path, before, afterHash: await contentHash(content) });
+          undo.set(undoId, { path: proposal.path, before, afterHash: await contentHash(content) });
           send(200, { content, undoId }); return;
         }
         if (url.pathname === '/api/undo') {
@@ -91,7 +116,7 @@ export async function startServer(root: string, requestedPort = 4317) {
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch (error) {
       const message = error instanceof z.ZodError ? 'Invalid request parameters.' : (error as NodeJS.ErrnoException).code === 'ENOENT' ? 'File not found. Build the dashboard first with npm run build.' : error instanceof Error ? error.message : 'Operation failed.';
-      send((error as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 400, { error: message });
+      send(error instanceof RequestTooLarge ? 413 : (error as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 400, { error: message });
     }
   });
   await new Promise<void>((resolveListen, reject) => { server.once('error', reject); server.listen(requestedPort, '127.0.0.1', () => { server.off('error', reject); resolveListen(); }); });

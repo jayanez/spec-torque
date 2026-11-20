@@ -1,30 +1,45 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.0';
+export const ENGINE_VERSION = '0.1.3';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
+// Match complete Unicode words, including accented Spanish and plural forms.
+const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
+const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:\d{4}|(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?)(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
+const hasNormativeModal = (text: string) => modal.test(text.normalize('NFC').replace(calendarMay, ' '));
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && /\b(?:FR-\d+|NFR-\d+|REQ-\d+|MUST|SHALL|SHOULD|DEBE|DEBERÁ|DEBERÍA)\b/i.test(text);
+    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
   });
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
-const modal = /\b(MUST(?: NOT)?|SHALL(?: NOT)?|SHOULD(?: NOT)?|MAY|NO DEBE|DEBE(?:RÁ)?|DEBERÍA|PUEDE)\b/iu;
+const boundedQuantity = /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:%|(?:ms|seconds?|segundos?|minutes?|minutos?|MB|GB)(?![\p{L}\p{N}\p{M}_]))/iu;
+const minimumDuration = /(?<![\p{L}\p{N}\p{M}_])al menos\s+\d+(?:[.,]\d+)?\s+(?:segundos?|minutos?|horas?|días?|semanas?)(?![\p{L}\p{N}\p{M}_])/iu;
+const boundedRate = /[≤≥]\s*\d+(?:[.,]\d+)?\s+(?:entr(?:y|ies)|tickets?|requests?|turnos?|lecturas?|solicitudes?)\s+(?:per|por)\s+(?:second|minute|hour|segundo|minuto|hora)(?![\p{L}\p{N}\p{M}_])/iu;
+const observableDenial = /(?<![\p{L}\p{N}\p{M}_])(?:(?:MUST|SHALL|SHOULD)\s+(?:reject|deny)|DEBE(?:N|RÁN?|RÍAN?)?\s+(?:rechazar|denegar))(?![\p{L}\p{N}\p{M}_])/iu;
+const unboundedWording = new RegExp(vagueTerms.source, 'iu');
+
+function hasObservableCue(text: string): boolean {
+  const clause = text.normalize('NFC').replace(requirementId, '');
+  return !unboundedWording.test(clause) &&
+    (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
+}
+
 function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
     const hits = specRequirements.filter(predicate);
     return { status: (!specRequirements.length ? 'unknown' : hits.length === specRequirements.length ? 'supported' : hits.length ? 'partial' : 'missing') as Status, hits };
   };
-  if (id === 'E1.2') return ratio(l => /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:ms\b|seconds?\b|segundos?\b|minutes?\b|minutos?\b|%|MB\b|GB\b)|\b(?:MUST|SHALL) (?:reject|deny)\b|\bDEBE(?:RÁ)? (?:rechazar|denegar)\b/i.test(l.text.replace(requirementId, '')) && !new RegExp(vagueTerms.source, 'iu').test(l.text));
-  if (id === 'E1.4') return ratio(l => modal.test(l.text));
+  if (id === 'E1.2') return ratio(line => hasObservableCue(line.text));
+  if (id === 'E1.4') return ratio(line => hasNormativeModal(line.text));
   if (id === 'E2.1') return ratio(l => !/;.+\b(?:MUST|SHALL|DEBE)\b|\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(l.text));
   if (id === 'P2.1' || id === 'C1.1') {
     const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && /user|visitor|actor|customer|usuario|visitante|cliente/i.test(l.text));
@@ -103,14 +118,16 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
-  const behaviors = new Map<string, Line>();
+  const behaviors = new Map<string, { line: Line; negative: boolean }>();
   for (const line of requirements) {
-    const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').trim();
-    const polarity = /MUST NOT|SHALL NOT|NO DEBE/i.test(text);
-    const key = line.artifact.featureId + ':' + text.replace(/MUST NOT|SHALL NOT|NO DEBE|MUST|SHALL|DEBE/gi, '').replace(/\s+/g, ' ').toLowerCase();
+    const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').normalize('NFC').trim();
+    const match = text.match(/^(.*?)(?<![\p{L}\p{N}\p{M}_])(?:(MUST|SHALL)\s+(?:(NOT|never)\s+)?|((?:NO|NUNCA)\s+)?(DEBE|DEBEN|DEBERÁ|DEBERÁN)(?:\s+(nunca))?\s+)(.+)$/iu);
+    if (!match) continue;
+    const negative = Boolean(match[3] || match[4] || match[6]);
+    const key = line.artifact.featureId + ':mandatory:' + (match[1] + match[7]).replace(/\s+/g, ' ').toLowerCase();
     const previous = behaviors.get(key);
-    if (previous && polarity !== /MUST NOT|SHALL NOT|NO DEBE/i.test(previous.text)) add('I2.3', line, 'Opposite obligations describe the same behavior.', `Resolve the conflict with ${previous.path}:${previous.line}.`, 'error');
-    behaviors.set(key, line);
+    if (previous && negative !== previous.negative) add('I2.3', line, 'Opposite obligations describe the same behavior.', `Resolve the conflict with ${previous.line.path}:${previous.line.line}.`, 'error');
+    behaviors.set(key, { line, negative });
   }
   const dimensions = DIMENSIONS.map(([id, title, category]) => {
     const rows = practices.filter(p => p.dimension === id && p.status !== 'not_applicable');

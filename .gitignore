@@ -2,12 +2,15 @@ node_modules/
 dist/
 web-dist/
 artifacts/
+.spec-torque/
 .spectorque/
 .env*
 *.log
 .DS_Store
 *.vsix
 coverage/
+playwright-report/
+test-results/
 integrations/*/runtime/
 integrations/*/dist/
 integrations/*/web-dist/
@@ -16,3 +19,7 @@ integrations/vscode/extension.cjs
 work/
 outputs/
 integrations/claude/tsconfig.json
+
+/integrations/codex/LICENSE
+/integrations/codex/NOTICE
+/integrations/codex/THIRD_PARTY_NOTICES

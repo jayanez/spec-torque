@@ -1,17 +1,18 @@
 #!/usr/bin/env node
+import { PRODUCT_VERSION } from './version.js';
 import { parseArgs } from 'node:util';
 import { resolve, dirname, basename, relative } from 'node:path';
 import { readFile, stat, writeFile } from 'node:fs/promises';
-import { analyze, classifyArtifact, buildArtifacts, markdownReport, badgeSvg, createProposal } from './core.js';
+import { analyze, classifyArtifact, buildArtifacts, markdownReport, badgeSvg, createProposal, contentHash, selectFeature } from './core.js';
 import { discoverWorkspace, applyWorkspaceProposal, writeNewArtifacts } from './node/workspace.js';
 import { importGitHub } from './node/github.js';
 import { startServer } from './node/server.js';
 import { terminalSummary } from './integration.js';
 import { builderSchema, proposalSchema } from './node/schemas.js';
 async function main() {
-  const { values, positionals } = parseArgs({ allowPositionals: true, options: { json: { type: 'boolean' }, min: { type: 'string' }, root: { type: 'string' }, port: { type: 'string' }, output: { type: 'string' }, answers: { type: 'string' }, proposal: { type: 'string' }, line: { type: 'string' }, replacement: { type: 'string' }, reason: { type: 'string' }, apply: { type: 'boolean' }, 'fail-on-open': { type: 'boolean' }, 'require-complete': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
+  const { values, positionals } = parseArgs({ allowPositionals: true, options: { json: { type: 'boolean' }, min: { type: 'string' }, root: { type: 'string' }, port: { type: 'string' }, output: { type: 'string' }, answers: { type: 'string' }, proposal: { type: 'string' }, line: { type: 'string' }, replacement: { type: 'string' }, reason: { type: 'string' }, feature: { type: 'string' }, 'expect-hash': { type: 'string' }, apply: { type: 'boolean' }, 'fail-on-open': { type: 'boolean' }, 'require-complete': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
   const [command = 'help', source = '.'] = positionals;
-  if (values.help || command === 'help') { console.log(`SpecTorque 0.1.0\n\n  spectorque serve [--root .] [--port 4317]\n  spectorque discover [folder] [--json]\n  spectorque analyze [file|folder|owner/repo] [--json] [--min N] [--fail-on-open] [--require-complete]\n  spectorque report [folder] [--output report.md]\n  spectorque badge [folder] [--output badge.svg]\n  spectorque create --answers answers.json [--root .] [--apply]\n  spectorque refine file.md --line N --replacement 'text' [--apply]\n  spectorque mcp\n\nAnalysis is heuristic. Scores are not correctness guarantees. Writes require --apply.`); return; }
+  if (values.help || command === 'help') { console.log(`SpecTorque ${PRODUCT_VERSION}\n\n  spectorque serve [--root .] [--port 4317]\n  spectorque discover [folder] [--json]\n  spectorque analyze [file|folder|owner/repo] [--feature id] [--json] [--min N] [--fail-on-open] [--require-complete]\n  spectorque report [folder] [--output report.md]\n  spectorque badge [folder] [--output badge.svg]\n  spectorque create --answers answers.json [--root .] [--apply]\n  spectorque refine file.md --line N --replacement 'text' [--expect-hash sha256] [--apply]\n  spectorque mcp\n\nAnalysis is heuristic. Scores are not correctness guarantees. Writes require --apply.`); return; }
   if (command === 'serve') {
     const port = Number(values.port ?? 4317);
     if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid port.');
@@ -36,6 +37,7 @@ async function main() {
   if (command === 'refine') {
     if (!values.line || !values.replacement) throw new Error('Provide --line and --replacement.');
     const full = resolve(source); const content = await readFile(full, 'utf8');
+    if (values['expect-hash'] && await contentHash(content) !== values['expect-hash']) throw new Error('Source changed since this assessment. Refresh the analysis.');
     const proposalRoot = resolve(values.root ?? dirname(full));
     const proposal = await createProposal(relative(proposalRoot, full).replaceAll('\\', '/'), content, Number(values.line), values.replacement, values.reason ?? 'User-authored refinement');
     if (values.apply) await applyWorkspaceProposal(proposalRoot, proposal);
@@ -44,7 +46,10 @@ async function main() {
   if (!['discover', 'analyze', 'report', 'badge'].includes(command)) throw new Error(`Unknown command: ${command}`);
   const isRemote = source.startsWith('https://') || /^[\w-]+\/[\w.-]+$/.test(source) && !(await stat(resolve(source)).then(() => true, () => false));
   const full = resolve(source);
-  const set = isRemote ? await importGitHub(source) : (await stat(full)).isDirectory() ? await discoverWorkspace(full) : { name: basename(full), artifacts: [classifyArtifact(basename(full), await readFile(full, 'utf8'))] };
+  const discovered = isRemote ? await importGitHub(source) : (await stat(full)).isDirectory() ? await discoverWorkspace(full) : { name: basename(full), artifacts: [classifyArtifact(basename(full), await readFile(full, 'utf8'))] };
+  const feature = values.feature ?? null;
+  if (feature !== null && !discovered.artifacts.some(a => a.featureId === feature && a.role !== 'instructions')) throw new Error(`Unknown feature: ${feature}`);
+  const set = selectFeature(discovered, feature);
   if (command === 'discover') { console.log(values.json ? JSON.stringify(set, null, 2) : set.artifacts.map(a => `${a.role.padEnd(13)} ${a.framework.padEnd(12)} ${a.archived ? '[archive] ' : ''}${a.path}`).join('\n')); return; }
   const result = await analyze(set);
   const output = command === 'report' ? markdownReport(result) : command === 'badge' ? badgeSvg(result) : values.json ? JSON.stringify(result, null, 2) : terminalSummary(result).join('\n');
@@ -54,6 +59,8 @@ async function main() {
     if (!Number.isInteger(minimum) || minimum < 0 || minimum > 30) throw new Error('--min must be an integer from 0 to 30.');
     if (result.summary.score === null || result.summary.score < minimum) process.exitCode = 2;
   }
-  if (values['require-complete'] && result.summary.score === null || values['fail-on-open'] && result.decisions.length > 0) process.exitCode = 2;
+  const incompleteEvidence = values['require-complete'] && result.summary.score === null;
+  const unresolvedDecisions = values['fail-on-open'] && result.decisions.length > 0;
+  if (incompleteEvidence || unresolvedDecisions) process.exitCode = 2;
 }
 main().catch(error => { console.error(error instanceof Error ? error.message : 'Operation failed.'); process.exitCode = 1; });

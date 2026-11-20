@@ -1,0 +1,212 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "From specification to reviewed handoff",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": ".spec-torque/archify-workflow/workflow.html",
+    "repository": {
+      "url": "https://github.com/jayanez/spec-torque.git",
+      "revision": "32911313e872a2db40f211530b11adf281ec5e08"
+    }
+  },
+  "lanes": [
+    {
+      "id": "workbench",
+      "label": "Workbench"
+    },
+    {
+      "id": "decision",
+      "label": "Human decision"
+    },
+    {
+      "id": "result",
+      "label": "Outcome"
+    }
+  ],
+  "mainPath": [
+    "intake",
+    "analyze",
+    "review",
+    "approve",
+    "refresh",
+    "export"
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "lane": "workbench",
+      "col": 0,
+      "type": "frontend",
+      "label": "Create or import",
+      "sublabel": "Spec, plan and tasks",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/App.tsx",
+          "line": 87,
+          "end_line": 99
+        }
+      ]
+    },
+    {
+      "id": "analyze",
+      "lane": "workbench",
+      "col": 1,
+      "type": "backend",
+      "label": "Analyze locally",
+      "sublabel": "Scope \u00b7 findings \u00b7 evidence",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/App.tsx",
+          "line": 78,
+          "end_line": 85
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "lane": "workbench",
+      "col": 2,
+      "type": "frontend",
+      "label": "Review wording",
+      "sublabel": "Exact before and after",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/ReviewPanel.tsx",
+          "line": 40,
+          "end_line": 50
+        }
+      ]
+    },
+    {
+      "id": "approve",
+      "lane": "decision",
+      "col": 3,
+      "type": "security",
+      "label": "Approve a change",
+      "sublabel": "Disk write requires opt-in",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/App.tsx",
+          "line": 128,
+          "end_line": 141
+        }
+      ]
+    },
+    {
+      "id": "reject",
+      "lane": "workbench",
+      "col": 3,
+      "type": "frontend",
+      "label": "Reject proposal",
+      "sublabel": "Source stays intact",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/ReviewPanel.tsx",
+          "line": 48,
+          "end_line": 50
+        }
+      ]
+    },
+    {
+      "id": "refresh",
+      "lane": "decision",
+      "col": 4,
+      "type": "backend",
+      "label": "Reanalyze",
+      "sublabel": "Updated evidence and revision",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/App.tsx",
+          "line": 78,
+          "end_line": 85
+        }
+      ]
+    },
+    {
+      "id": "export",
+      "lane": "decision",
+      "col": 5,
+      "type": "backend",
+      "label": "Export results",
+      "sublabel": "Markdown \u00b7 JSON \u00b7 ZIP \u00b7 SVG",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/App.tsx",
+          "line": 189,
+          "end_line": 189
+        }
+      ]
+    },
+    {
+      "id": "undo",
+      "lane": "result",
+      "col": 5,
+      "type": "frontend",
+      "label": "Undo if needed",
+      "sublabel": "Restore previous source",
+      "width": 168,
+      "sources": [
+        {
+          "path": "src/web/App.tsx",
+          "line": 143,
+          "end_line": 156
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "intake-analyze",
+      "from": "intake",
+      "to": "analyze",
+      "variant": "default"
+    },
+    {
+      "id": "analyze-review",
+      "from": "analyze",
+      "to": "review",
+      "variant": "default"
+    },
+    {
+      "id": "review-approve",
+      "from": "review",
+      "to": "approve",
+      "variant": "security"
+    },
+    {
+      "id": "review-reject",
+      "from": "review",
+      "to": "reject",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "approve-refresh",
+      "from": "approve",
+      "to": "refresh",
+      "variant": "default"
+    },
+    {
+      "id": "refresh-export",
+      "from": "refresh",
+      "to": "export",
+      "variant": "default"
+    },
+    {
+      "id": "refresh-undo",
+      "from": "refresh",
+      "to": "undo",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ]
+}

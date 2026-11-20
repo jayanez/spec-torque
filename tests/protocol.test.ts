@@ -43,3 +43,17 @@ test('CLI nested-file proposals retain workspace-relative paths for native apply
   const result = await exec(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'refine', resolve(root, 'specs/booking/spec.md'), '--root', root, '--line', '5', '--replacement', 'FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].']);
   assert.equal(JSON.parse(result.stdout).proposal.path, 'specs/booking/spec.md');
 });
+
+test('CLI rejects multiline refinements without changing the source file', async () => {
+  const { mkdtemp, writeFile, readFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const root = await mkdtemp(join(tmpdir(), 'spectorque-cli-line-'));
+  const path = join(root, 'spec.md');
+  const source = 'FR-001: The service MUST run.';
+  try {
+    await writeFile(path, source);
+    await assert.rejects(exec(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'refine', path, '--root', root, '--line', '1', '--replacement', source + '\nAnother line.', '--apply']), /single line/);
+    assert.equal(await readFile(path, 'utf8'), source);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
