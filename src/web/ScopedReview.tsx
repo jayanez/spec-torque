@@ -35,7 +35,7 @@ export function ScopedReview() {
     setBusy(true);
     setMessage('');
     try {
-      if (!await connectLocal()) throw new Error(t('No local workbench connection.', 'Sin conexión al workbench local.'));
+      if (!await connectLocal()) throw new WorkbenchUnavailableError();
       setReview(await api<Review>('scoped-review', JSON.parse(source)));
     } catch (error) {
       setMessage(failure(error, t('Review failed.', 'Falló la revisión.')));

@@ -14,7 +14,7 @@ export function ScopedExport() {
     setMessage('');
     try {
       const selection = JSON.parse(source);
-      if (!await connectLocal()) throw new Error(t('No local workbench connection.', 'Sin conexión al workbench local.'));
+      if (!await connectLocal()) throw new WorkbenchUnavailableError();
       const value = await api<{ assessment?: Assessment; archive?: string }>('scoped-export', { selection, format });
       const name = 'spectorque-' + selection.revision.slice(0, 12);
       if (value.assessment) download(name + '.json', JSON.stringify(value.assessment, null, 2), 'application/json');

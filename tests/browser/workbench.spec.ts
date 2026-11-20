@@ -355,6 +355,11 @@ for (const es of [false, true]) {
     await expect(page.getByRole('status')).toContainText('?review=1');
     await page.unroute('**/api/scoped-apply');
     expect(await readFile(file)).toEqual(Buffer.from(content));
+    await page.route('**/api/**', route => route.abort('connectionrefused'));
+    await page.getByRole('textbox').fill(JSON.stringify(review));
+    await page.getByRole('button', { name: es ? 'Verificar revisión' : 'Verify review' }).click();
+    await expect(page.getByRole('status')).toContainText(es ? 'No se puede conectar con el workbench local' : 'The local workbench is not reachable');
+    await page.unroute('**/api/**');
     await verify();
     const external = content + '\nExternal revision\n';
     await writeFile(file, external);
@@ -373,13 +378,18 @@ for (const es of [false, true]) {
     expect(updated.assessment.decisions.some(item => item.path === 'specs/booking/spec.md' && item.line === 3)).toBe(true);
     await page.goto(workspace.url + '/?export=1');
     if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
-    await page.getByRole('textbox').fill(JSON.stringify({ root: view.root, feature: view.feature,
-      revision: updated.assessment.id, createdAt: updated.assessment.createdAt }));
-    await page.route('**/api/scoped-export', route => route.abort('connectionrefused'));
-    await page.getByRole('button', { name: es ? 'Descargar JSON' : 'Download JSON' }).click();
-    await expect(page.getByRole('status')).toContainText(es ? 'No se puede conectar con el workbench local' : 'The local workbench is not reachable');
-    await expect(page.getByRole('status')).toContainText('?export=1');
-    await page.unroute('**/api/scoped-export');
+    const selection = JSON.stringify({ root: view.root, feature: view.feature,
+      revision: updated.assessment.id, createdAt: updated.assessment.createdAt });
+    for (const pattern of ['**/api/scoped-export', '**/api/**']) {
+      await page.getByRole('textbox').fill(selection + ' ');
+      await page.getByRole('textbox').fill(selection);
+      await expect(page.getByRole('status')).toHaveText('');
+      await page.route(pattern, route => route.abort('connectionrefused'));
+      await page.getByRole('button', { name: es ? 'Descargar JSON' : 'Download JSON' }).click();
+      await expect(page.getByRole('status')).toContainText(es ? 'No se puede conectar con el workbench local' : 'The local workbench is not reachable');
+      await expect(page.getByRole('status')).toContainText('?export=1');
+      await page.unroute(pattern);
+    }
     const reportDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: es ? 'Descargar JSON' : 'Download JSON' }).click();
     expect(JSON.parse(await readFile(await (await reportDownload).path(), 'utf8'))).toEqual(updated.assessment);
