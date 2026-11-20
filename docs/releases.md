@@ -1,6 +1,6 @@
 # Release installation
 
-The [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0) remains available. The planned 0.2.0 release uses GitHub download assets. Check the release's qualification record for supported host versions, operating systems and architectures.
+The [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0) remains available. The 0.2.0 candidate uses GitHub download assets. An early publication uses the prerelease flag until the [stable candidate gate](pilot-operations.md#stable-candidate-gate) is met. Check the release's qualification record for supported host versions, operating systems and architectures.
 
 | 0.2.0 asset | Installation |
 |---|---|
