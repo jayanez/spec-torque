@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Assessment } from '../core/types.js';
-import { api, connectLocal, download, downloadZip } from './api.js';
+import { api, connectLocal, download, downloadZip, WorkbenchUnavailableError } from './api.js';
 
 export function ScopedExport() {
   const [source, setSource] = useState('');
@@ -22,7 +22,10 @@ export function ScopedExport() {
       else throw new Error(t('Export unavailable.', 'Exportación no disponible.'));
       setMessage(t('Download requested.', 'Descarga solicitada.'));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Export failed.', 'Falló la exportación.'));
+      setMessage(error instanceof WorkbenchUnavailableError
+        ? t('The local workbench is not reachable. Restart it, open the address it prints with ?export=1 and paste the export selection again.',
+          'No se puede conectar con el workbench local. Reinícialo, abre la dirección que muestra con ?export=1 y vuelve a pegar la selección de exportación.')
+        : error instanceof Error ? error.message : t('Export failed.', 'Falló la exportación.'));
     } finally {
       setBusy(false);
     }

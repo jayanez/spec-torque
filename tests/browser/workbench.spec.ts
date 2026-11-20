@@ -345,6 +345,15 @@ for (const es of [false, true]) {
     await verify();
     await page.getByRole('button', { name: es ? 'Rechazar cambio' : 'Reject change' }).click();
     await expect(approve).toHaveCount(0);
+    await expect(page.getByRole('status')).toHaveText(es ? 'Cambio rechazado. No se escribió ningún archivo.' : 'Change rejected. No file was written.');
+    await expect(page.getByRole('textbox')).toBeFocused();
+    expect(await readFile(file)).toEqual(Buffer.from(content));
+    await verify();
+    await page.route('**/api/scoped-apply', route => route.abort('connectionrefused'));
+    await approve.click();
+    await expect(page.getByRole('status')).toContainText(es ? 'No se puede conectar con el workbench local. Reinícialo' : 'The local workbench is not reachable. Restart it');
+    await expect(page.getByRole('status')).toContainText('?review=1');
+    await page.unroute('**/api/scoped-apply');
     expect(await readFile(file)).toEqual(Buffer.from(content));
     await verify();
     const external = content + '\nExternal revision\n';
@@ -366,6 +375,11 @@ for (const es of [false, true]) {
     if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
     await page.getByRole('textbox').fill(JSON.stringify({ root: view.root, feature: view.feature,
       revision: updated.assessment.id, createdAt: updated.assessment.createdAt }));
+    await page.route('**/api/scoped-export', route => route.abort('connectionrefused'));
+    await page.getByRole('button', { name: es ? 'Descargar JSON' : 'Download JSON' }).click();
+    await expect(page.getByRole('status')).toContainText(es ? 'No se puede conectar con el workbench local' : 'The local workbench is not reachable');
+    await expect(page.getByRole('status')).toContainText('?export=1');
+    await page.unroute('**/api/scoped-export');
     const reportDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: es ? 'Descargar JSON' : 'Download JSON' }).click();
     expect(JSON.parse(await readFile(await (await reportDownload).path(), 'utf8'))).toEqual(updated.assessment);

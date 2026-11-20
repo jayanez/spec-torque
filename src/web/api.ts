@@ -2,9 +2,20 @@ let session: string | undefined;
 export async function connectLocal(): Promise<boolean> {
   try { const response = await fetch('./api/session'); if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) return false; session = (await response.json()).token; return Boolean(session); } catch { return false; }
 }
+export class WorkbenchUnavailableError extends Error {
+  constructor() {
+    super('The local workbench is not reachable. Restart it, open the address it prints and try again.');
+    this.name = 'WorkbenchUnavailableError';
+  }
+}
 export async function api<T>(path: string, input?: unknown): Promise<T> {
   if (!session) throw new Error('Start the local workbench to use this connection: npm start.');
-  const response = await fetch('./api/' + path, { method: input === undefined ? 'GET' : 'POST', headers: { 'Content-Type': 'application/json', 'X-SpecTorque-Token': session }, ...(input === undefined ? {} : { body: JSON.stringify(input) }) });
+  let response: Response;
+  try {
+    response = await fetch('./api/' + path, { method: input === undefined ? 'GET' : 'POST', headers: { 'Content-Type': 'application/json', 'X-SpecTorque-Token': session }, ...(input === undefined ? {} : { body: JSON.stringify(input) }) });
+  } catch {
+    throw new WorkbenchUnavailableError();
+  }
   const value = await response.json();
   if (!response.ok) throw new Error(value.error || 'Operation failed.');
   return value as T;
