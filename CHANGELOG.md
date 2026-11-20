@@ -7,6 +7,7 @@
 - Add original EN/ES format fixtures, scoped structural controls and reproducible, provisional agent annotations with explicit unknowns.
 - Add the OpenCode and Pi feature review paths and document exact versions and limitations.
 
+- Codex workbench review and export pages: announce a rejected change and return focus to the review data, and replace the raw network error shown when the local workbench stops with EN/ES restart guidance that states no file was written.
 - Record the Claude Code terminal matrix: the same plugin ZIP passed `qualify:claude` on darwin-arm64/x64, linux-x64/arm64 and win32-x64/arm64 with an isolated profile and OS-enforced egress, and no inference request.
 - Workbench: reveal a selected finding's source line during the selection commit instead of on a deferred timer, which could move focus after typing had started and replace that line in memory without review (the intermittent `Review difference` browser-test timeout).
 - Record Claude Desktop qualification (bundled Claude Code 2.1.325, macOS arm64): project-scoped install of the ZIP; EN pane walkthrough including stale-source rejection, handoff and server shutdown, and ES pane rendering.
