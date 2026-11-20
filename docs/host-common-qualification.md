@@ -319,7 +319,7 @@ Requalification on 2026-11-20 used ThinkRail 0.4.0, Pi 1.5.2 for project-local
 (SHA-256 `4085332b022826b76999598466799a0142c9253874296e82fc0e80c134111c19`).
 ThinkRail drives Pi in RPC mode; the scope picker now appears there, and
 All documents matched the engine in EN and ES, and `specs/booking` and
-`specs/other` matched it in EN. `qualify:pi` checks scope selection over RPC in both languages.
+`specs/other` matched it in EN. `qualify:pi` checks scope selection over RPC in the EN and ES workspaces.
 The untrusted project exposed neither `/spectorque` nor the project skills.
 Approval, rejection, stale-source rejection and the browser handoff behaved as
 above, and no model prompt was submitted. Two host behaviors remain: after the

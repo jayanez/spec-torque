@@ -70,8 +70,10 @@ async function verifyRpcScope(workspace, agent, load, feature) {
   let stderr = '';
   child.stderr.on('data', chunk => { stderr += chunk; });
   const done = new Promise((resolveDone, rejectDone) => {
-    const timer = setTimeout(() => rejectDone(new Error('RPC scope check timed out\n' + stderr)), 60_000);
-    child.on('error', rejectDone);
+    const timer = setTimeout(() => fail(new Error('RPC scope check timed out')), 60_000);
+    const fail = error => { clearTimeout(timer); rejectDone(new Error(error.message + '\n' + stderr)); };
+    child.on('error', fail);
+    child.on('exit', code => fail(new Error('Pi exited before evidence selection: ' + code)));
     child.stdout.on('data', chunk => {
       buffer += chunk;
       let newline;
@@ -79,8 +81,9 @@ async function verifyRpcScope(workspace, agent, load, feature) {
         const line = buffer.slice(0, newline).trim();
         buffer = buffer.slice(newline + 1);
         if (!line) continue;
-        const event = JSON.parse(line);
-        if (event.type === 'agent_start') rejectDone(new Error('No model turn may start'));
+        let event;
+        try { event = JSON.parse(line); } catch { fail(new Error('Unexpected RPC output: ' + line)); return; }
+        if (event.type === 'agent_start') fail(new Error('No model turn may start'));
         if (event.type !== 'extension_ui_request') continue;
         if (event.method === 'setWidget' && event.widgetKey === 'spectorque') seen.widget = event.widgetLines;
         if (event.method !== 'select') continue;
