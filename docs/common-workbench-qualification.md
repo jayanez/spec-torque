@@ -15,10 +15,10 @@ mkdir "$qualification_dir/package" "$qualification_dir/install"
 npm pack --ignore-scripts --pack-destination "$qualification_dir/package"
 shasum -a 256 "$qualification_dir/package/"*.tgz
 npm install --no-audit --ignore-scripts --prefix "$qualification_dir/install" "$qualification_dir/package/"*.tgz
-export SPECTORQUE_INSTALLED_CLI="$qualification_dir/install/node_modules/.bin/spectorque"
+export SPECTORQUE_INSTALLED_CLI="$qualification_dir/install/node_modules/spectorque/dist/cli.js"
 ```
 
-Use `npm run browsers:install` if the lockfile's matching browser binaries are missing. With an existing compatible cache, set `PLAYWRIGHT_BROWSERS_PATH` to its absolute path. From the checkout, run `npm run test:browser` with the installed CLI environment variable set. Each test starts the installed CLI with the disposable workspace as its current directory and stops it at teardown. The default CI suite exercises the source build when the variable is absent. For already installed Google Chrome, run the Chromium projects with `SPECTORQUE_TEST_CHROME=1`.
+Use `npm run browsers:install` if the lockfile's matching browser binaries are missing. With an existing compatible cache, set `PLAYWRIGHT_BROWSERS_PATH` to its absolute path. From the checkout, run `npm run test:browser` with the installed CLI environment variable set to the JavaScript entry point. On Windows, use the equivalent PowerShell environment assignment. Each test starts the installed CLI with the disposable workspace as its current directory and stops it at teardown. The CI browser job installs a tarball and sets this variable. Local runs use the source build when it is absent. For already installed Google Chrome, run the Chromium projects with `SPECTORQUE_TEST_CHROME=1`.
 
 For a browser walkthrough, copy `fixtures/en-draft` and `fixtures/es-draft` to separate temporary directories. From outside the checkout, start the installed CLI with `serve --root <temporary-workspace> --port 0`. Open the printed loopback URL. Keep the reports and artifact exports before stopping the CLI. Confirm the listener stopped, then uninstall from the isolated prefix with `npm uninstall --prefix "$qualification_dir/install" spectorque`.
 

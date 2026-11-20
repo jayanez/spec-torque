@@ -103,7 +103,8 @@ and provide an isolated tools directory with `node-pty@1.1.0` and
 `@xterm/headless@6.0.0`:
 
 ```sh
-npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-0.1.0.zip /path/to/tools/node_modules
+version="$(node -p "require('./package.json').version")"
+npm run qualify:claude -- "$(which claude)" "artifacts/spectorque-claude-$version.zip" /path/to/tools/node_modules
 ```
 
 For EN and ES, the driver copies the draft fixture into two features
@@ -256,7 +257,8 @@ an isolated tools directory containing `node-pty@1.1.0` and
 `@xterm/headless@6.0.0`:
 
 ```sh
-npm run qualify:opencode -- /path/to/opencode artifacts/spectorque-opencode-0.1.0.zip /path/to/tools/node_modules darwin-arm64
+version="$(node -p "require('./package.json').version")"
+npm run qualify:opencode -- /path/to/opencode "artifacts/spectorque-opencode-$version.zip" /path/to/tools/node_modules darwin-arm64
 ```
 
 The walkthrough uses the public `session.create` API on a private loopback

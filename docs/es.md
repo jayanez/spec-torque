@@ -26,7 +26,7 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 
 Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el archivo reubicado fuera del checkout. Instala el ZIP desde un marketplace local y ejecuta `setup-workspace.mjs` desde la copia instalada, con la ruta del worktree confiable. Incorpora el bloque TOML que imprime al proyecto. Para actualizar, reinstala el ZIP verificado y vuelve a generar ese bloque. Para retirarlo, elimina el bloque de SpecTorque, detén el workbench y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
 
-Abre un chat local e invoca `open_spectorque` del servidor `spectorque-workspace`. Selecciona el alcance y revisa la evidencia y la diferencia. Para guardar o exportar, inicia el workbench con el comando impreso por el instalador y usa su dirección local en el navegador integrado. Los datos de revisión requieren una aprobación explícita y se rechazan si cambió la revisión. Consulta las rutas observadas en la [cualificación de Desktop](codex-desktop-probe.md). El [seguimiento de Windows](https://github.com/jayanez/spec-torque/issues/34) registra sus variantes por separado.
+En la versión de Codex Desktop probada, abrir el visor con `open_spectorque` inicia un turno con el proveedor configurado. Para el piloto, usa el workbench local. En una cualificación interna con autorización expresa, abre un chat con el ejemplo público e invoca `open_spectorque` del servidor `spectorque-workspace`. Selecciona el alcance y revisa la evidencia y la diferencia. Para guardar o exportar, inicia el workbench con el comando impreso por el instalador y usa su dirección local en el navegador integrado. Los datos de revisión requieren una aprobación explícita y se rechazan si cambió la revisión. Consulta las rutas observadas en la [cualificación de Desktop](codex-desktop-probe.md). El [seguimiento de Windows](https://github.com/jayanez/spec-torque/issues/34) registra sus variantes por separado.
 
 ## Continuación en otros clientes
 
@@ -75,6 +75,8 @@ traspaso al panel común y las exportaciones después del cambio nativo. Esa pru
 no automatiza el cliente ni sustituye su aceptación, la de otros sistemas o la
 revisión humana de accesibilidad.
 
+En Pi 1.5.2, genera el ZIP con `npm run package:integrations` y `npm run package:pi`. Extrae el archivo, registra el directorio con `pi install /ruta/absoluta/al/paquete --local` y ejecuta `/spectorque` en un proyecto de prueba con el perfil aislado en modo offline. Usa `pi remove /ruta/absoluta/al/paquete --local --approve` para retirarlo. Consulta la [cualificación del ZIP de Pi](integrations.md#pi-installed-package-qualification).
+
 ## Gates de corrección
 
 Las operaciones de aplicar, deshacer y guardar bloquean temporalmente las mutaciones; las respuestas tardías no sustituyen el documento activo. Las propuestas modifican una sola línea y conservan exactamente los identificadores. Los cuerpos HTTP superiores a 6 MB se rechazan con 413. La detección de contradicciones sigue siendo acotada, no semántica general.
@@ -88,15 +90,10 @@ El motor 0.1.1 reconoce palabras normativas completas, incluidas `DEBEN`, `DEBER
 Conserva la diferencia entre obligación, recomendación y permiso. Los nuevos casos
 reconocidos pueden cambiar los hallazgos y sus evidencias; no cambia la política de
 puntuación ni convierte desconocidos en resultados aprobados. Consulta los
-[ejemplos y límites](normative-recognition.md). La calibración independiente y el
-resto del corpus siguen pendientes en #2.
+[ejemplos y límites](normative-recognition.md). La ampliación y revisión agéntica del corpus se completaron en [#2](https://github.com/jayanez/spec-torque/issues/2). La calibración humana sigue pendiente.
 
 ## Corpus de formatos
 
-El [corpus original de formatos](format-corpus.md) incorpora catorce casos EN/ES
-con rutas anidadas, archivos archivados e identificadores compartidos. Verifica
-las pistas de clasificación documentadas; no demuestra compatibilidad completa
-con los generadores ni calibración científica. Las variantes ambiguas y las
-etiquetas independientes siguen pendientes en #2.
+El [corpus de formatos](format-corpus.md) reúne catorce casos iniciales, 28 conjuntos EN/ES de siete familias y controles de archivos históricos, proyectos anidados e identificadores compartidos. Dos sesiones agénticas independientes etiquetaron la muestra y una tercera resolvió discrepancias. Las etiquetas y los casos `unknown` se conservan con su procedencia. Los resultados describen esa muestra y la calibración humana sigue pendiente.
 
 [Recorrido del piloto y demostración bilingüe](pilot.es.md)

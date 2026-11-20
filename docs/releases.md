@@ -30,13 +30,13 @@ npm run verify:codex-package
 npm run package:pi
 mkdir -p "$OUT"
 npm pack --ignore-scripts --pack-destination "$OUT"
+cp artifacts/spectorque-claude-0.2.0.zip artifacts/spectorque-codex-0.2.0.zip "$OUT/"
+cp artifacts/spectorque-opencode-0.2.0.zip artifacts/spectorque-pi-0.2.0.zip "$OUT/"
 ```
 
 Compare the five installer digests between builds. Inspect archive contents, licenses, notices and version metadata. Compare installed dependencies against the recorded test environment. With Chromium provisioned and a new absolute `DEMO_OUT` directory, assemble the release:
 
 ```sh
-cp artifacts/spectorque-claude-0.2.0.zip artifacts/spectorque-codex-0.2.0.zip "$OUT/"
-cp artifacts/spectorque-opencode-0.2.0.zip artifacts/spectorque-pi-0.2.0.zip "$OUT/"
 npm run browsers:install -- chromium
 npm run pilot:demo -- "$OUT/spectorque-0.2.0.tgz" "$DEMO_OUT"
 npm run package:pilot -- "$OUT" "$DEMO_OUT"
