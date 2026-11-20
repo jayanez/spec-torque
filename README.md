@@ -1,15 +1,19 @@
 # SpecTorque
 
-[![Latest GitHub release, including previews](https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&label=release)](https://github.com/jayanez/spec-torque/releases)
-[![Checks on develop](https://github.com/jayanez/spec-torque/actions/workflows/check.yml/badge.svg?branch=develop)](https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop)
-[![License Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+<p align="center">
+  <a href="https://github.com/jayanez/spec-torque/releases"><img src="https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&amp;label=release&amp;logo=github" alt="Latest GitHub release, including previews"></a>
+  <a href="https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/jayanez/spec-torque/check.yml?branch=develop&amp;label=Validate%20repository&amp;logo=githubactions&amp;logoColor=white" alt="Validate repository on develop"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
+</p>
 
-[![Claude Code](https://img.shields.io/badge/Claude_Code-integration-555)](docs/integrations.md#claude-code)
-[![Codex](https://img.shields.io/badge/Codex-integration-555)](docs/integrations.md#codex-desktop)
-[![OpenCode](https://img.shields.io/badge/OpenCode-integration-555)](docs/integrations.md#opencode)
-[![Pi](https://img.shields.io/badge/Pi-integration-555)](docs/integrations.md#pi)
-[![VS Code preview](https://img.shields.io/badge/VS_Code-preview-555)](docs/integrations.md#vs-code-workbench)
-[![MCP read-only](https://img.shields.io/badge/MCP-read--only-blue)](docs/integrations.md#mcp-and-skills)
+<p align="center">
+  <a href="docs/integrations.md#claude-code"><img src="https://img.shields.io/badge/Claude%20Code-integration-D97757?logo=anthropic&amp;logoColor=white" alt="Claude Code integration"></a>
+  <a href="docs/integrations.md#codex-desktop"><img src="https://img.shields.io/badge/Codex-integration-412991?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI%2BPHBhdGggZD0ibTMgNCA0IDQtNCA0bTYgMGg0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8%2BPC9zdmc%2B" alt="Codex Desktop integration"></a>
+  <a href="docs/integrations.md#opencode"><img src="https://img.shields.io/badge/OpenCode-integration-211E1E?logo=opencode&amp;logoColor=white" alt="OpenCode integration"></a>
+  <a href="docs/integrations.md#pi"><img src="https://img.shields.io/badge/Pi-integration-555?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI%2BPHBhdGggZD0ibTMgNCA0IDQtNCA0bTYgMGg0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8%2BPC9zdmc%2B" alt="Pi integration"></a>
+  <a href="docs/integrations.md#vs-code-workbench"><img src="https://img.shields.io/badge/VS%20Code-preview-007ACC?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI%2BPHBhdGggZD0iTTYgNCAyIDhsNCA0bTQtOCA0IDQtNCA0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8%2BPC9zdmc%2B" alt="VS Code workbench preview"></a>
+  <a href="docs/integrations.md#mcp-and-skills"><img src="https://img.shields.io/badge/MCP-read--only-1f6feb?logo=modelcontextprotocol&amp;logoColor=white" alt="Read-only MCP server"></a>
+</p>
 
 **See where your coding agent would have to guess.**
 

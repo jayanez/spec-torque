@@ -18,7 +18,7 @@ npm run package:vscode
 
 Browser binaries live in ignored `.spec-torque/browsers`, with results in `test-results` and `playwright-report`. Each test starts an ephemeral loopback server over disposable documents. The browser suite covers EN/ES import, exact evidence selection, keyboard navigation, rejection, acceptance, reanalysis, JSON/ZIP export, undo, stale disk writes, failed connections and empty workspaces. Axe runs WCAG A/AA checks on the reviewed document state. These automated checks do not establish complete accessibility or screen-reader acceptance. macOS WebKit uses Option+Tab for full keyboard traversal ([upstream guidance](https://github.com/microsoft/playwright/issues/5609)).
 
-Tool versions: Playwright 1.65.1, axe-core/Playwright 4.14.0, test-electron 3.1.0 and vsce 4.1.1. The scoped vsce override pins minimatch 11.0.1 because its default dependency was affected by [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). The generated VSIX was installed and exercised with this override. No forced bulk dependency upgrade was used.
+The current checkout pins Playwright 1.65.1, axe-core/Playwright 4.14.0 and test-electron 3.1.0. The [VSIX packaging script](../scripts/package-vscode.mjs) assembles the archive with fflate. The results below describe the earlier 2026-11-16 run. For newer runs, see [compatibility](compatibility.md).
 
 For standalone package installation, browser evidence and the manual accessibility procedure for #3, see [common workbench qualification](common-workbench-qualification.md).
 
@@ -70,7 +70,7 @@ The negative run retains Workspace Trust and verifies an untrusted workspace can
 | Codex 0.169.0-alpha.11.1 | Real app-server + common browser workbench passed EN/ES, three project skills, six tools, changed revision identity and zero inference requests. |
 | VS Code 1.146.0, bundled Node 24.22.1 | Installed VSIX exercised: rendered iframe, evidence, reject/apply, JSON download, singleton panel and server disposal. Actual untrusted-workspace run blocked the command. Codex IDE 26.51111.21308 was also activated beside the panel with no submitted turn. |
 
-Codex's conversational/desktop UI, authenticated IDE workflows, other operating systems, the other three hosts and human/screen-reader acceptance remain pending. App-server and extension-host evidence must not be renamed full native or four-host acceptance. These checks establish neither scientific calibration nor semantic completeness.
+This snapshot covers the listed app-server, browser and extension-host cases. See the newer [Codex Desktop walkthrough](codex-desktop-probe.md#installed-zip-results-on-macos-arm64) and [terminal client results](host-common-qualification.md). Each surface has its own acceptance limits.
 
 ## Critical findings and disposition
 
@@ -82,7 +82,7 @@ Codex's conversational/desktop UI, authenticated IDE workflows, other operating 
 | P2 | VS Code manifest/command had no explicit trust boundary. | Declare unsupported untrusted/virtual workspaces and enforce trusted local workspace access before starting a child. Verified in actual Restricted Mode. |
 | P2 | `src/node/server.ts`: real VS Code iframe was blocked by frame-ancestors. | Add only the observed desktop ancestor `vscode-file://vscode-app`, retaining loopback Host/Origin/session checks and restricted embedding. The installed VSIX test verifies actual rendering. |
 
-Reviewed filesystem/hash, request/response bounds, explicit providers and read-only MCP boundaries retain their existing guarantees and tests. This bounded review found no additional confirmed bypass there; it does not prove race-free behavior against a hostile process controlling the same filesystem. Regex analysis and exclusion detection remain deliberately incomplete. The EN/ES corpus and human calibration stay in #2.
+Reviewed filesystem/hash, request/response bounds, explicit providers and read-only MCP boundaries retain their existing guarantees and tests. This bounded review found no additional confirmed bypass there; it does not prove race-free behavior against a hostile process controlling the same filesystem. Regex analysis and exclusion detection remain deliberately incomplete. The [EN/ES corpus](format-corpus.md) records the completed #2 work. Human calibration remains pending.
 
 The [corpus reproduction procedure](format-corpus.md#reproduce) checks
 format evidence and measurements against a pinned engine revision. The
