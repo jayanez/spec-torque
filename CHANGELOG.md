@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.
+
 ## 0.2.0 — candidate
 
 - Prepare independently verifiable CLI and native host packages, including the downloadable Pi archive and local Codex Desktop viewer.

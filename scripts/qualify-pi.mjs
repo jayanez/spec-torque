@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { access, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { qualifyTerminal } from './qualify-pi-terminal.mjs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { unzipSync } from 'fflate';
-import { reviewWorkspace, terminalSummary } from '../dist/integration.js';
+import { analyze, discoverWorkspace, reviewWorkspace, selectFeature, terminalSummary } from '../dist/integration.js';
 
 const [cli, option, packagePath, terminalOption, ptyPath, ...extra] = process.argv.slice(2);
 if (!cli || extra.length || (option !== undefined && (!['--installed-package', '--installed-archive'].includes(option) || !packagePath)) ||
@@ -57,6 +57,51 @@ function verifyDiscovery(workspace, agent, trust, installed, artifact) {
     assert.ok(fromArtifact && !isAbsolute(fromArtifact) && !fromArtifact.startsWith('..'), path);
     console.log(`discovered ${command.name} from ${fromArtifact}`);
   }
+}
+
+// RPC hosts (for example desktop shells) render dialogs through the extension UI
+// protocol. Choose one feature and cancel at evidence selection, so nothing is written.
+async function verifyRpcScope(workspace, agent, load, feature) {
+  const child = spawn(process.execPath, [client, ...common, ...load, '--mode', 'rpc'], {
+    cwd: workspace, env: isolatedEnv(agent), stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  const seen = { scopes: undefined, widget: undefined, evidence: undefined };
+  let buffer = '';
+  let stderr = '';
+  child.stderr.on('data', chunk => { stderr += chunk; });
+  const done = new Promise((resolveDone, rejectDone) => {
+    const timer = setTimeout(() => fail(new Error('RPC scope check timed out')), 60_000);
+    const fail = error => { clearTimeout(timer); rejectDone(new Error(error.message + '\n' + stderr)); };
+    child.on('error', fail);
+    child.on('exit', code => fail(new Error('Pi exited before evidence selection: ' + code)));
+    child.stdout.on('data', chunk => {
+      buffer += chunk;
+      let newline;
+      while ((newline = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, newline).trim();
+        buffer = buffer.slice(newline + 1);
+        if (!line) continue;
+        let event;
+        try { event = JSON.parse(line); } catch { fail(new Error('Unexpected RPC output: ' + line)); return; }
+        if (event.type === 'agent_start') fail(new Error('No model turn may start'));
+        if (event.type !== 'extension_ui_request') continue;
+        if (event.method === 'setWidget' && event.widgetKey === 'spectorque') seen.widget = event.widgetLines;
+        if (event.method !== 'select') continue;
+        if (event.title === 'SpecTorque · select scope') {
+          seen.scopes = event.options;
+          child.stdin.write(JSON.stringify({ type: 'extension_ui_response', id: event.id, value: 'Feature · ' + feature }) + '\n');
+        } else if (event.title === 'SpecTorque · select evidence') {
+          seen.evidence = event.options;
+          child.stdin.write(JSON.stringify({ type: 'extension_ui_response', id: event.id, cancelled: true }) + '\n');
+          clearTimeout(timer);
+          resolveDone();
+        }
+      }
+    });
+  });
+  child.stdin.write(JSON.stringify({ id: 'scope', type: 'prompt', message: '/spectorque' }) + '\n');
+  try { await done; } finally { child.kill(); }
+  return seen;
 }
 
 async function extractPiArchive(archivePath, artifact) {
@@ -129,6 +174,21 @@ try {
       }
       assert.deepEqual(await readFile(source), before);
       console.log(`${language}/${mode}: exact summary, source unchanged, isolated offline client passed`);
+    }
+    {
+      const load = artifact ? ['--approve'] : [
+        '--no-extensions', '--no-skills', '--extension', resolve('integrations/pi/index.ts'),
+      ];
+      const other = join(workspace, 'specs/other');
+      await cp(resolve('fixtures/en-complete/specs/booking'), other, { recursive: true });
+      const scoped = await analyze(selectFeature(await discoverWorkspace(workspace), 'specs/booking'));
+      const seen = await verifyRpcScope(workspace, agent, load, 'specs/booking');
+      assert.deepEqual(seen.scopes, ['All documents', 'Feature · specs/booking', 'Feature · specs/other']);
+      assert.equal(seen.widget?.[0], terminalSummary(scoped)[0] + ' · Scope: specs/booking');
+      assert.deepEqual(seen.evidence, scoped.findings.map((f, i) => `${i + 1}. ${f.message} · ${f.evidence[0].path}:${f.evidence[0].line}`));
+      assert.deepEqual(await readFile(source), before);
+      await rm(other, { recursive: true });
+      console.log(`${language}/rpc: feature scope offered and applied, source unchanged`);
     }
     if (artifact) {
       if (pty) await qualifyTerminal(pty, {
