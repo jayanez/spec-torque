@@ -1,10 +1,10 @@
 # Pilot operations
 
-The maintainer coordinates confirmations and the release decision in [issue #8](https://github.com/jayanez/spec-torque/issues/8). All dates use Europe/Madrid. This runbook is for the 2026 pilot. Dates record planned checkpoints.
+The maintainer coordinates confirmations and the release decision in [issue #8](https://github.com/jayanez/spec-torque/issues/8). All dates use Europe/Madrid. This runbook is for the 2026 pilot. Dates are planning checkpoints. The maintainer may advance the pilot once participants, support, the receiving channel and a qualified candidate are ready. Keep the advertised window unless those arrangements are confirmed.
 
 | Window | Operator action and evidence |
 |---|---|
-| Through November 26 | Agree the release scope and routes. Confirm the EN/ES audience, support and receiving channel, and operators for the required platforms. Freeze feature intake. |
+| Through November 26 | Agree the release scope and routes. Confirm the EN/ES audience, support and receiving channel, and operators for the required platforms. Lock scope for the pilot candidate. |
 | November 27–30 | Rehearse both languages on freshly installed packages. Freeze the pilot SHA, package digests, fixture versions and guides on November 30. Mark internal runs as synthetic. |
 | December 1–4 | Offer the local route to confirmed participants. Record the Windows, Linux and macOS operational evidence and the per-client native evidence by host, version, architecture and digest. Offer the workbench where an optional native route is unavailable. |
 | December 5–10 | Triage volunteered reports daily and verify narrowly scoped fixes. Freeze the stable candidate on December 9. Close collection December 10 and finish review against that exact candidate. |
@@ -14,11 +14,15 @@ The maintainer coordinates confirmations and the release decision in [issue #8](
 
 Use the [voluntary form](pilot-feedback.md) through the confirmed receiving channel. Keep raw submissions access-restricted. Before sharing, ask participants to approve the minimum synthetic or sanitized reproduction. Reports, ZIP contents and captures can expose source excerpts, names, credentials, host paths or metadata. If a submission contains sensitive material, stop redistributing it, contact the participant privately and arrange removal from each controlled copy and the original channel. Public evidence consists of approved excerpts, reproducible public or licensed fixtures, and consented aggregates.
 
-Record the observation, suspected cause, repeatable steps, owner, severity, candidate digest and outcome. Group repeats by root cause while retaining separate attempts. Stop the affected route for data loss, unauthorized writes or an unexpected disclosure. After November 26, accept agreed scope completion and concrete defects. Use the smallest existing check that reproduces the issue, or add a regression for the precise failure. Requalify changed routes with a fresh digest. Keep unresolved, untested and partial reports visible.
+Record the observation, suspected cause, repeatable steps, owner, severity, candidate digest and outcome. Group repeats by root cause while retaining separate attempts. Stop the affected route for data loss, unauthorized writes or an unexpected disclosure. After scope lock, accept agreed scope completion and concrete defects on the pilot branch. Continue feature work on `develop`. Use the smallest existing check that reproduces the issue, or add a regression for the precise failure. Requalify changed routes with a fresh digest. Keep unresolved, untested and partial reports visible.
 
 Summarize known sessions and attempts, denominators per question and missing data. Use installation attempts for observed failures, complete timings for time to first analysis, and reported proposal decisions for proposal results. Report language coverage and voluntary-selection bias. Keep synthetic runs, historical agent-reviewed corpus labels and participant observations in separate evidence records. The pilot supplies evidence about observed sessions and errors.
 
-## Candidate gate
+## Early publication
+
+The maintainer may approve a GitHub prerelease before participant sessions. Require independent review, passing CI, reproducible installers with verified checksums, and exact candidate evidence for each advertised route. Publish the reproducible EN/ES demo and disclose the pending pilot and host limits. Keep issue #8 open and record participant evidence against the version and digest they actually use. Apply the stable candidate gate below when deciding whether to publish a post-pilot release.
+
+## Stable candidate gate
 
 For each advertised route record exact versions, fixture, input architecture, product SHA and digest, steps and observed result. The evidence index distinguishes hosted CI, browser automation, installed native clients, manual keyboard or assistive technology, and participant runs. Safari with VoiceOver remains pending until actually exercised. A concrete barrier may be fixed with regression evidence and its own recheck. Use [installation](releases.md) and [qualification](qualification.md) for the commands.
 
