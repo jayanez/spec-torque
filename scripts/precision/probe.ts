@@ -85,11 +85,55 @@ export function lineLanguage(text: string): 'en' | 'es' | 'und' {
 }
 
 const modalWord = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
-/** True when the line has modal words and every one sits inside a code span or quotation. */
+/**
+ * Character ranges of mentions, found by a scanner written independently from the engine:
+ * equal-length backtick runs, straight double quotes bounded by non-word characters,
+ * curly double quotes and guillemets. Single quotes are not mentions.
+ */
+export function mentionRanges(text: string): [number, number][] {
+  const ranges: [number, number][] = [];
+  const word = (char: string | undefined) => char !== undefined && /[\p{L}\p{N}\p{M}_]/u.test(char);
+  let i = 0;
+  while (i < text.length) {
+    const char = text[i];
+    if (char === '`') {
+      let n = 0;
+      while (text[i + n] === '`') n++;
+      let j = i + n;
+      let close = -1;
+      while (j < text.length) {
+        if (text[j] === '`') {
+          let m = 0;
+          while (text[j + m] === '`') m++;
+          if (m === n) { close = j; break; }
+          j += m;
+        } else j++;
+      }
+      if (close > i + n) { ranges.push([i, close + n]); i = close + n; continue; }
+      i += n;
+      continue;
+    }
+    const pairs: Record<string, string> = { '“': '”', '«': '»' };
+    if (pairs[char]) {
+      const close = text.indexOf(pairs[char], i + 1);
+      if (close > 0) { ranges.push([i, close + 1]); i = close + 1; continue; }
+    }
+    if (char === '"' && !word(text[i - 1])) {
+      let close = text.indexOf('"', i + 1);
+      while (close > 0 && word(text[close + 1])) close = text.indexOf('"', close + 1);
+      if (close > 0) { ranges.push([i, close + 1]); i = close + 1; continue; }
+    }
+    i++;
+  }
+  return ranges;
+}
+
+/** True when the line has modal words and every one sits inside a mention range. */
 export function quotedOnlyModal(text: string): boolean {
   const nfc = text.normalize('NFC');
-  const bare = nfc.replace(/`[^`]*`|"[^"]*"|“[^”]*”|'[A-Za-zÁÉÍÓÚáéíóú ]+'/gu, ' ');
-  return modalWord.test(nfc) && !modalWord.test(bare);
+  const ranges = mentionRanges(nfc);
+  const hits = [...nfc.matchAll(new RegExp(modalWord.source, 'giu'))];
+  return hits.length > 0 && hits.every(hit => ranges.some(([start, end]) => hit.index! >= start && hit.index! < end));
 }
 
 /** Lines inside, opening or closing an HTML comment. */

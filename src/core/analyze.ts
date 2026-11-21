@@ -12,8 +12,10 @@ const monthEnumerationMay = new RegExp(
   `(?<![\\p{L}\\p{N}\\p{M}_])(${monthItem('Apr(?:il)?')}[ \\t]*,[ \\t]*)${monthItem('May')}([ \\t]*,[ \\t]*${monthItem('Jun(?:e)?')})(?![\\p{L}\\p{N}\\p{M}_])`,
   'giu',
 );
-// Modal words inside inline code or double quotation marks are mentioned, not used.
-const mentioned = /(`+)[^`]+?\1|"[^"]*"|“[^”]*”/gu;
+// Modal words inside inline code, double quotation marks or guillemets are mentioned, not used.
+// Code spans pair backtick runs of equal length; a straight quote span needs a non-word
+// character (or line edge) outside both quotes, so inch marks such as 27" never open one.
+const mentioned = /(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)|(?<![\p{L}\p{N}\p{M}_])"[^"]*"(?![\p{L}\p{N}\p{M}_])|“[^”]*”|«[^»]*»/gu;
 const hasNormativeModal = (text: string) => modal.test(
   text.normalize('NFC').replace(mentioned, ' ').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );

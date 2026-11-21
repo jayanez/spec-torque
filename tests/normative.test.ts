@@ -50,12 +50,14 @@ test('Unicode token boundaries reject embedded normative words with and without 
 });
 
 test('Unicode punctuation and lowercase forms retain exact source evidence', async () => {
-  for (const word of ['deberá', 'deberían', 'pueden', 'may']) {
-    const text = `El servicio «${word}» responder rápido.`;
+  // Guillemets mark a mention since engine 0.1.5 (H2a); parentheses and exclamation marks do not.
+  for (const word of ['deberá', 'deberían', 'pueden', 'may']) for (const text of [`El servicio (${word}) responder rápido.`, `El servicio ¡${word}! responder rápido.`]) {
     const result = await analyze({ name: 'punctuation', artifacts: [classifyArtifact('spec.md', text)] });
     assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'supported', word);
     assert.deepEqual(result.practices.find(p => p.id === 'E1.4')?.evidence, [{ path: 'spec.md', line: 1, text }]);
   }
+  const mention = await analyze({ name: 'guillemets', artifacts: [classifyArtifact('spec.md', 'El servicio «deberá» responder rápido.')] });
+  assert.equal(mention.practices.find(p => p.id === 'E1.4')?.status, 'unknown');
 });
 
 test('embedded mandatory words cannot generate contradictions in ID-labelled requirements', async () => {

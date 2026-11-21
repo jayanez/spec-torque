@@ -1060,7 +1060,6 @@
       "lines": [
         "Displays up to 27\" MUST be supported; 32\" are out of scope.",
         "Keywords like ``MUST`` stay in English.",
-        "Use 'MUST' only for obligations.",
         "The label MUST read \"Saved\" and the hint \"Retry\"."
       ],
       "targets": [
@@ -1080,13 +1079,6 @@
         },
         {
           "line": 3,
-          "admitted": true,
-          "E1.4": "negative",
-          "E1.2": "negative",
-          "note": "Single quotes are outside H2; a known residual false positive."
-        },
-        {
-          "line": 4,
           "admitted": true,
           "E1.4": "positive",
           "E1.2": "negative",
@@ -1131,6 +1123,24 @@
           "admitted": true,
           "E1.4": "positive",
           "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "single-quoted-modal-en",
+      "family": "quoted-modal-residual",
+      "language": "en",
+      "path": "specs/004-single/spec.md",
+      "lines": [
+        "Use 'MUST' only for obligations."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Single quotes are outside H2; a known residual false positive."
         }
       ]
     }
