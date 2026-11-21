@@ -183,7 +183,7 @@ async function scan() {
     uniqueFindingChanges: new Set<string>(),
     oracleConflicts: { baseline: 0, candidate: 0 },
     failure: { repositories: new Set<string>(), lineages: new Set<string>(), distinctLines: new Set<string>(), byLanguage: { en: 0, es: 0, und: 0 } },
-    adjacent: {} as Record<string, { statusChanged: number; findingsAdded: number; findingsRemoved: number; evidenceChanged: number }>,
+    adjacent: {} as Record<string, { statusChanged: number; statusTransitions: Record<string, number>; findingsAdded: number; findingsRemoved: number; evidenceChanged: number }>,
     evidenceInvalid: { baseline: 0, candidate: 0 },
     // Exploratory signals for future hypotheses; measured on the baseline arm only.
     residual: {
@@ -198,7 +198,7 @@ async function scan() {
       quotedOnlyAdmitted: 0, repositories: new Set(), lineages: new Set() });
     return byFramework.get(name)!;
   };
-  const adjacent = (id: string) => (aggregate.adjacent[id] ??= { statusChanged: 0, findingsAdded: 0, findingsRemoved: 0, evidenceChanged: 0 });
+  const adjacent = (id: string) => (aggregate.adjacent[id] ??= { statusChanged: 0, statusTransitions: {}, findingsAdded: 0, findingsRemoved: 0, evidenceChanged: 0 });
   const rootRevisions: { id: string; sha: string; restricted: boolean }[] = [];
   for (const root of roots) {
     const { sha, files } = await snapshot(root, join(temp, 'roots', root.id));
@@ -279,7 +279,12 @@ async function scan() {
       const [before, after] = await Promise.all([arms.baseline.analyze(selected), arms.candidate.analyze(selected)]);
       for (const practice of before.practices) {
         const next = after.practices.find(item => item.id === practice.id)!;
-        if (practice.status !== next.status) adjacent(practice.id).statusChanged++;
+        if (practice.status !== next.status) {
+          const entry = adjacent(practice.id);
+          entry.statusChanged++;
+          const transition = `${practice.status}->${next.status}`;
+          entry.statusTransitions[transition] = (entry.statusTransitions[transition] ?? 0) + 1;
+        }
         if (JSON.stringify(practice.evidence) !== JSON.stringify(next.evidence)) adjacent(practice.id).evidenceChanged++;
       }
       const keys = (side: typeof before) => new Map(side.findings.map(finding => [findingKey(finding), finding.practiceId]));

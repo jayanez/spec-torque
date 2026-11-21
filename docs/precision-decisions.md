@@ -142,7 +142,51 @@ provisional engineering change with these limits:
 - no independent labels yet;
 - Spanish evidence comes only from the development sets.
 
-It is not merged, and opening the issue is the owner's decision.
+It is not merged. The owner approved the issue, filed as
+[#51](https://github.com/jayanez/spec-torque/issues/51). The 18-repository set is now
+development data, because the ablation was measured on it: the quotation part alone
+excludes 46 of the 47 distinct lines, the code-span part alone 4, and 1 line needs
+both.
+
+**Downstream status (18-repository set, re-run with status transitions).** E1.2
+moves from `partial` to `missing` in 8 features. No other practice changes status.
+
+### H2b: Spanish confirmation — **criterion not met**
+
+The sources were frozen at `bcc8536` before any file was read: 20 MIT or
+Apache-2.0 repositories found by code search for `"DEBE"` by family path, with
+every owner used earlier excluded. ZeeSpec again had no qualifying repository.
+
+| Measure | Count |
+|---|---:|
+| Target documents / lineages | 2,227 / 2,089 |
+| Candidate lines EN / ES / undetermined | 5,774 / 1,649 / 5,359 |
+| Lines no longer admitted (none newly admitted) | 202 |
+| Distinct changed lines, EN / ES | 148 / 13 |
+| Changes outside the scanner's scope | 3 |
+| Findings removed (none added) | 246 |
+| Invalid evidence | 0 |
+
+- **Spanish target missed.** Only 13 distinct Spanish lines changed, against the
+  20 required, and 10 of them come from one repository. The Spanish criterion of
+  #51 stays open.
+- **Provisional review of the 13 Spanish lines** (this session, not independent):
+  - 12 are mentions: quoted user descriptions in Spec Kit inputs, quoted UI
+    messages in `THEN` steps, and a quoted NFR used as an example.
+  - 1 is borderline under limit 2: a quoted "guiding principle" that the document
+    states as its own rule.
+- **Outside the scanner's scope.** All 3 are quotations inside code spans
+  (exception text, CLI messages, a quoted contract), as in the earlier
+  development sets. They are mentions.
+- **Concentration.** 135 of the 161 distinct lines come from one English
+  repository, so the English part of this set is dominated by one author.
+- **Downstream status transitions.** E1.4 moves `partial→missing` in 21 features
+  and `supported→unknown` in 10. E2.1 moves `partial→supported` in 11. I1.2 and
+  I2.2 move `missing→unknown` in 10. None of these were adjudicated.
+
+The adjudication packets for both sets (`scripts/precision/adjudication-packet.ts`,
+protocol in [precision adjudication](precision-adjudication.md)) are built and
+held locally. They await two independent reviewers and the owner's threshold.
 
 ## 2. Feedback workflow (F1) — **keep, unchanged**
 
