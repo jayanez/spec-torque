@@ -140,9 +140,9 @@ export async function clarifyE12(
       /^[`"”'’»]/u.test(after)) return decline('named-option');
 
   const clause = before.split(/[,;]/).at(-1) ?? '';
-  // Only act on the affirmative obligation nearest the selected cue.
-  if (!/\b(?:must|shall|debe|deberá)\b/u.test(clause) ||
-      /\b(?:must not|shall not|no debe|no deberá)\b/u.test(clause) ||
+  // The last normative phrase governs the cue in a compound requirement.
+  const modal = [...clause.matchAll(/\b(?:(?:no|nunca)\s+)?(?:must|shall|may|should|no puede|pueden?|debe(?:n|rán?|rían?)?)(?:\s+(?:not|never|nunca|no))?\b/gu)].at(-1);
+  if (!modal || !/^(?:must|shall|debe(?:n|rán?)?)$/u.test(modal[0]) ||
       /(?:[`"'“‘«])$/u.test(before)) return decline('unsupported');
   const timing = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) &&
     /\b(?:search|lookup|query|response|acknowledg\w*|load|render|búsqueda|consulta|respuesta|acuse|cargar|mostrar)\b/u.test(clause);

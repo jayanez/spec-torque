@@ -178,3 +178,16 @@ test('undefined adaptation requests observable behavior before a time limit', as
     assert.match(result.question, wording);
   }
 });
+
+test('the closest modality governs clarification of mixed or negated clauses', async () => {
+  for (const [language, source, kind] of [
+    ['en', 'FR-020: The console MUST retain the record and MAY dismiss the alert as needed.', 'abstain'],
+    ['es', 'FR-020: La consola DEBE conservar el registro y PUEDE retirar el aviso cuando sea necesario.', 'abstain'],
+    ['en', 'FR-021: The console MUST never dismiss the alert as needed.', 'abstain'],
+    ['es', 'FR-021: La consola DEBE nunca retirar el aviso cuando sea necesario.', 'abstain'],
+    ['en', 'FR-022: The console MAY archive the record but MUST dismiss the alert as needed.', 'question'],
+  ] as const) {
+    const { result } = await check(documents('specs/notice/spec.md', source), language);
+    assert.equal(result.kind, kind, source);
+  }
+});
