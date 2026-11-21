@@ -43,6 +43,7 @@
     "build": "npm run typecheck && node scripts/build.mjs",
     "check": "npm run verify:node && npm run test && npm run build",
     "corpus:report": "node --import tsx scripts/corpus-report.ts",
+    "precision:replay": "node --import tsx scripts/precision/replay.ts",
     "package:integrations": "npm run verify:node && node scripts/package-integrations.mjs",
     "qualify:codex": "node --import tsx scripts/qualify-codex.mjs",
     "test:vscode": "node scripts/test-vscode.mjs",
