@@ -178,6 +178,8 @@ async function scan() {
     // Changed lines (admission or any decision) by whether every modal word is mentioned.
     changeScope: { quotedOnlyModal: 0, other: 0 },
     findingChangesOnOtherLines: 0,
+    // Inherited instruction files repeat a finding in every feature; count each finding once.
+    uniqueFindingChanges: new Set<string>(),
     oracleConflicts: { baseline: 0, candidate: 0 },
     failure: { repositories: new Set<string>(), lineages: new Set<string>(), distinctLines: new Set<string>(), byLanguage: { en: 0, es: 0, und: 0 } },
     adjacent: {} as Record<string, { statusChanged: number; findingsAdded: number; findingsRemoved: number; evidenceChanged: number }>,
@@ -283,10 +285,12 @@ async function scan() {
       };
       for (const [key, practice] of current) if (!old.has(key)) {
         adjacent(practice).findingsAdded++;
+        aggregate.uniqueFindingChanges.add(`${root.repository}|+|${key}`);
         if (!quoted(key)) aggregate.findingChangesOnOtherLines++;
       }
       for (const [key, practice] of old) if (!current.has(key)) {
         adjacent(practice).findingsRemoved++;
+        aggregate.uniqueFindingChanges.add(`${root.repository}|-|${key}`);
         if (!quoted(key)) aggregate.findingChangesOnOtherLines++;
       }
     }
@@ -297,7 +301,7 @@ async function scan() {
   };
   return {
     rootRevisions, restrictedDetail, publicDetail, rootsHash: sha256(rootsBytes),
-    aggregate: { ...aggregate, lineages: aggregate.lineages.size, failure,
+    aggregate: { ...aggregate, lineages: aggregate.lineages.size, failure, uniqueFindingChanges: aggregate.uniqueFindingChanges.size,
       byFramework: Object.fromEntries([...byFramework].sort(([a], [b]) => a.localeCompare(b)).map(([name, row]) =>
         [name, { ...row, repositories: row.repositories.size, lineages: row.lineages.size }])),
       residual: Object.fromEntries(Object.entries(aggregate.residual).map(([key, bucket]) => [key, {
