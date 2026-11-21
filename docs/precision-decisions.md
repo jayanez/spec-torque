@@ -346,6 +346,46 @@ H2d goes to independent adjudication under
 [precision adjudication](precision-adjudication.md). The owner fixes the threshold
 before labeling and decides on the product change.
 
+### H2d adjudication — **fails; the ID-anchoring rule is rejected**
+
+Labels (2026-11-21) were assigned under the threshold fixed beforehand.
+- Two blind agent reviewers and an agent adjudicator labeled 300 sampled lines. The
+  reviewers saw only the lines, their context and a label guide.
+- Agreement: Cohen's kappa 0.81 (271 of 300). The adjudicator resolved 29 lines.
+- The labels and scoring script are held locally.
+
+| Changes (H2d vs 0.1.4) | Lineages | With an error | Upper 95% bound | Threshold ≤ 5% |
+|---|---:|---:|---:|---|
+| Excluded, all packets | 93 | 42 | 54.2% | **fails** |
+| Excluded, fresh set | 43 | 30 | 81.1% | **fails** |
+| Excluded, development set | 47 | 12 | 38.1% | **fails** |
+| Admitted, all packets | 61 | 1 | 7.5% | **fails** (sample size) |
+
+**What H2d wrongly stops admitting.** Requirements that cite an ID without
+starting with one:
+- edge-case bullets (`- **Oversized batch**: … are rejected … (FR-013)`);
+- numbered `Given/When/Then` acceptance scenarios that cite an FR;
+- success criteria (`SC-…`);
+- IDs with a project prefix (`AV-REQ-016`, `WS-REQ-010.AC-02`);
+- table rows and domain rules in Portuguese.
+
+**The provisional reviews were wrong.** This session's own sampled review had read
+these lines as references, and so passed H2d gate 3. The independent labels
+contradict it.
+
+**Caveat.** The label guide counts acceptance scenarios and success criteria as
+requirements, but the engine deliberately excludes plain `GIVEN`/`WHEN`/`THEN`
+lines. Part of the measured error therefore comes from that difference in
+definitions, not only from the rule.
+
+**Decision.** H2d is not merged, and the defining-position rule is rejected.
+- In practice, a line that contains an ID is a better admission signal than its
+  position.
+- The H2c problem (cross-references admitted) is real but smaller than the cost of
+  anchoring.
+- H2b's mention rule has not itself been adjudicated with independent labels.
+  The remaining candidate for #51 is H2b alone, which needs its own packets.
+
 The adjudication packets for all three sets (`scripts/precision/adjudication-packet.ts`,
 protocol in [precision adjudication](precision-adjudication.md)) are built and
 held locally. They await two independent reviewers and the owner's threshold.
