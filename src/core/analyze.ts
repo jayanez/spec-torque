@@ -1,9 +1,9 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.5';
+export const ENGINE_VERSION = '0.1.6';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
-const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
+const requirementId = /\b(?:FR|NFR|RF|RNF|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
 const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
 const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:\d{4}|(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?)(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
@@ -35,7 +35,7 @@ function linesOf(artifact: Artifact): Line[] {
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
+    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|RF|RNF|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
   });
 }
@@ -69,10 +69,10 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
   if (id === 'I1.2' || id === 'I2.2') {
     const ids = specRequirements.flatMap(l => (l.text.match(requirementId) ?? []).map(x => l.artifact.featureId + ':' + x.toUpperCase()));
     const unique = new Set(ids);
-    return { status: !specRequirements.length ? 'unknown' : ids.length === specRequirements.length && ids.length === unique.size ? 'supported' : ids.length ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
+    return { status: !specRequirements.length ? 'unknown' : ids.length === specRequirements.length && ids.length === unique.size ? 'supported' : ids.length ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|RF|RNF|REQ|R)-\d+\b/i.test(l.text)) };
   }
   if (['I2.3', 'C1.3', 'C2.3'].includes(id)) {
-    const hits = lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role) && /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text));
+    const hits = lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role) && /\b(?:FR|NFR|RF|RNF|REQ|R)-\d+\b/i.test(l.text));
     return { status: hits.length ? 'partial' : 'missing', hits };
   }
   if (id === 'C1.2') {
@@ -122,7 +122,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   for (const line of requirements) {
     for (const match of line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, '').matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
     if (/^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:it|this|that|esto|eso|ello)\b/i.test(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
-    if (!/\b(?:FR|NFR|REQ|R)-\d+\b/i.test(line.text) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
+    if (!/\b(?:FR|NFR|RF|RNF|REQ|R)-\d+\b/i.test(line.text) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
     if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }
   const definitions = new Map<string, Line[]>();
@@ -141,7 +141,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
   const behaviors = new Map<string, { line: Line; negative: boolean }>();
   for (const line of requirements) {
-    const text = line.text.replace(/\b(?:FR|NFR|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').normalize('NFC').trim();
+    const text = line.text.replace(/\b(?:FR|NFR|RF|RNF|REQ|R)-\d+\s*:?/gi, '').replace(/^\s*[-*]\s*/, '').normalize('NFC').trim();
     const match = text.match(/^(.*?)(?<![\p{L}\p{N}\p{M}_])(?:(MUST|SHALL)\s+(?:(NOT|never)\s+)?|((?:NO|NUNCA)\s+)?(DEBE|DEBEN|DEBERÁ|DEBERÁN)(?:\s+(nunca))?\s+)(.+)$/iu);
     if (!match) continue;
     const negative = Boolean(match[3] || match[4] || match[6]);
