@@ -35,3 +35,14 @@ export function confusion(rows: Row[]) {
   };
 }
 export type Confusion = ReturnType<typeof confusion>;
+
+/**
+ * Restricted exports replace line-level counts between 1 and 4 with `<5`. Root, repository
+ * and lineage counts stay exact because the recurrence gate depends on them.
+ */
+const exact = new Set(['roots', 'restrictedRoots', 'repositories', 'lineages']);
+export function suppress(value: unknown, key = ''): unknown {
+  if (typeof value === 'number') return !exact.has(key) && value > 0 && value < 5 ? '<5' : value;
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, suppress(item, name)]));
+  return value;
+}

@@ -146,3 +146,24 @@ test('recommendations and permissions do not become mandatory contradictions', a
   assert.equal(result.findings.some(f => f.message.includes('Opposite obligations')), false);
   assert.equal(result.practices.find(p => p.id === 'C1.2')?.status, 'unknown');
 });
+
+test('modal words mentioned in code spans or double quotes are not requirements', async () => {
+  const lines = [
+    'Keywords such as `SHALL` and `MUST` stay in English.',
+    'Show an example: "The system SHALL log."',
+    'Mostrar: “El sistema DEBE registrar.”',
+    '¿Qué "debe" significar el término?',
+    'FR-010: Reject bodies without `MUST`.',
+    'The parser MUST reject lines without `SHALL`.',
+    'La app DEBE mostrar "Guardado" tras editar.',
+    'The screen MUST be 5" wide.',
+  ];
+  const text = lines.join('\r\n');
+  const result = await analyze({ name: 'mentions', artifacts: [classifyArtifact('spec.md', text)] });
+  const e14 = result.practices.find(p => p.id === 'E1.4')!;
+  assert.equal(e14.status, 'partial');
+  assert.deepEqual(e14.evidence.map(item => item.line), [6, 7, 8]);
+  assert.deepEqual(e14.evidence.map(item => item.text), [lines[5], lines[6], lines[7]]);
+  const unidentified = result.findings.filter(f => f.message === 'Requirement has no stable identifier.').map(f => f.evidence[0].line);
+  assert.deepEqual(unidentified, [6, 7, 8]);
+});

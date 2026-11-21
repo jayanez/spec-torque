@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { archiveEngine, commit, repository } from './engines.js';
-import { confusion } from './metrics.js';
+import { confusion, suppress } from './metrics.js';
 import { candidateLines, commentLines, fencedLines, quotedOnlyModal, lineLanguage, predictLine, segments, sha256, type LinePrediction } from './probe.js';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
@@ -280,17 +280,6 @@ async function scan() {
       residual: Object.fromEntries(Object.entries(aggregate.residual).map(([key, bucket]) => [key, {
         lines: bucket.lines, repositories: bucket.repositories.size, lineages: bucket.lineages.size }])) },
   };
-}
-
-/**
- * Line-level counts below five are suppressed in exported restricted aggregates. Root,
- * repository and lineage counts stay exact because the recurrence gate depends on them.
- */
-const exact = new Set(['roots', 'restrictedRoots', 'repositories', 'lineages']);
-function suppress(value: unknown, key = ''): unknown {
-  if (typeof value === 'number') return !exact.has(key) && value > 0 && value < 5 ? '<5' : value;
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, suppress(item, name)]));
-  return value;
 }
 
 try {
