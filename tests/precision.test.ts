@@ -92,3 +92,16 @@ test('restricted aggregates suppress small line counts but keep recurrence total
   assert.deepEqual(suppress({ roots: 3, documents: 4, failure: { repositories: 2, lineages: 1, distinctLines: 3 }, adjacent: { E1: { added: 0, removed: 7 } } }),
     { roots: 3, documents: '<5', failure: { repositories: 2, lineages: 1, distinctLines: '<5' }, adjacent: { E1: { added: 0, removed: 7 } } });
 });
+
+test('the audit keeps duplicate, missing and unparsable IDs out of the join', () => {
+  const report = audit(
+    [{ id: 'a', label: 'positive', targetLine: 'x MUST' }, { id: 'a', label: 'negative' }, { label: 'negative' }],
+    [{ id: 'a', label: 'yes', evidence: 'MUST' }, { id: 'b', label: 'no' }, { __parseError: true }, { label: 'no' }],
+  );
+  assert.equal(report.duplicateFixtures, 1);
+  assert.equal(report.fixturesWithoutId, 1);
+  assert.equal(report.unmatchedResults, 1);
+  assert.equal(report.parseErrors, 1);
+  assert.equal(report.resultsWithoutId, 1);
+  assert.deepEqual(report.perClass.positive, { correct: 1, denominator: 1 });
+});

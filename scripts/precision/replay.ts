@@ -137,7 +137,8 @@ async function synthetic() {
 }
 
 const openSpecTarget = /(?:^|\/)openspec\/(?:specs\/(?:[^/]+\/)*spec\.md|changes\/(?!archive\/)[^/]+\/specs\/(?:[^/]+\/)*spec\.md)$/iu;
-function lineageOf(path: string) {
+function lineageOf(path: string, framework: string, featureId: string) {
+  if (framework !== 'openspec' && framework !== 'spec-kit') return `${framework}:${featureId.toLowerCase()}`;
   const open = /openspec\/(?:changes\/[^/]+\/)?specs\/(.+)\/spec\.md$/iu.exec(path);
   if (open) return `openspec:${open[1].toLowerCase()}`;
   const kit = /(?:^|\/)specs\/(?:\d+-)?([^/]+)\//iu.exec(path);
@@ -145,7 +146,8 @@ function lineageOf(path: string) {
 }
 
 async function snapshot(root: Root, directory: string) {
-  const run = (...args: string[]) => execFileSync('git', ['-C', root.path, ...args], { maxBuffer: 1 << 28 });
+  // Capture stderr: git messages can contain restricted paths.
+  const run = (...args: string[]) => execFileSync('git', ['-C', root.path, ...args], { maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'] });
   const sha = run('rev-parse', '--verify', '--end-of-options', `${root.ref}^{commit}`).toString().trim();
   const paths = run('ls-tree', '-r', '-z', '--name-only', sha).toString().split('\0').filter(path => /\.md$/iu.test(path));
   await mkdir(directory, { recursive: true });
@@ -186,6 +188,13 @@ async function scan() {
       htmlComment: { lines: 0, repositories: new Set<string>(), lineages: new Set<string>() },
     },
   };
+  const byFramework = new Map<string, { documents: number; candidateLines: number; changed: number; changedOther: number;
+    quotedOnlyAdmitted: number; repositories: Set<string>; lineages: Set<string> }>();
+  const frameworkRow = (name: string) => {
+    if (!byFramework.has(name)) byFramework.set(name, { documents: 0, candidateLines: 0, changed: 0, changedOther: 0,
+      quotedOnlyAdmitted: 0, repositories: new Set(), lineages: new Set() });
+    return byFramework.get(name)!;
+  };
   const adjacent = (id: string) => (aggregate.adjacent[id] ??= { statusChanged: 0, findingsAdded: 0, findingsRemoved: 0, evidenceChanged: 0 });
   const rootRevisions: { id: string; sha: string; restricted: boolean }[] = [];
   for (const root of roots) {
@@ -195,12 +204,17 @@ async function scan() {
     if (root.restricted) aggregate.restrictedRoots++;
     const artifacts = [...files].filter(([path]) => arms.baseline.isSpecCandidate(path))
       .map(([path, content]) => arms.baseline.classifyArtifact(path, content));
+    // Pre-registered primary population (OpenSpec, Spec Kit) plus every other supported family.
     const targets = artifacts.filter(artifact => !artifact.archived && artifact.role === 'spec' && (
-      (artifact.framework === 'openspec' && openSpecTarget.test(artifact.path)) ||
-      (artifact.framework === 'spec-kit' && /(?:^|\/)spec\.md$/iu.test(artifact.path))));
+      artifact.framework === 'openspec' ? openSpecTarget.test(artifact.path)
+        : artifact.framework === 'spec-kit' ? /(?:^|\/)spec\.md$/iu.test(artifact.path) : true));
     aggregate.documents += targets.length;
     for (const artifact of targets) {
-      const lineage = `${root.repository}|${lineageOf(artifact.path)}`;
+      const lineage = `${root.repository}|${lineageOf(artifact.path, artifact.framework, artifact.featureId)}`;
+      const family = frameworkRow(artifact.framework);
+      family.documents++;
+      family.repositories.add(root.repository);
+      family.lineages.add(lineage);
       aggregate.lineages.add(lineage);
       const fenced = fencedLines(artifact.content);
       const comments = commentLines(artifact.content);
@@ -209,6 +223,7 @@ async function scan() {
         const text = rows[line - 1].text;
         const language = lineLanguage(text);
         aggregate.candidateLines[language]++;
+        family.candidateLines++;
         const [baseline, candidate]: LinePrediction[] = await Promise.all([
           predictLine(arms.baseline, artifact.path, artifact.content, line),
           predictLine(arms.candidate, artifact.path, artifact.content, line),
@@ -234,9 +249,15 @@ async function scan() {
           aggregate.admissionChanges[candidate.admitted === !fenced.has(line) ? 'agreeWithOracle' : 'disagreeWithOracle']++;
         }
         for (const rule of ['E1.4', 'E1.2'] as const) if (baseline[rule] !== candidate[rule]) aggregate.decisionChanges[rule]++;
-        if (JSON.stringify(baseline) !== JSON.stringify(candidate)) aggregate.changeScope[quotedOnlyModal(text) ? 'quotedOnlyModal' : 'other']++;
+        if (JSON.stringify(baseline) !== JSON.stringify(candidate)) {
+          const inScope = quotedOnlyModal(text);
+          aggregate.changeScope[inScope ? 'quotedOnlyModal' : 'other']++;
+          family.changed++;
+          if (!inScope) family.changedOther++;
+        }
+        if (baseline.admitted && quotedOnlyModal(text)) family.quotedOnlyAdmitted++;
         if (baseline.admitted !== candidate.admitted || (baseline.admitted && fenced.has(line))) {
-          const row = { root: root.id, lineage, path: artifact.path, line, language, oracleFenced: fenced.has(line), baseline, candidate };
+          const row = { root: root.id, framework: artifact.framework, lineage, path: artifact.path, line, language, oracleFenced: fenced.has(line), baseline, candidate };
           if (root.restricted) restrictedDetail.push(row);
           else publicDetail.push({ ...row, revision: sha, text: text.slice(0, 300) });
         }
@@ -277,6 +298,8 @@ async function scan() {
   return {
     rootRevisions, restrictedDetail, publicDetail, rootsHash: sha256(rootsBytes),
     aggregate: { ...aggregate, lineages: aggregate.lineages.size, failure,
+      byFramework: Object.fromEntries([...byFramework].sort(([a], [b]) => a.localeCompare(b)).map(([name, row]) =>
+        [name, { ...row, repositories: row.repositories.size, lineages: row.lineages.size }])),
       residual: Object.fromEntries(Object.entries(aggregate.residual).map(([key, bucket]) => [key, {
         lines: bucket.lines, repositories: bucket.repositories.size, lineages: bucket.lineages.size }])) },
   };
@@ -298,11 +321,11 @@ try {
   } else {
     const result = await scan();
     const restricted = result.rootRevisions.some(root => root.restricted);
-    const generated = { ...identity, policyHash: await policyHash([]), rootsHash: result.rootsHash };
+    const generated = { ...identity, policyHash: await policyHash([]), ...(restricted ? {} : { rootsHash: result.rootsHash }) };
     if (restricted) {
       await mkdir(values.out!, { recursive: true, mode: 0o700 });
       const detail = join(values.out!, `restricted-detail-${Date.now()}.json`);
-      await writeFile(detail, json({ ...generated, rootRevisions: result.rootRevisions, rows: result.restrictedDetail }), { mode: 0o600 });
+      await writeFile(detail, json({ ...generated, rootsHash: result.rootsHash, rootRevisions: result.rootRevisions, rows: result.restrictedDetail }), { mode: 0o600 });
       await chmod(detail, 0o600);
     }
     const publicDirectory = await mkdtemp(join(output, 'scan-'));

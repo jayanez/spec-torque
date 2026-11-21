@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const repository = fileURLToPath(new URL('../..', import.meta.url));
-export const git = (...args: string[]) => execFileSync('git', args, { cwd: repository, encoding: 'utf8' }).trim();
+export const git = (...args: string[]) => execFileSync('git', args, { cwd: repository, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 export const commit = (ref: string) => git('rev-parse', '--verify', '--end-of-options', `${ref}^{commit}`);
 
 export async function loadEngine(root: string) {

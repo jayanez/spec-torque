@@ -25,21 +25,30 @@ const field = (record: Record<string, unknown>, path: string) =>
   path.split('.').reduce<unknown>((value, key) => (value as Record<string, unknown> | undefined)?.[key], record);
 
 export function audit(fixtures: Record<string, unknown>[], results: Record<string, unknown>[], fields: FieldMap = defaultFields) {
+  const key = (record: Record<string, unknown>) => {
+    const value = field(record, fields.id);
+    return typeof value === 'string' && value.length > 0 ? value : typeof value === 'number' ? String(value) : undefined;
+  };
   const byId = new Map<string, Record<string, unknown>>();
-  let duplicateResults = 0;
+  let duplicateResults = 0, resultsWithoutId = 0, parseErrors = 0;
   for (const result of results) {
-    const id = String(field(result, fields.id));
+    if (result.__parseError) { parseErrors++; continue; }
+    const id = key(result);
+    if (id === undefined) { resultsWithoutId++; continue; }
     if (byId.has(id)) duplicateResults++;
     else byId.set(id, result);
   }
   const rows: { reference: Label; decision: Label; exact: boolean; answered: boolean }[] = [];
-  let unmatchedResults = byId.size;
-  let invalidReferences = 0;
+  const seen = new Set<string>();
+  let invalidReferences = 0, fixturesWithoutId = 0, duplicateFixtures = 0;
   for (const fixture of fixtures) {
+    const id = key(fixture);
+    if (id === undefined) { fixturesWithoutId++; continue; }
+    if (seen.has(id)) { duplicateFixtures++; continue; }
+    seen.add(id);
     const reference = normalize(field(fixture, fields.reference));
     if (!reference) { invalidReferences++; continue; }
-    const result = byId.get(String(field(fixture, fields.id)));
-    if (result) unmatchedResults--;
+    const result = byId.get(id);
     // Missing, unparsable or undecided results are abstentions, not negatives.
     const decision = result ? normalize(field(result, fields.decision)) ?? 'unknown' : 'unknown';
     const target = String(field(fixture, fields.target) ?? '');
@@ -47,6 +56,7 @@ export function audit(fixtures: Record<string, unknown>[], results: Record<strin
     const exact = typeof evidence === 'string' && evidence.length > 0 && target.includes(evidence);
     rows.push({ reference, decision, exact, answered: Boolean(result) });
   }
+  const unmatchedResults = [...byId.keys()].filter(id => !seen.has(id)).length;
   const decidedReference = rows.filter(row => row.reference !== 'unknown' && row.decision !== 'unknown');
   const strict = rows.filter(row => row.reference === 'unknown'
     ? row.decision === 'unknown'
@@ -56,7 +66,8 @@ export function audit(fixtures: Record<string, unknown>[], results: Record<strin
     return { correct: subset.filter(row => row.decision === label).length, denominator: subset.length };
   };
   return {
-    fixtures: fixtures.length, results: results.length, invalidReferences, duplicateResults, unmatchedResults,
+    fixtures: fixtures.length, results: results.length, invalidReferences, duplicateFixtures, fixturesWithoutId,
+    duplicateResults, resultsWithoutId, parseErrors, unmatchedResults,
     unanswered: rows.filter(row => !row.answered).length,
     confusion: confusion(rows.map(row => ({ reference: row.reference, prediction: row.decision }))),
     perClass: { positive: byReference('positive'), negative: byReference('negative'), unknown: byReference('unknown') },
