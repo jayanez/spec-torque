@@ -204,3 +204,28 @@ test('quoted labels cannot override the real modality or supply the selected cue
     assert.equal(result.kind, kind, source);
   }
 });
+
+test('removal cannot borrow a vague cue from a different action in the same requirement', async () => {
+  for (const [language, source] of [
+    ['en', 'FR-031: The console MUST remove the expired notice upon confirmation and log as needed.'],
+    ['es', 'FR-032: La consola DEBE retirar el aviso al confirmar y auditar cuando sea necesario.'],
+    ['en', 'FR-033: The console MUST remove the expired notice and log easily.'],
+  ] as const) {
+    const { result } = await check(documents('specs/notices/spec.md', source), language);
+    assert.equal(result.kind, 'abstain', source);
+  }
+});
+
+test('a dismissal question points to disappearance separately from the display condition', async () => {
+  for (const [language, source, question] of [
+    ['en', 'FR-041: The banner MUST display when an allocation expires, and the banner MUST disappear as needed.',
+      'What event or condition should make it disappear?'],
+    ['es', 'FR-041: El aviso DEBE aparecer cuando caduque el cupo y DEBE desaparecer cuando sea necesario.',
+      '¿Qué evento o condición debe hacer que desaparezca?'],
+  ] as const) {
+    const { result } = await check(documents('specs/notices/spec.md', source), language);
+    assert.equal(result.kind, 'question', source);
+    assert.equal(result.focus, 'trigger');
+    assert.equal(result.question, question);
+  }
+});

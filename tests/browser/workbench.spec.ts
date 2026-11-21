@@ -135,8 +135,8 @@ for (const es of [false, true]) {
     const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed wording' });
     const question = page.getByRole('heading', { name: es ? 'Pregunta de aclaración' : 'Clarification question', exact: true });
     await expect(question).toBeVisible();
-    await expect(page.getByText(es ? '¿Qué evento o condición debe activar la retirada descrita aquí?'
-      : 'What event or condition should trigger the removal described here?', { exact: true })).toBeVisible();
+    await expect(page.getByText(es ? '¿Qué evento o condición debe hacer que desaparezca?'
+      : 'What event or condition should make it disappear?', { exact: true })).toBeVisible();
     await expect(editor).toHaveValue(source);
     await expect(wording).toHaveValue(source.split('\n')[2]);
 

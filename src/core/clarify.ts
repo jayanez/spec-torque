@@ -23,6 +23,9 @@ const questions = {
   criterion: ['What observable criterion would establish that this action is easy enough?', '¿Qué criterio observable permitiría determinar si esta acción es suficientemente fácil?'],
 } as const;
 
+const disappearanceQuestion = ['What event or condition should make it disappear?',
+  '¿Qué evento o condición debe hacer que desaparezca?'] as const;
+
 type QuestionFocus = keyof typeof questions;
 interface ClarificationContext { revision: string; reason: string; evidence: Evidence[] }
 export type Clarification = ClarificationContext & (
@@ -150,13 +153,16 @@ export async function clarifyE12(
       /(?:[`"'“‘«])$/u.test(before)) return decline('unsupported');
   const timing = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) &&
     /\b(?:search|lookup|query|response|acknowledg\w*|load|render|búsqueda|consulta|respuesta|acuse|cargar|mostrar)\b/u.test(clause);
-  const removal = /\b(?:disappear|dismiss|remove|clear|hide|close|desaparecer|retirar|cerrar(?:se)?|ocultar)\b/u.test(clause);
+  // A vague cue after a conjunction can qualify a different action.
+  const actionClause = clause.split(/\b(?:and|or|but|y|o|pero)\s+/u).at(-1) ?? '';
+  const disappearance = /\b(?:disappear|desaparecer)\b/u.test(actionClause);
+  const removal = disappearance || /\b(?:dismiss|remove|clear|hide|close|retirar|cerrar(?:se)?|ocultar)\b/u.test(actionClause);
   const event = /^(?:as needed|cuando sea necesario)$/u.test(cue) && removal;
   const ease = /^(?:easily|fácilmente)$/u.test(cue) && removal;
   const adaptation = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) && /\b(?:adapt|adaptar(?:se)?)\s*$/u.test(clause);
   if (!timing && !event && !ease && !adaptation) return decline('unsupported');
   if (timing && (/\bas\s+$/u.test(before) || /^\s*(?:than|que|como)\b/u.test(after))) return decline('unsupported');
-  if (event && /\b(?:when|if|after|until|cuando|si|después de|hasta)\b/u.test(clause + ' ' + after.split(/[,;]/)[0])) {
+  if (event && /\b(?:when|if|after|until|cuando|si|después de|hasta)\b/u.test(actionClause + ' ' + after.split(/[,;]/)[0])) {
     return decline('unsupported');
   }
 
@@ -204,7 +210,7 @@ export async function clarifyE12(
   const missingBound = starts ? ends ? 'bound' : 'bound-and-end' : ends ? 'bound-and-start' : 'bound-and-measurement';
   const focus = event ? 'trigger' : ease ? 'criterion' : adaptation ? 'behavior' : bounded ? missingMeasurement : missingBound;
   return {
-    kind: 'question', focus, revision: assessment.id, question: questions[focus][locale], evidence,
+    kind: 'question', focus, revision: assessment.id, question: (focus === 'trigger' && disappearance ? disappearanceQuestion : questions[focus])[locale], evidence,
     reason: locale === 1 ? 'La evidencia deja esta decisión abierta.' : 'The cited evidence leaves this decision open.',
   };
 }
