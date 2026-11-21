@@ -25,7 +25,7 @@ export const candidates = (line: string) => [...line.matchAll(modal)].map((match
   ({ id: `c${index + 1}`, token: match[0], start: match.index!, end: match.index! + match[0].length }));
 
 const { values } = parseArgs({ options: {
-  model: { type: 'string' }, 'no-format': { type: 'boolean', default: false }, limit: { type: 'string' }, seeds: { type: 'string', default: '3' }, probes: { type: 'string', default: 'fixtures/precision/assist-probes.json' },
+  model: { type: 'string' }, 'no-format': { type: 'boolean', default: false }, limit: { type: 'string' }, temperature: { type: 'string', default: '0' }, seeds: { type: 'string', default: '3' }, probes: { type: 'string', default: 'fixtures/precision/assist-probes.json' },
 } });
 if (!values.model) throw new Error('Use --model <local Ollama model>.');
 const seeds = Array.from({ length: Number(values.seeds) }, (_, i) => 42039 + i);
@@ -60,7 +60,7 @@ async function classify(model: string, context: string[], line: string, seed: nu
   const prompt = JSON.stringify({ context, line, candidates: spans.map(({ id, token, start, end }) => ({ id, token, start, end })) });
   const reply = await api('/api/chat', {
     model, stream: false, think: false, ...(values['no-format'] ? {} : { format: schema }),
-    options: { temperature: 0, seed, num_ctx: 4096, num_predict: 200 },
+    options: { temperature: Number(values.temperature), seed, num_ctx: 4096, num_predict: 200 },
     messages: [{ role: 'system', content: values['no-format'] ? `${instructions}\n${shape}` : instructions },
       { role: 'user', content: prompt }],
   });
@@ -127,7 +127,7 @@ for (const language of ['en', 'es', 'all']) for (const label of ['positive', 'ne
 }
 const result = {
   kind: 'assist-trial', engineRevision: commit('HEAD'), engineVersion: engine.ENGINE_VERSION, probesHash: sha256(bytes),
-  model: { name: local.name, digest: local.digest, ollama: version, endpoint, seeds, structuredOutput: !values['no-format'], temperature: 0, numCtx: 4096, numPredict: 200, think: false },
+  model: { name: local.name, digest: local.digest, ollama: version, endpoint, seeds, structuredOutput: !values['no-format'], temperature: Number(values.temperature), numCtx: 4096, numPredict: 200, think: false },
   instructionsHash: sha256(instructions + JSON.stringify(schema) + shape), summary, rows,
 };
 const output = join(repository, '.spec-torque', 'precision');
