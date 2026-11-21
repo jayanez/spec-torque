@@ -188,3 +188,19 @@ test('a requirement ID admits a line only in its defining position', async () =>
   const lines14 = result.findings.flatMap(f => f.evidence.map(e => e.line));
   for (const line of [2, 4, 5]) assert.ok(!lines14.includes(line), `line ${line} should not be a requirement`);
 });
+
+test('constraint IDs admit lines in the defining position; success criteria do not', async () => {
+  const lines = [
+    '| C-003 | No credential appears in argv (FR-18) |',
+    '- **CON-2:** The tool runs offline.',
+    '- **SC-002**: 95% of users finish in under 2 minutes (FR-3).',
+    'This change applies C-003.',
+    'The CLI MUST exit with code 2 on invalid input.',
+  ];
+  const result = await analyze({ name: 'constraints', artifacts: [classifyArtifact('spec.md', lines.join('\n'))] });
+  const e14 = result.practices.find(p => p.id === 'E1.4')!;
+  assert.equal(e14.status, 'partial');
+  assert.deepEqual(e14.evidence.map(item => item.line), [5]);
+  const unidentified = result.findings.filter(f => f.message === 'Requirement has no stable identifier.').map(f => f.evidence[0].line);
+  assert.deepEqual(unidentified, [5]);
+});
