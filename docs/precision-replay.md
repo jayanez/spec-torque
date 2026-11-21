@@ -104,6 +104,31 @@ If all four pass, the decision is **iterate**: a provisional engineering candida
 for a separate product issue. A claim about natural-specification accuracy would
 need independent labels or an untouched reserve, and neither is available here.
 
+### Amendment H2a (before any new measurement)
+
+An independent code review of the first H2 candidate found that two inch marks
+around a bare modal, as in `27" MUST … 32"`, formed a "quotation". A real
+requirement was then blanked, giving a false negative that the first scans could
+not reveal.
+
+H2a keeps the endpoint and gate. It changes the policy as follows:
+- A straight double-quote span must open after start-of-line, whitespace or
+  punctuation, and must close before end-of-line, whitespace or punctuation.
+  Inch marks after a digit therefore never open a span.
+- Code spans pair backtick runs of equal length, so ``` ``MUST`` ``` is covered.
+- Curly double quotes and Spanish guillemets (`«…»`) are mentions in both
+  languages, for EN/ES parity.
+- Single quotes remain outside the policy.
+
+The scan's scope check now uses an independent character scanner rather than the
+engine's regular expression. The first H2 measurements are kept as superseded
+evidence.
+
+The scan population is reported in two parts:
+- the pre-registered primary population, OpenSpec and Spec Kit;
+- every other supported family (Kiro, Spec Kitty, BMAD, ZeeSpec and generic PRD),
+  with one row per family. These families are part of the corpus.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 36 original EN/ES cases with 82
@@ -113,7 +138,8 @@ labels. The families are:
 - fence controls that must not move;
 - a fence residual outside H1 (an indented code block);
 - quoted-only modal mentions for H2, with mixed bare-modal controls;
-- blockquote, single-quoted modal, HTML comment and table admission;
+- blockquote, HTML comment and table admission, plus a double-quoted keyword case
+  (`quoted-modal-residual`) that was labelled before H2 and is also within its scope;
 - comparator scope for E1.2;
 - CRLF, BOM and NFD encodings.
 
@@ -167,5 +193,11 @@ its output.
 - Errors print only the error class.
 - The run makes no network or model calls.
 
-Operators should run restricted roots separately from public roots, review the
-aggregate, and release only approved totals.
+Run restricted roots separately from public roots, review the aggregate, and
+release only approved totals. In the #39 session the assistant ran restricted
+scans with the owner's explicit authorization. Only the aggregate output was read
+and the detail files were not opened.
+
+The `agreeWithOracle` / `disagreeWithOracle` counts compare admission changes with
+the fence oracle, so they apply to H1 only. For H2, use `changeScope` and
+`findingChangesOnOtherLines`.

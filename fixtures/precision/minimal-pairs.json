@@ -1051,6 +1051,88 @@
           "E1.2": "negative"
         }
       ]
+    },
+    {
+      "id": "quoted-modal-boundaries-en",
+      "family": "quoted-modal",
+      "language": "en",
+      "path": "specs/003-boundaries/spec.md",
+      "lines": [
+        "Displays up to 27\" MUST be supported; 32\" are out of scope.",
+        "Keywords like ``MUST`` stay in English.",
+        "Use 'MUST' only for obligations.",
+        "The label MUST read \"Saved\" and the hint \"Retry\"."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Inch marks are not quotation marks."
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Double-backtick code span."
+        },
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Single quotes are outside H2; a known residual false positive."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Bare modal between two quotations."
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-boundaries-es",
+      "family": "quoted-modal",
+      "language": "es",
+      "path": "specs/003-limites/spec.md",
+      "lines": [
+        "Las pantallas de hasta 27\" DEBEN admitirse; las de 32\" quedan fuera.",
+        "El analizador reconoce «DEBE» como palabra clave.",
+        "Palabras como ``DEBE`` se mantienen.",
+        "La etiqueta DEBE decir «Guardado» y la ayuda «Reintentar»."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Inch marks are not quotation marks."
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Guillemets are Spanish quotation marks."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
     }
   ]
 }

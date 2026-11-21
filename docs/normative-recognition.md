@@ -50,3 +50,14 @@ hash and evidence remain unchanged. Unlisted units, other uses of `May` and
 discourse-level interpretation can still yield errors or abstentions. The
 [agent comparison](format-corpus.md#observed-agent-comparison) records
 the affected corpus counts and limits.
+
+Engine **0.1.5** (candidate) ignores modal words inside inline code spans
+(`` `SHALL` ``) and double or curly double quotation marks (`"…"`, `“…”`).
+Examples include ``Keywords such as `MUST` stay in English.`` and
+`Show an example: "The system SHALL log."`. Such a line is no longer a
+requirement unless it carries an ID. A line that also uses a bare modal, such as
+``The parser MUST reject lines without `SHALL`.``, keeps its evidence.
+Single quotes, unbalanced quote marks and quoted text spanning several lines are
+unchanged. Fully quoted requirement sentences are treated as illustrative, as the
+annotation guide states. See the [precision replay](precision-replay.md) for the
+pre-registered gate and its measurements.

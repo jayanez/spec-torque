@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Engine 0.1.5 candidate (research branch, #39): modal words inside inline code spans or double quotation marks are mentioned, not used. They no longer admit a requirement line or count toward E1.4. A line with a requirement ID is still admitted, and source bytes and evidence are unchanged. The 716 historical corpus predictions are unchanged. See docs/precision-replay.md.
 - Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.
 
 ## 0.2.0 — candidate
