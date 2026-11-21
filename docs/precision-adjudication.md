@@ -14,8 +14,10 @@ node --import tsx scripts/precision/adjudication-packet.ts --detail <public-deta
 
 - Each item is one distinct line (trimmed text), with two lines of context before
   and after, taken from the pinned revision.
-- Items are ordered by ID. Engine decisions are withheld, so reviewers do not see
-  which arm admitted the line.
+- Only lines whose admission changed are included. `--sample <n> --seed <s>` draws a
+  seeded sample of distinct lines.
+- Items are ordered by ID. The direction of each change (`excluded` or `admitted`)
+  is written to a separate `key.json`, which reviewers do not open.
 - Packets are built from public roots only. The script refuses restricted roots.
 - Packets stay local (`.spec-torque/precision/`). They are not versioned.
 
@@ -34,9 +36,15 @@ contains both a quoted example and a rule of its own is a `requirement`.
 
 ## Procedure
 
-1. The owner fixes the acceptance threshold before anyone labels, and records it in
-   #51. Options: zero requirements wrongly excluded, or an upper 95% bound of at
-   most 5% counted by lineage.
+1. The owner fixed the acceptance threshold before labeling (2026-11-21, recorded
+   in #51), as follows.
+   - Compute the upper bound of the one-sided 95% Clopper-Pearson interval for the
+     error rate, counted by lineage.
+   - An excluded item that is adjudicated `requirement` is an error. So is an
+     admitted item that is adjudicated `mention`.
+   - A lineage counts as an error when any of its items is.
+   - Compute the bound separately for excluded and admitted changes.
+   - Both bounds must be at most 5%. Adjudicated `unknown` items count as errors.
 2. Two reviewers who did not write the rule label every item independently, in
    `labels.reviewerA` and `labels.reviewerB`. They do not see each other's labels.
 3. An adjudicator resolves every disagreement and every `unknown`, writes
@@ -44,5 +52,5 @@ contains both a quoted example and a rule of its own is a `requirement`.
 4. Report counts by label and by lineage, and Cohen's kappa between the reviewers.
    Report only counts for restricted sources.
 
-An item adjudicated `requirement` on a line the candidate stops admitting counts as
-a wrongly excluded requirement.
+With 100 sampled items, a 5% upper bound needs a low observed error rate. For
+example, about 1 erroneous lineage out of 95 or more passes, and 3 out of 60 do not.
