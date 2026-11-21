@@ -1430,6 +1430,94 @@
           "note": "Cites an ID but admitted by its own modal."
         }
       ]
+    },
+    {
+      "id": "constraint-id-en",
+      "family": "constraint-id",
+      "language": "en",
+      "path": "specs/009-constraints/spec.md",
+      "lines": [
+        "# Constraints",
+        "",
+        "| C-003 | No credential appears in argv (FR-18) |",
+        "- **CON-2:** The tool runs offline.",
+        "- **SC-002**: 95% of users finish in under 2 minutes (FR-3).",
+        "This change applies C-003."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID in the first table cell."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID as a bold label."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Success criterion: residual, admitted only by a modal."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites a constraint."
+        }
+      ]
+    },
+    {
+      "id": "constraint-id-es",
+      "family": "constraint-id",
+      "language": "es",
+      "path": "specs/009-constraints/spec.md",
+      "lines": [
+        "# Restricciones",
+        "",
+        "| C-003 | Ninguna credencial aparece en argv (RF-18) |",
+        "- **CON-2:** La herramienta funciona sin conexión.",
+        "- **SC-002**: El 95 % de los usuarios termina en menos de 2 minutos (RF-3).",
+        "Este cambio aplica C-003."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID in the first table cell."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID as a bold label."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Success criterion: residual, admitted only by a modal."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites a constraint."
+        }
+      ]
     }
   ]
 }
