@@ -272,6 +272,43 @@ position*: line start, list item, bold label, or the first table cell. That
 changes the contract for every ID, so it needs its own pre-registration and the
 historical controls.
 
+### H2d: ID admission anchored to the defining position — **iterate**
+
+Pre-registered at `9f55152`. The sources were frozen at `6fd768e` (34 repositories,
+`"FR-"` and `"RF-"` queries) and the synthetic twins at `3535208`, both before the
+candidate (`38a1c09`, engine 0.1.6). The engine also recognizes `RF-`/`RNF-` IDs, as
+in H2c.
+
+| Gate | Result |
+|---|---|
+| 1. The 18 known false negatives are admitted | holds (18 of 18). The second Spanish set gains 3,975 lines, against 5,605 under H2c. |
+| 2. Newly admitted lines are requirements (fresh set, all 30) | holds. All 30 are `RF-`/`RNF-` definitions, which happen to be in Portuguese. |
+| 3. No requirement among the lines H2d stops admitting (100 of 238, seed 42039) | **fails strictly** |
+| 4. Historical predictions (716 unchanged), synthetic suite (0 regressions), evidence (0 invalid) | holds |
+
+On the synthetic suite, admission errors fall relative to H2b, from 15 to 12 in
+EN and from 16 to 11 in ES.
+
+**Fresh set.** 2,327 documents and 1,168 lineages, with no Spanish modal lines;
+the `"RF-"` query mostly found non-Spanish projects. Relative to H2b, 30 lines are
+newly admitted and 227 stop being admitted, and no evidence becomes invalid.
+
+**Gate 3.** Most stopped lines only cite IDs: notes, review logs, traceability
+lines, quoted user descriptions and "Touches FR-15" lists. However, 15 of the 238
+lines (2 Spec Kitty repositories) are rows whose own ID is not recognized:
+- constraints (`| C-003 | No credential appears in argv … |`);
+- success criteria (`- **SC-002**: …`).
+
+Before H2d they were admitted only because they cite an `FR-` ID later in the line.
+At least the constraints are requirements.
+
+**Decision.** Iterate. H2d removes the cross-reference false admissions that
+stopped H2c, without measured loss on the historical controls. The remaining gap is
+ID vocabulary. A next candidate (H2e) would add constraint and success-criterion
+IDs (`C-`, `CON-`, `SC-`) in the defining position only. It would be
+pre-registered and measured on a fresh set. The candidate stays on this branch,
+unmerged.
+
 The adjudication packets for all three sets (`scripts/precision/adjudication-packet.ts`,
 protocol in [precision adjudication](precision-adjudication.md)) are built and
 held locally. They await two independent reviewers and the owner's threshold.
