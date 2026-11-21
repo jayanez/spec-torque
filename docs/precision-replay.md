@@ -56,15 +56,64 @@ feature, not only E1.4.
 If any condition fails, H1 stops and the engine change is not proposed. The
 sealed reserve is not opened by this experiment.
 
+**Outcome: stop.** The H1 candidate was committed and then reverted. It removed
+every synthetic fence-mismatch false positive without regressions, and it left the
+716 historical predictions unchanged. It nevertheless failed condition 1. Across 18
+committed roots (3 public, 3 personal, 12 corporate; 344 target documents), the
+0.1.4 engine admitted no line that the oracle places inside a fence. The details
+are in [precision decisions](precision-decisions.md).
+
+## Pre-registered hypothesis H2 (frozen before the candidate is built)
+
+**Failure.** The H1 scans also measured a second signal: E1.4 admits lines whose
+only modal words are *mentioned* rather than used. They appear inside a code span
+(`` `SHALL` ``) or a double-quoted string (`"…"`, `“…”`).
+
+On the 0.1.4 arm, this signal appeared in two independent public repositories and
+four lineages, for 14 lines. A provisional agent review of the public lines found
+that every one is a mention of a keyword or an example, not a requirement.
+Restricted roots added two personal repositories (three lineages) and one corporate
+repository (one lineage), as aggregate counts only. Their semantic relevance was
+not inspected.
+
+H2 was formulated after seeing these lines. They are development evidence, not
+confirmation.
+
+**Policy.** For both admission and the E1.4 modal decision, a modal word counts only
+outside inline code spans and double or curly double quotations.
+- Single quotes, unbalanced quote marks and every other construct are unchanged.
+- A line with a requirement ID is still admitted.
+- Line text, numbers, hashes and evidence bytes are preserved.
+
+**Endpoint.** For each language (EN, ES), the E1.4 false positives on quoted-only
+modal lines, together with E1.4 true positives on lines that mix a bare modal with a
+quoted one.
+
+**Proceed gate (all required):**
+
+1. All 716 historical predictions are unchanged.
+2. No synthetic target moves away from its expected outcome, including the
+   mixed bare-and-quoted controls.
+3. Every natural-source admission or E1.4 change is a quoted-only modal line. A
+   provisional review of the public changes classifies them as mentions or
+   examples.
+4. Adjacent effects (E1.2, E2.1, E1.3, I1.2, I2.2, I2.3 and contradictions) are
+   reported for every affected feature, and none affects a line with a bare modal.
+
+If all four pass, the decision is **iterate**: a provisional engineering candidate
+for a separate product issue. A claim about natural-specification accuracy would
+need independent labels or an untouched reserve, and neither is available here.
+
 ## Synthetic minimal pairs
 
-`fixtures/precision/minimal-pairs.json` has 34 original EN/ES cases with 68
+`fixtures/precision/minimal-pairs.json` has 36 original EN/ES cases with 82
 target lines. Their expected outcomes are constructed references, not independent
 labels. The families are:
 - fence mismatch, the H1 target;
 - fence controls that must not move;
 - a fence residual outside H1 (an indented code block);
-- blockquote, inline-quoted modal, HTML comment and table admission;
+- quoted-only modal mentions for H2, with mixed bare-modal controls;
+- blockquote, single-quoted modal, HTML comment and table admission;
 - comparator scope for E1.2;
 - CRLF, BOM and NFD encodings.
 

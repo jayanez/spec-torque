@@ -606,7 +606,7 @@
     },
     {
       "id": "inline-quoted-modal-en",
-      "family": "admission-residual",
+      "family": "quoted-modal-residual",
       "language": "en",
       "path": "specs/001-demo/spec.md",
       "lines": [
@@ -624,7 +624,7 @@
     },
     {
       "id": "inline-quoted-modal-es",
-      "family": "admission-residual",
+      "family": "quoted-modal-residual",
       "language": "es",
       "path": "specs/001-demo-es/spec.md",
       "lines": [
@@ -916,6 +916,133 @@
           "admitted": false,
           "E1.4": "negative",
           "E1.2": "negative"
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-en",
+      "family": "quoted-modal",
+      "language": "en",
+      "path": "specs/002-keywords/spec.md",
+      "lines": [
+        "Keywords such as `SHALL` and `MUST` stay in English.",
+        "Show an example: \"The system SHALL log.\"",
+        "\"The system SHALL log every request.\"",
+        "FR-010: Reject bodies without `MUST`.",
+        "The parser MUST reject lines without `SHALL`.",
+        "Requirements SHOULD use the `SHALL` keyword.",
+        "The screen MUST be 5\" wide.",
+        "The app MUST show \"Saved\" after the edit."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Keywords are mentioned as terms."
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Quoted example."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A fully quoted sentence is illustrative under the annotation guide."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Admitted by its ID; the only modal is a mentioned term."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive",
+          "note": "Bare MUST plus explicit rejection."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 7,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Unbalanced quote mark."
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Quoted UI text next to a bare modal."
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-es",
+      "family": "quoted-modal",
+      "language": "es",
+      "path": "specs/002-palabras/spec.md",
+      "lines": [
+        "Las palabras `DEBE` y `PUEDE` se mantienen en español.",
+        "Mostrar: “El sistema DEBE registrar.”",
+        "¿Qué \"debe\" significar el término?",
+        "FR-010: Rechazar cuerpos sin `DEBE`.",
+        "El sistema DEBE rechazar textos sin `DEBE`.",
+        "La app DEBE mostrar \"Guardado\" tras editar."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Curly-quoted example."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "The modal is quoted inside a question."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
         },
         {
           "line": 6,
