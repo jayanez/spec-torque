@@ -1,10 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import type { Clarification } from '../core/clarify.js';
 import type { Artifact, Finding, PatchProposal, Language } from '../core/types.js';
 import { createProposal } from '../core/refine.js';
 import { api, download } from './api.js';
-export function ReviewPanel({ artifact, finding, local, disk, language, active, onApply, onError, onReject, onDraftChange }: {
+export function ReviewPanel({ artifact, finding, clarification, local, disk, language, active, onApply, onError, onReject, onDraftChange }: {
   artifact?: Artifact;
   finding?: Finding;
+  clarification?: Clarification;
   local: boolean;
   disk: boolean;
   language: Language;
@@ -57,6 +59,15 @@ export function ReviewPanel({ artifact, finding, local, disk, language, active, 
   return <section className="review-panel"><div className="section-heading"><h2>{es ? 'Refinar con evidencia' : 'Refine with evidence'}</h2><span className="pill">{es ? 'Revisión humana' : 'Human review'}</span></div>
     {!finding || !artifact ? <p>{es ? 'Selecciona un hallazgo para revisar el texto original y proponer un cambio.' : 'Select a finding to review its source and propose a change.'}</p> : <>
       <p className="fine">{artifact.path}:{line}</p><blockquote>{original}</blockquote><p>{finding.suggestion}</p>
+      <div aria-live="polite">{clarification && <div className="clarification">
+        <h3>{clarification.kind === 'question' ? (es ? 'Pregunta de aclaración' : 'Clarification question')
+          : clarification.kind === 'review' ? (es ? 'Revisión necesaria' : 'Review needed')
+          : (es ? 'Sin pregunta de aclaración' : 'No clarification question')}</h3>
+        {clarification.kind === 'question' && <p><strong>{clarification.question}</strong></p>}
+        <p>{clarification.reason}</p>
+        {clarification.evidence.filter(e => e.path !== artifact.path || e.line !== line).map(e =>
+          <blockquote key={JSON.stringify([e.path, e.line])}><span className="fine">{e.path}:{e.line}</span><br/>{e.text}</blockquote>)}
+      </div>}</div>
       <label className="field"><span>{es ? 'Texto propuesto' : 'Proposed wording'}</span><textarea disabled={busy} rows={4} value={replacement} onChange={e => updateWording(e.target.value)}/></label>
       <div className="actions"><button disabled={busy} onClick={() => updateWording(original.replace(/\b(fast|easily|scalable|etc\.?|as needed|rápid[oa]|escalable|etcétera|cuando sea necesario)\b/giu, word => '[NEEDS CLARIFICATION: ' + (es ? 'definir ' : 'define ') + word + ']'))}>{es ? 'Marcar la aclaración' : 'Mark clarification'}</button><button ref={reviewButton} className="primary" disabled={busy || replacement === original} onClick={() => void preview()}>{es ? 'Revisar diferencia' : 'Review difference'}</button></div>
       <details className="provider"><summary>{es ? 'Asistencia de un modelo' : 'Model assistance'}</summary><label className="field"><span>{es ? 'Ruta del modelo' : 'Model route'}</span><select value={provider} onChange={e => setProvider(e.target.value as typeof provider)}><option value="host">{es ? 'Mi agente actual' : 'My current agent'}</option><option value="ollama">Ollama · local</option><option value="openai">OpenAI · API</option></select></label>
