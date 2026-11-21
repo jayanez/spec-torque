@@ -1143,6 +1143,106 @@
           "note": "Single quotes are outside H2; a known residual false positive."
         }
       ]
+    },
+    {
+      "id": "code-span-requirement-en",
+      "family": "quoted-modal-h2b",
+      "language": "en",
+      "path": "specs/005-code-spans/spec.md",
+      "lines": [
+        "If no rows exist, `openingBalance MUST be \"0.00\"`.",
+        "verify`) the CLI SHALL rerun the comparison against `codes.json`",
+        "Keywords `SHALL`/`MUST` and `SHALL or MUST` stay in English."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "A requirement written inside a code span."
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Odd backticks: a span from the previous line."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Keyword-only code spans."
+        }
+      ]
+    },
+    {
+      "id": "code-span-requirement-es",
+      "family": "quoted-modal-h2b",
+      "language": "es",
+      "path": "specs/005-spans/spec.md",
+      "lines": [
+        "Si no hay movimientos, `saldoInicial DEBE ser \"0.00\"`.",
+        "verify`) la CLI DEBE regenerar la comparación con `codes.json`",
+        "Las palabras `DEBE` y `PUEDE` o `DEBE/PUEDE` se mantienen."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "code-template-residual-en",
+      "family": "quoted-modal-residual",
+      "language": "en",
+      "path": "specs/006-templates/spec.md",
+      "lines": [
+        "Acceptance criteria use `WHEN [trigger], THE SYSTEM SHALL [behavior]`."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A code-formatted template; H2b deliberately admits it again."
+        }
+      ]
+    },
+    {
+      "id": "code-template-residual-es",
+      "family": "quoted-modal-residual",
+      "language": "es",
+      "path": "specs/006-plantillas/spec.md",
+      "lines": [
+        "Los criterios usan `CUANDO [evento], EL SISTEMA DEBE [comportamiento]`."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        }
+      ]
     }
   ]
 }

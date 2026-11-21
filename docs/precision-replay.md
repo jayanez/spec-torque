@@ -129,9 +129,48 @@ The scan population is reported in two parts:
 - every other supported family (Kiro, Spec Kitty, BMAD, ZeeSpec and generic PRD),
   with one row per family. These families are part of the corpus.
 
+## Pre-registered hypothesis H2b (frozen before sources are chosen or the candidate is built)
+
+**Why.** H2a reached the decision **iterate**. In its confirmation scan, at least
+three changed lines were requirements:
+- two were written inside a code span (`` `x DEBE ser "0.00"` ``);
+- one started with a stray backtick left over from a span that opened on the
+  previous line.
+
+**Policy.** H2a changes as follows:
+
+1. A code span is a mention only when its content consists of modal keywords
+   alone. Separators (whitespace, `/`, `,`, `|`, `.`) and the joiners
+   `or`/`and`/`o`/`y` are allowed, as in `` `SHALL` `` or `` `SHALL`/`MUST` ``.
+   Any other code span is ordinary text, so its modal words count.
+2. On a line with an odd number of backticks, no code span is treated as a
+   mention.
+3. Quotation rules (bounded straight quotes, curly quotes, guillemets) are as
+   in H2a.
+
+This deliberately gives up excluding code-formatted sentence templates such as
+`` `WHEN …, THE SYSTEM SHALL …` ``. That residual false positive is recorded in
+the synthetic suite.
+
+**Endpoint and gate.** Both are the same as H2. Condition 3 now applies to a fresh
+confirmation set, defined below, and requires that a provisional review finds
+**no** changed line that is a requirement.
+
+**Confirmation sources.** They are selected before the candidate exists, by path
+and license only, without reading any file content:
+- public GitHub repositories under an MIT or Apache-2.0 license;
+- none of them used earlier in #39 (the 18 scanned roots and the 16 external
+  inventory repositories);
+- up to three repositories per family, taken in search order, for OpenSpec, Spec
+  Kit, Spec Kitty, Kiro, BMAD, ZeeSpec and generic PRD.
+
+Each repository is pinned to its default-branch head SHA at selection time. The
+list is committed in `fixtures/precision/h2b-confirmation-sources.json` before
+the candidate commit.
+
 ## Synthetic minimal pairs
 
-`fixtures/precision/minimal-pairs.json` has 36 original EN/ES cases with 82
+`fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
 target lines. Their expected outcomes are constructed references, not independent
 labels. The families are:
 - fence mismatch, the H1 target;
