@@ -169,3 +169,22 @@ test('modal words mentioned in code spans or double quotes are not requirements'
   const unidentified = result.findings.filter(f => f.message === 'Requirement has no stable identifier.').map(f => f.evidence[0].line);
   assert.deepEqual(unidentified, [6, 7, 8]);
 });
+
+test('a requirement ID admits a line only in its defining position', async () => {
+  const lines = [
+    '- RF-3: El servicio registrará cada acceso.',
+    '- [ ] Conectar el formulario de acceso (RF-3)',
+    '| FR-4 | Export a monthly report |',
+    '| T-7 | FR-4 | Done |',
+    'Satisfies FR-3 and FR-4.',
+    '**RNF-5:** Los tokens caducan tras una hora.',
+    'See FR-5; the token MUST be rotated.',
+  ];
+  const result = await analyze({ name: 'id-position', artifacts: [classifyArtifact('spec.md', lines.join('\n'))] });
+  const e14 = result.practices.find(p => p.id === 'E1.4')!;
+  assert.equal(e14.status, 'partial');
+  assert.deepEqual(e14.evidence.map(item => item.line), [7]);
+  // Lines 2, 4 and 5 only cite IDs, so they are not requirements and raise no findings.
+  const lines14 = result.findings.flatMap(f => f.evidence.map(e => e.line));
+  for (const line of [2, 4, 5]) assert.ok(!lines14.includes(line), `line ${line} should not be a requirement`);
+});
