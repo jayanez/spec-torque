@@ -168,6 +168,59 @@ Each repository is pinned to its default-branch head SHA at selection time. The
 list is committed in `fixtures/precision/h2b-confirmation-sources.json` before
 the candidate commit.
 
+## Pre-registered hypothesis H2c (frozen before sources are chosen or the candidate is built)
+
+**Why.** The second Spanish confirmation set for H2b (#51) found 18 requirements
+that H2b wrongly excludes, all in one repository (4 lineages). They have the form
+`- RF-58: EL SISTEMA no dejará … «no debe …»`: the requirement is worded in the future
+tense, its only recognized modal is quoted, and `RF-` is not a recognized
+requirement ID. Both Spanish sets used for H2b are now development data.
+
+**Policy.** H2b plus one change: `RF-<n>` and `RNF-<n>` (Spanish *requisito
+funcional* and *requisito no funcional*) are recognized wherever `FR-<n>` and
+`NFR-<n>` are:
+1. A line carrying one of these IDs is admitted as a requirement, whatever its
+   modal words.
+2. The ID counts for requirement-ID coverage (I1.2) and is stripped from comparator
+   scope (E1.2), like the English IDs.
+
+Nothing else changes. In particular, future-tense wording without an ID stays
+unadmitted, as a measured residual.
+
+**Comparators.** Each arm is measured against 0.1.4 (`865af59`) and against H2b
+(`bb8e185`), so that the effects of H2b and H2c stay separable.
+
+**Endpoints.**
+- Primary: requirement lines with an `RF-`/`RNF-` ID that are excluded, under
+  H2b versus under H2c.
+- Collateral: lines newly admitted relative to 0.1.4, and status changes in every
+  practice (E1.4 ratio, I1.2, E2.1, E1.2).
+
+**Gate (all must hold to proceed).**
+1. On the development sets, all 18 known false negatives are admitted again.
+2. On a fresh set, a provisional review finds that every line newly admitted
+   relative to H2b is a requirement.
+3. On the fresh set, no line that H2b excludes as a mention is re-admitted unless it
+   carries an `RF-`/`RNF-` ID and is a requirement.
+4. The 716 historical predictions, the supplemental controls and the synthetic
+   suite (extended with `RF-`/`RNF-` twins before the candidate) show no
+   regressions, and no evidence becomes invalid.
+
+Independent adjudication under [precision adjudication](precision-adjudication.md)
+is still required before any merge.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search for `"RF-"` together with `"EL SISTEMA"`, by the family
+  paths used for H2b;
+- up to 5 repositories per family, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39 and #51 excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h2c-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
