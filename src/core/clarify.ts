@@ -139,7 +139,11 @@ export async function clarifyE12(
   if (/\b(?:(?:profile|preset|mode|option|perfil|modo|opción)(?:\s+(?:named|called|llamado|llamada))?\s+)[`"“'‘«]$/u.test(before) &&
       /^[`"”'’»]/u.test(after)) return decline('named-option');
 
-  const clause = before.split(/[,;]/).at(-1) ?? '';
+  // Omit labels from the language cues while keeping the original evidence and offsets.
+  const unquoted = text.replace(/"[^"\n]*"|“[^”\n]*”|«[^»\n]*»|‘[^’\n]*’|(`+)[^`\n]+\1/gu,
+    span => ' '.repeat(span.length));
+  if (unquoted.slice(index, index + cue.length) !== cue) return decline('unsupported');
+  const clause = unquoted.slice(0, index).split(/[,;]/).at(-1) ?? '';
   // The last normative phrase governs the cue in a compound requirement.
   const modal = [...clause.matchAll(/\b(?:(?:no|nunca)\s+)?(?:must|shall|may|should|no puede|pueden?|debe(?:n|rán?|rían?)?)(?:\s+(?:not|never|nunca|no))?\b/gu)].at(-1);
   if (!modal || !/^(?:must|shall|debe(?:n|rán?)?)$/u.test(modal[0]) ||

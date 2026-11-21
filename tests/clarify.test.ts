@@ -191,3 +191,16 @@ test('the closest modality governs clarification of mixed or negated clauses', a
     assert.equal(result.kind, kind, source);
   }
 });
+
+test('quoted labels cannot override the real modality or supply the selected cue', async () => {
+  for (const [language, source, kind] of [
+    ['en', 'FR-031: The console MAY remove the “MUST” alert as needed.', 'abstain'],
+    ['es', 'FR-031: La consola PUEDE retirar el aviso «DEBE» cuando sea necesario.', 'abstain'],
+    ['en', 'FR-032: The console MUST remove the `MAY` alert as needed.', 'question'],
+    ['es', 'FR-032: La consola DEBE retirar el aviso «PUEDE» cuando sea necesario.', 'question'],
+    ['en', 'FR-033: The console MUST remove the label “Remove as needed” from historical views.', 'abstain'],
+  ] as const) {
+    const { result } = await check(documents('specs/notice/spec.md', source), language);
+    assert.equal(result.kind, kind, source);
+  }
+});
