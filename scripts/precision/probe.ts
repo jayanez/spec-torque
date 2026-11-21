@@ -13,7 +13,7 @@ export function segments(content: string): { text: string; eol: string }[] {
 }
 
 // Superset of the tokens that can admit a line in either engine arm.
-const token = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])|\b(?:FR|NFR|RF|RNF|REQ|R)-\d+\b/iu;
+const token = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])|\b(?:FR|NFR|RF|RNF|REQ|CON|C|R)-\d+\b/iu;
 // Lines that may carry Markdown structure. They are never blanked by the probe.
 const structural = /^\s*(?:#|>|`{3,}|~{3,})/u;
 
