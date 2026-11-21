@@ -1,0 +1,250 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-21",
+  "purpose": "Fresh H2d confirmation set (ID admission anchored to defining position). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search by the H2b family paths, once with \"FR-\" and once with \"RF-\"; up to 3 repositories per family and query, in search order; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39 and #51 excluded (the RF- query also excludes the FR- picks); pinned to the default-branch head SHA.",
+  "unfilled": {
+    "zeespec": "No qualifying repository for either query.",
+    "spec-kitty": "Only 1 qualifying repository for \"RF-\"."
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/Volland/typedgraph",
+      "commit": "5cae654453eb241df4fd6e793357093f5c153282",
+      "license": "MIT",
+      "query": "\"FR-\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/strelov1/freehire",
+      "commit": "8e0fd48d44e945150febbb36cfd75fe4ae0fb5af",
+      "license": "MIT",
+      "query": "\"FR-\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/drakulavich/kesha-voice-kit",
+      "commit": "a8f8a6715d9a02c33f5ad3e1edcd2e7551b981cf",
+      "license": "MIT",
+      "query": "\"FR-\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/gmentat/specs-as-code",
+      "commit": "939214b25a1749a5e246bf3fcd81b2bb8baceae2",
+      "license": "MIT",
+      "query": "\"FR-\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/frank-fs/frank",
+      "commit": "f7ac4beefd5883922139e952bcf5990d48e1e86b",
+      "license": "MIT",
+      "query": "\"FR-\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/MinionEnjoyer/OpenChat",
+      "commit": "3d2d3fe09e09a86f9df7ccc874f98cfee2b180ea",
+      "license": "MIT",
+      "query": "\"FR-\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/danahtetaung/danahtetaung",
+      "commit": "e88e2ae22e1fc2e6c3c55bba705df14f80b8d64a",
+      "license": "MIT",
+      "query": "\"FR-\" path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/garrison-hq/muster",
+      "commit": "b5fd4d85e51a3993d4d20e06d1d1c1c36476bff3",
+      "license": "Apache-2.0",
+      "query": "\"FR-\" path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/Quadrano-Ltd/quadrano-demo-shop",
+      "commit": "eb532654cf37057e0464aed3279ea25fe3f663ce",
+      "license": "Apache-2.0",
+      "query": "\"FR-\" path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/kirodotdev/KiroCrew",
+      "commit": "f8af9a7df652595c72f2d731de01be4700b96e85",
+      "license": "Apache-2.0",
+      "query": "\"FR-\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/zhuanggenhua/BoardGame",
+      "commit": "0c0616ad8b3cb3956aed89702aa79fce8c1eab70",
+      "license": "MIT",
+      "query": "\"FR-\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/nglahani/pro-forma-analytics-tool",
+      "commit": "5df48647ac32f211e2805e3143159d982a50131a",
+      "license": "MIT",
+      "query": "\"FR-\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/Hexalith/Hexalith.Parties",
+      "commit": "1ee5b49a416c2325bac3e6050bc088abaa74cab4",
+      "license": "MIT",
+      "query": "\"FR-\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/viadee/roboscope",
+      "commit": "8e32d0867ff260ac9f46bf782c5215f9457d9189",
+      "license": "Apache-2.0",
+      "query": "\"FR-\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/zsutxz/ClaudeLearning",
+      "commit": "4336e222be378d1df18c2d3a27fa0b02bce684f1",
+      "license": "MIT",
+      "query": "\"FR-\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/ppreeper/rusq",
+      "commit": "3a7771053a35586b0670665e6bf25f4c72463abe",
+      "license": "MIT",
+      "query": "\"FR-\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/gustavo8000br/subarushogun_gi_twich_bot",
+      "commit": "0ef5f40d1fdb9f06778f7ed07a213075c4301d24",
+      "license": "MIT",
+      "query": "\"FR-\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/Stevemeg/enterprise-llm-gateway",
+      "commit": "bd67a36767c86329b3641d49146d306ea5254c83",
+      "license": "MIT",
+      "query": "\"FR-\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/manykarim/robotframework-agentskills",
+      "commit": "b1d5f82f8ade01419f3e76d33c4abadf867cbfc0",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/MarketSquare/robotframework-plugins",
+      "commit": "af68a198dfe837e3a4e0fc9b64a24156f4fa44e3",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/owen2345/camaleon-cms",
+      "commit": "369040f9ad01478598f288c404e3a191b747bc4a",
+      "license": "MIT",
+      "query": "\"RF-\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/romeo111/OpenOnco",
+      "commit": "66f0b7a24eeab71ee40c4f5c64377b1e0c7b3ebd",
+      "license": "MIT",
+      "query": "\"RF-\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/jandrescodes/sdd-toolkit",
+      "commit": "98053a5a82637852bf056ecf44ee5917e6c1770b",
+      "license": "MIT",
+      "query": "\"RF-\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/rodri-oliveira-dev/adr-guard",
+      "commit": "4abf8d6813ad879891deab31b28a4f3566f2c7ae",
+      "license": "MIT",
+      "query": "\"RF-\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/AElfProject/aelf-agent-gateway",
+      "commit": "56cebe274339ab5ac4417084068c162294ab28e3",
+      "license": "MIT",
+      "query": "\"RF-\" path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/awslabs/DefectDetectionApplication",
+      "commit": "919624e385e28a83390abcdc7e3d9fc7be4f52f3",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/ekicyou/areka",
+      "commit": "4b0711a736d1d6f13b0a1ffa9143469c4032b586",
+      "license": "MIT",
+      "query": "\"RF-\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/icrcode/teste-kiro",
+      "commit": "fe264e573906c319c1c6c6886c5be94b7a92c5d3",
+      "license": "MIT",
+      "query": "\"RF-\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/ilyeseia/sig-maps-v2",
+      "commit": "5c9d1cce46c90db7dab7e992b7a85b9fe8d39277",
+      "license": "MIT",
+      "query": "\"RF-\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/Steeventim/WaterHouse",
+      "commit": "8853544b34489b1b23df5a740ba446202aea8de4",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/CharlesDevif/kita",
+      "commit": "39753fdd8b02b5ca2762a24515a479feeba718f9",
+      "license": "MIT",
+      "query": "\"RF-\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/potatobeanradio/circuitRF",
+      "commit": "124610fc7e06429457efad97909bc509d6c96fc6",
+      "license": "MIT",
+      "query": "\"RF-\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/felipenalves/Dokke",
+      "commit": "b4e468e70ecdbeb2f5dcee60b2015a12b5b4130c",
+      "license": "MIT",
+      "query": "\"RF-\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/FreePeak/LeanKG",
+      "commit": "8ec8974adb2b94c3aac53df5fbab8dcf8d034c36",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" filename:PRD.md path:docs"
+    }
+  ]
+}
