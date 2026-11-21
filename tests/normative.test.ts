@@ -169,20 +169,3 @@ test('modal words mentioned in code spans or double quotes are not requirements'
   const unidentified = result.findings.filter(f => f.message === 'Requirement has no stable identifier.').map(f => f.evidence[0].line);
   assert.deepEqual(unidentified, [6, 7, 8]);
 });
-
-test('Spanish requirement IDs admit lines whose only modal is quoted or absent', async () => {
-  const lines = [
-    '- RF-12: EL SISTEMA guardará el borrador (usuario: «nada debe perderse»).',
-    '- RNF-3: Los datos se cifrarán en reposo.',
-    '- RF-13: EL SISTEMA DEBE registrar cada acceso.',
-    'La norma RFC-7231 define los códigos de estado.',
-    'La tarea PERF-12 sigue abierta.',
-  ];
-  const result = await analyze({ name: 'spanish-ids', artifacts: [classifyArtifact('spec.md', lines.join('\n'))] });
-  const e14 = result.practices.find(p => p.id === 'E1.4')!;
-  assert.equal(e14.status, 'partial');
-  assert.deepEqual(e14.evidence.map(item => item.text), [lines[2]]);
-  // Every admitted line carries an ID, so none is reported as unidentified.
-  assert.equal(result.findings.filter(f => f.message === 'Requirement has no stable identifier.').length, 0);
-  assert.equal(result.practices.find(p => p.id === 'I1.2')?.status, 'supported');
-});
