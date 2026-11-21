@@ -154,15 +154,20 @@ export async function clarifyE12(
   const timing = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) &&
     /\b(?:search|lookup|query|response|acknowledg\w*|load|render|búsqueda|consulta|respuesta|acuse|cargar|mostrar)\b/u.test(clause);
   // A vague cue after a conjunction can qualify a different action.
-  const actionClause = clause.split(/\b(?:and|or|but|y|o|pero)\s+/u).at(-1) ?? '';
+  const earlierActions = unquoted.slice(0, index).split(/[,;]|\b(?:and|or|but|y|o|pero)\s+/u);
+  const actionClause = earlierActions.pop() ?? '';
+  const removalVerb = /\b(?:disappear|dismiss|remove|clear|hide|close|desaparecer|retirar|cerrar(?:se)?|ocultar)\b/u;
+  const condition = /\b(?:when|if|after|until|upon|cuando|si|después de|hasta)\b/u;
   const disappearance = /\b(?:disappear|desaparecer)\b/u.test(actionClause);
-  const removal = disappearance || /\b(?:dismiss|remove|clear|hide|close|retirar|cerrar(?:se)?|ocultar)\b/u.test(actionClause);
+  const removal = removalVerb.test(actionClause);
   const event = /^(?:as needed|cuando sea necesario)$/u.test(cue) && removal;
   const ease = /^(?:easily|fácilmente)$/u.test(cue) && removal;
   const adaptation = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) && /\b(?:adapt|adaptar(?:se)?)\s*$/u.test(clause);
   if (!timing && !event && !ease && !adaptation) return decline('unsupported');
   if (timing && (/\bas\s+$/u.test(before) || /^\s*(?:than|que|como)\b/u.test(after))) return decline('unsupported');
-  if (event && /\b(?:when|if|after|until|cuando|si|después de|hasta)\b/u.test(actionClause + ' ' + after.split(/[,;]/)[0])) {
+  // An earlier conditioned removal may already describe the same effect.
+  if (event && (condition.test(actionClause + ' ' + after.split(/[,;]/)[0]) ||
+      earlierActions.some(action => removalVerb.test(action) && condition.test(action)))) {
     return decline('unsupported');
   }
 

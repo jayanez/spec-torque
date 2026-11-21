@@ -229,3 +229,13 @@ test('a dismissal question points to disappearance separately from the display c
     assert.equal(result.question, question);
   }
 });
+
+test('a previous removal condition makes a second removal cue ambiguous', async () => {
+  for (const [language, source] of [
+    ['en', 'FR-042: The console MUST remove the expired notice when confirmed, and the expired notice MUST disappear as needed.'],
+    ['es', 'FR-042: La consola DEBE retirar el aviso cuando se confirme y el aviso DEBE desaparecer cuando sea necesario.'],
+  ] as const) {
+    const { result } = await check(documents('specs/notices/spec.md', source), language);
+    assert.equal(result.kind, 'abstain', source);
+  }
+});
