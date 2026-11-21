@@ -1,0 +1,118 @@
+[
+  {
+    "lineage": "ticket-lookup",
+    "language": "en",
+    "path": "openspec/specs/ticket-lookup/spec.md",
+    "source": "# Ticket lookup\n\n### Requirement: Lookup at the counter\n- NFR-020: Ticket lookup MUST be fast for up to 12 clerks, excluding archived tickets.\n",
+    "kind": "question",
+    "focus": "bound-and-measurement"
+  },
+  {
+    "lineage": "acuse-devolucion",
+    "language": "es",
+    "path": "openspec/changes/return/slips/spec.md",
+    "source": "## ADDED Requirements\n\n### Requirement: Acuse de devolución\n- FR-101: El kiosco DEBE emitir un acuse rápido para una devolución interna.\n",
+    "kind": "question",
+    "focus": "bound-and-measurement"
+  },
+  {
+    "lineage": "status-icon",
+    "language": "en",
+    "path": "specs/051-status-icon/spec.md",
+    "source": "## Requirements\n\nFR-071: The sync icon MUST disappear as needed.\n",
+    "kind": "question",
+    "focus": "trigger"
+  },
+  {
+    "lineage": "aviso-entrega",
+    "language": "es",
+    "path": "specs/039-aviso-entrega/spec.md",
+    "source": "## Requisitos\n\nFR-040: El aviso de entrega DEBE desaparecer cuando sea necesario.\nSolo la supervisora puede cerrar el aviso manualmente.\n",
+    "kind": "question",
+    "focus": "trigger"
+  },
+  {
+    "lineage": "playlist-preset",
+    "language": "en",
+    "path": "specs/093-playlist-preset/spec.md",
+    "source": "## Requirements\n\nFR-091: The kiosk MUST use the profile `fast` only for standard playlists.\n",
+    "kind": "abstain",
+    "focus": "named-option"
+  },
+  {
+    "lineage": "cola-impresion",
+    "language": "es",
+    "path": "specs/011-cola-impresion/spec.md",
+    "source": "## Requisitos\n\nFR-010: La cola DEBE reaccionar rápido sin eliminar los trabajos pausados.\n",
+    "kind": "abstain",
+    "focus": "unsupported"
+  },
+  {
+    "lineage": "gallery-preview",
+    "language": "en",
+    "path": "specs/002-gallery-preview/spec.md",
+    "source": "## Requirements\n\nNFR-082: Gallery preview MUST load quickly within 350 ms.\n",
+    "companions": {
+      "specs/002-gallery-preview/plan.md": "- NFR-082 Measurement start: click on the thumbnail.\n- NFR-082 Measurement end: first preview paint.\n",
+      "specs/003-video-preview/plan.md": "- NFR-082 Latency limit: 900 ms.\n"
+    },
+    "kind": "abstain",
+    "focus": "already-specified"
+  },
+  {
+    "lineage": "acuse-etiquetado",
+    "language": "es",
+    "path": "openspec/changes/labels/specs/dispatch/spec.md",
+    "source": "## ADDED Requirements\n\n### Requirement: Acuse de etiqueta\nFR-214: El servicio DEBE emitir un acuse rápido.\n",
+    "companions": {
+      "openspec/changes/labels/design.md": "- FR-214 Límite de latencia: 40 ms.\n- FR-214 Límite de latencia: 90 ms.\n",
+      "openspec/specs/dispatch/spec.md": "# Requisito vigente\n\nFR-214: El servicio DEBE emitir un acuse en 60 ms.\n"
+    },
+    "kind": "review",
+    "focus": "conflicting-evidence"
+  },
+  {
+    "lineage": "document-roster",
+    "language": "en",
+    "path": "specs/048-document-roster/spec.md",
+    "source": "## Requirements\n\nFR-005: The roster search MUST be fast within 200 ms.\n",
+    "companions": {
+      "specs/048-document-roster/tasks.md": "- FR-005 Measurement start: submit the search.\n"
+    },
+    "kind": "question",
+    "focus": "measurement"
+  },
+  {
+    "lineage": "cierre-senal",
+    "language": "es",
+    "path": "specs/041-cierre-senal/spec.md",
+    "source": "## Requisitos\n\nFR-019: La señal DEBE desaparecer cuando sea necesario.\n",
+    "companions": {
+      "specs/041-cierre-senal/plan.md": "- FR-019 Responsable de la decisión: pendiente.\n"
+    },
+    "kind": "review",
+    "focus": "owner-unavailable"
+  },
+  {
+    "lineage": "locate-summary",
+    "language": "en",
+    "path": "specs/065-locate-summary/spec.md",
+    "source": "## Requirements\n\nFR-054: The summary search MUST be fast.\n",
+    "companions": {
+      "specs/065-locate-summary/plan.md": "- FR-054 Measurement start: search submission.\n- FR-054 Measurement end: search result displayed.\n"
+    },
+    "kind": "question",
+    "focus": "bound"
+  },
+  {
+    "lineage": "cierre-alerta",
+    "language": "es",
+    "path": "specs/122-cierre-alerta/spec.md",
+    "source": "## Requisitos\n\nFR-113: La alerta DEBE cerrarse cuando sea necesario.\n",
+    "companions": {
+      "specs/122-cierre-alerta/tasks.md": "- FR-113 Evento disparador: confirmación del operador.\n"
+    },
+    "kind": "abstain",
+    "focus": "already-specified"
+  }
+]
