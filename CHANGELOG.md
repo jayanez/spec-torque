@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Engine 0.1.5 candidate (research branch, #39): modal words inside inline code spans or double quotation marks are mentioned, not used. They no longer admit a requirement line or count toward E1.4. A line with a requirement ID is still admitted, and source bytes and evidence are unchanged. The 716 historical corpus predictions are unchanged. See docs/precision-replay.md.
+- Research branch (#39), not for release: engine 0.1.5 candidate H2a stops modal words inside code spans, bounded double quotes, curly quotes or guillemets from admitting a requirement or counting toward E1.4. The 716 historical predictions are unchanged. A confirmation scan found a few false negatives, so the decision is to iterate. Adds the paired precision replay, the label-derived calibration audit and the F2 span-classification trial. See docs/precision-decisions.md.
 - Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.
 
 ## 0.2.0 — candidate
