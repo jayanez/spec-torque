@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Research branch (#39), not for release: engine 0.1.5 candidate H2a stops modal words inside code spans, bounded double quotes, curly quotes or guillemets from admitting a requirement or counting toward E1.4. The 716 historical predictions are unchanged. A confirmation scan found a few false negatives, so the decision is to iterate. Adds the paired precision replay, the label-derived calibration audit and the F2 span-classification trial. See docs/precision-decisions.md.
+- Research branch (#39), not for release: engine 0.1.5 candidate H2b. Modal words no longer admit a requirement or count toward E1.4 when they sit in keyword-only code spans (`` `SHALL` ``, `` `MUST`/`SHALL` ``), bounded double quotes, curly quotes or guillemets. Other code spans, and lines with an odd number of backticks, are unchanged. The 716 historical predictions are unchanged. A fresh 18-repository confirmation scan found one borderline case. Also adds the paired precision replay, the label-derived calibration audit and the F2 span-classification trial. See docs/precision-decisions.md.
 - Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.
 
 ## 0.2.0 — candidate

@@ -86,6 +86,64 @@ evaluated on a fresh, untouched set. Its candidate policies are:
 H2a also changes one earlier contract: guillemets (`«…»`) now mark a mention
 (`tests/normative.test.ts`). It stays on this branch only.
 
+### H2b: keyword-only code spans — **iterate; a product issue is warranted**
+
+H2b and its confirmation sources were frozen before the candidate existed:
+- `a6bf858`: policy and the stricter condition 3;
+- `bab658b`: 18 MIT or Apache-2.0 repositories, from owners not used before, chosen
+  by path and license only;
+- `bb8e185`: the candidate.
+
+| Measure | 0.1.4 | H2b |
+|---|---:|---:|
+| Synthetic E1.4 FP, EN / ES (98 targets) | 16 / 15 | 9 / 7 |
+| Synthetic E1.4 TP, EN / ES | 25 / 21 | 25 / 21 |
+| Synthetic regressions | — | 0 |
+| Historical predictions changed (716) | — | 0 |
+
+**Confirmation set.**
+- Population: 1,716 target documents and 855 lineages in six families: OpenSpec,
+  Spec Kit, Spec Kitty, Kiro, BMAD and generic PRD. No qualifying ZeeSpec
+  repository was found, and the set contains no Spanish modal lines.
+- One feature was over the engine's analysis limit and was excluded from the
+  feature-level diff.
+- 95 admission and E1.4 changes, all quoted-only. No finding changed on other
+  lines (115 distinct findings removed), and no evidence became invalid.
+
+A provisional agent review of the 47 distinct changed lines found:
+- **Mentions:** keyword mentions, the BCP 14 boilerplate, quotations of rules
+  defined elsewhere, ✅/❌ examples, template questions and quoted UI or CLI
+  messages.
+- **One borderline case** violates the strict condition 3: `**FR1b:** System can
+  detect …`. It is a requirement worded with "can", which is not a recognized modal,
+  and its only modal sits inside a quoted example message. The E1.4 change is
+  correct (the old decision was a false positive). However, the line is no longer
+  admitted for the other requirement-based checks.
+
+**Development sets** (public and external MIT):
+- Three changes were reported outside the scanner's scope. All are quotations
+  inside code spans, such as `` `warning("…coherence may be degraded")` ``, and
+  all are mentions.
+- The earlier H2a false negatives (code-span requirements and stray backticks) no
+  longer change.
+
+**Restricted roots:**
+- Personal and corporate: every change was quoted-only, with no findings on other
+  lines and no invalid evidence.
+- License-limited public roots: fewer than five changes were outside the scanner's
+  scope. They cannot be inspected without storing text, so they remain unverified.
+
+**Decision.** Conditions 1, 2 and 4 hold. Condition 3 fails strictly on one
+borderline line. The remaining gap is a separate, pre-existing limit: modal-less
+requirement wording ("can", "puede" used as capability) is not admitted.
+
+H2b is the first candidate that warrants a separate product issue, filed as a
+provisional engineering change with these limits:
+- no independent labels yet;
+- Spanish evidence comes only from the development sets.
+
+It is not merged, and opening the issue is the owner's decision.
+
 ## 2. Feedback workflow (F1) — **keep, unchanged**
 
 No new evidence was gathered on feedback in this session.
@@ -127,8 +185,20 @@ abstention):
   - quoted error text read as an obligation;
   - `debe de` conjecture read as an obligation.
 
-**Decision.** M meets the nominal +3 pp gate, with no loss on unknowns. It still
-fails the design aim of abstention, and the evidence is synthetic only (n = 48).
+**Sampled self-consistency.** The second run used 5 samples at temperature 0.7
+(`seeds 42039–42043`); M abstains when the samples disagree. D is now the H2b engine.
+
+| Arm | Positive | Negative | Unknown | All |
+|---|---:|---:|---:|---:|
+| D: deterministic, H2b | 16/16 | 5/16 | 0/16 | 21/48 (43.8%) |
+| M: sampled, k = 5 | 13/16 | 13/16 | 7/16 | 33/48 (68.8%) |
+
+Samples disagreed on 12 of 48 probes. Disagreement produced 7 of the 16 correct
+abstentions, but also cost 3 positives. The two runs used different D arms
+(H2a, then H2b), so compare each M row with its own D row.
+
+**Decision.** M meets the nominal +3 pp gate, with no loss on unknowns. Deterministic sampling at temperature 0 failed the design aim of abstention; sampled
+self-consistency recovers part of it (7/16) at a cost to positives (13/16), and the evidence is synthetic only (n = 48).
 It is not enabled.
 
 **Next steps.**
