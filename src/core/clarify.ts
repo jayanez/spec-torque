@@ -19,6 +19,7 @@ const questions = {
   'measurement-start': ['Which event starts the elapsed-time measurement?', '¿Qué evento inicia la medición del tiempo transcurrido?'],
   'measurement-end': ['Which event ends the elapsed-time measurement?', '¿Qué evento pone fin a la medición del tiempo transcurrido?'],
   trigger: ['What event or condition should trigger the removal described here?', '¿Qué evento o condición debe activar la retirada descrita aquí?'],
+  behavior: ['What observable behavior would count as adapting under the stated conditions?', '¿Qué comportamiento observable demostraría que se ha producido la adaptación en las condiciones indicadas?'],
   criterion: ['What observable criterion would establish that this action is easy enough?', '¿Qué criterio observable permitiría determinar si esta acción es suficientemente fácil?'],
 } as const;
 
@@ -65,6 +66,12 @@ function activeLines(artifact: Artifact): Evidence[] {
   });
 }
 
+const unresolvedValue = /^(?:tbd|tba|pending|unknown|to be (?:defined|determined)|as needed|when necessary|pendiente|por (?:definir|determinar)|desconocid[oa]|cuando sea necesario)[.!]?$/iu;
+
+function isConcreteValue(value: string): boolean {
+  return Boolean(value) && !unresolvedValue.test(value) && !/\[|\?/.test(value);
+}
+
 function linkedFact(evidence: Evidence): Fact[] {
   const text = evidence.text.replace(definition, '').normalize('NFC');
   return factLabels.flatMap(([kind, pattern]) => {
@@ -73,7 +80,7 @@ function linkedFact(evidence: Evidence): Fact[] {
     const value = match[1].trim();
     // A marker or a relative/qualitative limit is not a completed measurement.
     if (!value || kind === 'bound' && (!duration.test(value) || !/^[.!]?$/.test(value.replace(duration, '').trim())) ||
-        kind !== 'owner' && (/^(?:tbd|pending|unknown|pendiente|por definir|desconocido)[.!]?$/iu.test(value) || /\[|\?/.test(value))) return [];
+        kind !== 'owner' && !isConcreteValue(value)) return [];
     return [{ kind, value, evidence }];
   });
 }
@@ -142,7 +149,8 @@ export async function clarifyE12(
   const removal = /\b(?:disappear|dismiss|remove|clear|hide|close|desaparecer|retirar|cerrar(?:se)?|ocultar)\b/u.test(clause);
   const event = /^(?:as needed|cuando sea necesario)$/u.test(cue) && removal;
   const ease = /^(?:easily|fácilmente)$/u.test(cue) && removal;
-  if (!timing && !event && !ease) return decline('unsupported');
+  const adaptation = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) && /\b(?:adapt|adaptar(?:se)?)\s*$/u.test(clause);
+  if (!timing && !event && !ease && !adaptation) return decline('unsupported');
   if (timing && (/\bas\s+$/u.test(before) || /^\s*(?:than|que|como)\b/u.test(after))) return decline('unsupported');
   if (event && /\b(?:when|if|after|until|cuando|si|después de|hasta)\b/u.test(clause + ' ' + after.split(/[,;]/)[0])) {
     return decline('unsupported');
@@ -162,7 +170,10 @@ export async function clarifyE12(
   }
   const inlineMeasurement = timing && measurement.exec(tail);
   if (inlineMeasurement) {
-    facts.push({ kind: 'start', value: inlineMeasurement[1], evidence: target }, { kind: 'end', value: inlineMeasurement[2], evidence: target });
+    const start = inlineMeasurement[1].trim();
+    const end = inlineMeasurement[2].trim();
+    if (isConcreteValue(start)) facts.push({ kind: 'start', value: start, evidence: target });
+    if (isConcreteValue(end)) facts.push({ kind: 'end', value: end, evidence: target });
   }
   if (id && definitions.length === 1) {
     const referenced = new Set(assessment.traceability.filter(edge => edge.resolved && edge.to === id)
@@ -187,7 +198,7 @@ export async function clarifyE12(
   if (event && has('trigger') || timing && bounded && starts && ends) return decline('already-specified', evidence);
   const missingMeasurement = starts ? 'measurement-end' : ends ? 'measurement-start' : 'measurement';
   const missingBound = starts ? ends ? 'bound' : 'bound-and-end' : ends ? 'bound-and-start' : 'bound-and-measurement';
-  const focus = event ? 'trigger' : ease ? 'criterion' : bounded ? missingMeasurement : missingBound;
+  const focus = event ? 'trigger' : ease ? 'criterion' : adaptation ? 'behavior' : bounded ? missingMeasurement : missingBound;
   return {
     kind: 'question', focus, revision: assessment.id, question: questions[focus][locale], evidence,
     reason: locale === 1 ? 'La evidencia deja esta decisión abierta.' : 'The cited evidence leaves this decision open.',

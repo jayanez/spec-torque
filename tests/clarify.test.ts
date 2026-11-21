@@ -139,3 +139,42 @@ test('a stale companion or false evidence cannot produce guidance', async () => 
   finding.evidence[0].text = 'Unrelated other text';
   assert.equal(await clarifyE12(set, assessment, finding.id, 'en'), undefined);
 });
+
+test('linked trigger placeholders leave the decision open in both languages', async () => {
+  for (const [language, source, placeholder] of [
+    ['en', 'FR-008: The indicator MUST disappear as needed.', 'Trigger event: when necessary.'],
+    ['es', 'FR-008: El indicador DEBE desaparecer cuando sea necesario.', 'Evento disparador: cuando sea necesario.'],
+  ] as const) {
+    const { result } = await check(documents('specs/indicator/spec.md', source, {
+      'specs/indicator/plan.md': '- FR-008 ' + placeholder,
+    }), language);
+    assert.equal(result.kind, 'question');
+    assert.equal(result.focus, 'trigger');
+  }
+});
+
+test('a pending inline or linked measurement endpoint still needs a question', async () => {
+  for (const [language, source, companions] of [
+    ['en', 'FR-100: The lookup MUST be fast within 300 ms, measured from submit to TBD.', {}],
+    ['es', 'FR-100: La consulta DEBE ser rápida en 300 ms, medida desde el envío hasta por determinar.', {}],
+    ['en', 'FR-100: The lookup MUST be fast within 300 ms.', {
+      'specs/query/plan.md': '- FR-100 Measurement start: submit.\n- FR-100 Measurement end: to be determined.',
+    }],
+  ] as const) {
+    const { result } = await check(documents('specs/query/spec.md', source, companions), language);
+    assert.equal(result.kind, 'question');
+    assert.equal(result.focus, 'measurement-end');
+  }
+});
+
+test('undefined adaptation requests observable behavior before a time limit', async () => {
+  for (const [language, source, wording] of [
+    ['en', 'FR-091: The queue MUST adapt quickly when tagged patterns are added.\nPaused jobs are excluded from reordering.', /observable behavior/],
+    ['es', 'FR-112: El planificador DEBE adaptarse rápido cuando cambie el cupo.\nLos envíos aprobados quedan excluidos.', /comportamiento observable/],
+  ] as const) {
+    const { result } = await check(documents('specs/adaptation/spec.md', source), language);
+    assert.equal(result.kind, 'question');
+    assert.equal(result.focus, 'behavior');
+    assert.match(result.question, wording);
+  }
+});
