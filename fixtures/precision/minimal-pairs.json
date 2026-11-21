@@ -1294,6 +1294,142 @@
           "note": "An ID suffix inside another word does not count."
         }
       ]
+    },
+    {
+      "id": "id-position-en",
+      "family": "id-position",
+      "language": "en",
+      "path": "specs/008-ids/spec.md",
+      "lines": [
+        "# Requirements",
+        "",
+        "- FR-3: The service records each login.",
+        "- [ ] Wire the login form (FR-3)",
+        "| FR-4 | Export a monthly report |",
+        "| T-7 | FR-4 | Done |",
+        "Satisfies FR-3 and FR-4.",
+        "**FR-5:** Tokens expire after one hour.",
+        "See FR-5; the token MUST be rotated."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Defining position, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Task checkbox that only cites an ID."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "First table cell."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Traceability cell that is not the first."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites IDs."
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Bold label."
+        },
+        {
+          "line": 9,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Cites an ID but admitted by its own modal."
+        }
+      ]
+    },
+    {
+      "id": "id-position-es",
+      "family": "id-position",
+      "language": "es",
+      "path": "specs/008-ids/spec.md",
+      "lines": [
+        "# Requisitos",
+        "",
+        "- RF-3: El servicio registrará cada acceso.",
+        "- [ ] Conectar el formulario de acceso (RF-3)",
+        "| RF-4 | Exportar un informe mensual |",
+        "| T-7 | RF-4 | Hecho |",
+        "Cumple RF-3 y RF-4.",
+        "**RF-5:** Los tokens caducan tras una hora.",
+        "Ver RF-5; el token DEBE rotarse."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Defining position, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Task checkbox that only cites an ID."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "First table cell."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Traceability cell that is not the first."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites IDs."
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Bold label."
+        },
+        {
+          "line": 9,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Cites an ID but admitted by its own modal."
+        }
+      ]
     }
   ]
 }
