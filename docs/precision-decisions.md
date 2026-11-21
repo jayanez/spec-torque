@@ -225,6 +225,53 @@ A candidate fix is to recognize Spanish requirement IDs (`RF-`, `RNF-`). It need
 its own pre-registration (H2c) and must be measured on a set that has not been
 seen. H2b stays unmerged.
 
+### H2c: Spanish requirement IDs — **stop**
+
+Pre-registered at `9e8d5d9`. The sources were frozen at `507b1c3` (17 repositories
+found with `"RF-" "EL SISTEMA"`) and the synthetic twins at `7c79b6c`, both before
+the candidate (`c309b98`, engine 0.1.6).
+
+**Harness fix.** The probe's candidate-line tokens did not include `RF-`/`RNF-`. As
+a result, isolation left those lines in place and they leaked into other lines'
+predictions. The fix (`d371534`) makes the tokens a superset of both arms. It was committed before any
+natural-source measurement.
+
+| Gate | Result |
+|---|---|
+| 1. The 18 known false negatives are admitted again | holds (18 of 18) |
+| 2. Every line newly admitted relative to H2b is a requirement (fresh set) | **fails** |
+| 3. No H2b mention is re-admitted without an ID | holds (0 lines excluded, 0 quoted-only changes) |
+| 4. No regressions in the historical predictions (716 unchanged), the synthetic suite (0 regressions; ES admission errors 13 → 11) or evidence (0 invalid) | holds |
+
+The supplemental controls were not re-run, because they contain no `RF-`/`RNF-`
+IDs.
+
+**Fresh set.** 181 documents and 160 lineages. H2c newly admits 975 lines in 65
+lineages.
+- About 479 are requirement definitions, such as `| RF-01 | El sistema permite …`
+  or `- **RNF-1 — Sin telemetría…**`.
+- About 496 are cross-references to IDs:
+  - task checkboxes (`… (RF-006)`);
+  - traceability tables (`| 016-CHK-13 | 016-RF-11 | …`);
+  - prose that cites a requirement (`Ver RF-99`, `(RF-183, RF-184)`).
+
+A first-pass pattern did this split; it was not reviewed line by line. Downstream,
+E1.4 moves `supported→partial` in 60 features, and I1.2 and I2.2 move
+`missing→partial` in 57.
+
+The development sets show the same split. The second Spanish set gains about
+3,800 definitions and about 1,800 references.
+
+**Decision.** Stop. The candidate is reverted. The cause is the existing admission
+policy, not the Spanish IDs: any line that *contains* a requirement ID is admitted.
+H2c makes this visible because Spanish specs cite `RF-` IDs densely. English `FR-`
+references are admitted the same way today.
+
+The next candidate, if pursued, would anchor admission to the ID's *defining
+position*: line start, list item, bold label, or the first table cell. That
+changes the contract for every ID, so it needs its own pre-registration and the
+historical controls.
+
 The adjudication packets for all three sets (`scripts/precision/adjudication-packet.ts`,
 protocol in [precision adjudication](precision-adjudication.md)) are built and
 held locally. They await two independent reviewers and the owner's threshold.
