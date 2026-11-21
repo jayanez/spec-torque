@@ -87,11 +87,21 @@ export function lineLanguage(text: string): 'en' | 'es' | 'und' {
 const modalWord = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
 /**
  * Character ranges of mentions, found by a scanner written independently from the engine:
- * equal-length backtick runs, straight double quotes bounded by non-word characters,
+ * keyword-only code spans on lines with an even number of backticks, straight double quotes bounded by non-word characters,
  * curly double quotes and guillemets. Single quotes are not mentions.
  */
+const keywordWords = new Set(['must', 'shall', 'should', 'may', 'deberían', 'debería', 'deberán', 'deberá', 'deben', 'debe',
+  'pueden', 'puede', 'or', 'and', 'o', 'y', 'not', 'no']);
+/** A code span is a mention only when every word in it is a modal keyword or a joiner (H2b). */
+function keywordOnlySpan(content: string): boolean {
+  if (/[^\p{L}\p{N}\p{M}_\s/,|.]/u.test(content)) return false;
+  const words = content.toLowerCase().split(/[^\p{L}\p{N}\p{M}_]+/u).filter(Boolean);
+  return words.length > 0 && words.every(word => keywordWords.has(word)) && words.some(word => !['or', 'and', 'o', 'y', 'not', 'no'].includes(word));
+}
+
 export function mentionRanges(text: string): [number, number][] {
   const ranges: [number, number][] = [];
+  const evenBackticks = [...text].filter(char => char === '`').length % 2 === 0;
   const word = (char: string | undefined) => char !== undefined && /[\p{L}\p{N}\p{M}_]/u.test(char);
   let i = 0;
   while (i < text.length) {
@@ -109,7 +119,11 @@ export function mentionRanges(text: string): [number, number][] {
           j += m;
         } else j++;
       }
-      if (close > i + n) { ranges.push([i, close + n]); i = close + n; continue; }
+      if (close > i + n) {
+        if (evenBackticks && keywordOnlySpan(text.slice(i + n, close))) ranges.push([i, close + n]);
+        i = close + n;
+        continue;
+      }
       i += n;
       continue;
     }

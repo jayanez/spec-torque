@@ -12,12 +12,22 @@ const monthEnumerationMay = new RegExp(
   `(?<![\\p{L}\\p{N}\\p{M}_])(${monthItem('Apr(?:il)?')}[ \\t]*,[ \\t]*)${monthItem('May')}([ \\t]*,[ \\t]*${monthItem('Jun(?:e)?')})(?![\\p{L}\\p{N}\\p{M}_])`,
   'giu',
 );
-// Modal words inside inline code, double quotation marks or guillemets are mentioned, not used.
-// Code spans pair backtick runs of equal length; a straight quote span needs a non-word
-// character (or line edge) outside both quotes, so inch marks such as 27" never open one.
-const mentioned = /(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)|(?<![\p{L}\p{N}\p{M}_])"[^"]*"(?![\p{L}\p{N}\p{M}_])|“[^”]*”|«[^»]*»/gu;
+// Modal words are mentioned, not used, inside quotation marks (straight double quotes bounded
+// by non-word characters, so inch marks such as 27" never pair; curly quotes; guillemets) and
+// inside code spans that hold only keywords, such as `SHALL` or `MUST`/`SHALL`. Other code spans
+// can hold requirements, and a line with an odd number of backticks has no reliable spans.
+const quotation = /(?<![\p{L}\p{N}\p{M}_])"[^"]*"(?![\p{L}\p{N}\p{M}_])|“[^”]*”|«[^»]*»/gu;
+const codeSpan = /(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)/gu;
+const keywordJoiners = /(?<![\p{L}\p{N}\p{M}_])(?:or|and|o|y|not|no)(?![\p{L}\p{N}\p{M}_])|[\s/,|.]+/giu;
+const keywordOnly = (content: string) => modal.test(content) &&
+  content.replace(new RegExp(modal.source, 'giu'), ' ').replace(keywordJoiners, '') === '';
+function withoutMentions(text: string): string {
+  const spans = (text.match(/`/g) ?? []).length % 2 === 0
+    ? text.replace(codeSpan, (span, _run: string, content: string) => keywordOnly(content) ? ' ' : span) : text;
+  return spans.replace(quotation, ' ');
+}
 const hasNormativeModal = (text: string) => modal.test(
-  text.normalize('NFC').replace(mentioned, ' ').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
+  withoutMentions(text.normalize('NFC')).replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {

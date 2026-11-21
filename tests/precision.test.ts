@@ -50,7 +50,7 @@ test('the fence oracle pairs characters and run lengths', () => {
 test('the current engine meets every quoted-modal and control expectation', async () => {
   const engine = await loadEngine(repository);
   // Fence-mismatch structures (H1, stopped) remain known baseline errors and are not asserted.
-  for (const entry of cases.filter(item => ['quoted-modal', 'fence-control', 'admission-control'].includes(item.family) || item.id === 'bom-first-line-en')) {
+  for (const entry of cases.filter(item => ['quoted-modal', 'quoted-modal-h2b', 'fence-control', 'admission-control'].includes(item.family) || item.id === 'bom-first-line-en')) {
     const content = contentOf(entry);
     for (const target of entry.targets) {
       const prediction = await predictLine(engine, entry.path, content, target.line);
