@@ -50,20 +50,3 @@ hash and evidence remain unchanged. Unlisted units, other uses of `May` and
 discourse-level interpretation can still yield errors or abstentions. The
 [agent comparison](format-corpus.md#observed-agent-comparison) records
 the affected corpus counts and limits.
-
-Engine **0.1.5** (candidate H2b) treats modal words as mentioned, not used, in
-these places:
-- code spans that hold only keywords, such as `` `SHALL` `` or `` `MUST`/`SHALL` ``;
-- straight double quotes bounded by non-word characters (an inch mark such as
-  `27"` never opens a quotation);
-- curly double quotes and Spanish guillemets (`«…»`).
-
-Examples include ``Keywords such as `MUST` stay in English.``,
-`Show an example: "The system SHALL log."` and `El analizador reconoce «DEBE»`.
-Such a line is no longer a requirement unless it carries an ID.
-
-The following are unchanged: code spans holding sentences (for example
-`` `saldo DEBE ser "0.00"` ``), lines with an odd number of backticks, single
-quotes, and quotations spanning lines. A line that also uses a bare modal keeps its
-evidence. See the [precision replay](precision-replay.md) for the
-pre-registered gates and measurements.

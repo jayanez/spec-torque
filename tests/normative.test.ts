@@ -50,14 +50,12 @@ test('Unicode token boundaries reject embedded normative words with and without 
 });
 
 test('Unicode punctuation and lowercase forms retain exact source evidence', async () => {
-  // Guillemets mark a mention since engine 0.1.5 (H2a); parentheses and exclamation marks do not.
-  for (const word of ['deberá', 'deberían', 'pueden', 'may']) for (const text of [`El servicio (${word}) responder rápido.`, `El servicio ¡${word}! responder rápido.`]) {
+  for (const word of ['deberá', 'deberían', 'pueden', 'may']) {
+    const text = `El servicio «${word}» responder rápido.`;
     const result = await analyze({ name: 'punctuation', artifacts: [classifyArtifact('spec.md', text)] });
     assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'supported', word);
     assert.deepEqual(result.practices.find(p => p.id === 'E1.4')?.evidence, [{ path: 'spec.md', line: 1, text }]);
   }
-  const mention = await analyze({ name: 'guillemets', artifacts: [classifyArtifact('spec.md', 'El servicio «deberá» responder rápido.')] });
-  assert.equal(mention.practices.find(p => p.id === 'E1.4')?.status, 'unknown');
 });
 
 test('embedded mandatory words cannot generate contradictions in ID-labelled requirements', async () => {
@@ -147,44 +145,4 @@ test('recommendations and permissions do not become mandatory contradictions', a
   ] });
   assert.equal(result.findings.some(f => f.message.includes('Opposite obligations')), false);
   assert.equal(result.practices.find(p => p.id === 'C1.2')?.status, 'unknown');
-});
-
-test('modal words mentioned in code spans or double quotes are not requirements', async () => {
-  const lines = [
-    'Keywords such as `SHALL` and `MUST` stay in English.',
-    'Show an example: "The system SHALL log."',
-    'Mostrar: “El sistema DEBE registrar.”',
-    '¿Qué "debe" significar el término?',
-    'FR-010: Reject bodies without `MUST`.',
-    'The parser MUST reject lines without `SHALL`.',
-    'La app DEBE mostrar "Guardado" tras editar.',
-    'The screen MUST be 5" wide.',
-  ];
-  const text = lines.join('\r\n');
-  const result = await analyze({ name: 'mentions', artifacts: [classifyArtifact('spec.md', text)] });
-  const e14 = result.practices.find(p => p.id === 'E1.4')!;
-  assert.equal(e14.status, 'partial');
-  assert.deepEqual(e14.evidence.map(item => item.line), [6, 7, 8]);
-  assert.deepEqual(e14.evidence.map(item => item.text), [lines[5], lines[6], lines[7]]);
-  const unidentified = result.findings.filter(f => f.message === 'Requirement has no stable identifier.').map(f => f.evidence[0].line);
-  assert.deepEqual(unidentified, [6, 7, 8]);
-});
-
-test('a requirement ID admits a line only in its defining position', async () => {
-  const lines = [
-    '- RF-3: El servicio registrará cada acceso.',
-    '- [ ] Conectar el formulario de acceso (RF-3)',
-    '| FR-4 | Export a monthly report |',
-    '| T-7 | FR-4 | Done |',
-    'Satisfies FR-3 and FR-4.',
-    '**RNF-5:** Los tokens caducan tras una hora.',
-    'See FR-5; the token MUST be rotated.',
-  ];
-  const result = await analyze({ name: 'id-position', artifacts: [classifyArtifact('spec.md', lines.join('\n'))] });
-  const e14 = result.practices.find(p => p.id === 'E1.4')!;
-  assert.equal(e14.status, 'partial');
-  assert.deepEqual(e14.evidence.map(item => item.line), [7]);
-  // Lines 2, 4 and 5 only cite IDs, so they are not requirements and raise no findings.
-  const lines14 = result.findings.flatMap(f => f.evidence.map(e => e.line));
-  for (const line of [2, 4, 5]) assert.ok(!lines14.includes(line), `line ${line} should not be a requirement`);
 });

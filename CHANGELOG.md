@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Research branch (#39), not for release: engine 0.1.5 candidate H2b. Modal words no longer admit a requirement or count toward E1.4 when they sit in keyword-only code spans (`` `SHALL` ``, `` `MUST`/`SHALL` ``), bounded double quotes, curly quotes or guillemets. Other code spans, and lines with an odd number of backticks, are unchanged. The 716 historical predictions are unchanged. A fresh 18-repository confirmation scan found one borderline case. Also adds the paired precision replay, the label-derived calibration audit and the F2 span-classification trial. See docs/precision-decisions.md.
+- Research tooling (#39, #51), engine unchanged at 0.1.4: paired precision replay with synthetic minimal pairs and natural-source scans, blind adjudication packets, the label-derived calibration audit and the F2 span-classification trial. No detector candidate (H1, H2–H2e) met its gates; see docs/precision-decisions.md.
 - Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.
 
 ## 0.2.0 — candidate
