@@ -386,6 +386,52 @@ definitions, not only from the rule.
 - H2b's mention rule has not itself been adjudicated with independent labels.
   The remaining candidate for #51 is H2b alone, which needs its own packets.
 
+### H2b adjudication — **fails; no H2 candidate passes**
+
+Labels (2026-11-21) were assigned with the same method and threshold as H2d.
+- Two blind agent reviewers labeled all 291 distinct lines that H2b stops
+  admitting: 47 from the 18-repository set, 161 from the first Spanish set and 83
+  from the second.
+- Reviewer A omitted one item. Cohen's kappa was 0.70.
+
+The adjudicator was not run. Lines that **both** reviewers labeled `requirement`
+already give a lower bound on the errors, and adjudication could only add more.
+
+| Set | Lineages | Errors (agreed only) | Upper 95% bound (at least) |
+|---|---:|---:|---:|
+| 18 repositories | 26 | 4 | 31.8% |
+| First Spanish set | 149 | 17 | 16.6% |
+| Second Spanish set | 40 | 9 | 36.0% |
+| All | 215 | 30 | 18.4% |
+
+**What H2b wrongly stops admitting.** The lines state their own rule without a
+recognized modal, and their only modal is quoted:
+- imperative task and constraint bullets (`- Reuse … exactly -- no second …
+  implementation`);
+- negative constraints (`- No schema/model change …`);
+- `THEN` steps that quote a UI message but also require behaviour (`… y no se
+  encola nada`);
+- table rows describing required build failures;
+- capability-worded requirements (`FR1b`).
+
+The previous decision on 0.1.4 was not correct for these lines either. It
+admitted them and counted the quoted modal as normative usage. H2b turns that
+false E1.4 positive into a false negative on admission.
+
+**Decision for #51.** No H2 candidate meets the threshold.
+- Recognizing mentions is necessary but not sufficient. Admission also needs to
+  recognize modal-less requirement wording: imperatives, negative constraints and
+  the future tense.
+- That is a different and larger problem, a requirement-sentence classifier,
+  beyond one bounded deterministic rule.
+- The engine stays at 0.1.4 behaviour on `develop`. Every candidate stays
+  unmerged, and #51 should be closed or re-scoped by the owner.
+
+**Process lesson.** This session's provisional reviews (the rule author's) passed
+H2b condition 3 with one borderline line and H2d gate 3. Independent labels found
+error rates far above 5% for both. In the future, provisional reviews by the
+rule's author should not count towards any gate.
+
 The adjudication packets for all three sets (`scripts/precision/adjudication-packet.ts`,
 protocol in [precision adjudication](precision-adjudication.md)) are built and
 held locally. They await two independent reviewers and the owner's threshold.
