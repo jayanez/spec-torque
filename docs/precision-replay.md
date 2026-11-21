@@ -221,6 +221,62 @@ any file content:
 The list is committed in `fixtures/precision/h2c-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H2d (frozen before sources are chosen or the candidate is built)
+
+**Why.** H2c stopped. On its fresh set, about half of the 975 newly admitted lines
+only cite a requirement ID: task checkboxes, traceability tables, and prose such as
+`Ver RF-99`. The cause predates H2c: a line is admitted when it *contains* an ID
+anywhere. H2c's sets (development and fresh) are now development data.
+
+**Policy.** H2b plus the following:
+1. A line is admitted by its ID only when the ID (`FR`, `NFR`, `RF`, `RNF` or `REQ`,
+   followed by `-<n>`) is in a defining position. After optional leading
+   whitespace, that means:
+   - an optional list marker (`-`, `*`, `+`, `1.`, `1)`);
+   - an optional task checkbox;
+   - an optional opening `|` of a table row (first cell only);
+   - optional bold or code markup;
+   - then the ID itself.
+2. A line whose ID is elsewhere is admitted only if it has a normative modal outside
+   mentions, which is the H2b rule.
+3. ID recognition for coverage (I1.2), traceability (plan and task references) and
+   comparator stripping (E1.2) recognizes `RF-`/`RNF-` as in H2c, anywhere on the
+   line. Only admission is anchored.
+
+This changes the contract for English IDs as well. A line like
+`Satisfies FR-3 and FR-4.` is no longer admitted unless it uses a modal.
+
+**Comparators.** 0.1.4 (`865af59`) and H2b (`bb8e185`).
+
+**Gate (all must hold to proceed).**
+1. On the development sets, all 18 known false negatives from the second Spanish
+   set are admitted.
+2. On a fresh set, a provisional review of a sample of newly admitted lines finds
+   that every one is a requirement. The sample is all lines when there are at most
+   100, otherwise 100 drawn with seed 42039.
+3. On the fresh set, a provisional review of a sample of lines that H2d *stops*
+   admitting relative to 0.1.4 (same sampling) finds no requirement. These are
+   lines with an ID off the defining position and no modal.
+4. The 716 historical predictions are unchanged. Any change must be listed and
+   justified line by line, and it blocks the gate until the owner accepts it. The
+   synthetic suite, extended before the candidate with defining-position and
+   reference twins in EN and ES, shows no regressions. No evidence becomes
+   invalid.
+
+Independent adjudication is still required before any merge.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search by the H2b family paths, run once for `"FR-"` and once for
+  `"RF-"`;
+- up to 3 repositories per family and query, public, non-fork, not archived, MIT
+  or Apache-2.0;
+- every repository and owner used earlier in #39 and #51 excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h2d-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
