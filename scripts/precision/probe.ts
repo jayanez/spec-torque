@@ -83,3 +83,24 @@ export function lineLanguage(text: string): 'en' | 'es' | 'und' {
   if (/(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY)(?![\p{L}\p{N}\p{M}_])/iu.test(nfc)) return 'en';
   return 'und';
 }
+
+const modalWord = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
+/** True when the line has modal words and every one sits inside a code span or quotation. */
+export function quotedOnlyModal(text: string): boolean {
+  const nfc = text.normalize('NFC');
+  const bare = nfc.replace(/`[^`]*`|"[^"]*"|“[^”]*”|'[A-Za-zÁÉÍÓÚáéíóú ]+'/gu, ' ');
+  return modalWord.test(nfc) && !modalWord.test(bare);
+}
+
+/** Lines inside, opening or closing an HTML comment. */
+export function commentLines(content: string): Set<number> {
+  const inside = new Set<number>();
+  let open = false;
+  segments(content).forEach((row, index) => {
+    const starts = row.text.includes('<!--');
+    if (open || starts) inside.add(index + 1);
+    if (starts) open = true;
+    if (open && row.text.includes('-->') && row.text.lastIndexOf('-->') > row.text.lastIndexOf('<!--')) open = false;
+  });
+  return inside;
+}

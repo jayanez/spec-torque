@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { archiveEngine, commit, repository } from './engines.js';
 import { confusion } from './metrics.js';
-import { candidateLines, fencedLines, lineLanguage, predictLine, segments, sha256, type LinePrediction } from './probe.js';
+import { candidateLines, commentLines, fencedLines, quotedOnlyModal, lineLanguage, predictLine, segments, sha256, type LinePrediction } from './probe.js';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
 const caseSchema = z.strictObject({
@@ -177,6 +177,11 @@ async function scan() {
     failure: { repositories: new Set<string>(), lineages: new Set<string>(), distinctLines: new Set<string>(), byLanguage: { en: 0, es: 0, und: 0 } },
     adjacent: {} as Record<string, { statusChanged: number; findingsAdded: number; findingsRemoved: number; evidenceChanged: number }>,
     evidenceInvalid: { baseline: 0, candidate: 0 },
+    // Exploratory signals for future hypotheses; measured on the baseline arm only.
+    residual: {
+      quotedOnlyModal: { lines: 0, repositories: new Set<string>(), lineages: new Set<string>() },
+      htmlComment: { lines: 0, repositories: new Set<string>(), lineages: new Set<string>() },
+    },
   };
   const adjacent = (id: string) => (aggregate.adjacent[id] ??= { statusChanged: 0, findingsAdded: 0, findingsRemoved: 0, evidenceChanged: 0 });
   const rootRevisions: { id: string; sha: string; restricted: boolean }[] = [];
@@ -195,6 +200,7 @@ async function scan() {
       const lineage = `${root.repository}|${lineageOf(artifact.path)}`;
       aggregate.lineages.add(lineage);
       const fenced = fencedLines(artifact.content);
+      const comments = commentLines(artifact.content);
       const rows = segments(artifact.content);
       for (const line of candidateLines(artifact.content)) {
         const text = rows[line - 1].text;
@@ -208,6 +214,11 @@ async function scan() {
           const prediction = side === 'baseline' ? baseline : candidate;
           if (prediction.evidenceValid === false) aggregate.evidenceInvalid[side]++;
           if (prediction.admitted && fenced.has(line)) aggregate.oracleConflicts[side]++;
+        }
+        for (const [signal, present] of [['quotedOnlyModal', quotedOnlyModal(text)], ['htmlComment', comments.has(line)]] as const) {
+          if (!present || !baseline.admitted) continue;
+          const bucket = aggregate.residual[signal];
+          bucket.lines++; bucket.repositories.add(root.repository); bucket.lineages.add(lineage);
         }
         if (baseline.admitted && fenced.has(line)) {
           aggregate.failure.repositories.add(root.repository);
@@ -250,14 +261,20 @@ async function scan() {
   };
   return {
     rootRevisions, restrictedDetail, publicDetail, rootsHash: sha256(rootsBytes),
-    aggregate: { ...aggregate, lineages: aggregate.lineages.size, failure },
+    aggregate: { ...aggregate, lineages: aggregate.lineages.size, failure,
+      residual: Object.fromEntries(Object.entries(aggregate.residual).map(([key, bucket]) => [key, {
+        lines: bucket.lines, repositories: bucket.repositories.size, lineages: bucket.lineages.size }])) },
   };
 }
 
-/** Line-level counts below five are suppressed in exported restricted aggregates. */
-function suppress(value: unknown): unknown {
-  if (typeof value === 'number') return value > 0 && value < 5 ? '<5' : value;
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, suppress(item)]));
+/**
+ * Line-level counts below five are suppressed in exported restricted aggregates. Root,
+ * repository and lineage counts stay exact because the recurrence gate depends on them.
+ */
+const exact = new Set(['roots', 'restrictedRoots', 'repositories', 'lineages']);
+function suppress(value: unknown, key = ''): unknown {
+  if (typeof value === 'number') return !exact.has(key) && value > 0 && value < 5 ? '<5' : value;
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, suppress(item, name)]));
   return value;
 }
 
