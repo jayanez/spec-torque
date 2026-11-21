@@ -178,6 +178,7 @@ async function scan() {
     // Changed lines (admission or any decision) by whether every modal word is mentioned.
     changeScope: { quotedOnlyModal: 0, other: 0 },
     findingChangesOnOtherLines: 0,
+    featuresOverLimit: 0,
     // Inherited instruction files repeat a finding in every feature; count each finding once.
     uniqueFindingChanges: new Set<string>(),
     oracleConflicts: { baseline: 0, candidate: 0 },
@@ -268,8 +269,13 @@ async function scan() {
     // Whole-feature effects on every practice and finding, independent of the primary rule.
     const set = { name: root.id, artifacts };
     for (const feature of new Set(targets.map(artifact => artifact.featureId))) {
-      aggregate.features++;
       const selected = arms.baseline.selectFeature(set, feature);
+      // The engine refuses sets beyond its analysis limit; record the exclusion instead.
+      if (selected.artifacts.length > 500 || selected.artifacts.some(artifact => artifact.content.length > 1_000_000)) {
+        aggregate.featuresOverLimit++;
+        continue;
+      }
+      aggregate.features++;
       const [before, after] = await Promise.all([arms.baseline.analyze(selected), arms.candidate.analyze(selected)]);
       for (const practice of before.practices) {
         const next = after.practices.find(item => item.id === practice.id)!;
