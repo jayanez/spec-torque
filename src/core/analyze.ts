@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.4';
+export const ENGINE_VERSION = '0.1.5';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -16,10 +16,18 @@ const hasNormativeModal = (text: string) => modal.test(
   text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
+// CommonMark fence pairing: a closer repeats the opener's character with at least the same
+// run length and no info string; a backtick info string cannot contain a backtick.
+const fenceRun = /^\s*(`{3,}|~{3,})(.*)$/;
 function linesOf(artifact: Artifact): Line[] {
-  let fenced = false;
+  let fence: { char: string; length: number } | undefined;
   return artifact.content.split(/\r?\n/).map((text, index) => {
-    if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
+    const run = fenceRun.exec(text);
+    const delimiter = run !== null && (fence
+      ? run[1][0] === fence.char && run[1].length >= fence.length && /^[ \t]*$/.test(run[2])
+      : !(run[1][0] === '`' && run[2].includes('`')));
+    const fenced = fence !== undefined || delimiter;
+    if (delimiter) fence = fence ? undefined : { char: run[1][0], length: run[1].length };
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
     const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
     return { path: artifact.path, line: index + 1, text, artifact, requirement };
