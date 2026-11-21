@@ -277,6 +277,51 @@ any file content:
 The list is committed in `fixtures/precision/h2d-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H2e (frozen before sources are chosen or the candidate is built)
+
+**Why.** H2d reached **iterate**. Its fresh set showed 15 lines that are no longer
+admitted because their own ID is not recognized:
+- constraints (`| C-003 | No credential appears in argv … |`);
+- success criteria (`**SC-002**: …`).
+
+Before H2d they were admitted only because they cite an `FR-` ID later in the line.
+H2d's sets are now development data.
+
+**Policy.** H2d plus the following:
+1. Constraint IDs `C-<n>` and `CON-<n>` are recognized in the defining position.
+   They admit the line and count as a stable identifier for I1.2.
+2. Success-criterion IDs (`SC-<n>`) are **not** added. Spec Kit templates use them
+   for measurable outcomes, which this engine does not treat as requirements. Such
+   lines stay admitted only through a normative modal, and are measured as a
+   residual.
+3. Nothing else changes.
+
+**Endpoints, comparators and gate.** As in H2d, with H2d (`38a1c09`) as an extra
+comparator:
+1. The 15 known development lines that are constraints are admitted.
+2. All lines newly admitted relative to H2d (or 100 sampled, seed 42039) are
+   requirements.
+3. A sample of the lines no longer admitted relative to 0.1.4 contains no
+   requirement.
+4. The 716 historical predictions are unchanged, there are no synthetic
+   regressions (twins added before the candidate), and no evidence becomes invalid.
+
+**Stop rule.** This is the last iteration of the H2 family in #39. If any gate
+fails, there is no H2f. The best passing-so-far candidate goes to independent
+adjudication, with its failures recorded as known limits, and the owner decides on
+the product change.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search for `"C-001"`, by the H2b family paths;
+- up to 4 repositories per family, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39 and #51 excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h2e-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
