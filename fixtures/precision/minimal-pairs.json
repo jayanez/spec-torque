@@ -1243,6 +1243,57 @@
           "E1.2": "negative"
         }
       ]
+    },
+    {
+      "id": "spanish-requirement-id-es",
+      "family": "spanish-requirement-id",
+      "language": "es",
+      "path": "specs/007-ids/spec.md",
+      "lines": [
+        "# Requisitos",
+        "",
+        "- RF-12: EL SISTEMA guardará el borrador (usuario: «nada debe perderse»).",
+        "- RNF-3: Los datos se cifrarán en reposo.",
+        "- RF-13: EL SISTEMA DEBE registrar cada acceso.",
+        "La norma RFC-7231 define los códigos de estado.",
+        "La tarea PERF-12 sigue abierta."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Admitted by its Spanish ID; the only modal is quoted."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Admitted by its Spanish ID; future tense, no modal."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "RFC is not a requirement ID."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "An ID suffix inside another word does not count."
+        }
+      ]
     }
   ]
 }
