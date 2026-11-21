@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-21",
+  "purpose": "Second Spanish confirmation set for #51 (H2b), drawn because the first gave 13 of the 20 required Spanish lines. Frozen before any file content was read.",
+  "rule": "GitHub code search for \"DEBERÁ\" by path per family, search order, up to 5 repositories per family; public, non-fork, not archived, MIT or Apache-2.0; repositories and owners used earlier in #39 (including the H2b and first Spanish sets) excluded; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "spec-kitty": "No qualifying repository.",
+    "bmad": "No qualifying repository.",
+    "zeespec": "No qualifying repository.",
+    "generic": "Only 2 qualifying repositories."
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/Angelthebestone/Normativa-colombiana-MCP",
+      "commit": "2f617cd4fb5f2961edfacb7c02c09171472bb478",
+      "license": "Apache-2.0",
+      "query": "\"DEBERÁ\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/mabustos-lab/KUtilitiesCore",
+      "commit": "30e4170dbd491daa29073404138cd9108f97db43",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/eevp88/webEEVP",
+      "commit": "f25bb78d1f120f02370372682f90eabfde06c6ca",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/jahnog/mini-rag-service",
+      "commit": "123acc5b82a679192a7d0f86a8ea4583bc232ad7",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/IRRT3000/IAN-APp",
+      "commit": "4e3c68661a115de03106af6fad0af1efc807f5fd",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/AndersonLondonoAvendano/UberClone",
+      "commit": "439aef6939dfbfa1ad48ecc5314f4e25ee25f028",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/JennyferGuayanay/Pomodoro-Cotopaxi",
+      "commit": "029cf5d279d5c2bc3a65e4f2a73c6ca9e7b67047",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/codediaz/live-subs",
+      "commit": "5fed77fd15ae036e406cb23a8a27569c21544193",
+      "license": "Apache-2.0",
+      "query": "\"DEBERÁ\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Mac-Tapia/ConversorIGEA_DGS",
+      "commit": "a05dad956239c0889e5663b0433e4eb8e7f69244",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/derocox-cloud/KiroLogo",
+      "commit": "2ca5a4369878856cefee27e8251eb5023c4eea21",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/JuanMCanchala/fuga",
+      "commit": "3fa936a9b4e9780de67b60c995149116b60524f2",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/Iyov/CuidoAMiTata.cl",
+      "commit": "4e0b4cd164aa6478dab62e76567787725ad1be0b",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/eduardojeem/4gv4",
+      "commit": "a59f71968b1a2587015876079faf00ea843030c6",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/Magno593/agent-ec2",
+      "commit": "b1c3721336d795d57c7e6d93459ecc340593858c",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/amaurijoseromerozavala-coder/requerimientos-socraticos-skill",
+      "commit": "e586d029502cfa6975815ddab4dc6657decc45ff",
+      "license": "Apache-2.0",
+      "query": "\"DEBERÁ\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/FilipaoVfx/hackatonv2Colsubsidio",
+      "commit": "78883f557f4cec45d52eec9f6a4b4339db5afb79",
+      "license": "MIT",
+      "query": "\"DEBERÁ\" filename:PRD.md path:docs"
+    }
+  ]
+}
