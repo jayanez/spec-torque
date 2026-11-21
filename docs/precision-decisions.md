@@ -309,6 +309,43 @@ IDs (`C-`, `CON-`, `SC-`) in the defining position only. It would be
 pre-registered and measured on a fresh set. The candidate stays on this branch,
 unmerged.
 
+### H2e: constraint IDs — **stop; the H2 family ends here**
+
+Pre-registered at `62b5533` and `24d40a1` as the last H2 iteration. The sources
+were frozen at `2f5b486` (19 repositories, `"C-001"` query) together with the
+synthetic twins, both before the candidate (`d98ba50`, engine 0.1.7).
+
+| Gate | Result |
+|---|---|
+| 1. The known `C-`/`CON-` constraint lines are admitted (H2d set) | holds (8 of 8) |
+| 2. Newly admitted lines relative to H2d are requirements (fresh set, all 56) | **fails** |
+| 3. Sample of lines no longer admitted relative to 0.1.4 | not reviewed, because gate 2 failed |
+| 4. Historical (716 unchanged), synthetic (0 regressions against 0.1.4, H2b and H2d), evidence (0 invalid) | holds |
+
+**Gate 2.** The 56 lines come from 3 repositories and 15 lineages. `C-` is not a
+constraint prefix by convention. Besides real constraints (`C-001：本模块仅为
+magicscript 语言服务，不得通用化…`), it labels:
+- clarification questions (10 lines end in a question mark);
+- observed risks and caveats (`C-004：…可能产生冲突`);
+- change-log entries (`C-129 补全了…`).
+
+On the H2d set, all 137 newly admitted lines are `C-` lines, and none are `CON-`.
+
+**Decision.** Stop, and the candidate is reverted. Under the stop rule, there is no
+H2f. The harness change that probes `C-`/`CON-` as candidate lines (a superset)
+stays.
+
+**Best candidate: H2d** (`38a1c09`, engine 0.1.6), with these known limits:
+- requirements whose only ID is a constraint or success-criterion prefix (`C-`,
+  `SC-`) and that have no modal are not admitted;
+- future-tense requirements without a recognized ID are not admitted (a limit
+  since before H2);
+- quoted binding rules and modal-less ("can") requirements, carried over from H2b.
+
+H2d goes to independent adjudication under
+[precision adjudication](precision-adjudication.md). The owner fixes the threshold
+before labeling and decides on the product change.
+
 The adjudication packets for all three sets (`scripts/precision/adjudication-packet.ts`,
 protocol in [precision adjudication](precision-adjudication.md)) are built and
 held locally. They await two independent reviewers and the owner's threshold.
