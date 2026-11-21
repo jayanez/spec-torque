@@ -25,7 +25,7 @@ export const candidates = (line: string) => [...line.matchAll(modal)].map((match
   ({ id: `c${index + 1}`, token: match[0], start: match.index!, end: match.index! + match[0].length }));
 
 const { values } = parseArgs({ options: {
-  model: { type: 'string' }, seeds: { type: 'string', default: '3' }, probes: { type: 'string', default: 'fixtures/precision/assist-probes.json' },
+  model: { type: 'string' }, 'no-format': { type: 'boolean', default: false }, seeds: { type: 'string', default: '3' }, probes: { type: 'string', default: 'fixtures/precision/assist-probes.json' },
 } });
 if (!values.model) throw new Error('Use --model <local Ollama model>.');
 const seeds = Array.from({ length: Number(values.seeds) }, (_, i) => 42039 + i);
@@ -56,12 +56,17 @@ async function classify(model: string, context: string[], line: string, seed: nu
   const spans = candidates(line);
   const prompt = JSON.stringify({ context, line, candidates: spans.map(({ id, token, start, end }) => ({ id, token, start, end })) });
   const reply = await api('/api/chat', {
-    model, stream: false, think: false, format: schema,
+    model, stream: false, think: false, ...(values['no-format'] ? {} : { format: schema }),
     options: { temperature: 0, seed, num_ctx: 4096, num_predict: 200 },
-    messages: [{ role: 'system', content: instructions }, { role: 'user', content: prompt }],
+    messages: [{ role: 'system', content: values['no-format'] ? `${instructions}\nJSON shape: ${JSON.stringify(schema)}` : instructions },
+      { role: 'user', content: prompt }],
   });
   try {
-    const parsed = JSON.parse(String((reply.message as { content?: string })?.content ?? '')) as { candidates: { id: string; class: string }[] };
+    // Without server-side structured output, accept only the first JSON object and the closed enum.
+    const content = String((reply.message as { content?: string })?.content ?? '');
+    const object = content.slice(content.indexOf('{'), content.lastIndexOf('}') + 1);
+    const parsed = JSON.parse(object) as { candidates: { id: string; class: string }[] };
+    if (parsed.candidates.some(item => !(classes as readonly string[]).includes(item.class))) return undefined;
     const ids = new Set(spans.map(span => span.id));
     const answered = new Map(parsed.candidates.map(item => [item.id, item.class]));
     // Every proposed candidate must be classified exactly once; anything else is unresolved.
@@ -115,7 +120,7 @@ for (const language of ['en', 'es', 'all']) for (const label of ['positive', 'ne
 }
 const result = {
   kind: 'assist-trial', engineRevision: commit('HEAD'), engineVersion: engine.ENGINE_VERSION, probesHash: sha256(bytes),
-  model: { name: local.name, digest: local.digest, ollama: version, endpoint, seeds, temperature: 0, numCtx: 4096, numPredict: 200, think: false },
+  model: { name: local.name, digest: local.digest, ollama: version, endpoint, seeds, structuredOutput: !values['no-format'], temperature: 0, numCtx: 4096, numPredict: 200, think: false },
   instructionsHash: sha256(instructions + JSON.stringify(schema)), summary, rows,
 };
 const output = join(repository, '.spec-torque', 'precision');
