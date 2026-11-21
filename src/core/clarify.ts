@@ -51,6 +51,20 @@ const factLabels: ReadonlyArray<readonly [FactKind, RegExp]> = [
   ['owner', /^(?:decision owner|responsable de la decisión)\s*:\s*(.+)$/iu],
 ];
 
+const removalVerb = /\b(?:disappear|dismiss|remove|clear|hide|close|desaparecer|retirar|cerrar(?:se)?|ocultar|limpiar)\b/u;
+const removalCondition = /\b(?:when|if|after|until|upon|cuando|si|después de|hasta|al confirmar)\b/u;
+
+function removalTarget(clause: string): string | undefined {
+  const action = removalVerb.exec(clause);
+  if (!action) return;
+  const subject = clause.slice(0, action.index).trim().replace(definition, '');
+  const object = clause.slice(action.index + action[0].length).split(removalCondition)[0];
+  const target = (/^(?:disappear|desaparecer)$/u.test(action[0])
+    ? subject.replace(/(?:^|\s+)(?:must|shall|debe(?:n|rán?)?)$/u, '')
+    : object).trim().replace(/^(?:the|a|an|el|la|los|las|un|una)\s+/u, '');
+  return target && !/^(?:it|them|they|lo|la|los|las|esto|eso)$/u.test(target) ? target : undefined;
+}
+
 function activeLines(artifact: Artifact): Evidence[] {
   let fence: string | undefined;
   let comment = false;
@@ -156,8 +170,6 @@ export async function clarifyE12(
   // A vague cue after a conjunction can qualify a different action.
   const earlierActions = unquoted.slice(0, index).split(/[,;]|\b(?:and|or|but|y|o|pero)\s+/u);
   const actionClause = earlierActions.pop() ?? '';
-  const removalVerb = /\b(?:disappear|dismiss|remove|clear|hide|close|desaparecer|retirar|cerrar(?:se)?|ocultar)\b/u;
-  const condition = /\b(?:when|if|after|until|upon|cuando|si|después de|hasta)\b/u;
   const disappearance = /\b(?:disappear|desaparecer)\b/u.test(actionClause);
   const removal = removalVerb.test(actionClause);
   const event = /^(?:as needed|cuando sea necesario)$/u.test(cue) && removal;
@@ -165,10 +177,16 @@ export async function clarifyE12(
   const adaptation = /^(?:fast|quickly|rápid[oa]s?)$/u.test(cue) && /\b(?:adapt|adaptar(?:se)?)\s*$/u.test(clause);
   if (!timing && !event && !ease && !adaptation) return decline('unsupported');
   if (timing && (/\bas\s+$/u.test(before) || /^\s*(?:than|que|como)\b/u.test(after))) return decline('unsupported');
-  // An earlier conditioned removal may already describe the same effect.
-  if (event && (condition.test(actionClause + ' ' + after.split(/[,;]/)[0]) ||
-      earlierActions.some(action => removalVerb.test(action) && condition.test(action)))) {
-    return decline('unsupported');
+  if (event) {
+    const target = removalTarget(actionClause);
+    const possiblySameRemoval = earlierActions.some(action => {
+      if (!removalCondition.test(action) || !removalVerb.test(action)) return false;
+      const priorTarget = removalTarget(action);
+      return !target || !priorTarget || target === priorTarget;
+    });
+    if (removalCondition.test(actionClause + ' ' + after.split(/[,;]/)[0]) || possiblySameRemoval) {
+      return decline('unsupported');
+    }
   }
 
   const id = definition.exec(target.text)?.[1].toUpperCase();

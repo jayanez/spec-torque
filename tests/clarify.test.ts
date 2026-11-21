@@ -239,3 +239,15 @@ test('a previous removal condition makes a second removal cue ambiguous', async 
     assert.equal(result.kind, 'abstain', source);
   }
 });
+
+test('an earlier condition for a different removal leaves the selected trigger open', async () => {
+  for (const [language, source] of [
+    ['en', 'FR-043: The service MUST remove the expired notice upon confirmation and clear the temporary cache as needed.'],
+    ['es', 'FR-043: El servicio DEBE retirar el aviso al confirmar, y DEBE limpiar la caché temporal cuando sea necesario.'],
+    ['en', 'FR-043: The console MUST dismiss the notification upon acknowledgment and remove the cached session as needed.'],
+  ] as const) {
+    const { result } = await check(documents('specs/notices/spec.md', source), language);
+    assert.equal(result.kind, 'question', source);
+    assert.equal(result.focus, 'trigger');
+  }
+});
