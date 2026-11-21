@@ -184,7 +184,48 @@ every owner used earlier excluded. ZeeSpec again had no qualifying repository.
   and `supported→unknown` in 10. E2.1 moves `partial→supported` in 11. I1.2 and
   I2.2 move `missing→unknown` in 10. None of these were adjudicated.
 
-The adjudication packets for both sets (`scripts/precision/adjudication-packet.ts`,
+### H2b: second Spanish set — **fails on Spanish requirement IDs**
+
+The first set fell short, so a second one was frozen at `6d325a6` before any file
+was read: 16 MIT or Apache-2.0 repositories found by searching for `"DEBERÁ"`, with
+every earlier repository and owner excluded.
+
+| Measure | Count |
+|---|---:|
+| Target documents / lineages | 265 / 238 |
+| Candidate lines EN / ES | 680 / 2,581 |
+| Lines no longer admitted (none newly admitted) | 83 |
+| Distinct changed lines, EN / ES | 3 / 80 |
+| Spanish repositories / lineages with changes | 6 / 40 |
+| Changes outside the scanner's scope | 1 |
+| Findings removed (none added) | 100 |
+| Invalid evidence | 0 |
+
+Across both sets, 93 distinct Spanish lines changed, so the count requirement is
+met. However, 67 of the 80 lines in this set come from one repository.
+
+**Provisional review** (this session, not independent):
+- **18 requirements wrongly excluded** (1 repository, 4 lineages). They have the form
+  `- RF-58: EL SISTEMA no dejará … Usuario (fecha): «no debe haber …»`.
+  - The requirement itself is worded in the future tense, which is not a
+    recognized modal.
+  - Its only recognized modal sits in a quoted user order.
+  - `RF-` (the Spanish *requisito funcional*) is not a recognized requirement ID;
+    only `FR`, `NFR` and `REQ` are.
+- **Most of the rest are mentions:** quoted user orders cited as the origin of a
+  decision, quoted UI messages, and Spanish text quoted in English scenarios.
+- **The one change outside the scanner's scope** is a quoted banner inside a code
+  span, which is a mention.
+
+**Decision.** Condition 3 fails, and so does a zero-tolerance threshold. The gap
+is not new: like limit 1 (modal-less wording), it comes from admission depending on
+a modal or an English ID. H2b exposes it whenever the only modal is quoted.
+
+A candidate fix is to recognize Spanish requirement IDs (`RF-`, `RNF-`). It needs
+its own pre-registration (H2c) and must be measured on a set that has not been
+seen. H2b stays unmerged.
+
+The adjudication packets for all three sets (`scripts/precision/adjudication-packet.ts`,
 protocol in [precision adjudication](precision-adjudication.md)) are built and
 held locally. They await two independent reviewers and the owner's threshold.
 
