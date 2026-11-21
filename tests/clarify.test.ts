@@ -1,0 +1,141 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { test } from 'node:test';
+import { analyze, clarifyE12, classifyArtifact, contentHash } from '../src/core.js';
+import type { ArtifactSet, Evidence, Language } from '../src/core.js';
+
+interface StudyCase {
+  id: string;
+  language: Language;
+  path: string;
+  source: string;
+  sha256: string;
+  route: 'engine' | 'injected' | 'silent';
+  evidence: Evidence;
+  expected: { outcome: 'ask' | 'abstain' | 'clear' };
+}
+interface FreshCase {
+  lineage: string;
+  language: Language;
+  path: string;
+  source: string;
+  companions?: Record<string, string>;
+  kind: 'question' | 'abstain' | 'review';
+  focus: string;
+}
+const fixture = (name: string) => readFileSync(new URL('./fixtures/e12/' + name + '.json', import.meta.url), 'utf8');
+const study: { cases: StudyCase[] } = JSON.parse(fixture('study'));
+const fresh: FreshCase[] = JSON.parse(fixture('fresh'));
+
+function documents(path: string, source: string, companions: Record<string, string> = {}): ArtifactSet {
+  return {
+    name: 'E1.2 clarification',
+    artifacts: [classifyArtifact(path, source),
+      ...Object.entries(companions).map(([name, content]) => classifyArtifact(name, content))],
+  };
+}
+
+async function check(set: ArtifactSet, language: Language) {
+  const assessment = await analyze(set);
+  const finding = assessment.findings.find(f => f.practiceId === 'E1.2' && f.evidence[0]?.path === set.artifacts[0].path);
+  assert(finding, 'The shared detector must emit the test finding');
+  const documentsBefore = structuredClone(set);
+  const reportBefore = structuredClone(assessment);
+  const result = await clarifyE12(set, assessment, finding.id, language);
+  assert(result);
+  assert.equal(result.revision, assessment.id);
+  assert.deepEqual(set, documentsBefore);
+  assert.deepEqual(assessment, reportBefore);
+  for (const evidence of result.evidence) {
+    const artifact = set.artifacts.find(a => a.path === evidence.path);
+    assert.equal(artifact?.content.split(/\r?\n/)[evidence.line - 1], evidence.text);
+    assert.equal(artifact?.featureId, set.artifacts[0].featureId);
+  }
+  return { result, assessment, finding };
+}
+
+test('the 12 frozen study units keep real, injected and silent targets separate', async () => {
+  assert.equal(study.cases.length, 12);
+  const counts = { engine: 0, injected: 0, silent: 0, questions: 0, abstained: 0 };
+  for (const row of study.cases) {
+    assert.equal(await contentHash(row.source), row.sha256, row.id);
+    const set = documents(row.path, row.source);
+    const report = await analyze(set);
+    const hits = report.findings.filter(f => f.practiceId === 'E1.2' &&
+      f.evidence.some(e => e.path === row.evidence.path && e.line === row.evidence.line && e.text === row.evidence.text));
+    counts[row.route]++;
+    if (row.route !== 'engine') {
+      assert.equal(hits.length, 0, row.id);
+      assert.equal(await clarifyE12(set, report, row.id, row.language), undefined);
+      continue;
+    }
+    assert.equal(hits.length, 1, row.id);
+    const { result } = await check(set, row.language);
+    const expectedKind = row.expected.outcome === 'ask' ? 'question' : 'abstain';
+    assert.equal(result.kind, expectedKind, row.id);
+    counts[result.kind === 'question' ? 'questions' : 'abstained']++;
+    assert.deepEqual(result.evidence[0], row.evidence, row.id);
+  }
+  assert.deepEqual(counts, { engine: 6, injected: 4, silent: 2, questions: 4, abstained: 2 });
+});
+
+for (const row of fresh) {
+  test('fresh lineage ' + row.lineage, async () => {
+    const { result } = await check(documents(row.path, row.source, row.companions), row.language);
+    assert.equal(result.kind, row.kind);
+    assert.equal(result.focus.startsWith('measurement-') ? 'measurement' : result.focus, row.focus);
+    if (row.lineage === 'document-roster') {
+      assert.equal(result.kind, 'question');
+      assert.equal(result.question, 'Which event ends the elapsed-time measurement?');
+    }
+    if (row.lineage === 'status-icon' || row.lineage === 'aviso-entrega') {
+      assert.equal(result.kind, 'question');
+      assert.match(result.question, /event or condition|evento o condición/);
+    }
+    if (row.lineage === 'gallery-preview' || row.lineage === 'acuse-etiquetado') {
+      assert.equal(result.evidence.length, 3);
+      assert.ok(result.evidence.slice(1).every(e => /(?:plan|design)\.md$/.test(e.path)));
+    }
+  });
+}
+
+test('quoted, fenced, commented and unlinked context does not resolve an event', async () => {
+  const { result } = await check(documents('specs/indicator/spec.md', 'FR-008: The indicator MUST disappear as needed.', {
+    'specs/indicator/plan.md': '> FR-008 Trigger event: open the settings.\n```md\nFR-008 Trigger event: close the settings.\n```\n<!--\nFR-008 Trigger event: activate the menu.\n-->\nFR-009 Trigger event: no session.\n',
+  }), 'en');
+  assert.equal(result.kind, 'question');
+  assert.equal(result.focus, 'trigger');
+  assert.equal(result.evidence.length, 1);
+});
+
+test('equivalent stated bounds and inline boundaries avoid a redundant question', async () => {
+  const { result } = await check(documents('specs/query/spec.md',
+    'NFR-090: The query MUST load quickly within 0.3 seconds, measured from submit to first paint.', {
+      'specs/query/plan.md': '- NFR-090 Latency limit: 300 ms.\n',
+    }), 'en');
+  assert.equal(result.kind, 'abstain');
+  assert.equal(result.focus, 'already-specified');
+});
+
+test('a negative obligation, existing decision or comparison does not trigger a question', async () => {
+  for (const text of [
+    'FR-317: The reservation MUST NOT disappear as needed.',
+    'FR-317: The reservation MUST disappear as needed [NEEDS CLARIFICATION: removal event pending].',
+    'FR-317: The new search MUST be as fast as the current one.',
+  ]) {
+    const { result } = await check(documents('specs/rooms/spec.md', text), 'en');
+    assert.equal(result.kind, 'abstain');
+  }
+});
+
+test('a stale companion or false evidence cannot produce guidance', async () => {
+  const root = 'specs/alerts/';
+  const source = 'FR-308: The alert MUST disappear as needed.';
+  const plan = root + 'plan.md';
+  const set = documents(root + 'spec.md', source, { [plan]: '- FR-308 Trigger event: dismiss button release.' });
+  const { assessment, finding } = await check(set, 'en');
+  const updated = documents(root + 'spec.md', source, { [plan]: '- FR-308 Trigger event: timeout.' });
+  assert.equal(await clarifyE12(updated, assessment, finding.id, 'en'), undefined);
+  finding.evidence[0].text = 'Unrelated other text';
+  assert.equal(await clarifyE12(set, assessment, finding.id, 'en'), undefined);
+});

@@ -1,0 +1,571 @@
+{
+  "version": "clarification-expectations/1.1",
+  "engineCommit": "865af59eeaec7ec56b854ea7a2b2635ee381d2ca",
+  "partition": "scored synthetic",
+  "cases": [
+    {
+      "id": "c82e8832fe47",
+      "lineage": "ledger-load",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "OpenSpec",
+      "language": "en",
+      "context": "current spec",
+      "path": "openspec/specs/ledger-load/spec.md",
+      "source": "# Ledger load\n\n## Requirements\n### Requirement: Ledger load\n- **NFR-041** Ledger search SHALL be fast for up to 20 concurrent analysts and MUST NOT include archived entries.\n\n#### Scenario: Analysts search the live ledger\n- WHEN an analyst searches the live ledger\n- THEN only live entries are returned\n",
+      "sha256": "2c83608f83e71f3c9398857985c8a2aa3b5827f84f0e1911c0de133b21ec690b",
+      "evidence": {
+        "path": "openspec/specs/ledger-load/spec.md",
+        "line": 5,
+        "text": "- **NFR-041** Ledger search SHALL be fast for up to 20 concurrent analysts and MUST NOT include archived entries."
+      },
+      "route": "engine",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "ask",
+        "openSlot": "maximum elapsed response time for live searches and the timing boundaries",
+        "rationale": "A latency bound and measurement boundary are absent.",
+        "role": "Ledger service owner",
+        "resolution": "Record the maximum elapsed time and its start/end events under the existing concurrency limit.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "NFR-041"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "ledger search must meet the response-time requirement"
+          },
+          {
+            "kind": "quantity",
+            "assertion": "up to 20"
+          },
+          {
+            "kind": "unit",
+            "assertion": "concurrent analysts"
+          },
+          {
+            "kind": "exclusion",
+            "assertion": "archived entries"
+          },
+          {
+            "kind": "prohibition",
+            "assertion": "must not include archived entries"
+          }
+        ]
+      }
+    },
+    {
+      "id": "9ebdf2c874cf",
+      "lineage": "vault-suspension",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "OpenSpec",
+      "language": "en",
+      "context": "active delta",
+      "path": "openspec/changes/vault-suspension/specs/vault-suspension/spec.md",
+      "source": "# Vault suspension\n\n## ADDED Requirements\n### Requirement: Vault suspension\n- **FR-212** Auditors MAY download a signed statement during a suspension.\n\n#### Scenario: Download during suspension\n- WHEN the account is suspended\n- THEN downloads by every role, including auditors, are prohibited\n\n[NEEDS CLARIFICATION: designated policy owner pending]\n",
+      "sha256": "6fc6b35902b5aae157647f03dd1b5741e1c6a71bb277994777fa4e3ae77e1f5d",
+      "evidence": {
+        "path": "openspec/changes/vault-suspension/specs/vault-suspension/spec.md",
+        "line": 5,
+        "text": "- **FR-212** Auditors MAY download a signed statement during a suspension."
+      },
+      "route": "injected",
+      "rule": "research:permission-conflict",
+      "expected": {
+        "outcome": "abstain",
+        "openSlot": "whether auditors have an exception to the suspension policy",
+        "rationale": "The requirement and scenario conflict, and no policy owner is assigned. Escalate the conflict without preferring either clause.",
+        "role": "Unassigned policy owner",
+        "resolution": "Record the conflict and route it for a policy owner; any eventual decision must reconcile both clauses.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-212"
+          },
+          {
+            "kind": "permission",
+            "assertion": "requirement permits auditors to download signed statements"
+          },
+          {
+            "kind": "condition",
+            "assertion": "during a suspension"
+          },
+          {
+            "kind": "prohibition",
+            "assertion": "scenario prohibits downloads by every role including auditors"
+          },
+          {
+            "kind": "open decision",
+            "assertion": "policy owner is pending"
+          }
+        ]
+      }
+    },
+    {
+      "id": "11b83067c80f",
+      "lineage": "sensor-threshold",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "OpenSpec",
+      "language": "en",
+      "context": "active delta",
+      "path": "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md",
+      "source": "# Sensor threshold\n\n## ADDED Requirements\n### Requirement: Sensor threshold\n- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C.\n\n#### Scenario: Exact boundary\n- WHEN the probe reads 5 °C\n- THEN the sampler SHALL use the standard preset\n",
+      "sha256": "42eb8a412733046b738bc6d788118ed5fe8770f0b45ff5c982787922271c7ae6",
+      "evidence": {
+        "path": "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md",
+        "line": 5,
+        "text": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C."
+      },
+      "route": "engine",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "clear",
+        "openSlot": null,
+        "rationale": "“fast” is a preset label, and the threshold and boundary are already specified.",
+        "role": "Sampler owner",
+        "resolution": "Keep the behavior and threshold unchanged; record that the label does not need a latency limit.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-305"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "use the named “fast” preset in the specified scope"
+          },
+          {
+            "kind": "condition",
+            "assertion": "only below 5 °C"
+          },
+          {
+            "kind": "quantity",
+            "assertion": "5"
+          },
+          {
+            "kind": "unit",
+            "assertion": "°C"
+          },
+          {
+            "kind": "exclusion",
+            "assertion": "at 5 °C use the standard preset"
+          }
+        ]
+      }
+    },
+    {
+      "id": "01680b6ed038",
+      "lineage": "acuse-nocturno",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "OpenSpec",
+      "language": "es",
+      "context": "active delta",
+      "path": "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md",
+      "source": "# Acuse nocturno\n\n## ADDED Requirements\n### Requisito: Acuse nocturno\n- **NFR-073** El receptor DEBE emitir un acuse rápido durante el turno nocturno y excluir los paquetes de prueba.\n\n#### Scenario: Paquete operativo\n- CUANDO llega un paquete operativo en el turno nocturno\n- ENTONCES se emite un acuse\n",
+      "sha256": "0d7632a2d4a7c54f7c5194c881ceaf6031410ec2d7ba6160136c2472209bec14",
+      "evidence": {
+        "path": "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md",
+        "line": 5,
+        "text": "- **NFR-073** El receptor DEBE emitir un acuse rápido durante el turno nocturno y excluir los paquetes de prueba."
+      },
+      "route": "engine",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "ask",
+        "openSlot": "plazo máximo y eventos de inicio y fin de la medición del acuse nocturno",
+        "rationale": "El plazo y los límites de la medición siguen abiertos.",
+        "role": "Responsable del receptor",
+        "resolution": "Fijar el plazo y su medición durante el turno nocturno con la exclusión vigente.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "NFR-073"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "emitir un acuse"
+          },
+          {
+            "kind": "condition",
+            "assertion": "turno nocturno"
+          },
+          {
+            "kind": "exclusion",
+            "assertion": "paquetes de prueba"
+          }
+        ]
+      }
+    },
+    {
+      "id": "1e2929e25d1d",
+      "lineage": "licencias-reserva",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "OpenSpec",
+      "language": "es",
+      "context": "current spec",
+      "path": "openspec/specs/licencias-reserva/spec.md",
+      "source": "# Licencias reserva\n\n## Requirements\n### Requisito: Licencias reserva\n- **FR-420** El gestor NO DEBE conceder licencias de reserva salvo aprobación del órgano competente.\n\n#### Scenario: Solicitud sin órgano asignado\n- DADO que hay dos órganos con competencias sin delimitar\n- CUANDO se solicita la reserva\n- ENTONCES se deriva el expediente al proceso de gobernanza\n\n[PENDIENTE DE ACLARAR: órgano competente]\n",
+      "sha256": "ae7eb2b8e5f16bc4eeed48a6d831bde21ffc14a842ac6964a4f99470903e7162",
+      "evidence": {
+        "path": "openspec/specs/licencias-reserva/spec.md",
+        "line": 5,
+        "text": "- **FR-420** El gestor NO DEBE conceder licencias de reserva salvo aprobación del órgano competente."
+      },
+      "route": "injected",
+      "rule": "research:unresolved-authority",
+      "expected": {
+        "outcome": "abstain",
+        "openSlot": "qué órgano tiene competencia para autorizar una excepción",
+        "rationale": "Falta la resolución de gobernanza sobre competencias; derivar sin atribuir permisos ni escoger órgano.",
+        "role": "Órgano de gobernanza por determinar",
+        "resolution": "Conservar la prohibición salvo aprobación y registrar la dependencia de gobernanza.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-420"
+          },
+          {
+            "kind": "prohibition",
+            "assertion": "no conceder licencias de reserva"
+          },
+          {
+            "kind": "exception",
+            "assertion": "aprobación del órgano competente"
+          },
+          {
+            "kind": "quantity",
+            "assertion": "dos órganos"
+          },
+          {
+            "kind": "open decision",
+            "assertion": "órgano competente pendiente"
+          }
+        ]
+      }
+    },
+    {
+      "id": "76ca85b99820",
+      "lineage": "sonda-sellada",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "OpenSpec",
+      "language": "es",
+      "context": "current spec",
+      "path": "openspec/specs/sonda-sellada/spec.md",
+      "source": "# Sonda sellada\n\n## Requirements\n### Requisito: Sonda sellada\n- **NFR-307** La carcasa DEBE permanecer sellada al menos 3 horas después de activar la sonda.\n\n#### Scenario: Límite inferior\n- CUANDO han transcurrido 2 horas desde la activación\n- ENTONCES la carcasa sigue sellada\n",
+      "sha256": "f6495aa13dda92cd6baed0460ec601311413d0c2a5ced3448f282db68c7b5376",
+      "evidence": {
+        "path": "openspec/specs/sonda-sellada/spec.md",
+        "line": 5,
+        "text": "- **NFR-307** La carcasa DEBE permanecer sellada al menos 3 horas después de activar la sonda."
+      },
+      "route": "silent",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "clear",
+        "openSlot": null,
+        "rationale": "La duración mínima y el instante inicial son explícitos.",
+        "role": "Responsable de la sonda",
+        "resolution": "Conservar la duración mínima y el evento de activación.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "NFR-307"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "mantener la carcasa sellada"
+          },
+          {
+            "kind": "condition",
+            "assertion": "desde la activación de la sonda"
+          },
+          {
+            "kind": "quantity",
+            "assertion": "al menos 3"
+          },
+          {
+            "kind": "unit",
+            "assertion": "horas"
+          }
+        ]
+      }
+    },
+    {
+      "id": "228ec77b3f37",
+      "lineage": "dispatch-banner",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "Spec Kit",
+      "language": "en",
+      "context": "requirement",
+      "path": "specs/001-dispatch-banner/spec.md",
+      "source": "# Dispatch banner\n\n## Requirements\n\n- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear as needed.\n\nOnly the shift supervisor may dismiss the banner manually. The automatic dismissal condition remains open.\n",
+      "sha256": "3008c07b0c246346e8fd533c05c6073d0803220a21453c3d369cd19beb0fcf57",
+      "evidence": {
+        "path": "specs/001-dispatch-banner/spec.md",
+        "line": 5,
+        "text": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear as needed."
+      },
+      "route": "engine",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "ask",
+        "openSlot": "event or condition for automatic banner dismissal",
+        "rationale": "The trigger for display and access for manual dismissal are explicit; automatic dismissal is open.",
+        "role": "Dispatch product owner",
+        "resolution": "Decide the automatic dismissal condition while preserving display and manual access.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-603"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "display the banner and make it disappear under a condition"
+          },
+          {
+            "kind": "condition",
+            "assertion": "display when an allocation expires"
+          },
+          {
+            "kind": "permission",
+            "assertion": "shift supervisor may dismiss manually"
+          },
+          {
+            "kind": "exclusion",
+            "assertion": "other roles cannot dismiss manually"
+          },
+          {
+            "kind": "open decision",
+            "assertion": "automatic dismissal condition"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cdf3c3228237",
+      "lineage": "receipt-assertion",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "Spec Kit",
+      "language": "en",
+      "context": "acceptance scenario",
+      "path": "specs/001-receipt-assertion/spec.md",
+      "source": "# Receipt assertion\n\n## Acceptance Scenarios\n### Scenario: Receipt assertion\n- GIVEN the receipt is from the sandbox\n- WHEN a reviewer submits it\n- THEN the staff portal shows the accepted receipt outcome for sandbox receipts.\n\n\nThe verification endpoint is still under contract negotiation. No response schema or product owner is available.\n",
+      "sha256": "c7c08a96c6393c2eb5cb3655fe1458c3414016e188d8a1c7c21849048072c4c3",
+      "evidence": {
+        "path": "specs/001-receipt-assertion/spec.md",
+        "line": 7,
+        "text": "- THEN the staff portal shows the accepted receipt outcome for sandbox receipts."
+      },
+      "route": "injected",
+      "rule": "research:missing-acceptance-oracle",
+      "expected": {
+        "outcome": "abstain",
+        "openSlot": "observable success signal for the accepted receipt",
+        "rationale": "No approved contract or owner is available to determine the success signal; avoid inventing a status or response code.",
+        "role": "Pending contract owner",
+        "resolution": "Record the dependency and preserve the accepted outcome and sandbox scope.",
+        "invariants": [
+          {
+            "kind": "obligation",
+            "assertion": "show the accepted receipt outcome"
+          },
+          {
+            "kind": "condition",
+            "assertion": "only the sandbox receipt scenario"
+          },
+          {
+            "kind": "open decision",
+            "assertion": "verification contract and success signal are unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "id": "60d37af83584",
+      "lineage": "station-access",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "Spec Kit",
+      "language": "en",
+      "context": "requirement",
+      "path": "specs/001-station-access/spec.md",
+      "source": "# Station access\n\n## Requirements\n\n- **FR-190** The station MUST reject requests from inactive badges, even during maintenance.\n\nActive badges use the standard access policy.\n",
+      "sha256": "0b4de8f920180685ddc3d7266be63d33a12056af7cc57cb8d98a34aabdb0eff2",
+      "evidence": {
+        "path": "specs/001-station-access/spec.md",
+        "line": 5,
+        "text": "- **FR-190** The station MUST reject requests from inactive badges, even during maintenance."
+      },
+      "route": "silent",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "clear",
+        "openSlot": null,
+        "rationale": "The denial, actor, population and maintenance condition are explicit.",
+        "role": "Station owner",
+        "resolution": "Keep the denial for inactive badges during maintenance.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-190"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "reject requests"
+          },
+          {
+            "kind": "condition",
+            "assertion": "inactive badges even during maintenance"
+          },
+          {
+            "kind": "exclusion",
+            "assertion": "active badges use the standard policy"
+          }
+        ]
+      }
+    },
+    {
+      "id": "436caf929622",
+      "lineage": "consulta-retiro",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "Spec Kit",
+      "language": "es",
+      "context": "requirement",
+      "path": "specs/001-consulta-retiro/spec.md",
+      "source": "# Consulta retiro\n\n## Requisitos\n\n- **FR-812** El tablero DEBE retirar fácilmente el aviso de incidente sin retirar los avisos de mantenimiento.\n\nSolo el personal de guardia puede solicitar el retiro. El criterio observable de facilidad queda pendiente.\n",
+      "sha256": "db54ca42556feb1838f8a0513e35ef14885d43ee49e7c5dd820a373b51b3f46d",
+      "evidence": {
+        "path": "specs/001-consulta-retiro/spec.md",
+        "line": 5,
+        "text": "- **FR-812** El tablero DEBE retirar fácilmente el aviso de incidente sin retirar los avisos de mantenimiento."
+      },
+      "route": "engine",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "ask",
+        "openSlot": "criterio observable para aceptar la facilidad del retiro del aviso",
+        "rationale": "La facilidad carece de un criterio observable; los permisos y la exclusión son explícitos.",
+        "role": "Responsable del tablero",
+        "resolution": "Acordar un criterio observable para personal de guardia, preservando los avisos excluidos.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-812"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "retirar el aviso de incidente"
+          },
+          {
+            "kind": "prohibition",
+            "assertion": "no retirar avisos de mantenimiento"
+          },
+          {
+            "kind": "exclusion",
+            "assertion": "avisos de mantenimiento"
+          },
+          {
+            "kind": "permission",
+            "assertion": "solo el personal de guardia solicita el retiro"
+          },
+          {
+            "kind": "open decision",
+            "assertion": "criterio de facilidad"
+          }
+        ]
+      }
+    },
+    {
+      "id": "42f7f18229bc",
+      "lineage": "pesaje-exportacion",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "Spec Kit",
+      "language": "es",
+      "context": "requirement",
+      "path": "specs/001-pesaje-exportacion/spec.md",
+      "source": "# Pesaje exportacion\n\n## Requisitos\n\n- **FR-906** El operador NO DEBE exportar pesajes y adjuntos sin autorización.\n\nEl responsable de cumplimiento aún no ha confirmado si la autorización cubre cada categoría o solo el envío conjunto.\n",
+      "sha256": "0529ef9047ebfdc4af10bc9cd375d319901b53941ece525c4989196ef196d6b2",
+      "evidence": {
+        "path": "specs/001-pesaje-exportacion/spec.md",
+        "line": 5,
+        "text": "- **FR-906** El operador NO DEBE exportar pesajes y adjuntos sin autorización."
+      },
+      "route": "injected",
+      "rule": "research:negation-scope",
+      "expected": {
+        "outcome": "abstain",
+        "openSlot": "alcance de la negación y de la excepción de autorización",
+        "rationale": "La confirmación de cumplimiento está pendiente; no inferir permiso para exportar una categoría por separado.",
+        "role": "Responsable de cumplimiento",
+        "resolution": "Escalar las dos interpretaciones al responsable y conservar la restricción sin desambiguarla por inferencia.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "FR-906"
+          },
+          {
+            "kind": "prohibition",
+            "assertion": "exportación sin autorización en el alcance aún por confirmar"
+          },
+          {
+            "kind": "exception",
+            "assertion": "autorización"
+          },
+          {
+            "kind": "open decision",
+            "assertion": "aplicación por categoría o al envío conjunto"
+          }
+        ]
+      }
+    },
+    {
+      "id": "91c3e9ac97cb",
+      "lineage": "carga-perfil",
+      "provenance": "Original synthetic, Apache-2.0",
+      "family": "Spec Kit",
+      "language": "es",
+      "context": "requirement",
+      "path": "specs/001-carga-perfil/spec.md",
+      "source": "# Carga perfil\n\n## Requisitos\n\n- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas.\n\nLas actas firmadas usan el perfil de auditoría con cualquier tamaño.\n",
+      "sha256": "b8ee49f476ec273b7ebc45454cb3f563e39c8db9a0a7d0a17fb75a93e944e895",
+      "evidence": {
+        "path": "specs/001-carga-perfil/spec.md",
+        "line": 5,
+        "text": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas."
+      },
+      "route": "engine",
+      "rule": "E1.2",
+      "expected": {
+        "outcome": "clear",
+        "openSlot": null,
+        "rationale": "«rápido» es un nombre de perfil; límite y excepción tienen definición explícita.",
+        "role": "Responsable del importador",
+        "resolution": "Mantener el límite y el perfil de auditoría para actas firmadas.",
+        "invariants": [
+          {
+            "kind": "identifier",
+            "assertion": "NFR-233"
+          },
+          {
+            "kind": "obligation",
+            "assertion": "usar el perfil «rápido» en el alcance indicado"
+          },
+          {
+            "kind": "condition",
+            "assertion": "solo archivos de hasta 8 MB"
+          },
+          {
+            "kind": "quantity",
+            "assertion": "hasta 8"
+          },
+          {
+            "kind": "unit",
+            "assertion": "MB"
+          },
+          {
+            "kind": "exception",
+            "assertion": "actas firmadas usan perfil de auditoría con cualquier tamaño"
+          }
+        ]
+      }
+    }
+  ]
+}

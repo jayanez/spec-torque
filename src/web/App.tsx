@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { analyze, applyProposal, badgeSvg, classifyArtifact, markdownReport } from '../core.js';
+import { analyze, applyProposal, badgeSvg, clarifyE12, classifyArtifact, markdownReport } from '../core.js';
+import type { Clarification } from '../core.js';
 import type { ArtifactSet, Assessment, Finding, Language, PatchProposal } from '../core/types.js';
 import { api, connectLocal, download } from './api.js';
 import { sampleSet } from './samples.js';
@@ -38,6 +39,19 @@ export function App() {
   const currentSet = useRef(set);
   const scoped = useMemo(() => selectFeature(set, feature), [set, feature]);
   const assessment = result?.input === scoped ? result.report : undefined;
+  const selectedFinding = finding?.evidence[0]?.path === selected ? finding : undefined;
+  const clarificationId = selectedFinding?.practiceId === 'E1.2' ? selectedFinding.id : undefined;
+  const [guidance, setGuidance] = useState<{ assessment: Assessment; findingId: string; language: Language; value: Clarification }>();
+  const clarification = guidance && guidance.assessment === assessment && guidance.findingId === clarificationId &&
+    guidance.language === language ? guidance.value : undefined;
+  useEffect(() => {
+    if (!assessment || !clarificationId) return;
+    let cancelled = false;
+    void clarifyE12(scoped, assessment, clarificationId, language).then(value => {
+      if (!cancelled && value) setGuidance({ assessment, findingId: clarificationId, language, value });
+    }).catch(e => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
+  }, [scoped, assessment, clarificationId, language]);
   const artifactsDirty = saved !== set && (
     saved?.artifacts.length !== set.artifacts.length ||
     set.artifacts.some((item, index) => item.path !== saved.artifacts[index].path || item.content !== saved.artifacts[index].content)
@@ -191,7 +205,7 @@ export function App() {
       {view === 'findings' ? <div className="findings-list">{findings.length ? findings.map(f => <button disabled={pending} className={'finding ' + (finding?.id === f.id ? 'selected' : '')} key={f.id} onClick={() => pickFinding(f)}><span className={'severity ' + f.severity}>{f.severity === 'error' ? '!' : '◐'}</span><div><span className="finding-meta">{f.practiceId} · {f.evidence[0]?.path}:{f.evidence[0]?.line}</span><strong>{f.message}</strong><p>{f.suggestion}</p></div><span className="open-arrow">↗</span></button>) : <p className="empty">{es ? 'Sin hallazgos para este filtro. Revisa también las prácticas y decisiones pendientes.' : 'No findings for this filter. Also review practices and open decisions.'}</p>}</div> : view === 'checklist' ? <div className="checklist">{assessment.practices.map(p => <details key={p.id}><summary><span className={'status-dot ' + p.status}/><strong>{p.id}</strong> {p.title}<small>{p.status.replace('_', ' ')}</small></summary><p>{p.reason}</p>{p.evidence.map(e => <blockquote key={e.path + e.line}>{e.path}:{e.line}<br/>{e.text}</blockquote>)}<p>{p.suggestion}</p></details>)}</div> : view === 'questions' ? <div className="findings-list">{assessment.decisions.length ? assessment.decisions.map((e, i) => <button disabled={pending} className="finding" key={e.path + e.line} onClick={() => pickFinding({ id: 'decision-' + i, practiceId: 'P2.5', dimension: 'P2', severity: 'info', message: 'Unresolved product decision', suggestion: 'Record the explicit product decision. Use the source editor to enter new approved values.', evidence: [e], source: 'rule' })}><div><span className="finding-meta">{e.path}:{e.line}</span><strong>{e.text}</strong></div></button>) : <p className="empty">{es ? 'No hay marcadores de decisiones pendientes.' : 'No pending-decision markers found.'}</p>}</div> : <div className="trace-list">{assessment.traceability.length ? assessment.traceability.map((t, i) => <p key={i}><span className={'pill ' + (t.resolved ? '' : 'warning')}>{t.resolved ? 'Linked' : 'Unresolved'}</span> {t.from}:{t.evidence.line} → <strong>{t.to}</strong></p>) : <p>{es ? 'No se han encontrado referencias entre los documentos seleccionados.' : 'No cross-artifact requirement references found.'}</p>}<p className="fine">{es ? 'Un vínculo no demuestra que el código implemente el requisito.' : 'A link does not establish that code implements a requirement.'}</p></div>}
       {previous && <p className="fine">{es ? 'Comparación anterior' : 'Previous assessment'}: {previous.summary.score ?? 'incomplete'} · {previous.findings.length} findings · {previous.id.slice(0, 8)} · {es ? 'Rúbrica' : 'Rubric'} {previous.rubricVersion}</p>}
       </>}
-    </main><aside className="detail-panel"><section className="editor-panel"><div className="section-heading"><h2 ref={sourceHeading} tabIndex={-1}>{es ? 'Texto fuente' : 'Source text'}</h2><span className="pill">{disk ? 'Workspace' : 'In memory'}</span></div><p className="fine">{selected || (es ? 'Selecciona un archivo' : 'Select an artifact')}</p><textarea disabled={pending} readOnly={!artifact} ref={editor} aria-label={es ? 'Editor del texto fuente' : 'Source text editor'} spellCheck={false} value={artifact?.content ?? ''} onChange={e => edit(e.target.value)} rows={15}/><p className="fine">{es ? 'La edición directa permanece en memoria. Exporta los documentos para conservarla.' : 'Direct edits stay in memory. Export artifacts to keep them.'}</p></section><fieldset disabled={pending} className="mutation-controls"><ReviewPanel key={reviewContext} active={tab === 'analyze'} onDraftChange={setProposalDirty} onReject={() => setStatus(es ? 'Propuesta rechazada.' : 'Proposal rejected.')} artifact={artifact} finding={finding?.evidence[0]?.path === selected ? finding : undefined} local={local} disk={disk} language={language} onApply={accept} onError={setError}/></fieldset></aside></div>
+    </main><aside className="detail-panel"><section className="editor-panel"><div className="section-heading"><h2 ref={sourceHeading} tabIndex={-1}>{es ? 'Texto fuente' : 'Source text'}</h2><span className="pill">{disk ? 'Workspace' : 'In memory'}</span></div><p className="fine">{selected || (es ? 'Selecciona un archivo' : 'Select an artifact')}</p><textarea disabled={pending} readOnly={!artifact} ref={editor} aria-label={es ? 'Editor del texto fuente' : 'Source text editor'} spellCheck={false} value={artifact?.content ?? ''} onChange={e => edit(e.target.value)} rows={15}/><p className="fine">{es ? 'La edición directa permanece en memoria. Exporta los documentos para conservarla.' : 'Direct edits stay in memory. Export artifacts to keep them.'}</p></section><fieldset disabled={pending} className="mutation-controls"><ReviewPanel key={reviewContext} active={tab === 'analyze'} onDraftChange={setProposalDirty} onReject={() => setStatus(es ? 'Propuesta rechazada.' : 'Proposal rejected.')} artifact={artifact} finding={selectedFinding} clarification={clarification} local={local} disk={disk} language={language} onApply={accept} onError={setError}/></fieldset></aside></div>
     <footer>SpecTorque · Apache-2.0 <span>{es ? 'Evidencias antes que suposiciones.' : 'Evidence before assumptions.'}</span></footer>
   </div>;
 }

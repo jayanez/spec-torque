@@ -117,6 +117,39 @@ for (const es of [false, true]) {
     expect(strFromU8(scopedArchive['specs/other/spec.md'])).toBe(otherSource);
   });
 
+  test(`${es ? 'ES' : 'EN'} E1.2 clarification is read-only and follows the selected source revision`, async ({ page, workspace }) => {
+    const source = es
+      ? '# Avisos\n\nFR-021: El aviso DEBE desaparecer cuando sea necesario.\nFR-022: El importador DEBE usar el perfil «rápido».\n'
+      : '# Notices\n\nFR-021: The notice MUST disappear as needed.\nFR-022: The importer MUST use the preset “fast”.\n';
+    const writes: string[] = [];
+    page.on('request', request => {
+      if (request.method() === 'POST') writes.push(request.url());
+    });
+    await page.goto(workspace.url);
+    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+    await page.locator('input[type=file]').setInputFiles({ name: 'spec.md', mimeType: 'text/markdown', buffer: Buffer.from(source) });
+    const trigger = page.getByRole('button').filter({ hasText: /Unbounded wording:.*(?:as needed|cuando sea necesario)/ });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const editor = page.getByRole('textbox', { name: es ? 'Editor del texto fuente' : 'Source text editor' });
+    const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed wording' });
+    const question = page.getByRole('heading', { name: es ? 'Pregunta de aclaración' : 'Clarification question', exact: true });
+    await expect(question).toBeVisible();
+    await expect(page.getByText(es ? '¿Qué evento o condición debe activar la retirada descrita aquí?'
+      : 'What event or condition should trigger the removal described here?', { exact: true })).toBeVisible();
+    await expect(editor).toHaveValue(source);
+    await expect(wording).toHaveValue(source.split('\n')[2]);
+
+    await page.getByRole('button').filter({ hasText: /Unbounded wording:.*(?:fast|rápido)/ }).click();
+    const abstention = page.getByRole('heading', { name: es ? 'Sin pregunta de aclaración' : 'No clarification question', exact: true });
+    await expect(abstention).toBeVisible();
+    await expect(question).toHaveCount(0);
+    await expect(editor).toHaveValue(source);
+    await editor.fill(source + '\n' + (es ? 'Comentario.' : 'Comment.'));
+    await expect(abstention).toHaveCount(0);
+    expect(writes).toEqual([]);
+  });
+
   test(`${es ? 'ES' : 'EN'} import, evidence, reject, accept, reanalyze, export and undo`, async ({ page, workspace, browserName }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
