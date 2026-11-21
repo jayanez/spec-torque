@@ -298,7 +298,7 @@ H2d's sets are now development data.
 
 **Endpoints, comparators and gate.** As in H2d, with H2d (`38a1c09`) as an extra
 comparator:
-1. The 15 known development lines that are constraints are admitted.
+1. Every development line among those 15 whose own ID is `C-` or `CON-` is admitted.
 2. All lines newly admitted relative to H2d (or 100 sampled, seed 42039) are
    requirements.
 3. A sample of the lines no longer admitted relative to 0.1.4 contains no
