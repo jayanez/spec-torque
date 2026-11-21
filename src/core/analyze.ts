@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.4';
+export const ENGINE_VERSION = '0.1.5';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -12,8 +12,10 @@ const monthEnumerationMay = new RegExp(
   `(?<![\\p{L}\\p{N}\\p{M}_])(${monthItem('Apr(?:il)?')}[ \\t]*,[ \\t]*)${monthItem('May')}([ \\t]*,[ \\t]*${monthItem('Jun(?:e)?')})(?![\\p{L}\\p{N}\\p{M}_])`,
   'giu',
 );
+// Modal words inside inline code or double quotation marks are mentioned, not used.
+const mentioned = /(`+)[^`]+?\1|"[^"]*"|“[^”]*”/gu;
 const hasNormativeModal = (text: string) => modal.test(
-  text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
+  text.normalize('NFC').replace(mentioned, ' ').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );
 interface Line extends Evidence { artifact: Artifact; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {

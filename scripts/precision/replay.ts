@@ -173,6 +173,9 @@ async function scan() {
     candidateLines: { en: 0, es: 0, und: 0 },
     admissionChanges: { excludedNowAdmitted: 0, admittedNowExcluded: 0, agreeWithOracle: 0, disagreeWithOracle: 0 },
     decisionChanges: { 'E1.4': 0, 'E1.2': 0 },
+    // Changed lines (admission or any decision) by whether every modal word is mentioned.
+    changeScope: { quotedOnlyModal: 0, other: 0 },
+    findingChangesOnOtherLines: 0,
     oracleConflicts: { baseline: 0, candidate: 0 },
     failure: { repositories: new Set<string>(), lineages: new Set<string>(), distinctLines: new Set<string>(), byLanguage: { en: 0, es: 0, und: 0 } },
     adjacent: {} as Record<string, { statusChanged: number; findingsAdded: number; findingsRemoved: number; evidenceChanged: number }>,
@@ -231,6 +234,7 @@ async function scan() {
           aggregate.admissionChanges[candidate.admitted === !fenced.has(line) ? 'agreeWithOracle' : 'disagreeWithOracle']++;
         }
         for (const rule of ['E1.4', 'E1.2'] as const) if (baseline[rule] !== candidate[rule]) aggregate.decisionChanges[rule]++;
+        if (JSON.stringify(baseline) !== JSON.stringify(candidate)) aggregate.changeScope[quotedOnlyModal(text) ? 'quotedOnlyModal' : 'other']++;
         if (baseline.admitted !== candidate.admitted || (baseline.admitted && fenced.has(line))) {
           const row = { root: root.id, lineage, path: artifact.path, line, language, oracleFenced: fenced.has(line), baseline, candidate };
           if (root.restricted) restrictedDetail.push(row);
@@ -251,8 +255,19 @@ async function scan() {
       }
       const keys = (side: typeof before) => new Map(side.findings.map(finding => [findingKey(finding), finding.practiceId]));
       const [old, current] = [keys(before), keys(after)];
-      for (const [key, practice] of current) if (!old.has(key)) adjacent(practice).findingsAdded++;
-      for (const [key, practice] of old) if (!current.has(key)) adjacent(practice).findingsRemoved++;
+      const quoted = (key: string) => {
+        const [, path, line] = key.split('|');
+        const text = segments(files.get(path) ?? '')[Number(line) - 1]?.text ?? '';
+        return quotedOnlyModal(text);
+      };
+      for (const [key, practice] of current) if (!old.has(key)) {
+        adjacent(practice).findingsAdded++;
+        if (!quoted(key)) aggregate.findingChangesOnOtherLines++;
+      }
+      for (const [key, practice] of old) if (!current.has(key)) {
+        adjacent(practice).findingsRemoved++;
+        if (!quoted(key)) aggregate.findingChangesOnOtherLines++;
+      }
     }
   }
   const failure = {
