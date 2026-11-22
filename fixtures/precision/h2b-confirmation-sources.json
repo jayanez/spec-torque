@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-21",
+  "rule": "GitHub code search by path per family, search order, up to 3 repositories per family; public, non-fork, not archived, MIT or Apache-2.0; repositories and owners used earlier in #39 excluded; pinned to the default-branch head SHA. No file content was read before the H2b candidate commit.",
+  "unfilled": {
+    "zeespec": "No qualifying repository for path:.spec filename:what.md after owner and license exclusion."
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/seek-oss/sku",
+      "commit": "62ce3f4381c90413fbde379f44ecb1bae18ed6f9",
+      "license": "MIT",
+      "query": "path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/carverauto/serviceradar",
+      "commit": "10a9f5813c9186898546d9adeef8c36899f842eb",
+      "license": "Apache-2.0",
+      "query": "path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/AliAkhtari78/SpotifyScraper",
+      "commit": "9cbf05aa4963bac3684bb941270dcb62fc851ab7",
+      "license": "MIT",
+      "query": "path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Azure/missionlz",
+      "commit": "31545b31b8ba08c6acc35e2114f68864917c5e38",
+      "license": "MIT",
+      "query": "path:.specify filename:constitution.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/sitkoru/Sitko.Core",
+      "commit": "9ace036b94669df1fe6aa8b18dba14926b482c05",
+      "license": "MIT",
+      "query": "path:.specify filename:constitution.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/VibeTensor/attestix",
+      "commit": "7046a0377328a42f8752545447c81ce102f44885",
+      "license": "Apache-2.0",
+      "query": "path:.specify filename:constitution.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/kentonium3/rrule-go-dev",
+      "commit": "262a1bfea279a046cefe219c6ac3335f8bfe2b8a",
+      "license": "MIT",
+      "query": "path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/KooshaPari/AgilePlus",
+      "commit": "6b16feafbdb51f27095d52a9c408adc38796d3e4",
+      "license": "MIT",
+      "query": "path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/zivtech/joyus-ai",
+      "commit": "71d608a4cf559a032e5e5f58f77795f93eedc5d7",
+      "license": "Apache-2.0",
+      "query": "path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/xiaojilele-glitch/WhyBuddy",
+      "commit": "f4a3cbf0b85d07158cfb75c9bbd3031c12c3ea90",
+      "license": "MIT",
+      "query": "path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/sebsto/wispr",
+      "commit": "3605332a4f6c0cc29322ea2b76ba6a693b42b4da",
+      "license": "Apache-2.0",
+      "query": "path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/soc221b/zod-schema-faker",
+      "commit": "0f33984a2ae5516d8c104827f25dd40eb763d97e",
+      "license": "MIT",
+      "query": "path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/GoogleCloudPlatform/terraform-google-secure-cicd",
+      "commit": "0b08eb565091c2820a73988b56aae4969401ed58",
+      "license": "Apache-2.0",
+      "query": "path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/chenjackle45/SayIt",
+      "commit": "f75a8b81e7d57d49372f41178bd192fc37d89eb3",
+      "license": "MIT",
+      "query": "path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/amalik/convoke-agents",
+      "commit": "22c6569ca47161bf2dfbf19a28ee9ec8d47c8346",
+      "license": "MIT",
+      "query": "path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/geekforbrains/harbour",
+      "commit": "ca153e976390012dd599d0d21a86e74a829589ff",
+      "license": "MIT",
+      "query": "filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/mariovallereyes/the-bridge",
+      "commit": "3290c68a5d9ff9e3e5802b053ba398b170e8731c",
+      "license": "MIT",
+      "query": "filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/plasmate-labs/plasmate",
+      "commit": "3f4e3b2b1a8bb81ec2cd045fc4fb8db89c99eff1",
+      "license": "Apache-2.0",
+      "query": "filename:PRD.md path:docs"
+    }
+  ]
+}

@@ -1,0 +1,439 @@
+{
+  "version": 1,
+  "frozen": "2026-11-21",
+  "description": "Original synthetic E1.4 assistance probes, balanced by reference class and language. Apache-2.0. Labels are constructed references: positive = a modal word used as an obligation, recommendation or permission; negative = mention, example, date, name or descriptive possibility; unknown = permission versus possibility cannot be resolved from the line.",
+  "probes": [
+    {
+      "id": "en-positive-1",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The service MUST reject expired tokens."
+    },
+    {
+      "id": "en-positive-2",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Operators SHOULD rotate keys every 90 days."
+    },
+    {
+      "id": "en-positive-3",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Clients MAY cache the response for 60 seconds."
+    },
+    {
+      "id": "en-positive-4",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The exporter SHALL write one file per tenant."
+    },
+    {
+      "id": "en-positive-5",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Each request must include a tenant header."
+    },
+    {
+      "id": "en-positive-6",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Administrators may disable guest access from the settings page."
+    },
+    {
+      "id": "en-positive-7",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "- **THEN** the system MUST show a warning."
+    },
+    {
+      "id": "en-positive-8",
+      "language": "en",
+      "label": "positive",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Uploads larger than 10 MB SHOULD be rejected."
+    },
+    {
+      "id": "en-negative-1",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Keywords such as `MUST` and `SHALL` stay in English."
+    },
+    {
+      "id": "en-negative-2",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "May 2027 is the planned release month."
+    },
+    {
+      "id": "en-negative-3",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The cache may be stale after a deploy."
+    },
+    {
+      "id": "en-negative-4",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The error reads \"Spec must have at least one requirement\"."
+    },
+    {
+      "id": "en-negative-5",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Contact May Chen for access."
+    },
+    {
+      "id": "en-negative-6",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Logs might help, and retries may hide the root cause."
+    },
+    {
+      "id": "en-negative-7",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Example: `The client SHALL retry.`"
+    },
+    {
+      "id": "en-negative-8",
+      "language": "en",
+      "label": "negative",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The may-flag column is deprecated."
+    },
+    {
+      "id": "en-unknown-1",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Users may export their data."
+    },
+    {
+      "id": "en-unknown-2",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The report may include archived items."
+    },
+    {
+      "id": "en-unknown-3",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Background jobs may run in parallel."
+    },
+    {
+      "id": "en-unknown-4",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Reviewers may see draft comments."
+    },
+    {
+      "id": "en-unknown-5",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "The importer may skip malformed rows."
+    },
+    {
+      "id": "en-unknown-6",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Tokens may be reused across sessions."
+    },
+    {
+      "id": "en-unknown-7",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Partners may receive the summary weekly."
+    },
+    {
+      "id": "en-unknown-8",
+      "language": "en",
+      "label": "unknown",
+      "context": [
+        "## Requirements"
+      ],
+      "line": "Settings may override the defaults."
+    },
+    {
+      "id": "es-positive-1",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "El servicio DEBE rechazar los tokens caducados."
+    },
+    {
+      "id": "es-positive-2",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los operadores DEBERÍAN rotar las claves cada 90 días."
+    },
+    {
+      "id": "es-positive-3",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los clientes PUEDEN almacenar la respuesta en caché durante 60 segundos."
+    },
+    {
+      "id": "es-positive-4",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "El exportador DEBERÁ escribir un fichero por cliente."
+    },
+    {
+      "id": "es-positive-5",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Cada petición debe incluir la cabecera del cliente."
+    },
+    {
+      "id": "es-positive-6",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "- **ENTONCES** el sistema DEBE mostrar un aviso."
+    },
+    {
+      "id": "es-positive-7",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Las subidas de más de 10 MB DEBERÍAN rechazarse."
+    },
+    {
+      "id": "es-positive-8",
+      "language": "es",
+      "label": "positive",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los administradores pueden desactivar el acceso de invitados desde ajustes."
+    },
+    {
+      "id": "es-negative-1",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Las palabras `DEBE` y `PUEDE` se mantienen en español."
+    },
+    {
+      "id": "es-negative-2",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Esta prueba puede fallar si la red es lenta."
+    },
+    {
+      "id": "es-negative-3",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "El error dice \"La especificación debe tener al menos un requisito\"."
+    },
+    {
+      "id": "es-negative-4",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "El valor puede variar entre versiones."
+    },
+    {
+      "id": "es-negative-5",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Ejemplo: `El cliente DEBE reintentar.`"
+    },
+    {
+      "id": "es-negative-6",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "¿Qué debe significar 'conflicto' en el visor?"
+    },
+    {
+      "id": "es-negative-7",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Como se puede ver en la figura, el flujo es lineal."
+    },
+    {
+      "id": "es-negative-8",
+      "language": "es",
+      "label": "negative",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Debe de haber un error en el registro anterior."
+    },
+    {
+      "id": "es-unknown-1",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los usuarios pueden exportar sus datos."
+    },
+    {
+      "id": "es-unknown-2",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "El informe puede incluir elementos archivados."
+    },
+    {
+      "id": "es-unknown-3",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Las tareas pueden ejecutarse en paralelo."
+    },
+    {
+      "id": "es-unknown-4",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los revisores pueden ver los comentarios en borrador."
+    },
+    {
+      "id": "es-unknown-5",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "El importador puede omitir filas mal formadas."
+    },
+    {
+      "id": "es-unknown-6",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los tokens pueden reutilizarse entre sesiones."
+    },
+    {
+      "id": "es-unknown-7",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "Los socios pueden recibir el resumen cada semana."
+    },
+    {
+      "id": "es-unknown-8",
+      "language": "es",
+      "label": "unknown",
+      "context": [
+        "## Requisitos"
+      ],
+      "line": "La configuración puede sobrescribir los valores por defecto."
+    }
+  ]
+}
