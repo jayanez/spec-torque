@@ -118,8 +118,9 @@ const stepPrefix = '^\\s*(?:[-*+]\\s+)?(?:\\*\\*)?';
 const scenarioStep = new RegExp(`${stepPrefix}(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)(?![\\p{L}\\p{N}\\p{M}_])`, 'iu');
 const scenarioJoin = new RegExp(`${stepPrefix}(?:AND|And|BUT|But|Y)(?![\\p{L}\\p{N}\\p{M}_])`, 'u');
 const definingId = (names: string) => new RegExp(`^\\s*(?:(?:[-*+]|\\d+[.)])\\s+)?(?:\\[[ xX]\\]\\s*)?(?:\\|\\s*)?(?:\\*\\*|__|\`)?(?:${names})-\\d+\\b`, 'iu');
-const requirementId = definingId('FR|NFR|RF|RNF|REQ|R');
+const requirementId = definingId('FR|NFR|RF|RNF|REQ|R|C|CON');
 const criterionId = definingId('SC');
+const taskItem = /^\s*(?:[-*+]|\d+[.)])\s+\[[ xX]\]/u;
 const negative = /^(?:No|Never|Sin|Nunca|Ningún|Ninguna)(?![\p{L}\p{N}\p{M}_])/iu;
 const systemSubject = /(?<![\p{L}\p{N}\p{M}_])(?:(?:the|el|la|los|las)\s+)?(?:system|sistema|app|application|aplicación|api|service|servicio|platform|plataforma|server|servidor)\s+(?:will|can|is able to|es capaz de|permite|[\p{L}]+rán?)(?![\p{L}\p{N}\p{M}_])/iu;
 const stopWords = new Set(`the a an this that these those it its they we you i he she there here each every all any some one in on at for to of with by from as if when while where which who what how why and or but so also see note e.g. i.e. el la los las un una unos unas este esta estos estas ese esa eso esto ello se su sus en de del con por para como si cuando donde que quien y o pero también ver nota cada todo todos toda todas algún alguna cualquier mi tu nuestro`.split(/\s+/));
@@ -130,7 +131,7 @@ const infinitive = /(?:ar|er|ir)(?:se)?$/iu;
 
 /** Imperative (English) or infinitive (Spanish) first word, by exclusion of closed-class and nominal openers. */
 function startsWithVerb(item: string): boolean {
-  const body = item.replace(/^\[[ xX]\]\s*/u, '').replace(idPrefix, '').replace(/^(?:\*\*|__)/u, '');
+  const body = item.replace(idPrefix, '').replace(/^(?:\*\*|__)/u, '');
   const first = /^[\p{L}][\p{L}'’-]*/u.exec(body)?.[0];
   if (!first || first.length < 2) return false;
   const lower = first.toLowerCase();
@@ -159,7 +160,7 @@ export function classifyLine(text: string, context: LineContext): LineKind {
   // 6. Defining-position ID.
   if (requirementId.test(nfc)) return 'requirement';
   // 7. Requirements section.
-  if (listed && requirementsSection.test(chain)) {
+  if (listed && !taskItem.test(nfc) && requirementsSection.test(chain)) {
     const rest = nfc.replace(bullet, '');
     if (negative.test(rest) || startsWithVerb(rest)) return 'requirement';
   }
