@@ -229,3 +229,49 @@ families above and made before this freeze:
 DEV rounds used: 1 of 3. Synthetic replay against `d06c023`: 0 regressions. Historical
 controls: the 716 historical predictions are unchanged (0 changed), so no adjudication was
 needed. Round 1 results are in [precision decisions](precision-decisions.md#h3-dev).
+
+## H4 pre-registration: local-model line classifier (2026-11-22, before any H4 code)
+
+Phase A (H3) failed on T1, so Phase B runs (see [precision decisions](precision-decisions.md)). H4 asks
+whether a local model, given what a reviewer sees, classifies lines within the gate. It is an
+optional assistant: it never changes the deterministic engine, and no model call is automatic.
+
+### Candidate
+
+- **Unit and output.** One decision per line: `requirement`, `acceptance`, `other` or `unknown`.
+  `unknown` is scored as `other` (it costs recall, never precision). A response that is not a valid
+  member of the closed enum, a timeout and a server error also count as `unknown`.
+- **Input.** The heading chain, two lines of context on each side and the line, as in the label
+  guide. The system prompt says the text is untrusted data.
+- **Pre-filter.** A line that H3 rules 1–3 settle as `other` (structure, change-log section,
+  question; `admitLine` in `src/core/admission.ts` on branch `claude/h3-line-grammar-52-4fb9b0`)
+  gets no model call.
+- **Prompt.** The label guide v2 as instructions, with the guide's own examples as the only few-shot
+  examples. No DEV or test item text enters the prompt. The prompt hash is recorded at the freeze.
+- **Model and sampling.** One local model, `qwen3.5:9b` (Ollama digest `d63f830f28d5`), loopback
+  endpoint only, no download. Five samples per line at temperature 0.7, seeds 42039 to 42043,
+  structured output with the closed enum. The majority kind wins when at least 4 of 5 agree;
+  otherwise the line is `unknown`.
+- **Allowed DEV changes.** The prompt wording and its examples. The enum, the sampling, the
+  pre-filter and the model are fixed.
+
+### Sets and stop rules
+
+- **DEV.** The 300 labeled DEV items. At most 3 rounds, one commit each.
+- **Early stop.** After the last DEV round, if DEV shows more than 2 lineages of admitted
+  non-requirements or more than 3 lineages of missed requirements, T2 and T2b are never opened and
+  H4 is recorded as failed on DEV. Counts only.
+- **T2 and T2b.** The Phase B test sets, scored together once, after a freeze commit that names the
+  model digest, the prompt hash and the seeds. A look before that commit voids them. T2 alone has
+  189 lineages, which at T1's rate of 33% carries about 63 requirement lineages, short of the
+  100 the gate needs. T2b adds repositories before any H4 code, so that T2 and T2b together can
+  reach 100.
+- **T2b rule.** The T2 rule, applied after every repository used in DEV, T1 and T2: GitHub code
+  search with `system` and `sistema` by the five family paths, results in search order, up to 4
+  per family and query, public, non-fork, not archived, MIT or Apache-2.0, every repository and
+  owner from #39, #51, DEV, T1 and T2 excluded, no owner twice, each pinned to its default-branch
+  head SHA, no file content read. Shortfalls are recorded as `unfilled`.
+- **Labels.** Two blind agent reviewers and an agent adjudicator, as for DEV and T1. The author
+  of the candidate never labels and never reads T2 or T2b items.
+- **Outcome.** If any of the three bounds fails, H4 fails: stop, record the decision, and the
+  engine stays at 0.1.4. A pass means only that an opt-in local assistant may be planned.

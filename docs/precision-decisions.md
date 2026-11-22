@@ -570,6 +570,36 @@ predictions `9ae947f5ed74a438198dd279e9dae6a1c4884437ee7b8483bf32074852fbcd13`. 
 rules, T1 is not retried. Phase B (local-model classifier, H4) needs its own plan approval; the
 engine stays at 0.1.4.
 
+### H4 (local-model line classifier) on DEV — **fails the early stop; T2 and T2b not opened**
+
+Model `qwen3.5:9b` (Ollama 0.40.16, digest `d63f830f28d5`), loopback, 5 samples at temperature 0.7,
+seeds 42039–42043, at least 4 of 5 must agree, otherwise `unknown` (scored as `other`). This runner
+returns "structured output is unavailable", so the closed enum is requested in the prompt and
+validated locally; all 1,500 calls per round produced a valid or `unknown` answer with 0 server
+errors. About 1.6 s per line asked, so about 8 minutes for the 300 DEV lines. Counts only.
+
+| Round | Prompt change | Admitted wrong (lineages of 34 to 40) | Missed requirements (of 54) | Acceptance tags wrong | Abstentions |
+|---|---|---|---|---|---|
+| 1 (exploratory, before the final pre-registration wording) | guide v2 plus examples | 2, upper 17.4% | 30, upper 67.1% | 11 of 39 | 40 |
+| 2 | modal rule first | 3, upper 19.2% | 23, upper 54.7% | 6 of 45 | 11 |
+| 3 | items under requirement headings | 7, upper 30.4% | 21, upper 51.0% | 9 of 47 | 11 |
+
+The pre-registered early stop needs at most 2 admitted-wrong and at most 3 missed lineages after the
+last round; round 3 has 7 and 21, and the best round has 3 and 23. H4 therefore fails on DEV and
+the engine stays at 0.1.4. Compare H3 on the same DEV set: 2 and 21.
+
+What the model gets wrong: it labels `WHEN … THEN … SHALL` steps as `acceptance` although the guide
+makes them requirements (17 of 96 requirement lines in round 1, 2 after the modal rule was moved
+first), and it reads table rows, noun-phrase bullets, wrapped lines and Portuguese modals as `other`
+(22 in round 2). Widening the rule for items under requirement headings (round 3) traded recall for
+precision and did not help.
+
+Status of T2 and T2b: T2 (189 lineages) and T2b (716 lineages, 28 repositories, frozen in
+`fixtures/precision/r52-t2b-sources.json` before any H4 code) were never scored. A blind prose packet
+of 900 lines over 655 lineages was built and labeled by two Sonnet reviewers; it was not adjudicated
+and stays local and unopened. No second model is installed locally (only `qwen3.5:9b`), so no M2 arm
+was run; none was downloaded.
+
 ## Tooling assessment
 
 [NVIDIA Model Optimizer](https://github.com/NVIDIA/Model-Optimizer) quantizes,
