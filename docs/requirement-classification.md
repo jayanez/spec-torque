@@ -79,3 +79,24 @@ owner audits a sample. The author of a rule never labels for it.
   if A fails its test.
 - If B also fails, stop and record the decision. The engine stays at 0.1.4.
 - A test set viewed before its candidate is frozen is void. Use a fresh set or stop.
+
+## Tooling
+
+- `scripts/precision/adjudication-packet.ts --population prose --sample <n>` builds a seeded
+  sample of distinct prose lines from the spec artifacts of public roots, with the heading
+  chain and two lines of context. Items carry no arm decision and `key.json` is empty.
+- `scripts/precision/predict.ts` writes an arm's per-item kinds for a packet (engine at `--ref`).
+- `scripts/precision/score.ts` computes the three bounds and kappa from the labeled packet and
+  the predictions.
+- `scripts/precision/sources.ts` holds the root and artifact enumeration shared with the
+  replay scan.
+
+## Synthetic families
+
+`fixtures/precision/minimal-pairs.json` gained 20 EN/ES cases whose expected `kind` is a
+constructed reference, not an independent label: `requirement-wording` (imperative, negative
+constraint, future tense, capability), `section-context`, `acceptance` (scenario steps and
+success criteria) and `non-requirement` (question, change log, cross-reference). Each has an
+opposite-outcome twin. Engine 0.1.4 admits the expected line in 8 of 16 `requirement-wording`
+targets, 2 of 4 `section-context`, 8 of 8 `acceptance` (excluded, as intended) and 8 of 12
+`non-requirement`. These counts are the synthetic baseline and are measured, not gated.

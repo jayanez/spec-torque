@@ -7,6 +7,11 @@ import { commentLines, fencedLines, isolate, predictLine, quotedOnlyModal, segme
 import { audit } from '../scripts/precision/audit-denominators.js';
 import { clopperPearsonUpper, cohenKappa, score, type Kind, type ScoredItem } from '../scripts/precision/score.js';
 import { z } from 'zod';
+import { execFileSync } from 'node:child_process';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { headingChain, proseLines, sample } from '../scripts/precision/prose.js';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
 const fixture = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
@@ -14,7 +19,7 @@ const fixture = z.strictObject({ version: z.literal(1), description: z.string(),
   eol: z.enum(['\n', '\r\n']).optional(), bom: z.boolean().optional(), nfd: z.boolean().optional(),
   lines: z.array(z.string()).min(1),
   targets: z.array(z.strictObject({ line: z.number().int().positive(), admitted: z.boolean().nullable(),
-    'E1.4': label, 'E1.2': label, note: z.string().optional() })).min(1),
+    'E1.4': label, 'E1.2': label, note: z.string().optional(), kind: z.enum(['requirement', 'acceptance', 'other']).optional() })).min(1),
 })) });
 const cases = fixture.parse(JSON.parse(await readFile(new URL('../fixtures/precision/minimal-pairs.json', import.meta.url), 'utf8'))).cases;
 const contentOf = (entry: (typeof cases)[number]) => {
@@ -25,9 +30,16 @@ const contentOf = (entry: (typeof cases)[number]) => {
 test('minimal pairs have unique IDs, in-range targets and both languages per family', () => {
   assert.equal(new Set(cases.map(entry => entry.id)).size, cases.length);
   for (const entry of cases) for (const target of entry.targets) assert.ok(target.line <= entry.lines.length, entry.id);
-  for (const family of ['fence-mismatch', 'fence-control', 'quoted-modal', 'comparator']) {
+  for (const family of ['fence-mismatch', 'fence-control', 'quoted-modal', 'comparator', 'requirement-wording', 'section-context', 'acceptance', 'non-requirement']) {
     assert.deepEqual(new Set(cases.filter(entry => entry.family === family).map(entry => entry.language)), new Set(['en', 'es']), family);
   }
+});
+
+test('expected kinds agree with expected admission', () => {
+  for (const entry of cases) for (const target of entry.targets) {
+    if (target.kind) assert.equal(target.admitted, target.kind === 'requirement', `${entry.id}:${target.line}`);
+  }
+  assert.ok(cases.filter(entry => entry.targets.some(target => target.kind === 'acceptance')).length >= 4);
 });
 
 test('the probe keeps separators, BOM and target bytes while blanking other candidates', () => {
@@ -151,4 +163,47 @@ test('scoring counts by lineage and treats unknown as an error', () => {
   assert.equal(small.precision.pass, false);
   assert.match(small.precision.reason ?? '', /fewer than 100/);
   assert.deepEqual(score([bad], {}).missingPredictions, ['bad']);
+});
+
+test('heading chains ignore fenced headings and pop deeper levels', () => {
+  const lines = ['# A', '## B', '### C', 'x', '## D', '```', '# not a heading', '```', 'y'];
+  assert.deepEqual(headingChain(lines, 4), ['A', 'B', 'C']);
+  assert.deepEqual(headingChain(lines, 9), ['A', 'D']);
+});
+
+test('prose lines skip structure and the seeded sample is reproducible', () => {
+  const content = ['# Title', '', '- No schema change.', '> quoted', '```', 'code', '```', '<!-- c', 'hidden', '-->', '| --- | --- |', 'EL SISTEMA guardará el historial.'].join('\n');
+  assert.deepEqual(proseLines(content), [3, 12]);
+  const pool = Array.from({ length: 50 }, (_, index) => index);
+  assert.deepEqual(sample(pool, 10, 42039), sample(pool, 10, 42039));
+  assert.equal(new Set(sample(pool, 10, 42039)).size, 10);
+  assert.notDeepEqual(sample(pool, 10, 42039), sample(pool, 10, 7));
+});
+
+test('the prose packet is blind, reproducible and public-only', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'spectorque-prose-'));
+  const repo = join(directory, 'repo');
+  await mkdir(join(repo, 'specs/001-demo'), { recursive: true });
+  const body = ['# Demo', '## Requirements', ...Array.from({ length: 12 }, (_, index) => `- No schema change number ${index}.`), 'The system MUST log.'].join('\n');
+  await writeFile(join(repo, 'specs/001-demo/spec.md'), body);
+  const git = (...args: string[]) => execFileSync('git', ['-C', repo, ...args], { stdio: 'pipe' });
+  git('init', '-q'); git('add', '.');
+  git('-c', 'user.name=t', '-c', 'user.email=t@example.com', 'commit', '-q', '-m', 'x');
+  const roots = (restricted: boolean) => join(directory, restricted ? 'roots-restricted.json' : 'roots.json');
+  for (const restricted of [false, true]) await writeFile(roots(restricted), JSON.stringify([{ id: 'demo', repository: 'demo', path: repo, ref: 'HEAD', restricted }]));
+  const build = (out: string, restricted = false) => execFileSync('node', ['--import', 'tsx', 'scripts/precision/adjudication-packet.ts',
+    '--population', 'prose', '--roots', roots(restricted), '--out', join(directory, out), '--sample', '8'], { cwd: repository, stdio: 'pipe' });
+  build('a'); build('b');
+  const read = async (name: string, file: string) => JSON.parse(await readFile(join(directory, name, file), 'utf8'));
+  const first = await read('a', 'packet.json');
+  assert.deepEqual(first, await read('b', 'packet.json'));
+  assert.equal(first.items.length, 8);
+  assert.deepEqual(first.items[0].headings, ['Demo', 'Requirements']);
+  assert.deepEqual(await read('a', 'key.json'), {});
+  assert.doesNotMatch(JSON.stringify(first), /direction|admitted|baseline|candidate/u);
+  assert.throws(() => build('c', true));
+  execFileSync('node', ['--import', 'tsx', 'scripts/precision/predict.ts', '--packet', join(directory, 'a/packet.json'), '--roots', roots(false),
+    '--ref', 'HEAD', '--out', join(directory, 'predictions.json')], { cwd: repository, stdio: 'pipe' });
+  const predictions = await read('.', 'predictions.json') as Record<string, string>;
+  for (const item of first.items) assert.equal(predictions[item.id], /\bMUST\b/u.test(item.text) ? 'requirement' : 'other', item.text);
 });
