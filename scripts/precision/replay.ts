@@ -7,7 +7,6 @@
  * Scan roots marked `restricted` never print or store source text. Their per-line locators go
  * only to an operator directory, and stdout carries global aggregate counts.
  */
-import { execFileSync } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { platform, release, tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -15,6 +14,7 @@ import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { archiveEngine, commit, repository } from './engines.js';
 import { confusion, suppress } from './metrics.js';
+import { lineageOf, rootSchema, snapshot, targetsOf, classifyAll } from './sources.js';
 import { candidateLines, commentLines, fencedLines, quotedOnlyModal, lineLanguage, predictLine, segments, sha256, type LinePrediction } from './probe.js';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
@@ -28,7 +28,7 @@ const caseSchema = z.strictObject({
   nfd: z.boolean().optional(),
   lines: z.array(z.string()).min(1),
   targets: z.array(z.strictObject({
-    line: z.number().int().positive(), admitted: z.boolean().nullable(), 'E1.4': label, 'E1.2': label, note: z.string().optional(),
+    line: z.number().int().positive(), admitted: z.boolean().nullable(), 'E1.4': label, 'E1.2': label, note: z.string().optional(), kind: z.enum(['requirement', 'acceptance', 'other']).optional(),
   })).min(1),
 });
 export const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(caseSchema).min(1) });
@@ -38,16 +38,6 @@ export function contentOf(entry: SyntheticCase): string {
   const text = (entry.bom ? '﻿' : '') + entry.lines.join(entry.eol ?? '\n');
   return entry.nfd ? text.normalize('NFD') : text;
 }
-
-const rootSchema = z.array(z.strictObject({
-  id: z.string().regex(/^[A-Za-z0-9_.-]+$/u),
-  /** Repository identity used for independence; clones of one upstream share it. */
-  repository: z.string().min(1),
-  path: z.string().min(1),
-  ref: z.string().default('HEAD'),
-  restricted: z.boolean(),
-})).min(1);
-type Root = z.infer<typeof rootSchema>[number];
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -136,30 +126,6 @@ async function synthetic() {
   };
 }
 
-const openSpecTarget = /(?:^|\/)openspec\/(?:specs\/(?:[^/]+\/)*spec\.md|changes\/(?!archive\/)[^/]+\/specs\/(?:[^/]+\/)*spec\.md)$/iu;
-function lineageOf(path: string, framework: string, featureId: string) {
-  if (framework !== 'openspec' && framework !== 'spec-kit') return `${framework}:${featureId.toLowerCase()}`;
-  const open = /openspec\/(?:changes\/[^/]+\/)?specs\/(.+)\/spec\.md$/iu.exec(path);
-  if (open) return `openspec:${open[1].toLowerCase()}`;
-  const kit = /(?:^|\/)specs\/(?:\d+-)?([^/]+)\//iu.exec(path);
-  return `spec-kit:${(kit?.[1] ?? path).toLowerCase()}`;
-}
-
-async function snapshot(root: Root, directory: string) {
-  // Capture stderr: git messages can contain restricted paths.
-  const run = (...args: string[]) => execFileSync('git', ['-C', root.path, ...args], { maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'] });
-  const sha = run('rev-parse', '--verify', '--end-of-options', `${root.ref}^{commit}`).toString().trim();
-  const paths = run('ls-tree', '-r', '-z', '--name-only', sha).toString().split('\0').filter(path => /\.md$/iu.test(path));
-  await mkdir(directory, { recursive: true });
-  const files = new Map<string, string>();
-  for (const path of paths) {
-    const bytes = run('cat-file', 'blob', `${sha}:${path}`);
-    if (bytes.length > 1_000_000) continue;
-    files.set(path, new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes));
-  }
-  return { sha, files };
-}
-
 type Side = 'baseline' | 'candidate';
 const findingKey = (finding: { practiceId: string; message: string; evidence: { path: string; line: number }[] }) =>
   `${finding.practiceId}|${finding.evidence[0]?.path}|${finding.evidence[0]?.line}|${finding.message}`;
@@ -201,16 +167,12 @@ async function scan() {
   const adjacent = (id: string) => (aggregate.adjacent[id] ??= { statusChanged: 0, statusTransitions: {}, findingsAdded: 0, findingsRemoved: 0, evidenceChanged: 0 });
   const rootRevisions: { id: string; sha: string; restricted: boolean }[] = [];
   for (const root of roots) {
-    const { sha, files } = await snapshot(root, join(temp, 'roots', root.id));
+    const { sha, files } = await snapshot(root);
     rootRevisions.push({ id: root.id, sha, restricted: root.restricted });
     aggregate.roots++;
     if (root.restricted) aggregate.restrictedRoots++;
-    const artifacts = [...files].filter(([path]) => arms.baseline.isSpecCandidate(path))
-      .map(([path, content]) => arms.baseline.classifyArtifact(path, content));
-    // Pre-registered primary population (OpenSpec, Spec Kit) plus every other supported family.
-    const targets = artifacts.filter(artifact => !artifact.archived && artifact.role === 'spec' && (
-      artifact.framework === 'openspec' ? openSpecTarget.test(artifact.path)
-        : artifact.framework === 'spec-kit' ? /(?:^|\/)spec\.md$/iu.test(artifact.path) : true));
+    const artifacts = classifyAll(arms.baseline, files);
+    const targets = targetsOf(artifacts);
     aggregate.documents += targets.length;
     for (const artifact of targets) {
       const lineage = `${root.repository}|${lineageOf(artifact.path, artifact.framework, artifact.featureId)}`;

@@ -1518,6 +1518,603 @@
           "note": "Prose that only cites a constraint."
         }
       ]
+    },
+    {
+      "id": "imperative-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "- Reuse the existing parser exactly.",
+        "Reuse of the parser was discussed in the review."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Imperative bullet, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "imperative-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "- Reutilizar el analizador existente sin cambios.",
+        "La reutilización del analizador se discutió en la revisión."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Imperative bullet, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "negative-constraint-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "- No schema change to the events table.",
+        "Never mind the earlier draft."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Negative constraint, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Idiom, not a rule."
+        }
+      ]
+    },
+    {
+      "id": "negative-constraint-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "- Nunca exponer tokens en los registros.",
+        "Nunca llegó la respuesta del equipo."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Negative constraint, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Narration, not a rule."
+        }
+      ]
+    },
+    {
+      "id": "future-tense-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The system will store the change history.",
+        "The workshop will take place on Tuesday."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Future tense with a system subject."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "future-tense-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "EL SISTEMA guardará el historial de cambios.",
+        "El taller se celebrará el martes."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Future tense with a system subject."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "capability-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The system can detect duplicate entries.",
+        "Competitors can detect duplicates only by hand."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Capability wording."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Statement about third parties."
+        }
+      ]
+    },
+    {
+      "id": "capability-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "El sistema es capaz de detectar entradas duplicadas.",
+        "Los competidores detectan duplicados a mano."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Capability wording."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "section-context-en",
+      "family": "section-context",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "- Support offline mode.",
+        "## Background",
+        "- Offline mode support is common in this market."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Same shape, requirements section."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Background prose."
+        }
+      ]
+    },
+    {
+      "id": "section-context-es",
+      "family": "section-context",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "- Soportar el modo sin conexión.",
+        "## Antecedentes",
+        "- El soporte sin conexión es habitual en este mercado."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Same shape, requirements section."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Background prose."
+        }
+      ]
+    },
+    {
+      "id": "acceptance-scenario-en",
+      "family": "acceptance",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The system MUST lock the account after 5 failed attempts.",
+        "### Scenario: lock",
+        "- GIVEN a user with 4 failed attempts",
+        "- WHEN the fifth attempt fails",
+        "- THEN the account is locked"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        }
+      ]
+    },
+    {
+      "id": "acceptance-scenario-es",
+      "family": "acceptance",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "El sistema DEBE bloquear la cuenta tras 5 intentos fallidos.",
+        "### Escenario: bloqueo",
+        "- DADO un usuario con 4 intentos fallidos",
+        "- CUANDO falla el quinto intento",
+        "- ENTONCES la cuenta se bloquea"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        }
+      ]
+    },
+    {
+      "id": "success-criterion-en",
+      "family": "acceptance",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Success criteria",
+        "- SC-001: 95% of users finish checkout in under 2 minutes."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Measurable success criterion."
+        }
+      ]
+    },
+    {
+      "id": "success-criterion-es",
+      "family": "acceptance",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Criterios de éxito",
+        "- SC-001: El 95% de los usuarios completa el pago en menos de 2 minutos."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Measurable success criterion."
+        }
+      ]
+    },
+    {
+      "id": "question-en",
+      "family": "non-requirement",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The app MUST support guests.",
+        "- C-2: Does this apply to guest users?"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Clarification question with an ID."
+        }
+      ]
+    },
+    {
+      "id": "question-es",
+      "family": "non-requirement",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "La app DEBE soportar invitados.",
+        "- C-2: ¿Aplica a invitados?"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Clarification question with an ID."
+        }
+      ]
+    },
+    {
+      "id": "changelog-en",
+      "family": "non-requirement",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The app MUST log.",
+        "## Change log",
+        "- Changed MUST to SHOULD in section 3."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Change-log entry."
+        }
+      ]
+    },
+    {
+      "id": "changelog-es",
+      "family": "non-requirement",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "La app DEBE registrar.",
+        "## Historial de cambios",
+        "- Se cambió DEBE por PUEDE en la sección 3."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Change-log entry."
+        }
+      ]
+    },
+    {
+      "id": "cross-reference-en",
+      "family": "non-requirement",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "FR-003: The app logs every login.",
+        "See FR-003 for the full rule."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Defining position."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Cross-reference."
+        }
+      ]
+    },
+    {
+      "id": "cross-reference-es",
+      "family": "non-requirement",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "FR-003: La app registra cada inicio de sesión.",
+        "Véase FR-003 para la regla completa."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Defining position."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Cross-reference."
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-22",
+  "purpose": "Phase A test set (H3) for #52. Opened once, after the candidate is frozen.",
+  "rule": "GitHub code search, once with \"system\" and once with \"sistema\", by the H2b family paths (openspec/specs, specs, kitty-specs, .kiro/specs, _bmad-output); results taken in search order and dealt to the dev, t1 and t2 sets in turn, 2 per set, family and query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39 and #51 excluded, and no owner appears in two sets; pinned to the default-branch head SHA. No file content was read.",
+  "unfilled": {
+    "spec-kitty/system": "1 of 6 qualifying repositories",
+    "spec-kitty/sistema": "0 of 6 qualifying repositories",
+    "bmad/sistema": "5 of 6 qualifying repositories"
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/TsinHzl/kiro2cc-proxy",
+      "commit": "4dd9b67884f79669efbb3a8aa66b9e94b876e56d",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/clay-good/OpenLore",
+      "commit": "4e72b47d6a9f6b85d40e5e677971afda890c3e2b",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/bed72/Modugo",
+      "commit": "d7ef880d3dea9ca9c9215749128dd11a405b86a5",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/lucasrrogerio/world-cup-2026-companion",
+      "commit": "df0c2058687638097e410b4d0ffd660362295d1d",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/superloglabs/superlog",
+      "commit": "a3679440c04854b74b3ad9d444c359f453d696e2",
+      "license": "Apache-2.0",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/nirholas/three.ws",
+      "commit": "50c454bc7c75a4eb6d8ad687876bb8374035513f",
+      "license": "Apache-2.0",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/frankrubio/pandex",
+      "commit": "deaeef7291c5fd1e46d42d85312ab472f01beab6",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Cesar-Sanchez-sof/Polleria",
+      "commit": "182d78bcb56488d0d8b49543229274cf5edd787d",
+      "license": "Apache-2.0",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/iamaanahmad/grimoire-skeleton",
+      "commit": "5d68ef336024d6e47b28077ec984a9b8a5c9f8c3",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/sushilldhakal/scheduler",
+      "commit": "f7caefea6f18ba24e5f88d3b0728440e123cdf0e",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/jorgeivanrua/mvp",
+      "commit": "a5bd82971f6a839e3730e765d80b4fda19d8501d",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/THESUPER22/monstro-unificado",
+      "commit": "2a4298ffc00d3ecae1dadb7ef3daf0946bc3a93a",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/lorenzogm/bmad-ui",
+      "commit": "be7fdf8c1771e376b15e366430aee9ae3cf0d40f",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/cregis-dev/apex",
+      "commit": "8065cde8ef0c2504fef6e4ec37349f3f7c8b4966",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/laraxot/laravelpizza.com",
+      "commit": "64413456f72ae378544a10674a7a32256f2c9eb8",
+      "license": "MIT",
+      "query": "sistema path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/thiagaodt/cifra-kindle",
+      "commit": "49164c59021d8ec12392dd932ffe6380186083d9",
+      "license": "MIT",
+      "query": "sistema path:_bmad-output filename:prd.md"
+    }
+  ]
+}
