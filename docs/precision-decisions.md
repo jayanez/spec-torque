@@ -532,6 +532,44 @@ Two corrections were made before any candidate existed, both recorded here:
   in the T1 sources. T2 has only 189 lineages in total, so its bounds may not reach 100
   requirement lineages; that is recorded before Phase B is run.
 
+<a id="h3-dev"></a>
+### H3 (deterministic line grammar) on DEV
+
+Counts only; the labeled lines stay local. DEV has 54 lineages with a requirement, below the
+100-lineage minimum, so these bounds are for iteration and cannot pass.
+
+| Arm | Admitted lines wrong (precision) | Missed requirements (recall) | Acceptance tags wrong |
+|---|---|---|---|
+| 0.1.4 | 5 of 37 lineages, upper bound 26.3% | 24 of 54, upper bound 56.5% | no population |
+| H3 round 0 | 8 of 46, upper bound 29.2% | 20 of 54, upper bound 49.1% | 4 of 39, upper bound 22.0% |
+| H3 round 1 (frozen) | 2 of 39, upper bound 15.3% | 21 of 54, upper bound 51.0% | 3 of 38, upper bound 19.2% |
+
+Round 1 only narrowed rules (innermost requirements heading, quoted subjects, bare step openers). Of
+the 31 requirement lines the grammar still misses, most are outside what a line grammar with
+English and Spanish rules can reach: Portuguese modals, wrapped continuation lines, table rows and
+noun-phrase bullets under a requirement heading. Lowercase prose modals account for the remaining
+admission errors. Synthetic replay against `d06c023`: 0 regressions, and every constructed
+`requirement-wording`, `section-context`, `acceptance` and `non-requirement` target reads as
+expected. Historical controls: 0 of 716 predictions changed.
+
+### H3 — **fail** (T1, scored once)
+
+Engine at freeze commit `585a4a5` (engine sources as in `dbdb24c`), T1 packet of 879 lines over 331
+lineages, scored after the freeze commit. The labeled lines were not read for error analysis.
+
+| Bound | Lineages | Errors | Upper 95% | Limit | Baseline 0.1.4 |
+|---|---|---|---|---|---|
+| Precision | 76 | 15 | 28.8% | 5% | 26.3% |
+| Recall | 110 | 59 | 61.8% | 5% | 64.4% |
+| Acceptance | 88 | 15 | 25.0% | 10% | no population |
+
+Precision and acceptance also have fewer than 100 lineages. The grammar admits 76 requirement
+lineages against 70 for 0.1.4, so it changes recall by 2.6 points and does not improve precision.
+Score output SHA-256 `21bb5c08e4e5810da21571674f3f2b85796af5df49142879ab6bc2d99df9c80b`,
+predictions `9ae947f5ed74a438198dd279e9dae6a1c4884437ee7b8483bf32074852fbcd13`. Per the stop
+rules, T1 is not retried. Phase B (local-model classifier, H4) needs its own plan approval; the
+engine stays at 0.1.4.
+
 ## Tooling assessment
 
 [NVIDIA Model Optimizer](https://github.com/NVIDIA/Model-Optimizer) quantizes,
