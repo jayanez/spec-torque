@@ -12,6 +12,10 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { headingChain, proseLines, sample, stratify } from '../scripts/precision/prose.js';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { Ollama } from '../scripts/precision/ollama.js';
+import { asPrediction, classifyItem, decide, parseAnswer, settledByStructure, userMessage, type Decision, type PacketItem } from '../scripts/precision/classify.js';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
 const fixture = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
@@ -226,4 +230,65 @@ test('the prose packet is blind, reproducible and public-only', async () => {
     '--ref', 'HEAD', '--out', join(directory, 'predictions.json')], { cwd: repository, stdio: 'pipe' });
   const predictions = await read('.', 'predictions.json') as Record<string, string>;
   for (const item of first.items) assert.equal(predictions[item.id], /\bMUST\b/u.test(item.text) ? 'requirement' : 'other', item.text);
+});
+
+const packetItem = (text: string, headings: string[] = ['Requirements']): PacketItem => ({ id: 'x', text, headings, context: { before: ['a'], after: ['b'] } });
+
+test('H4 sampling: four of five agree, a split abstains, abstention is scored as other', () => {
+  assert.equal(decide(['requirement', 'requirement', 'requirement', 'requirement', 'other']), 'requirement');
+  assert.equal(decide(['other', 'other', 'other', 'other', 'other']), 'other');
+  assert.equal(decide(['requirement', 'requirement', 'requirement', 'other', 'other']), 'unknown');
+  assert.equal(decide(['unknown', 'unknown', 'unknown', 'unknown', 'requirement']), 'unknown');
+  assert.equal(asPrediction('unknown'), 'other');
+  assert.equal(asPrediction('acceptance'), 'acceptance');
+});
+
+test('H4 answers outside the closed enum are unknown', () => {
+  assert.equal(parseAnswer('{"kind":"requirement"}'), 'requirement');
+  assert.equal(parseAnswer('noise {"kind":"acceptance"} noise'), 'acceptance');
+  for (const bad of ['', '{"kind":"obligation"}', '{"kind":["other"]}', '{"other":1}', 'other']) assert.equal(parseAnswer(bad), 'unknown', bad);
+});
+
+test('H4 pre-filter: structure, change-log sections and questions get no model call', () => {
+  assert.equal(settledByStructure(packetItem('- Is guest access allowed?')), true);
+  assert.equal(settledByStructure(packetItem('- Added the audit trail.', ['Spec', 'Change log'])), true);
+  assert.equal(settledByStructure(packetItem('> The system MUST log.')), true);
+  assert.equal(settledByStructure(packetItem('- Validate the email address.')), false);
+  assert.equal(JSON.parse(userMessage(packetItem('- Validate the email address.'))).line, '- Validate the email address.');
+});
+
+test('H4 client refuses non-loopback endpoints and classifies against a loopback server', async () => {
+  assert.throws(() => new Ollama('http://example.com:11434'), /loopback/u);
+  const seen: { seed: number; user: string }[] = [];
+  let answer = (_seed: number) => '{"kind":"requirement"}';
+  const server = createServer((request, response) => {
+    let body = '';
+    request.on('data', chunk => { body += chunk; });
+    request.on('end', () => {
+      response.setHeader('content-type', 'application/json');
+      if (request.url === '/api/tags') return void response.end(JSON.stringify({ models: [{ name: 'local:1', digest: 'abc' }, { name: 'cloud:1', digest: 'def', remote_host: 'https://x' }] }));
+      if (request.url === '/api/version') return void response.end(JSON.stringify({ version: '9.9.9' }));
+      const chat = JSON.parse(body) as { options: { seed: number; temperature: number }; messages: { content: string }[] };
+      seen.push({ seed: chat.options.seed, user: chat.messages[1].content });
+      response.end(JSON.stringify({ message: { content: answer(chat.options.seed) } }));
+    });
+  });
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const client = new Ollama(`http://127.0.0.1:${(server.address() as AddressInfo).port}`);
+    assert.deepEqual(await client.localModel('local:1'), { name: 'local:1', digest: 'abc', ollama: '9.9.9' });
+    await assert.rejects(client.localModel('cloud:1'), /local Ollama model/u);
+    await assert.rejects(client.localModel('missing'), /local Ollama model/u);
+    const asked = await classifyItem(client, 'local:1', packetItem('- Validate the email address.'), true);
+    assert.deepEqual(seen.map(call => call.seed), [42039, 42040, 42041, 42042, 42043]);
+    assert.equal(asked.decision, 'requirement');
+    seen.length = 0;
+    const settled = await classifyItem(client, 'local:1', packetItem('- Is guest access allowed?'), true);
+    assert.deepEqual([seen.length, settled.settled, settled.decision], [0, true, 'other']);
+    answer = seed => seed === 42039 ? '{"kind":"requirement"}' : seed === 42040 ? 'not json' : '{"kind":"other"}';
+    const split = await classifyItem(client, 'local:1', packetItem('- Validate the email address.'), true);
+    assert.deepEqual([split.samples as Decision[], split.decision], [['requirement', 'unknown', 'other', 'other', 'other'], 'unknown']);
+  } finally {
+    server.close();
+  }
 });
