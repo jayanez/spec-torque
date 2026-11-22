@@ -206,3 +206,26 @@ cada todo todos toda todas algún alguna cualquier mi tu nuestro`.
   engine exports it, with no line isolation, because lines without modal or ID can now be
   admitted and another line could otherwise make a practice non-`unknown`. Engines without
   `classifyLines` keep the 0.1.4 practice-based path.
+
+## H3 freeze (2026-11-22)
+
+H3 is frozen at engine commit `dbdb24c5026dd98ac41f2e85fc13cbae1df1e69b` (`src/core` and `scripts`
+are identical to DEV round 1, `f836440`). T1 is scored once, with the engine at the freeze
+commit that adds this section.
+
+Differences between the pre-registration wording and the frozen rules, all inside the rule
+families above and made before this freeze:
+
+- **Rule 6.** The ID names also include `C` and `CON` (constraint IDs in defining position). Found
+  by the synthetic `constraint-id` family before any DEV scoring.
+- **Rule 7.** Task-checkbox items (`- [ ] …`) are not requirements (synthetic `id-position`
+  family). Only the innermost heading is tested, not the whole chain, so a glossary under a
+  requirements heading is not a requirements section (DEV round 1). A line is Spanish when it has
+  more Spanish than English function words; only then is an infinitive required.
+- **Rule 8.** The subject does not count when it sits inside a mention (DEV round 1).
+- **Rule 5.** A scenario keyword on a bare line must be uppercase; as a list item or in bold it may
+  use any case. `AND`, `And`, `BUT`, `But` and `Y` are matched in those exact cases (DEV round 1).
+
+DEV rounds used: 1 of 3. Synthetic replay against `d06c023`: 0 regressions. Historical
+controls: the 716 historical predictions are unchanged (0 changed), so no adjudication was
+needed. Round 1 results are in [precision decisions](precision-decisions.md#h3-dev).

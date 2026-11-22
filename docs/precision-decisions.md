@@ -532,6 +532,26 @@ Two corrections were made before any candidate existed, both recorded here:
   in the T1 sources. T2 has only 189 lineages in total, so its bounds may not reach 100
   requirement lineages; that is recorded before Phase B is run.
 
+<a id="h3-dev"></a>
+### H3 (deterministic line grammar) on DEV
+
+Counts only; the labeled lines stay local. DEV has 54 lineages with a requirement, below the
+100-lineage minimum, so these bounds are for iteration and cannot pass.
+
+| Arm | Admitted lines wrong (precision) | Missed requirements (recall) | Acceptance tags wrong |
+|---|---|---|---|
+| 0.1.4 | 5 of 37 lineages, upper bound 26.3% | 24 of 54, upper bound 56.5% | no population |
+| H3 round 0 | 8 of 46, upper bound 29.2% | 20 of 54, upper bound 49.1% | 4 of 39, upper bound 22.0% |
+| H3 round 1 (frozen) | 2 of 39, upper bound 15.3% | 21 of 54, upper bound 51.0% | 3 of 38, upper bound 19.2% |
+
+Round 1 only narrowed rules (innermost requirements heading, quoted subjects, bare step openers). Of
+the 31 requirement lines the grammar still misses, most are outside what a line grammar with
+English and Spanish rules can reach: Portuguese modals, wrapped continuation lines, table rows and
+noun-phrase bullets under a requirement heading. Lowercase prose modals account for the remaining
+admission errors. Synthetic replay against `d06c023`: 0 regressions, and every constructed
+`requirement-wording`, `section-context`, `acceptance` and `non-requirement` target reads as
+expected. Historical controls: 0 of 716 predictions changed.
+
 ## Tooling assessment
 
 [NVIDIA Model Optimizer](https://github.com/NVIDIA/Model-Optimizer) quantizes,
