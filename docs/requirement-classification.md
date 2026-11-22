@@ -128,3 +128,81 @@ first T1 sample was capped per repository only and had too few lineages, so T1 w
 with one line per lineage. The final T1 is 879 distinct lines over 331 lineages. T2 has 189
 lineages; its bounds are reported with their lineage counts and cannot pass if fewer than
 100 lineages carry a requirement.
+
+## H3 pre-registration: deterministic line grammar (2026-11-22, before any H3 code)
+
+H3 is Phase A. It is a pure function of the line, its heading chain and its fence and comment
+state. It uses no model, no network and no data other than the artifact. It is frozen by this
+section and by the stop rules below. The ordered rules are the only feature families; DEV rounds
+may adjust the patterns inside a family but may not add a family without a dated amendment here.
+
+### Scope
+
+- Spec-role artifacts only. Every other role keeps the 0.1.4 rule (an ID or a normative modal,
+  outside fences, headings, quotes and scenario steps), so plans and tasks are unchanged.
+- Engine `ENGINE_VERSION` stays `0.1.4` until Phase C. The candidate is identified by its commit.
+- `Line.kind` is `requirement`, `acceptance` or `other`. `Line.requirement` is
+  `kind === 'requirement'`. `acceptance` lines are measured and exposed but feed no practice.
+
+### Rules (first match wins)
+
+1. **Structure, other.** Inside a fence (the 0.1.4 toggle), a heading, a blockquote, a blank line,
+   or an HTML comment line (including the lines of a multi-line comment).
+2. **Change-log section, other.** The heading chain contains a heading matching
+   `change ?log|history|revision|historial|cambios` (case-insensitive).
+3. **Question, other.** The line, after removing a list marker and a leading ID prefix, ends in
+   `?` (optionally followed by closing markup) or starts with `¿`.
+4. **Modal obligation, requirement.** The line has a normative modal as in 0.1.4
+   (`hasNormativeModal`, including the calendar-May and month-enumeration exclusions) and at
+   least one modal is not inside a mention. Mentions are keyword-only code spans, straight
+   double quotes bounded by non-word characters, curly double quotes and guillemets. This
+   includes scenario and criterion lines, per the 2026-11-22 owner decision.
+5. **Acceptance.** A scenario step (`GIVEN|WHEN|THEN|AND|BUT|DADO|CUANDO|ENTONCES|Y` at the start
+   of the line, after an optional list marker and bold markup), a `SC-<n>` line, or a bullet or
+   numbered item under a heading matching
+   `acceptance criteria|success criteria|scenario|criterios de (aceptación|éxito)|escenario`.
+6. **Defining-position ID, requirement.** One of `FR|NFR|RF|RNF|REQ|R` followed by `-<n>` in the
+   defining position of H2d: after optional whitespace, an optional list marker, an optional task
+   checkbox, an optional opening `|` of a table row, and optional bold or code markup. A
+   mid-sentence ID alone is a cross-reference and stays `other`.
+7. **Requirements section, requirement.** The heading chain contains a heading matching
+   `requirements?|requisitos?|constraints|restricciones|functional|funcionales|non-functional|no funcionales`,
+   or the line is under an OpenSpec `### Requirement:` heading, and the line is a bullet or
+   numbered item that either
+   - starts with `No|Never|Sin|Nunca|Ningún|Ninguna` (a negative constraint), or
+   - starts with an imperative or infinitive verb: its first word, after an optional ID prefix and
+     bold markup, has at least 2 letters, is not in the closed stop list below, does not end in a
+     nominal suffix (`-ing`, `-tion`, `-sion`, `-ment`, `-ness`, `-ity`, `-ción`, `-sión`, `-miento`,
+     `-idad`, `-mente`) and, for Spanish, ends in `-ar|-er|-ir|-ar(?:se)?` when it starts with a
+     lowercase letter or is a sentence-case infinitive. English base verbs are recognised only by
+     exclusion, so the stop list is the whole lexicon.
+8. **System subject, requirement.** Anywhere in a spec, the subject
+   `(the |el |la |los |las )?(system|sistema|app|application|aplicación|api|service|servicio|platform|plataforma|server|servidor)`
+   followed by `will|shall|can|is able to|es capaz de|permite|permitirá|podrá|guardará` or any
+   `-rá|-rán` future form of a verb.
+9. **Otherwise, other.**
+
+**Closed stop list for rule 7** (function words and common noun-phrase openers; extension in a DEV
+round is allowed only with closed-class words and is recorded in the round's commit):
+`the a an this that these those it its they we you i he she there here each every all any some
+one in on at for to of with by from as if when while where which who what how why and or but so
+also see note e.g. i.e. el la los las un una unos unas este esta estos estas ese esa eso esto
+ello se su sus en de del con por para como si cuando donde que quien y o pero también ver nota
+cada todo todos toda todas algún alguna cualquier mi tu nuestro`.
+
+### Gate, DEV and T1
+
+- The gate is the one fixed above: three one-sided 95% Clopper-Pearson bounds, counted by
+  lineage, with at least 100 lineages each. Labels come from two blind agent reviewers plus an
+  agent adjudicator; the rule's author never labels.
+- **DEV:** at most 3 rounds. Each round is one commit; error analysis reads DEV only.
+- **T1:** scored once, after a freeze commit whose SHA is written in this document. Opening or
+  scoring T1 before that commit voids T1. A failing T1 means Phase B, never a T1 retry.
+- **Synthetic and historical controls:** zero regressions in the `fence-control`,
+  `admission-control`, `comparator` and `encoding` families; every changed prediction among the
+  716 historical lines is adjudicated by an agent that did not write the rule. An unjustified
+  change counts as a regression.
+- **Probe path.** The probe takes the kind from `classifyLines` on the full document when the
+  engine exports it, with no line isolation, because lines without modal or ID can now be
+  admitted and another line could otherwise make a practice non-`unknown`. Engines without
+  `classifyLines` keep the 0.1.4 practice-based path.
