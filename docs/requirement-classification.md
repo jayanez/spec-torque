@@ -33,7 +33,16 @@ closed label set is `requirement`, `acceptance`, `other` and `unknown`.
 | `Changed MUST to SHOULD in FR-004.` (change log) | `other` |
 | `The word "MUST" is reserved.` | `other` |
 
-A line that states a rule of its own and also quotes an example is a `requirement`. Use
+A line that states a rule of its own and also quotes an example is a `requirement`.
+
+**Scenario and criterion lines with a modal (decided 2026-11-22, after the first blind labels).**
+A scenario step or acceptance-criterion line that contains a normative modal and imposes an
+obligation (`THEN the system SHALL lock the account`, `WHEN … THE X SHALL …`) is a
+`requirement`. `acceptance` is for steps and criteria that impose no modal obligation of their
+own (`THEN the account is locked`, `GIVEN a user with 4 failed attempts`, `SC-001: 95% finish
+in under 2 minutes`). This follows the historical E1.4 controls, which count such lines as
+requirements. The first blind pass disagreed mostly on these lines (kappa 0.77 on DEV), so
+the guide was clarified before any adjudication or scoring. Use
 `unknown` only when the line and its context do not settle the label.
 
 ## Gate (fixed before labeling)
