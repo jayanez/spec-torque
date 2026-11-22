@@ -5,6 +5,7 @@ import { loadEngine, repository } from '../scripts/precision/engines.js';
 import { suppress } from '../scripts/precision/metrics.js';
 import { commentLines, fencedLines, isolate, predictLine, quotedOnlyModal, segments } from '../scripts/precision/probe.js';
 import { audit } from '../scripts/precision/audit-denominators.js';
+import { clopperPearsonUpper, cohenKappa, score, type Kind, type ScoredItem } from '../scripts/precision/score.js';
 import { z } from 'zod';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
@@ -105,4 +106,49 @@ test('the audit keeps duplicate, missing and unparsable IDs out of the join', ()
   assert.equal(report.parseErrors, 1);
   assert.equal(report.resultsWithoutId, 1);
   assert.deepEqual(report.perClass.positive, { correct: 1, denominator: 1 });
+});
+
+test('Clopper-Pearson bounds match the pre-registered examples', () => {
+  assert.ok(Math.abs(clopperPearsonUpper(0, 59) - (1 - 0.05 ** (1 / 59))) < 1e-9);
+  assert.ok(clopperPearsonUpper(0, 59) <= 0.05);
+  assert.ok(clopperPearsonUpper(1, 100) <= 0.05);
+  assert.ok(clopperPearsonUpper(2, 100) > 0.05);
+  assert.ok(clopperPearsonUpper(3, 60) > 0.05);
+  assert.equal(clopperPearsonUpper(5, 5), 1);
+});
+
+test('kappa is 1 for identical labels, 0 for chance agreement, null when degenerate', () => {
+  assert.equal(cohenKappa([['a', 'a'], ['b', 'b']]), 1);
+  assert.equal(cohenKappa([['a', 'a'], ['a', 'b'], ['b', 'a'], ['b', 'b']]), 0);
+  assert.equal(cohenKappa([['a', 'a'], ['a', 'a']]), null);
+  assert.equal(cohenKappa([]), null);
+});
+
+test('scoring counts by lineage and treats unknown as an error', () => {
+  const make = (count: number, lineageOf: (index: number) => string, adjudicated: ScoredItem['adjudicated']): ScoredItem[] =>
+    Array.from({ length: count }, (_, index) => ({ id: `${adjudicated}-${index}`, lineages: [lineageOf(index)], reviewerA: adjudicated, reviewerB: adjudicated, adjudicated }));
+  // 100 admitted requirement lineages; lineage L0 has two items, one wrong.
+  const good = make(100, index => `L${index}`, 'requirement');
+  const bad: ScoredItem = { id: 'bad', lineages: ['L0'], reviewerA: 'other', reviewerB: 'other', adjudicated: 'other' };
+  const acceptance = make(100, index => `A${index}`, 'acceptance');
+  const predictions = (items: ScoredItem[], kind: Kind) => Object.fromEntries(items.map(item => [item.id, kind]));
+  const base = { ...predictions(good, 'requirement'), ...predictions(acceptance, 'acceptance') };
+  const clean = score([...good, ...acceptance], base);
+  assert.equal(clean.pass, true);
+  assert.equal(clean.precision.errorLineages, 0);
+  const oneBad = score([...good, ...acceptance, bad], { ...base, bad: 'requirement' });
+  assert.equal(oneBad.precision.lineages, 100);
+  assert.equal(oneBad.precision.errorLineages, 1);
+  assert.equal(oneBad.precision.pass, true);
+  const unknown = score([...good, ...acceptance, { ...bad, id: 'u', adjudicated: 'unknown' }], { ...base, u: 'requirement' });
+  assert.equal(unknown.precision.errorLineages, 1);
+  // Missed requirements: recall counts every adjudicated requirement the arm does not admit.
+  const missed = score([...good, ...acceptance], { ...base, 'requirement-0': 'other', 'requirement-1': 'other' });
+  assert.equal(missed.recall.errorLineages, 2);
+  assert.equal(missed.recall.pass, false);
+  // Fewer than 100 lineages never passes.
+  const small = score(good.slice(0, 50), predictions(good.slice(0, 50), 'requirement'));
+  assert.equal(small.precision.pass, false);
+  assert.match(small.precision.reason ?? '', /fewer than 100/);
+  assert.deepEqual(score([bad], {}).missingPredictions, ['bad']);
 });

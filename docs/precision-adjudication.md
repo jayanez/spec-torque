@@ -2,7 +2,8 @@
 
 This protocol labels the distinct lines that a detector candidate stops (or starts)
 admitting. It serves the independent adjudication criterion of #51 and follows the
-general rules in [corpus labeling](corpus-labeling.md).
+general rules in [corpus labeling](corpus-labeling.md). Requirement-line classification (#52) uses the
+label set and gate in [requirement classification](requirement-classification.md).
 
 ## Packet
 
