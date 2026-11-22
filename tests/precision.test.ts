@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { headingChain, proseLines, sample } from '../scripts/precision/prose.js';
+import { headingChain, proseLines, sample, stratify } from '../scripts/precision/prose.js';
 
 const label = z.enum(['positive', 'negative', 'unknown']);
 const fixture = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
@@ -178,6 +178,14 @@ test('prose lines skip structure and the seeded sample is reproducible', () => {
   assert.deepEqual(sample(pool, 10, 42039), sample(pool, 10, 42039));
   assert.equal(new Set(sample(pool, 10, 42039)).size, 10);
   assert.notDeepEqual(sample(pool, 10, 42039), sample(pool, 10, 7));
+});
+
+test('stratified sampling caps each group and is reproducible', () => {
+  const items = [...Array.from({ length: 30 }, (_, index) => ({ group: 'big', index })), ...Array.from({ length: 3 }, (_, index) => ({ group: 'small', index }))];
+  const picked = stratify(items, item => item.group, 5, 42039);
+  assert.equal(picked.filter(item => item.group === 'big').length, 5);
+  assert.equal(picked.filter(item => item.group === 'small').length, 3);
+  assert.deepEqual(picked, stratify(items, item => item.group, 5, 42039));
 });
 
 test('the prose packet is blind, reproducible and public-only', async () => {

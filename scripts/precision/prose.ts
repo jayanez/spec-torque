@@ -38,3 +38,10 @@ export function sample<T>(pool: T[], size: number, seed: number): T[] {
   while (picked.length < size && rest.length) picked.push(rest.splice(Math.floor(next() * rest.length), 1)[0]);
   return picked;
 }
+
+/** At most `limit` items per group, drawn with the seeded sample; group order is stable. */
+export function stratify<T>(items: T[], groupOf: (item: T) => string, limit: number, seed: number): T[] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) groups.set(groupOf(item), [...(groups.get(groupOf(item)) ?? []), item]);
+  return [...groups.keys()].sort().flatMap(key => sample(groups.get(key)!, limit, seed));
+}
