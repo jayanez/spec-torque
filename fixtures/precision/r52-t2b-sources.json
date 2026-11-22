@@ -209,6 +209,6 @@
   "lineages": {
     "t2": 189,
     "t2b": 716,
-    "note": "Counted by the engine's artifact discovery, before any content was read; T2 and T2b together should carry well over 100 requirement lineages at T1's rate of 33%."
+    "note": "Counted by the engine's artifact discovery over the pinned snapshots, before any packet was built or any line was labeled; source selection itself read no file content. T2 and T2b together should carry well over 100 requirement lineages at T1's rate of 33%."
   }
 }

@@ -275,3 +275,11 @@ optional assistant: it never changes the deterministic engine, and no model call
   of the candidate never labels and never reads T2 or T2b items.
 - **Outcome.** If any of the three bounds fails, H4 fails: stop, record the decision, and the
   engine stays at 0.1.4. A pass means only that an opt-in local assistant may be planned.
+
+### Amendment (2026-11-22, before DEV round 1)
+
+The local runner (Ollama 0.40.16, MLX) answers "structured output is unavailable" for the `format`
+schema. The closed enum is therefore requested in the prompt and validated locally (commit
+`3c21071`); any answer outside the enum counts as `unknown`, as above. The enum, sampling,
+pre-filter and model are otherwise unchanged. The change was prompted by that runner error, not by
+any DEV score, and was committed before the first DEV round finished.
