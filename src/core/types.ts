@@ -4,6 +4,7 @@ export type Framework = 'spec-kit' | 'spec-kitty' | 'openspec' | 'kiro' | 'bmad'
 export type Status = 'supported' | 'partial' | 'missing' | 'unknown' | 'not_applicable';
 export interface Artifact { path: string; content: string; role: Role; framework: Framework; featureId: string; archived: boolean }
 export interface ArtifactSet { name: string; artifacts: Artifact[] }
+export type LineKind = 'requirement' | 'acceptance' | 'other';
 export interface Evidence { path: string; line: number; text: string }
 export interface Finding { id: string; practiceId: string; dimension: string; severity: 'error' | 'warning' | 'info'; message: string; suggestion: string; evidence: Evidence[]; source: 'rule' }
 export interface PracticeResult { id: string; dimension: string; title: string; status: Status; evidence: Evidence[]; reason: string; suggestion: string }

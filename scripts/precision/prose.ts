@@ -1,21 +1,6 @@
 import { commentLines, fencedLines, segments } from './probe.js';
 
-/** Nearest heading per level above the line, outermost first. */
-export function headingChain(lines: string[], line: number): string[] {
-  const chain: string[] = [];
-  let fence: { char: string; length: number } | undefined;
-  for (const text of lines.slice(0, line - 1)) {
-    const run = /^\s*(`{3,}|~{3,})/u.exec(text);
-    if (run) {
-      if (!fence) fence = { char: run[1][0], length: run[1].length };
-      else if (run[1][0] === fence.char && run[1].length >= fence.length) fence = undefined;
-      continue;
-    }
-    const heading = !fence && /^(#{1,6})\s+(.*\S)\s*#*\s*$/u.exec(text);
-    if (heading) { chain.length = heading[1].length - 1; chain[heading[1].length - 1] = heading[2]; }
-  }
-  return chain.filter(Boolean);
-}
+export { headingChain } from '../../src/core/admission.js';
 
 /** Lines a classifier may label: not blank, heading, quote, fence, comment or table rule. */
 export function proseLines(content: string): number[] {

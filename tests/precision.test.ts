@@ -76,6 +76,18 @@ test('the current engine meets every control expectation', async () => {
   }
 });
 
+test('the probe takes the kind from classifyLines on the full document and keeps the practice path for older engines', async () => {
+  const engine = await loadEngine(repository);
+  const legacy = { ...engine, classifyLines: undefined } as unknown as typeof engine;
+  const content = ['## Requirements', '- Validate the email address.', '- The service MUST log each login.', '- THEN the account is locked'].join('\n');
+  // No modal and no ID: admitted only because the engine classifies lines, and not isolated from line 3.
+  assert.deepEqual(await predictLine(engine, 'specs/001/spec.md', content, 2), { admitted: true, kind: 'requirement', 'E1.4': 'negative', 'E1.2': 'negative', evidenceValid: null });
+  // A modal line reads the same on the classifyLines path and on the practice path (an engine without classifyLines).
+  assert.deepEqual(await predictLine(engine, 'specs/001/spec.md', content, 3), await predictLine(legacy, 'specs/001/spec.md', content, 3));
+  // Acceptance is reported as its own kind and is not admitted.
+  assert.deepEqual(await predictLine(engine, 'specs/001/spec.md', content, 4), { admitted: false, kind: 'acceptance', 'E1.4': 'unknown', 'E1.2': 'unknown', evidenceValid: null });
+});
+
 test('the audit derives every denominator from fixture labels', () => {
   // 12 positive, 8 negative and 4 unknown references, as in the second synthetic calibration.
   const fixtures = [

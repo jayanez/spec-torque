@@ -1,29 +1,15 @@
+import { classifyLines, hasNormativeModal } from './admission.js';
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
-import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
+import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, LineKind, PracticeResult, Status } from './types.js';
+export { classifyLines } from './admission.js';
 export const ENGINE_VERSION = '0.1.4';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
-// Match complete Unicode words, including accented Spanish and plural forms.
-const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
-const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:\d{4}|(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?)(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
-const monthItem = (name: string) => `(?:${name}|\`${name}\`|"${name}"|'${name}'|“${name}”|‘${name}’)`;
-const monthEnumerationMay = new RegExp(
-  `(?<![\\p{L}\\p{N}\\p{M}_])(${monthItem('Apr(?:il)?')}[ \\t]*,[ \\t]*)${monthItem('May')}([ \\t]*,[ \\t]*${monthItem('Jun(?:e)?')})(?![\\p{L}\\p{N}\\p{M}_])`,
-  'giu',
-);
-const hasNormativeModal = (text: string) => modal.test(
-  text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
-);
-interface Line extends Evidence { artifact: Artifact; requirement: boolean }
+interface Line extends Evidence { artifact: Artifact; kind: LineKind; requirement: boolean }
 function linesOf(artifact: Artifact): Line[] {
-  let fenced = false;
-  return artifact.content.split(/\r?\n/).map((text, index) => {
-    if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
-    const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
-    return { path: artifact.path, line: index + 1, text, artifact, requirement };
-  });
+  const kinds = classifyLines(artifact);
+  return artifact.content.split(/\r?\n/).map((text, index) => ({ path: artifact.path, line: index + 1, text, artifact, kind: kinds[index], requirement: kinds[index] === 'requirement' }));
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;

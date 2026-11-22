@@ -51,7 +51,7 @@ test('Unicode token boundaries reject embedded normative words with and without 
 
 test('Unicode punctuation and lowercase forms retain exact source evidence', async () => {
   for (const word of ['deberá', 'deberían', 'pueden', 'may']) {
-    const text = `El servicio «${word}» responder rápido.`;
+    const text = `El servicio ${word.toUpperCase()}, «${word}», responder rápido.`;
     const result = await analyze({ name: 'punctuation', artifacts: [classifyArtifact('spec.md', text)] });
     assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'supported', word);
     assert.deepEqual(result.practices.find(p => p.id === 'E1.4')?.evidence, [{ path: 'spec.md', line: 1, text }]);
@@ -71,11 +71,21 @@ test('normative recognition still excludes headings, quotes, fenced code and sce
     '# FR-001: Los servicios DEBEN responder rápido.', '> FR-001: El servicio DEBERÁ responder rápido.',
     '```text\nFR-001: Los servicios DEBEN responder rápido.\n```',
     '~~~text\nFR-001: El servicio DEBERÍA responder rápido.\n~~~',
-    'DADO Los servicios DEBEN responder rápido.', 'GIVEN The service MAY respond quickly.',
   ]) {
     const result = await analyze({ name: 'examples', artifacts: [classifyArtifact('spec.md', text)] });
     assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'unknown', text);
     assert.deepEqual(result.findings, [], text);
+  }
+});
+
+test('H3: a scenario step with a modal obligation is a requirement, a quoted modal alone is not', async () => {
+  for (const text of ['DADO Los servicios DEBEN responder rápido.', 'GIVEN The service MAY respond quickly.']) {
+    const result = await analyze({ name: 'scenario', artifacts: [classifyArtifact('spec.md', text)] });
+    assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'supported', text);
+  }
+  for (const text of ['El servicio «deberá» responder rápido.', 'The word "MUST" is reserved.']) {
+    const result = await analyze({ name: 'mention', artifacts: [classifyArtifact('spec.md', text)] });
+    assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'unknown', text);
   }
 });
 

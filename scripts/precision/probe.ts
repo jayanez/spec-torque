@@ -37,16 +37,26 @@ export type Kind = 'requirement' | 'acceptance' | 'other';
 export interface LinePrediction { admitted: boolean; kind: Kind; 'E1.4': Label; 'E1.2': Label; evidenceValid: boolean | null }
 
 export async function predictLine(engine: Engine, path: string, content: string, line: number): Promise<LinePrediction> {
+  // An engine that classifies lines is asked on the full document: lines without a modal or ID can be
+  // admitted, so isolating the target by blanking the others would not isolate it.
+  const classifyLines = (engine as Partial<Pick<Engine, 'classifyLines'>>).classifyLines;
+  const out: LinePrediction = { admitted: false, kind: 'other', 'E1.4': 'unknown', 'E1.2': 'unknown', evidenceValid: null };
+  if (classifyLines) {
+    out.kind = classifyLines(engine.classifyArtifact(path, content))[line - 1] ?? 'other';
+    out.admitted = out.kind === 'requirement';
+    if (!out.admitted) return out;
+  }
   const artifact = engine.classifyArtifact(path, isolate(content, line));
   const report = await engine.analyze({ name: 'probe', artifacts: [artifact] });
   const original = segments(content)[line - 1]?.text ?? '';
-  const out: LinePrediction = { admitted: false, kind: 'other', 'E1.4': 'unknown', 'E1.2': 'unknown', evidenceValid: null };
   for (const rule of ['E1.4', 'E1.2'] as const) {
     const practice = report.practices.find(item => item.id === rule);
     if (!practice || practice.status === 'unknown') continue;
-    out.admitted = true;
-    // Engine 0.1.4 has no acceptance kind: scenario lines are excluded, so they read as other.
-    out.kind = 'requirement';
+    if (!classifyLines) {
+      out.admitted = true;
+      // Engine 0.1.4 has no acceptance kind: scenario lines are excluded, so they read as other.
+      out.kind = 'requirement';
+    }
     const hit = practice.evidence.find(item => item.path === artifact.path && item.line === line);
     out[rule] = hit ? 'positive' : 'negative';
     if (hit) out.evidenceValid = (out.evidenceValid ?? true) && hit.text === original.slice(0, 300);
