@@ -204,7 +204,7 @@ test('the prose packet is blind, reproducible and public-only', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'spectorque-prose-'));
   const repo = join(directory, 'repo');
   await mkdir(join(repo, 'specs/001-demo'), { recursive: true });
-  const body = ['# Demo', '## Requirements', ...Array.from({ length: 12 }, (_, index) => `- No schema change number ${index}.`), 'The system MUST log.'].join('\n');
+  const body = ['# Demo', '## Requirements', ...Array.from({ length: 12 }, (_, index) => `- The note number ${index} is informative.`), 'The system MUST log.'].join('\n');
   await writeFile(join(repo, 'specs/001-demo/spec.md'), body);
   const git = (...args: string[]) => execFileSync('git', ['-C', repo, ...args], { stdio: 'pipe' });
   git('init', '-q'); git('add', '.');
