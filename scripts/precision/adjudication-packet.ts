@@ -7,7 +7,7 @@
  *   prose:             a seeded sample of non-structural prose lines from the spec artifacts of
  *                      public roots (#52); `--sample` is required. `key.json` is empty.
  *
- *   node --import tsx scripts/precision/adjudication-packet.ts --detail <public-detail.json> --roots <roots.json> --out <dir> [--sample 100 --per-root 40 --seed 42039]
+ *   node --import tsx scripts/precision/adjudication-packet.ts --detail <public-detail.json> --roots <roots.json> --out <dir> [--sample 100 --per-lineage 1 --per-root 40 --seed 42039]
  *   node --import tsx scripts/precision/adjudication-packet.ts --population prose --roots <roots.json> --out <dir> --sample 400
  */
 import { execFileSync } from 'node:child_process';
@@ -28,7 +28,7 @@ interface Item {
 
 const { values } = parseArgs({ options: {
   detail: { type: 'string' }, roots: { type: 'string' }, out: { type: 'string' }, population: { type: 'string', default: 'changed' },
-  sample: { type: 'string' }, 'per-root': { type: 'string' }, seed: { type: 'string', default: '42039' },
+  sample: { type: 'string' }, 'per-root': { type: 'string' }, 'per-lineage': { type: 'string' }, seed: { type: 'string', default: '42039' },
 } });
 if (!values.roots || !values.out) throw new Error('Use --roots <file> --out <dir>.');
 if (!['changed', 'prose'].includes(values.population!)) throw new Error('--population is changed or prose.');
@@ -82,6 +82,8 @@ if (values.population === 'changed') {
 
 // Stable order by ID, so the packet does not reveal scan order.
 let selected = [...items.values()].sort((a, b) => a.id.localeCompare(b.id));
+// --per-lineage keeps a few lines from each lineage, so the lineage-counted bounds have enough lineages.
+if (values['per-lineage']) selected = stratify(selected, item => item.occurrences[0].lineage, Number(values['per-lineage']), Number(values.seed)).sort((a, b) => a.id.localeCompare(b.id));
 // --per-root caps each root's share, so one large repository cannot dominate the sample.
 if (values['per-root']) selected = stratify(selected, item => item.occurrences[0].root, Number(values['per-root']), Number(values.seed)).sort((a, b) => a.id.localeCompare(b.id));
 if (values.sample && selected.length > Number(values.sample)) selected = sample(selected, Number(values.sample), Number(values.seed)).sort((a, b) => a.id.localeCompare(b.id));

@@ -505,6 +505,33 @@ decision.
 Clarification quality remains a separate experiment. No clarification output was
 produced or evaluated here.
 
+## 5. Requirement-line classification (#52) — baseline measured
+
+Definition, gate and splits are in [requirement classification](requirement-classification.md).
+Labels come from two blind agent reviewers and an agent adjudicator; the rule's author did not
+label. Public sources only; packets and labels stay local.
+
+| Set | Items | Lineages | Kappa | Admitted lines wrong (precision) | Missed requirements (recall) |
+|---|---|---|---|---|---|
+| DEV | 300 | 128 | 0.77 | 5 of 37 lineages, upper bound 26.3% | 24 of 54, upper bound 56.5% |
+| T1 | 879 | 331 | 0.89 | 12 of 70 lineages, upper bound 26.3% | 62 of 110, upper bound 64.4% |
+
+Engine 0.1.4 on the adjudicated labels (limits 5% and 5%): it admits too many non-requirements
+and misses about half of the requirement lines. The acceptance bound has no population because
+0.1.4 never tags `acceptance`. The labels are 32% requirement, 18% acceptance and 50% other on
+T1. The samples are almost entirely English (the lines with a Spanish modal are under 2%), so
+these results do not speak for Spanish.
+
+Two corrections were made before any candidate existed, both recorded here:
+- **Label guide.** The first blind pass disagreed mostly on scenario lines that contain a modal
+  (kappa 0.77 on DEV). The owner decided they are `requirement`; the guide was clarified and the
+  50 affected DEV items and the disputed T1 items were adjudicated under the clarified rule.
+- **T1 sampling.** The first T1 sample (600 lines, capped per repository) had 79 lineages with a
+  requirement, below the 100-lineage minimum, so even a perfect classifier could not pass. T1
+  was widened with 279 further lines, one per lineage, to 879 items over 331 of the 332 lineages
+  in the T1 sources. T2 has only 189 lineages in total, so its bounds may not reach 100
+  requirement lineages; that is recorded before Phase B is run.
+
 ## Tooling assessment
 
 [NVIDIA Model Optimizer](https://github.com/NVIDIA/Model-Optimizer) quantizes,

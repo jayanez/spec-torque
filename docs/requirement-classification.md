@@ -120,3 +120,11 @@ dealt to the three sets in turn, public non-fork MIT or Apache-2.0 repositories,
 repository and owner from #39 and #51 excluded, no owner in two sets, each pinned to its
 default-branch head SHA. Spec Kitty has 1 qualifying repository and BMAD 5 for `sistema`;
 those gaps are recorded in `unfilled`. The sets are not changed after this commit.
+
+## Sampling amendment (2026-11-22, before any candidate)
+
+`adjudication-packet.ts` takes `--per-lineage` and `--per-root` to stratify prose samples. The
+first T1 sample was capped per repository only and had too few lineages, so T1 was extended
+with one line per lineage. The final T1 is 879 distinct lines over 331 lineages. T2 has 189
+lineages; its bounds are reported with their lineage counts and cannot pass if fewer than
+100 lineages carry a requirement.
