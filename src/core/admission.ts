@@ -114,9 +114,13 @@ const idPrefix = /^(?:\*\*|__)?[A-Za-z]{1,5}-\d+(?:\.\d+)*[:.)]?(?:\*\*|__)?\s*/
 const changeLog = /change ?log|history|revision|historial|cambios/iu;
 const acceptanceSection = /acceptance criteria|success criteria|scenario|criterios de (?:aceptación|éxito)|escenario/iu;
 const requirementsSection = /requirements?|requisitos?|constraints|restricciones|functional|funcionales|non-functional|no funcionales/iu;
-const stepPrefix = '^\\s*(?:[-*+]\\s+)?(?:\\*\\*)?';
-const scenarioStep = new RegExp(`${stepPrefix}(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)(?![\\p{L}\\p{N}\\p{M}_])`, 'iu');
-const scenarioJoin = new RegExp(`${stepPrefix}(?:AND|And|BUT|But|Y)(?![\\p{L}\\p{N}\\p{M}_])`, 'u');
+const stepWords = 'GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES';
+const wordEnd = '(?![\\p{L}\\p{N}\\p{M}_])';
+// A step marked as a list item or in bold may use any case; a bare line must use the uppercase keyword.
+const listedStep = new RegExp(`^\\s*(?:(?:[-*+]|\\d+[.)])\\s+(?:\\*\\*)?|\\*\\*)(?:${stepWords})${wordEnd}`, 'iu');
+const bareStep = new RegExp(`^\\s*(?:${stepWords})${wordEnd}`, 'u');
+const scenarioJoin = new RegExp(`^\\s*(?:[-*+]\\s+)?(?:\\*\\*)?(?:AND|And|BUT|But|Y)${wordEnd}`, 'u');
+const scenarioStep = { test: (text: string) => listedStep.test(text) || bareStep.test(text) };
 const definingId = (names: string) => new RegExp(`^\\s*(?:(?:[-*+]|\\d+[.)])\\s+)?(?:\\[[ xX]\\]\\s*)?(?:\\|\\s*)?(?:\\*\\*|__|\`)?(?:${names})-\\d+\\b`, 'iu');
 const requirementId = definingId('FR|NFR|RF|RNF|REQ|R|C|CON');
 const criterionId = definingId('SC');
@@ -141,34 +145,40 @@ function startsWithVerb(item: string): boolean {
   return spanish ? infinitive.test(lower) : true;
 }
 
-/** Classify one spec line from its text, heading chain and fence and comment state. */
-export function classifyLine(text: string, context: LineContext): LineKind {
+export interface Admission { kind: LineKind; rule: number }
+const decide = (kind: LineKind, rule: number): Admission => ({ kind, rule });
+
+/** Classify one spec line from its text, heading chain and fence and comment state; `rule` is the number of the rule that decided. */
+export function admitLine(text: string, context: LineContext): Admission {
   const nfc = text.normalize('NFC');
   // 1. Structure.
-  if (context.fenced || context.comment || !nfc.trim() || /^\s*(?:#|>|```|~~~)/u.test(nfc)) return 'other';
+  if (context.fenced || context.comment || !nfc.trim() || /^\s*(?:#|>|```|~~~)/u.test(nfc)) return decide('other', 1);
   // 2. Change-log section.
   const chain = context.chain.join('\n');
-  if (changeLog.test(chain)) return 'other';
+  if (changeLog.test(chain)) return decide('other', 2);
   // 3. Question.
   const item = nfc.replace(bullet, '').replace(idPrefix, '').trim();
-  if (/\?[\s*_)"'”»`]*$/u.test(item) || item.startsWith('¿')) return 'other';
+  if (/\?[\s*_)"'”»`]*$/u.test(item) || item.startsWith('¿')) return decide('other', 3);
   // 4. Modal obligation outside mentions.
-  if (hasObligationModal(nfc)) return 'requirement';
+  if (hasObligationModal(nfc)) return decide('requirement', 4);
   const listed = bullet.test(nfc);
   // 5. Acceptance.
-  if (scenarioStep.test(nfc) || scenarioJoin.test(nfc) || criterionId.test(nfc) || (listed && acceptanceSection.test(chain))) return 'acceptance';
+  if (scenarioStep.test(nfc) || scenarioJoin.test(nfc) || criterionId.test(nfc) || (listed && acceptanceSection.test(chain))) return decide('acceptance', 5);
   // 6. Defining-position ID.
-  if (requirementId.test(nfc)) return 'requirement';
+  if (requirementId.test(nfc)) return decide('requirement', 6);
   // 7. Requirements section.
-  if (listed && !taskItem.test(nfc) && requirementsSection.test(chain)) {
+  if (listed && !taskItem.test(nfc) && requirementsSection.test(context.chain.at(-1) ?? '')) {
     const rest = nfc.replace(bullet, '');
-    if (negative.test(rest) || startsWithVerb(rest)) return 'requirement';
+    if (negative.test(rest) || startsWithVerb(rest)) return decide('requirement', 7);
   }
   // 8. System subject with a future or capability verb.
-  if (systemSubject.test(nfc)) return 'requirement';
+  const subject = systemSubject.exec(nfc);
+  if (subject && !mentionRanges(nfc).some(([from, to]) => subject.index >= from && subject.index < to)) return decide('requirement', 8);
   // 9. Otherwise.
-  return 'other';
+  return decide('other', 9);
 }
+
+export const classifyLine = (text: string, context: LineContext): LineKind => admitLine(text, context).kind;
 
 /** 0.1.4 rule, kept for plans, tasks and other roles: an ID or a normative modal, outside fences, headings, quotes and scenario steps. */
 function legacyKind(text: string, fenced: boolean): LineKind {
@@ -176,19 +186,22 @@ function legacyKind(text: string, fenced: boolean): LineKind {
   return !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text)) ? 'requirement' : 'other';
 }
 
-/** The kind of every line of the artifact, in order. Only spec artifacts use the line grammar. */
-export function classifyLines(artifact: Artifact): LineKind[] {
+/** The decision for every line of the artifact, in order. Only spec artifacts use the line grammar (rule 0 is the 0.1.4 rule). */
+export function admitLines(artifact: Artifact): Admission[] {
   const lines = artifact.content.split(/\r?\n/);
   const chains = artifact.role === 'spec' ? chainsOf(lines) : [];
   let fenced = false;
   let comment = false;
   return lines.map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
-    if (artifact.role !== 'spec') return legacyKind(text, fenced);
+    if (artifact.role !== 'spec') return decide(legacyKind(text, fenced), 0);
     const starts = text.includes('<!--');
     const inComment = comment || starts;
     if (starts) comment = true;
     if (comment && text.includes('-->') && text.lastIndexOf('-->') > text.lastIndexOf('<!--')) comment = false;
-    return classifyLine(text, { chain: chains[index], fenced, comment: inComment });
+    return admitLine(text, { chain: chains[index], fenced, comment: inComment });
   });
 }
+
+/** The kind of every line of the artifact, in order. */
+export const classifyLines = (artifact: Artifact): LineKind[] => admitLines(artifact).map(entry => entry.kind);

@@ -128,3 +128,13 @@ test('classifyLine takes its context from the caller', () => {
   assert.equal(classifyLine('- Validate input.', { chain: ['Requirements'], fenced: true, comment: false }), 'other');
   assert.equal(classifyLine('- Validate input.', { chain: ['Requirements'], fenced: false, comment: true }), 'other');
 });
+
+test('DEV round 1: innermost requirements heading, quoted subjects and bare prose openers', () => {
+  assert.equal(last('## Requirements', '### Glossary', '- Define the term once.'), 'other');
+  assert.equal(last('## Requirements', '### Functional requirements', '- Define the term once.'), 'requirement');
+  assert.equal(last('## Overview', 'Template: "User or system can do X".'), 'other');
+  assert.equal(last('## Overview', 'The system can do X, as in "the system can".'), 'requirement');
+  assert.equal(last('When the product is stable it means a strict contract.'), 'other');
+  assert.equal(last('WHEN the product is stable'), 'acceptance');
+  assert.equal(last('- When the product is stable'), 'acceptance');
+});
