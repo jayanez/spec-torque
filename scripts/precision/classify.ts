@@ -3,7 +3,7 @@
  * acceptance, other or unknown. Writes predictions in the format of `predict.ts`, for `score.ts`.
  * Loopback Ollama only; public packets only; no model is pulled.
  *
- *   node --import tsx scripts/precision/classify.ts --packet <packet.json> --model qwen3.5:9b --out <predictions.json> [--limit n] [--endpoint url] [--no-format]
+ *   node --import tsx scripts/precision/classify.ts --packet <packet.json> --model qwen3.5:9b --out <predictions.json> [--limit n] [--endpoint url] [--format]
  *
  * Next to `--out`, `<out>.raw.jsonl` keeps the samples of every item (resumable) and
  * `<out>.meta.json` the model digest, server version, prompt hash and seeds.
@@ -76,12 +76,13 @@ export function decide(samples: Decision[]): Decision {
 /** Abstention is scored as other: it costs recall, never precision. */
 export const asPrediction = (decision: Decision): (typeof kinds)[number] => decision === 'unknown' ? 'other' : decision;
 
-export interface Row { id: string; settled: boolean; samples: Decision[]; decision: Decision; ms: number }
+export interface Row { id: string; settled: boolean; samples: Decision[]; decision: Decision; ms: number; errors?: string[] }
 
 export async function classifyItem(client: Ollama, model: string, item: PacketItem, format: boolean): Promise<Row> {
   const started = Date.now();
   if (settledByStructure(item)) return { id: item.id, settled: true, samples: [], decision: 'other', ms: 0 };
   const samples: Decision[] = [];
+  const errors: string[] = [];
   for (const seed of SEEDS) {
     try {
       const reply = await client.api('/api/chat', {
@@ -90,22 +91,22 @@ export async function classifyItem(client: Ollama, model: string, item: PacketIt
         messages: [{ role: 'system', content: format ? instructions : `${instructions}\n${shape}` }, { role: 'user', content: userMessage(item) }],
       });
       samples.push(parseAnswer(String((reply.message as { content?: string })?.content ?? '')));
-    } catch { samples.push('unknown'); }
+    } catch (error) { errors.push(String((error as Error).message)); samples.push('unknown'); }
   }
-  return { id: item.id, settled: false, samples, decision: decide(samples), ms: Date.now() - started };
+  return { id: item.id, settled: false, samples, decision: decide(samples), ms: Date.now() - started, ...(errors.length ? { errors } : {}) };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { values } = parseArgs({ options: {
     packet: { type: 'string' }, model: { type: 'string' }, out: { type: 'string' }, limit: { type: 'string' },
-    endpoint: { type: 'string' }, 'no-format': { type: 'boolean', default: false },
+    endpoint: { type: 'string' }, format: { type: 'boolean', default: false },
   } });
   if (!values.packet || !values.model || !values.out) throw new Error('Use --packet, --model and --out.');
   const client = new Ollama(values.endpoint);
   const local = await client.localModel(values.model);
   const packet = JSON.parse(await readFile(values.packet, 'utf8')) as { items: PacketItem[] };
   const items = values.limit ? packet.items.slice(0, Number(values.limit)) : packet.items;
-  const meta = { kind: 'h4-classify', model: local, promptHash, instructionsHash: sha256(instructions), samples: SAMPLES, agreement: AGREEMENT, seeds: SEEDS, temperature: TEMPERATURE, structuredOutput: !values['no-format'], packetItems: items.length };
+  const meta = { kind: 'h4-classify', model: local, promptHash, instructionsHash: sha256(instructions), samples: SAMPLES, agreement: AGREEMENT, seeds: SEEDS, temperature: TEMPERATURE, structuredOutput: values.format, packetItems: items.length };
   await mkdir(dirname(values.out), { recursive: true });
   const rawPath = `${values.out}.raw.jsonl`;
   const done = new Map<string, Row>();
@@ -113,7 +114,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   let calls = 0;
   for (const [index, item] of items.entries()) {
     if (done.has(item.id)) continue;
-    const row = await classifyItem(client, values.model, item, !values['no-format']);
+    const row = await classifyItem(client, values.model, item, values.format);
+    if (row.errors?.length === SAMPLES && !done.size) throw new Error(`The server rejected every call: ${row.errors[0]}. Use --format only on a runner with structured output.`);
     done.set(item.id, row);
     calls += row.samples.length;
     await appendFile(rawPath, JSON.stringify({ ...row, promptHash }) + '\n');
@@ -124,7 +126,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const rows = items.map(item => done.get(item.id)!);
   const summary = { ...meta, settled: rows.filter(row => row.settled).length, asked: rows.filter(row => !row.settled).length,
     decisions: Object.fromEntries(answers.map(kind => [kind, rows.filter(row => row.decision === kind).length])),
-    secondsPerAskedItem: Math.round(rows.reduce((sum, row) => sum + row.ms, 0) / Math.max(1, rows.filter(row => !row.settled).length) / 100) / 10 };
+    errors: rows.reduce((sum, row) => sum + (row.errors?.length ?? 0), 0), secondsPerAskedItem: Math.round(rows.reduce((sum, row) => sum + row.ms, 0) / Math.max(1, rows.filter(row => !row.settled).length) / 100) / 10 };
   await writeFile(`${values.out}.meta.json`, JSON.stringify(summary, null, 2) + '\n');
   console.log(JSON.stringify(summary));
 }
