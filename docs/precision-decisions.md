@@ -552,6 +552,24 @@ admission errors. Synthetic replay against `d06c023`: 0 regressions, and every c
 `requirement-wording`, `section-context`, `acceptance` and `non-requirement` target reads as
 expected. Historical controls: 0 of 716 predictions changed.
 
+### H3 — **fail** (T1, scored once)
+
+Engine at freeze commit `585a4a5` (engine sources as in `dbdb24c`), T1 packet of 879 lines over 331
+lineages, scored after the freeze commit. The labeled lines were not read for error analysis.
+
+| Bound | Lineages | Errors | Upper 95% | Limit | Baseline 0.1.4 |
+|---|---|---|---|---|---|
+| Precision | 76 | 15 | 28.8% | 5% | 26.3% |
+| Recall | 110 | 59 | 61.8% | 5% | 64.4% |
+| Acceptance | 88 | 15 | 25.0% | 10% | no population |
+
+Precision and acceptance also have fewer than 100 lineages. The grammar admits 76 requirement
+lineages against 70 for 0.1.4, so it changes recall by 2.6 points and does not improve precision.
+Score output SHA-256 `21bb5c08e4e5810da21571674f3f2b85796af5df49142879ab6bc2d99df9c80b`,
+predictions `9ae947f5ed74a438198dd279e9dae6a1c4884437ee7b8483bf32074852fbcd13`. Per the stop
+rules, T1 is not retried. Phase B (local-model classifier, H4) needs its own plan approval; the
+engine stays at 0.1.4.
+
 ## Tooling assessment
 
 [NVIDIA Model Optimizer](https://github.com/NVIDIA/Model-Optimizer) quantizes,
