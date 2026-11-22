@@ -100,3 +100,14 @@ success criteria) and `non-requirement` (question, change log, cross-reference).
 opposite-outcome twin. Engine 0.1.4 admits the expected line in 8 of 16 `requirement-wording`
 targets, 2 of 4 `section-context`, 8 of 8 `acceptance` (excluded, as intended) and 8 of 12
 `non-requirement`. These counts are the synthetic baseline and are measured, not gated.
+
+## Frozen sources (2026-11-22)
+
+The three source sets were chosen mechanically, before any file content was read and before any
+candidate exists: `fixtures/precision/r52-dev-sources.json` (17 repositories),
+`r52-t1-sources.json` (16) and `r52-t2-sources.json` (15). The rule is recorded in each file:
+GitHub code search with the neutral terms `system` and `sistema` by the family paths, results
+dealt to the three sets in turn, public non-fork MIT or Apache-2.0 repositories, every
+repository and owner from #39 and #51 excluded, no owner in two sets, each pinned to its
+default-branch head SHA. Spec Kitty has 1 qualifying repository and BMAD 5 for `sistema`;
+those gaps are recorded in `unfilled`. The sets are not changed after this commit.

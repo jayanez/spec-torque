@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-22",
+  "purpose": "Phase B test set (H4) for #52. Opened once, after the Phase A result.",
+  "rule": "GitHub code search, once with \"system\" and once with \"sistema\", by the H2b family paths (openspec/specs, specs, kitty-specs, .kiro/specs, _bmad-output); results taken in search order and dealt to the dev, t1 and t2 sets in turn, 2 per set, family and query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39 and #51 excluded, and no owner appears in two sets; pinned to the default-branch head SHA. No file content was read.",
+  "unfilled": {
+    "spec-kitty/system": "1 of 6 qualifying repositories",
+    "spec-kitty/sistema": "0 of 6 qualifying repositories",
+    "bmad/sistema": "5 of 6 qualifying repositories"
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/carlos-aisa/FamilyFinances",
+      "commit": "2fc2423e18fcdb6e202ba3784a964f56e37ac946",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/Juniper/nita",
+      "commit": "09db7a493917d5b43e85ec4fea9e72b433aa8611",
+      "license": "Apache-2.0",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/felipefernandes/curupira",
+      "commit": "5cdea243b52e06044e0f8cbc392398b9b1cea9c0",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/izquierdojl/tolocharadio",
+      "commit": "6c3b2fb5e0f8e3c0cc03dd755e327af86e001a02",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/pamburus/hl",
+      "commit": "3aae7bc70c6519110cd579ac70479fbc2989c88b",
+      "license": "MIT",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/AcademySoftwareFoundation/openqmc",
+      "commit": "e0b04b18ef97d0b4538b2df2fa3d76fa4574b485",
+      "license": "Apache-2.0",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/cuedego/vbox-autostart-headless",
+      "commit": "299cba1f59077affbe581d56fb912b296220a09e",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/SantiDragotto/agentic-sdlc",
+      "commit": "f16daaf4006c1ac4abc6b0f8590f957175083cbf",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/dvloper-mnt/Keep-Coding-and-Nobody-Is-Fired",
+      "commit": "f4bfa7e2ba820385d68908d232f51c7413e8ac0e",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/SuperagenticAI/specmem",
+      "commit": "7879b89afb94c5955cfecd37ea27b88037ab2307",
+      "license": "Apache-2.0",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/AngelDAL/FluidGaming",
+      "commit": "fa76b5e06c2123e5e15faf49a63a2f13892023e0",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/HEITORHOG1/MATLAB",
+      "commit": "fb08136bfc696cec55aa6be08312f675f955a535",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/terryso/open-agent-sdk-swift",
+      "commit": "8838877e0fb32f83102cbbb553f5bdb27df346d5",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/mmornati/leanproxy-mcp",
+      "commit": "2e4aa8e148836c5a29579f76d3fecb82341a1ee3",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/guilhermepagio/projeto-aureus",
+      "commit": "6a83233024003de2d7823f927d92a9a1c071b432",
+      "license": "MIT",
+      "query": "sistema path:_bmad-output filename:prd.md"
+    }
+  ]
+}
