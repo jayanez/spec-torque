@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-22",
+  "purpose": "Phase B test set (H4) for #52, second part. Frozen before any H4 code and opened once, together with T2, after the H4 freeze commit.",
+  "rule": "The T2 rule applied after every repository used in DEV, T1 and T2: GitHub code search, once with \"system\" and once with \"sistema\", by the H2b family paths (openspec/specs, specs, kitty-specs, .kiro/specs, _bmad-output); results taken in search order, up to 4 per family and query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, DEV, T1 and T2 excluded, and no owner appears twice; pinned to the default-branch head SHA. No file content was read.",
+  "unfilled": {
+    "spec-kitty/system": "0 of 4 qualifying repositories",
+    "spec-kitty/sistema": "0 of 4 qualifying repositories",
+    "bmad/sistema": "0 of 4 qualifying repositories"
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/grafana/ai-sdk",
+      "commit": "e8fab75d541109b2cbd118d671a6808a28072e04",
+      "license": "Apache-2.0",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/datenoio/undatum",
+      "commit": "2f4ce85bf72f13ba4ba1857d57824041c071d484",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/kalbasit/ncps",
+      "commit": "89395b34c03c4c9492e24fd38e6ae6580d7ef6b2",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/HazelnutParadise/insyra",
+      "commit": "9e98c49681a279fdd85ffce83100a8e9158f9713",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/manuelaalecio/educare-backend",
+      "commit": "7ee80bc2f3d52d6aeb7ec7b77c3c4e614c68d9d5",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/Seijin18/Dashboard",
+      "commit": "262b30bb03a2bf6f0931ded196399e74d9f7aa8f",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/G3A/inventory-multitenant-java",
+      "commit": "9590be338e3792d8c7173f32e8c985619ef35dda",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/dvmarques/admin-design-system",
+      "commit": "17ea4d662b7849ca982d51bd5f3abd110bc22abf",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/no0dles/hammerkit",
+      "commit": "6668eb0bf805a7ce5e12baf2ed456aff644b3ee2",
+      "license": "MIT",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/zeromicro/mcp-zero",
+      "commit": "6e87a88044422ba7906c139808ece2ec1fb6658f",
+      "license": "MIT",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/alex-duria/bull.sh",
+      "commit": "0ca2e7580e344e27653586213c19bbee96f117b0",
+      "license": "MIT",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/brunoborges/ghx",
+      "commit": "100b2e8489085e12939641a7c1c5b130c9c2dde0",
+      "license": "MIT",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/sebaxtian/mis-eventos",
+      "commit": "781446b5f5edbc36d1929298832061a6f5e6ac86",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/joaolaureano/memorization",
+      "commit": "e41b6d13ff768ff11b4ea130f3a93369ebaccbd2",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/JDaniielC/iasd-conecta",
+      "commit": "07b047ed02865108ffb52a6a0d5596717799b5fd",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/G-Ortiz21/pomodoro-cotopaxi",
+      "commit": "e918b3506802d6c32a445040babc0097c9caaa48",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/BinarySword/kiro-project-template",
+      "commit": "f3225147bd4b0fbf36c2f28d4ad71d2ae314099c",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/hakobujs/hakobu",
+      "commit": "65320e6af791a38814e58d70fa714f88a4907b18",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/Harpita-P/Kiro-InteractionKit",
+      "commit": "67b308bd917019a5e6b62077b75b79ecce5ffa0b",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/vietanhdev/kirapilot-app",
+      "commit": "77a61781bcfa717db0b0599cc6112390102761e0",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/vinimatheus/Dog-SaaS-Starter-KIT",
+      "commit": "980c6275bd23c506f1c3feabff1dd4197ad8c69f",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/Lunisa202/DevCoach-AI",
+      "commit": "c4b1bb24a6da213246368d92fa119dc9de29c0b5",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/ricardopera/pdf-merger",
+      "commit": "55eece131f7ea4f85475c8809eaca3cf75b1fcce",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/italoag/bloco-wallet",
+      "commit": "42239acfa39b4cbebd9cea88b4a4e4159caa218d",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/allaydesai/Trading-ntrader",
+      "commit": "c460b50960bfac28ffe79b47dc2d6bb3ecc53c00",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/dulhara19/ShopSphere",
+      "commit": "6536f566ec92378e8f8807e6e67a5743ad2fb8fb",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/JakeSelby/model-citizen",
+      "commit": "3d9987562f5068e229164c56426b5d404dd52d16",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/Contzokas/MedW",
+      "commit": "4df14643f5057e3c7bca8770347d1ffbd5da4349",
+      "license": "Apache-2.0",
+      "query": "system path:_bmad-output filename:prd.md"
+    }
+  ],
+  "lineages": {
+    "t2": 189,
+    "t2b": 716,
+    "note": "Counted by the engine's artifact discovery over the pinned snapshots, before any packet was built or any line was labeled; source selection itself read no file content. T2 and T2b together should carry well over 100 requirement lineages at T1's rate of 33%."
+  }
+}
