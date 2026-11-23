@@ -37,11 +37,19 @@ The sets are not balanced: Spanish has fewer question cases, and only Spanish ha
 | `rehearsal.json`: role briefs, open slots, acceptable resolutions, invariants, live flags and arm renderings for all 24 cases | Drafted, revised after independent review |
 | `calibration.json`: 72 keyed items plus a 24-item reserve | Drafted, revised after independent review |
 | Participant information sheet with the consent text below | Pending |
-| Page builder and packet builder implementing the rules below | Pending, not started |
+| Page builder (`scripts/precision/rehearsal-pages.ts`) and packet builder (`scripts/precision/rehearsal-packets.ts`), tested in `tests/rehearsal.test.ts` | Built; maintainer review pending |
 | Pins marked *at freeze* | Pending |
 | Maintainer review, then the freeze commit | Pending |
 
 Both fixture files were written by a contributor who did not write the E1.2 detector, the clarification rules or the study and fresh fixtures, and were reviewed by a third model (`gpt-6.2-sol`) that is neither reviewer below. Neither reviewer may see either file before calibration. They are constructed controls, not independent labels.
+
+### Tooling
+
+Both builders write only to the git-ignored `.spec-torque/rehearsal/` folder and send nothing.
+
+- `node --import tsx scripts/precision/rehearsal-pages.ts` re-renders every case with the engine, refuses to build if any frozen arm field differs, and writes one page per live case and arm plus `manifest.json` with each page's SHA-256.
+- `node --import tsx scripts/precision/rehearsal-packets.ts --phase calibration|reserve` writes six packets (R1 and R2, runs 1 to 3) ordered by the seed rule. Calibration items carry opaque IDs; the map to fixture IDs and keys stays in `operator/`.
+- `node --import tsx scripts/precision/rehearsal-packets.ts --phase live --attempts <attempts.json>` applies the consent, sanitization and completion boundary, checks presentation IDs, and writes the withheld list and leakage flags to `operator/`, never into a packet.
 
 ## Enrollment and assignment
 
@@ -244,4 +252,4 @@ Reply with JSON only:
 
 ## Resumen en español
 
-Este protocolo mide si las preguntas de aclaración E1.2 llevan a quien escribe la especificación a incorporar al requisito la decisión que su contexto de rol ya le da. Mide la adopción de una decisión aportada, no la capacidad de decidir. Se ejecuta en el ensayo opcional de #8, con dos brazos fijados tal como los muestra el motor 0.1.4, sobre 18 casos en los que el motor emite un hallazgo; los otros 6 solo sirven para calibrar. Cuenta todo intento asignado a un participante que haya dado su consentimiento, y las tasas se promedian por linaje. Se continúa solo si en inglés y en español el brazo con pregunta alcanza al menos el 60 %, supera en 15 puntos al brazo sin pregunta, «no útil» no pasa del 30 % y no aumentan ni los inventos (contando como invento la duda del revisor en el brazo B) ni el daño a los controles. Con datos suficientes y adjudicación válida, si un idioma no cumple, se para, aunque el otro idioma sea insuficiente. Sin datos o adjudicación suficientes no hay decisión. Adjudican dos revisores modelo de proveedores distintos, a ciegas respecto al brazo, con prompt y reglas fijas, tres ejecuciones por ítem y calibración previa con un set de reserva para un único reintento. El texto de los participantes solo se envía a Anthropic y OpenAI con su consentimiento explícito, tras una revisión de datos sensibles que no lo modifica, y lo lanza el operador a mano. Los participantes ven páginas estáticas generadas desde `rehearsal.json`, cuyo generador aún no existe. El protocolo se congela en el último commit de su PR, con los hashes publicados en #57 antes del 30 de noviembre.
+Este protocolo mide si las preguntas de aclaración E1.2 llevan a quien escribe la especificación a incorporar al requisito la decisión que su contexto de rol ya le da. Mide la adopción de una decisión aportada, no la capacidad de decidir. Se ejecuta en el ensayo opcional de #8, con dos brazos fijados tal como los muestra el motor 0.1.4, sobre 18 casos en los que el motor emite un hallazgo; los otros 6 solo sirven para calibrar. Cuenta todo intento asignado a un participante que haya dado su consentimiento, y las tasas se promedian por linaje. Se continúa solo si en inglés y en español el brazo con pregunta alcanza al menos el 60 %, supera en 15 puntos al brazo sin pregunta, «no útil» no pasa del 30 % y no aumentan ni los inventos (contando como invento la duda del revisor en el brazo B) ni el daño a los controles. Con datos suficientes y adjudicación válida, si un idioma no cumple, se para, aunque el otro idioma sea insuficiente. Sin datos o adjudicación suficientes no hay decisión. Adjudican dos revisores modelo de proveedores distintos, a ciegas respecto al brazo, con prompt y reglas fijas, tres ejecuciones por ítem y calibración previa con un set de reserva para un único reintento. El texto de los participantes solo se envía a Anthropic y OpenAI con su consentimiento explícito, tras una revisión de datos sensibles que no lo modifica, y lo lanza el operador a mano. Los participantes ven páginas estáticas generadas desde `rehearsal.json` con `scripts/precision/rehearsal-pages.ts`. El protocolo se congela en el último commit de su PR, con los hashes publicados en #57 antes del 30 de noviembre.
