@@ -16,6 +16,8 @@ export const PROTOCOL = 'docs/clarification-actionability.md';
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
+/** Hash of a checked-out file with line endings normalised to LF, so Windows CRLF checkouts match. */
+export const fileSha256 = (bytes: Buffer) => sha256(String(bytes).replace(/\r\n/g, '\n'));
 
 const evidence = z.strictObject({ at: z.string(), text: z.string() });
 const armA = z.strictObject({ message: z.string(), suggestion: z.string(), evidence: z.array(evidence) });
@@ -78,7 +80,7 @@ export async function load(root: string): Promise<Loaded> {
   const rehearsal = rehearsalSchema.parse(JSON.parse(String(await read(`${FIXTURES}/rehearsal.json`))));
   const calibration = calibrationSchema.parse(JSON.parse(String(await read(`${FIXTURES}/calibration.json`))));
   for (const [path, digest] of Object.entries(rehearsal.sources)) {
-    const actual = sha256(path.endsWith('study.json') ? studyBytes : freshBytes);
+    const actual = fileSha256(path.endsWith('study.json') ? studyBytes : freshBytes);
     if (actual !== digest) throw new Error(`${path} changed: ${actual} is not the recorded ${digest}.`);
   }
   const study = new Map<string, any>(JSON.parse(String(studyBytes)).cases.map((c: any) => [c.id, c]));
@@ -96,7 +98,7 @@ export async function load(root: string): Promise<Loaded> {
   }
   for (const item of [...calibration.items, ...calibration.reserve])
     if (!material.has(item.case)) throw new Error(`Calibration item ${item.id} names unknown case ${item.case}.`);
-  return { protocolSha256: sha256(protocol), prompt: extractPrompt(String(protocol)), rehearsal, calibration, material };
+  return { protocolSha256: fileSha256(protocol), prompt: extractPrompt(String(protocol)), rehearsal, calibration, material };
 }
 
 /** Re-renders every case with the engine and lists any field that differs from the frozen record. */

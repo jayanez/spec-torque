@@ -24,7 +24,7 @@ This protocol adds one pre-registered endpoint to the optional E1.2 rehearsal in
 | Clear and abstention controls (`clear`, `abstain`) | 3 | 3 | Harm checks |
 | Review referrals (`review`) | 0 | 2 | Harm checks |
 
-SHA-256 at drafting: `study.json` `56710e687f8f1ba22212e018b7fdf39c77a797d74911e6b0ba3627c382a0a383`, `fresh.json` `d7195fd51c7b528296af76761c4ce4c5ee8121ab63530fa2059c3015d08afa73` (the value recorded for #49).
+All SHA-256 values in this protocol are computed over the file with line endings normalised to LF. SHA-256 at drafting: `study.json` `56710e687f8f1ba22212e018b7fdf39c77a797d74911e6b0ba3627c382a0a383`, `fresh.json` `d7195fd51c7b528296af76761c4ce4c5ee8121ab63530fa2059c3015d08afa73` (the value recorded for #49).
 
 The sets are not balanced: Spanish has fewer question cases, and only Spanish has review referrals. The 10-attempt floor below takes at least 2 complete EN participants and 3 complete ES participants in each arm.
 
