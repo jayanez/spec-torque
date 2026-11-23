@@ -39,11 +39,27 @@ Open the printed loopback URL. Select the finding for `FR-001`, jump to its sour
 
 Download the CLI package or a host integration from the [0.2.0 pilot prerelease](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0), or follow the [EN/ES pilot walkthrough](docs/pilot.md) and its [Spanish version](docs/pilot.es.md). See the [qualification record](docs/common-workbench-qualification.md) for observed results and remaining checks.
 
-## Why wording matters
+## See the difference
+
+The [booking draft](fixtures/en-draft/specs/booking/spec.md#room-booking) starts with a requirement an agent cannot test as written.
 
 > **FR-001** The system MUST be fast.
 
-**Precision** makes a requirement verifiable. For this booking draft, the word **fast** leaves the response-time limit and the conditions for measuring it open. **Selectivity** means asking for the missing decision that would change implementation or acceptance. SpecTorque cites the source line and leaves the limit open for the team to decide.
+1. **Find the gap.** SpecTorque flags **fast** as unbounded wording at `specs/booking/spec.md:5`. An agent still has to decide which operation to time, what limit to meet and under what load.
+2. **Ask what changes acceptance.** Which booking operation should we measure, what response time is acceptable, and under what load? The answers determine the performance test and can change implementation choices.
+3. **Keep the decision open.** Preview the change before accepting it. The proposed wording preserves the requirement ID and obligation and records what the team still needs to decide.
+
+   > **FR-001** The system MUST be [NEEDS CLARIFICATION: define the response-time limit and measurement conditions].
+
+Once the team answers, it can write a testable requirement. For example, if the team chooses booking confirmation, a 500 ms limit at the 95th percentile and a load of 50 concurrent users, the requirement could read:
+
+> **FR-001** The system MUST return a booking confirmation within 500 ms at the 95th percentile under a load of 50 concurrent users.
+
+These values illustrate a possible team decision. Follow the [pilot walkthrough](docs/pilot.md#analyze-review-and-export) to preview the clarification and see how the workbench records it as pending.
+
+## Why wording matters
+
+**Precision** makes an obligation testable by naming observable behavior and its conditions. **Selectivity** directs questions to decisions that affect implementation or acceptance. The studies below examine specification quality, wording signals and clarification behavior.
 
 - **EPIC defines what to review.** Claudino et al. assessed specifications, plans and tasks from 114 open-source repositories using ISO/IEC/IEEE 29148 as a reference. They derived 40 practices across ten dimensions, then sought feedback from 15 practitioners. The study observed a lower share of bug-fix commits in repositories with higher-rated specifications. Its observational design supports an association. [The EPIC Framework for Spec-Driven Development](https://arxiv.org/abs/2610.07534)
 - **Wording can flag requirements that need review.** Femmer et al. found that lightweight checks surfaced relevant requirements problems, with detection accuracy varying substantially across cases. [Requirements Smells](https://doi.org/10.1016/j.jss.2016.02.047)
