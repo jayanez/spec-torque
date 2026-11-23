@@ -16,7 +16,12 @@
       "case": "study:c82e8832fe47",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "- **NFR-041** Ledger search SHALL display the result list within 2 seconds of query submission for up to 20 concurrent analysts and MUST NOT include archived entries.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-041** Ledger search SHALL display the result list within 2 seconds of query submission for up to 20 concurrent analysts and MUST NOT include archived entries.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -28,7 +33,12 @@
       "case": "study:c82e8832fe47",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "- **NFR-041** Ledger search SHALL be fast and responsive for up to 20 concurrent analysts and MUST NOT include archived entries.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-041** Ledger search SHALL be fast and responsive for up to 20 concurrent analysts and MUST NOT include archived entries.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -40,7 +50,12 @@
       "case": "study:c82e8832fe47",
       "language": "en",
       "variant": "invented",
-      "resolution": "- **NFR-041** Ledger search SHALL display the result list within 5 seconds of query submission for up to 20 concurrent analysts and MUST NOT include archived entries.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-041** Ledger search SHALL display the result list within 5 seconds of query submission for up to 20 concurrent analysts and MUST NOT include archived entries.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -52,7 +67,12 @@
       "case": "study:9ebdf2c874cf",
       "language": "en",
       "variant": "preserves",
-      "resolution": "No change to FR-212 or the scenario. Added: [NEEDS CLARIFICATION: FR-212 permits auditor downloads during a suspension while the scenario prohibits them; route to a policy owner.]",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "FR-212 permits auditor downloads during a suspension while the scenario prohibits them; route to a policy owner."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -64,7 +84,12 @@
       "case": "study:9ebdf2c874cf",
       "language": "en",
       "variant": "breaks",
-      "resolution": "Removed the scenario so that FR-212 applies: auditors may download a signed statement during a suspension.",
+      "response": {
+        "action": "edit",
+        "scope": "scenario",
+        "text": "(scenario removed)",
+        "note": "Removed the scenario so that FR-212 applies."
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -76,7 +101,12 @@
       "case": "study:9ebdf2c874cf",
       "language": "en",
       "variant": "invented",
-      "resolution": "Assigned the decision to the Head of Audit and stated that auditors may download only statements signed before the suspension began.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-212** Auditors MAY download a signed statement during a suspension only if it was signed before the suspension began.",
+        "note": "Decision assigned to the Head of Audit."
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -88,7 +118,12 @@
       "case": "study:11b83067c80f",
       "language": "en",
       "variant": "preserves",
-      "resolution": "No change. Note: “fast” is the name of a sampler preset, not a latency target.",
+      "response": {
+        "action": "leave",
+        "scope": null,
+        "text": null,
+        "note": "“fast” is the name of a sampler preset, not a latency target."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -100,7 +135,12 @@
       "case": "study:11b83067c80f",
       "language": "en",
       "variant": "breaks",
-      "resolution": "- **FR-305** The sampler SHALL use the preset named “fast”.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-305** The sampler SHALL use the preset named “fast”.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -112,7 +152,12 @@
       "case": "study:11b83067c80f",
       "language": "en",
       "variant": "invented",
-      "resolution": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C, and that preset SHALL complete a sample within 200 ms.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C, and that preset SHALL complete a sample within 200 ms.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -124,7 +169,12 @@
       "case": "study:01680b6ed038",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "- **NFR-073** El receptor DEBE emitir el acuse en un máximo de 500 ms desde la recepción del paquete hasta el envío del acuse durante el turno nocturno y excluir los paquetes de prueba.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-073** El receptor DEBE emitir el acuse en un máximo de 500 ms desde la recepción del paquete hasta el envío del acuse durante el turno nocturno y excluir los paquetes de prueba.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -136,7 +186,12 @@
       "case": "study:01680b6ed038",
       "language": "es",
       "variant": "misses-slot",
-      "resolution": "- **NFR-073** El receptor DEBE emitir un acuse ágil y puntual durante el turno nocturno y excluir los paquetes de prueba.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-073** El receptor DEBE emitir un acuse ágil y puntual durante el turno nocturno y excluir los paquetes de prueba.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -148,7 +203,12 @@
       "case": "study:01680b6ed038",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **NFR-073** El receptor DEBE emitir el acuse en un máximo de 2 segundos desde la recepción del paquete hasta el envío del acuse durante el turno nocturno y excluir los paquetes de prueba.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-073** El receptor DEBE emitir el acuse en un máximo de 2 segundos desde la recepción del paquete hasta el envío del acuse durante el turno nocturno y excluir los paquetes de prueba.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -160,7 +220,12 @@
       "case": "study:1e2929e25d1d",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-420 sin cambios. Añadido: [PENDIENTE DE ACLARAR: qué órgano autoriza la excepción; depende de la delimitación de competencias en gobernanza.]",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "Qué órgano autoriza la excepción depende de la delimitación de competencias en gobernanza."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -172,7 +237,12 @@
       "case": "study:1e2929e25d1d",
       "language": "es",
       "variant": "breaks",
-      "resolution": "- **FR-420** El gestor NO DEBE conceder licencias de reserva.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-420** El gestor NO DEBE conceder licencias de reserva.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -184,7 +254,12 @@
       "case": "study:1e2929e25d1d",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **FR-420** El gestor NO DEBE conceder licencias de reserva salvo aprobación del comité de riesgos.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-420** El gestor NO DEBE conceder licencias de reserva salvo aprobación del comité de riesgos.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -196,7 +271,12 @@
       "case": "study:76ca85b99820",
       "language": "es",
       "variant": "preserves",
-      "resolution": "Sin cambios.",
+      "response": {
+        "action": "leave",
+        "scope": null,
+        "text": null,
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -208,7 +288,12 @@
       "case": "study:76ca85b99820",
       "language": "es",
       "variant": "breaks",
-      "resolution": "- **NFR-307** La carcasa DEBE permanecer sellada después de activar la sonda.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-307** La carcasa DEBE permanecer sellada después de activar la sonda.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -220,7 +305,12 @@
       "case": "study:76ca85b99820",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **NFR-307** La carcasa DEBE permanecer sellada al menos 3 horas después de activar la sonda y DEBE emitir una alarma si se abre antes.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-307** La carcasa DEBE permanecer sellada al menos 3 horas después de activar la sonda y DEBE emitir una alarma si se abre antes.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -232,7 +322,12 @@
       "case": "study:228ec77b3f37",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear automatically when the expired allocation is renewed or reassigned. Only the shift supervisor may dismiss it manually.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear automatically when the expired allocation is renewed or reassigned. Only the shift supervisor may dismiss it manually.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -244,7 +339,12 @@
       "case": "study:228ec77b3f37",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear at the appropriate moment.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear at the appropriate moment.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -256,7 +356,12 @@
       "case": "study:228ec77b3f37",
       "language": "en",
       "variant": "invented",
-      "resolution": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear automatically after 10 minutes. Only the shift supervisor may dismiss it manually.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear automatically after 10 minutes. Only the shift supervisor may dismiss it manually.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -268,7 +373,12 @@
       "case": "study:cdf3c3228237",
       "language": "en",
       "variant": "preserves",
-      "resolution": "Scenario unchanged. Added: [NEEDS CLARIFICATION: the success signal for the accepted receipt depends on the verification contract, still under negotiation, and on a product owner, not yet assigned.]",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "The success signal for the accepted receipt depends on the verification contract, still under negotiation, and on a product owner, not yet assigned."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -280,7 +390,12 @@
       "case": "study:cdf3c3228237",
       "language": "en",
       "variant": "breaks",
-      "resolution": "Replaced the whole scenario: GIVEN any receipt WHEN a reviewer submits it THEN the staff portal shows the accepted receipt outcome.",
+      "response": {
+        "action": "edit",
+        "scope": "scenario",
+        "text": "WHEN a reviewer submits a receipt THEN the staff portal shows the accepted receipt outcome.",
+        "note": "Removed the GIVEN line."
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -292,7 +407,12 @@
       "case": "study:cdf3c3228237",
       "language": "en",
       "variant": "invented",
-      "resolution": "- THEN the staff portal shows the accepted receipt outcome for sandbox receipts, and the verification endpoint returns HTTP 202 with status \"accepted\".",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- THEN the staff portal shows the accepted receipt outcome for sandbox receipts, and the verification endpoint returns HTTP 202 with status \"accepted\".",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -304,7 +424,12 @@
       "case": "study:60d37af83584",
       "language": "en",
       "variant": "preserves",
-      "resolution": "No change.",
+      "response": {
+        "action": "leave",
+        "scope": null,
+        "text": null,
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -316,7 +441,12 @@
       "case": "study:60d37af83584",
       "language": "en",
       "variant": "breaks",
-      "resolution": "- **FR-190** The station MUST reject requests.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-190** The station MUST reject requests.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -328,7 +458,12 @@
       "case": "study:60d37af83584",
       "language": "en",
       "variant": "invented",
-      "resolution": "- **FR-190** The station MUST reject requests from inactive badges, even during maintenance, and MUST lock the badge after three rejected attempts.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-190** The station MUST reject requests from inactive badges, even during maintenance, and MUST lock the badge after three rejected attempts.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -340,7 +475,12 @@
       "case": "study:436caf929622",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "- **FR-812** El tablero DEBE permitir retirar el aviso de incidente con una sola acción desde la vista del aviso, sin confirmación adicional, sin retirar los avisos de mantenimiento. Solo el personal de guardia puede solicitar el retiro.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-812** El tablero DEBE retirar el aviso de incidente con una sola acción desde la vista del aviso, sin confirmación adicional, sin retirar los avisos de mantenimiento. Solo el personal de guardia puede solicitar el retiro.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -352,7 +492,12 @@
       "case": "study:436caf929622",
       "language": "es",
       "variant": "misses-slot",
-      "resolution": "- **FR-812** El tablero DEBE retirar el aviso de incidente de forma sencilla e intuitiva sin retirar los avisos de mantenimiento.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-812** El tablero DEBE retirar el aviso de incidente de forma sencilla e intuitiva sin retirar los avisos de mantenimiento.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -364,7 +509,12 @@
       "case": "study:436caf929622",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **FR-812** El tablero DEBE permitir retirar el aviso de incidente con dos acciones y una confirmación, sin retirar los avisos de mantenimiento. Solo el personal de guardia puede solicitar el retiro.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-812** El tablero DEBE retirar el aviso de incidente con dos acciones y una confirmación, sin retirar los avisos de mantenimiento. Solo el personal de guardia puede solicitar el retiro.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -376,7 +526,12 @@
       "case": "study:42f7f18229bc",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-906 sin cambios. Escalado a la responsable de cumplimiento: ¿la autorización se exige por categoría o solo para el envío conjunto de pesajes y adjuntos?",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "¿La autorización se exige por categoría o solo para el envío conjunto de pesajes y adjuntos? Para la responsable de cumplimiento."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -388,7 +543,12 @@
       "case": "study:42f7f18229bc",
       "language": "es",
       "variant": "breaks",
-      "resolution": "- **FR-906** El operador NO DEBE exportar pesajes sin autorización.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-906** El operador NO DEBE exportar pesajes y adjuntos.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -400,7 +560,12 @@
       "case": "study:42f7f18229bc",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **FR-906** El operador NO DEBE exportar pesajes ni adjuntos sin autorización del jefe de planta.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-906** El operador NO DEBE exportar pesajes ni adjuntos sin autorización del jefe de planta.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -412,7 +577,12 @@
       "case": "study:91c3e9ac97cb",
       "language": "es",
       "variant": "preserves",
-      "resolution": "Sin cambios. Nota: «rápido» es el nombre de un perfil del importador.",
+      "response": {
+        "action": "leave",
+        "scope": null,
+        "text": null,
+        "note": "«rápido» es el nombre de un perfil del importador."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -424,7 +594,12 @@
       "case": "study:91c3e9ac97cb",
       "language": "es",
       "variant": "breaks",
-      "resolution": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -436,7 +611,12 @@
       "case": "study:91c3e9ac97cb",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas, y procesarlos en menos de 1 segundo.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas, y procesarlos en menos de 1 segundo.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -448,7 +628,12 @@
       "case": "fresh:ticket-lookup",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "- NFR-020: Ticket lookup MUST display the matching tickets within 1 second of pressing Search for up to 12 clerks, excluding archived tickets.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- NFR-020: Ticket lookup MUST display the matching tickets within 1 second of pressing Search for up to 12 clerks, excluding archived tickets.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -460,7 +645,12 @@
       "case": "fresh:ticket-lookup",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "- NFR-020: Ticket lookup MUST be quick and efficient for up to 12 clerks, excluding archived tickets.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- NFR-020: Ticket lookup MUST be quick and efficient for up to 12 clerks, excluding archived tickets.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -472,7 +662,12 @@
       "case": "fresh:ticket-lookup",
       "language": "en",
       "variant": "invented",
-      "resolution": "- NFR-020: Ticket lookup MUST display the matching tickets within 300 ms of pressing Search for up to 12 clerks, excluding archived tickets.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- NFR-020: Ticket lookup MUST display the matching tickets within 300 ms of pressing Search for up to 12 clerks, excluding archived tickets.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -484,7 +679,12 @@
       "case": "fresh:acuse-devolucion",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "- FR-101: El kiosco DEBE imprimir el acuse de una devolución interna en un máximo de 3 segundos desde el escaneo del artículo devuelto.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- FR-101: El kiosco DEBE imprimir el acuse de una devolución interna en un máximo de 3 segundos desde el escaneo del artículo devuelto.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -496,7 +696,12 @@
       "case": "fresh:acuse-devolucion",
       "language": "es",
       "variant": "misses-slot",
-      "resolution": "- FR-101: El kiosco DEBE emitir sin demora un acuse para una devolución interna.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- FR-101: El kiosco DEBE emitir sin demora un acuse para una devolución interna.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -508,7 +713,12 @@
       "case": "fresh:acuse-devolucion",
       "language": "es",
       "variant": "invented",
-      "resolution": "- FR-101: El kiosco DEBE imprimir el acuse de una devolución interna en un máximo de 10 segundos desde el escaneo del artículo devuelto.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- FR-101: El kiosco DEBE imprimir el acuse de una devolución interna en un máximo de 10 segundos desde el escaneo del artículo devuelto.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -520,7 +730,12 @@
       "case": "fresh:status-icon",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "FR-071: The sync icon MUST disappear when the sync completes successfully.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-071: The sync icon MUST disappear when the sync completes successfully.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -532,7 +747,12 @@
       "case": "fresh:status-icon",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "FR-071: The sync icon MUST disappear when appropriate.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-071: The sync icon MUST disappear when appropriate.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -544,7 +764,12 @@
       "case": "fresh:status-icon",
       "language": "en",
       "variant": "invented",
-      "resolution": "FR-071: The sync icon MUST disappear 5 seconds after it appears.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-071: The sync icon MUST disappear 5 seconds after it appears.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -556,7 +781,12 @@
       "case": "fresh:aviso-entrega",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "FR-040: El aviso de entrega DEBE desaparecer cuando el repartidor confirme la entrega. Solo la supervisora puede cerrar el aviso manualmente.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-040: El aviso de entrega DEBE desaparecer cuando el repartidor confirme la entrega. Solo la supervisora puede cerrar el aviso manualmente.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -568,7 +798,12 @@
       "case": "fresh:aviso-entrega",
       "language": "es",
       "variant": "misses-slot",
-      "resolution": "FR-040: El aviso de entrega DEBE desaparecer en el momento oportuno. Solo la supervisora puede cerrar el aviso manualmente.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-040: El aviso de entrega DEBE desaparecer en el momento oportuno. Solo la supervisora puede cerrar el aviso manualmente.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -580,7 +815,12 @@
       "case": "fresh:aviso-entrega",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-040: El aviso de entrega DEBE desaparecer cuando el cliente abra la aplicación. Solo la supervisora puede cerrar el aviso manualmente.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-040: El aviso de entrega DEBE desaparecer cuando el cliente abra la aplicación. Solo la supervisora puede cerrar el aviso manualmente.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -592,7 +832,12 @@
       "case": "fresh:playlist-preset",
       "language": "en",
       "variant": "preserves",
-      "resolution": "No change. Note: `fast` names a kiosk profile.",
+      "response": {
+        "action": "leave",
+        "scope": null,
+        "text": null,
+        "note": "`fast` names a kiosk profile."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -604,7 +849,12 @@
       "case": "fresh:playlist-preset",
       "language": "en",
       "variant": "breaks",
-      "resolution": "FR-091: The kiosk MUST use the profile `fast`.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-091: The kiosk MUST use the profile `fast`.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -616,7 +866,12 @@
       "case": "fresh:playlist-preset",
       "language": "en",
       "variant": "invented",
-      "resolution": "FR-091: The kiosk MUST use the profile `fast` only for standard playlists, and each track MUST start within 100 ms.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-091: The kiosk MUST use the profile `fast` only for standard playlists, and each track MUST start within 100 ms.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -628,7 +883,12 @@
       "case": "fresh:cola-impresion",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-010 sin cambios. Añadido: [PENDIENTE DE ACLARAR: qué comportamiento y en qué plazo cuenta como reaccionar rápido; sin criterio del responsable de la cola.]",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "Ante qué evento, con qué comportamiento y en qué plazo cuenta reaccionar rápido; sin criterio del responsable de la cola."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -640,7 +900,12 @@
       "case": "fresh:cola-impresion",
       "language": "es",
       "variant": "breaks",
-      "resolution": "FR-010: La cola DEBE reaccionar rápido.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-010: La cola DEBE reaccionar rápido.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -652,7 +917,12 @@
       "case": "fresh:cola-impresion",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-010: La cola DEBE iniciar un trabajo nuevo en menos de 2 segundos sin eliminar los trabajos pausados.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-010: La cola DEBE iniciar un trabajo nuevo en menos de 2 segundos sin eliminar los trabajos pausados.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -664,7 +934,12 @@
       "case": "fresh:gallery-preview",
       "language": "en",
       "variant": "preserves",
-      "resolution": "NFR-082: Gallery preview MUST load within 350 ms, measured from the thumbnail click to the first preview paint.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "NFR-082: Gallery preview MUST load within 350 ms, measured from the thumbnail click to the first preview paint.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -676,7 +951,12 @@
       "case": "fresh:gallery-preview",
       "language": "en",
       "variant": "breaks",
-      "resolution": "NFR-082: Gallery preview MUST load quickly.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "NFR-082: Gallery preview MUST load quickly.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -688,7 +968,12 @@
       "case": "fresh:gallery-preview",
       "language": "en",
       "variant": "invented",
-      "resolution": "NFR-082: Gallery preview MUST load within 350 ms, measured from the thumbnail click to the first preview paint, and MUST show a placeholder after 100 ms.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "NFR-082: Gallery preview MUST load within 350 ms, measured from the thumbnail click to the first preview paint, and MUST show a placeholder after 100 ms.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -700,7 +985,12 @@
       "case": "fresh:acuse-etiquetado",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-214 sin cambios. Conflicto registrado: el diseño da 40 ms y 90 ms y el requisito vigente 60 ms; derivado al responsable del servicio de despacho.",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "El diseño activo da 40 ms y 90 ms para FR-214; la especificación vigente dice 60 ms. Para el responsable del servicio de despacho."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -712,7 +1002,12 @@
       "case": "fresh:acuse-etiquetado",
       "language": "es",
       "variant": "breaks",
-      "resolution": "FR-214 sin cambios.",
+      "response": {
+        "action": "leave",
+        "scope": null,
+        "text": null,
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -724,7 +1019,12 @@
       "case": "fresh:acuse-etiquetado",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-214: El servicio DEBE emitir un acuse en 50 ms.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-214: El servicio DEBE emitir un acuse en 50 ms.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -736,7 +1036,12 @@
       "case": "fresh:document-roster",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "FR-005: The roster search MUST display the first page of matching documents within 200 ms of submitting the search.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-005: The roster search MUST display the first page of matching documents within 200 ms of submitting the search.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -748,7 +1053,12 @@
       "case": "fresh:document-roster",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "FR-005: The roster search MUST be fast within 200 ms of submitting the search.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-005: The roster search MUST be fast within 200 ms of submitting the search.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -760,7 +1070,12 @@
       "case": "fresh:document-roster",
       "language": "en",
       "variant": "invented",
-      "resolution": "FR-005: The roster search MUST display the document count within 200 ms of submitting the search.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-005: The roster search MUST display the document count within 200 ms of submitting the search.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -772,7 +1087,12 @@
       "case": "fresh:cierre-senal",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-019 sin cambios. Añadido: [PENDIENTE DE ACLARAR: condición de desaparición; falta designar a la persona responsable de decidirla.]",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "Condición de desaparición pendiente; falta designar a la persona responsable de decidirla."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -784,7 +1104,12 @@
       "case": "fresh:cierre-senal",
       "language": "es",
       "variant": "breaks",
-      "resolution": "FR-019: La señal DEBE desaparecer.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-019: La señal DEBE desaparecer.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -796,7 +1121,12 @@
       "case": "fresh:cierre-senal",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-019: La señal DEBE desaparecer cuando el técnico de turno la cierre.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-019: La señal DEBE desaparecer cuando el técnico de turno la cierre.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -808,7 +1138,12 @@
       "case": "fresh:locate-summary",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "FR-054: The summary search MUST display the search result within 800 ms of search submission.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-054: The summary search MUST display the search result within 800 ms of search submission.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -820,7 +1155,12 @@
       "case": "fresh:locate-summary",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "FR-054: The summary search MUST be fast and smooth.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-054: The summary search MUST be fast and smooth.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -832,7 +1172,12 @@
       "case": "fresh:locate-summary",
       "language": "en",
       "variant": "invented",
-      "resolution": "FR-054: The summary search MUST display the search result within 2 seconds of search submission.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-054: The summary search MUST display the search result within 2 seconds of search submission.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -844,7 +1189,12 @@
       "case": "fresh:cierre-alerta",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-113: La alerta DEBE cerrarse cuando el operador confirme.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-113: La alerta DEBE cerrarse cuando el operador confirme.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -856,7 +1206,12 @@
       "case": "fresh:cierre-alerta",
       "language": "es",
       "variant": "breaks",
-      "resolution": "FR-113: La alerta DEBE cerrarse.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-113: La alerta DEBE cerrarse.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -868,7 +1223,12 @@
       "case": "fresh:cierre-alerta",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-113: La alerta DEBE cerrarse automáticamente a los 30 segundos.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-113: La alerta DEBE cerrarse automáticamente a los 30 segundos.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -882,7 +1242,12 @@
       "case": "study:c82e8832fe47",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "- **NFR-041** For up to 20 concurrent analysts, the result list SHALL appear on screen within 2000 ms of submitting a live search, and archived entries MUST NOT be included.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-041** For up to 20 concurrent analysts, the result list SHALL appear on screen within 2000 ms of submitting a live search, and archived entries MUST NOT be included.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -894,7 +1259,12 @@
       "case": "study:9ebdf2c874cf",
       "language": "en",
       "variant": "breaks",
-      "resolution": "Removed FR-212; during a suspension, downloads are prohibited for every role.",
+      "response": {
+        "action": "edit",
+        "scope": "requirement",
+        "text": "(FR-212 removed)",
+        "note": "During a suspension, downloads are prohibited for every role."
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -906,7 +1276,12 @@
       "case": "study:11b83067c80f",
       "language": "en",
       "variant": "invented",
-      "resolution": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C, except during calibration runs.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C, except during calibration runs.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -918,7 +1293,12 @@
       "case": "study:01680b6ed038",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "- **NFR-073** Durante el turno nocturno, el receptor DEBE enviar el acuse de cada paquete operativo como máximo 500 ms después de recibirlo, excluidos los paquetes de prueba.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-073** Durante el turno nocturno, el receptor DEBE enviar el acuse de cada paquete operativo como máximo 500 ms después de recibirlo, excluidos los paquetes de prueba.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -930,7 +1310,12 @@
       "case": "study:1e2929e25d1d",
       "language": "es",
       "variant": "breaks",
-      "resolution": "- **FR-420** El gestor PUEDE conceder licencias de reserva con aprobación del órgano competente.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-420** El gestor NO DEBE conceder licencias de reserva salvo aprobación.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -942,7 +1327,12 @@
       "case": "study:76ca85b99820",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **NFR-307** La carcasa DEBE permanecer sellada al menos 3 horas después de activar la sonda, o 6 horas si la temperatura supera 40 °C.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-307** La carcasa DEBE permanecer sellada al menos 3 horas después de activar la sonda, o 6 horas si la temperatura supera 40 °C.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -954,7 +1344,12 @@
       "case": "study:228ec77b3f37",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "- **FR-603** The portal MUST show the dispatch banner when an allocation expires and MUST remove it automatically once that allocation is renewed or reassigned. Only the shift supervisor may dismiss it manually.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-603** The portal MUST show the dispatch banner when an allocation expires and MUST remove it automatically once that allocation is renewed or reassigned. Only the shift supervisor may dismiss it manually.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -966,7 +1361,12 @@
       "case": "study:cdf3c3228237",
       "language": "en",
       "variant": "breaks",
-      "resolution": "Removed the scenario.",
+      "response": {
+        "action": "edit",
+        "scope": "scenario",
+        "text": "(scenario removed)",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -978,7 +1378,12 @@
       "case": "study:60d37af83584",
       "language": "en",
       "variant": "invented",
-      "resolution": "- **FR-190** The station MUST reject requests from inactive badges, even during maintenance, and MUST notify security of each rejection.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-190** The station MUST reject requests from inactive badges, even during maintenance, and MUST notify security of each rejection.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -990,7 +1395,12 @@
       "case": "study:436caf929622",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "- **FR-812** El tablero DEBE retirar el aviso de incidente mediante una sola acción en la vista del aviso, sin confirmación adicional, a solicitud del personal de guardia, único autorizado, y sin retirar los avisos de mantenimiento.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **FR-812** El tablero DEBE retirar el aviso de incidente mediante una sola acción en la vista del aviso, sin confirmación adicional, a solicitud del personal de guardia, único autorizado, y sin retirar los avisos de mantenimiento.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -1002,7 +1412,12 @@
       "case": "study:42f7f18229bc",
       "language": "es",
       "variant": "breaks",
-      "resolution": "- **FR-906** El operador NO DEBE exportar adjuntos sin autorización.",
+      "response": {
+        "action": "edit",
+        "scope": "requirement",
+        "text": "(FR-906 eliminado)",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -1014,7 +1429,12 @@
       "case": "study:91c3e9ac97cb",
       "language": "es",
       "variant": "invented",
-      "resolution": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas, y en archivos de hasta 12 MB en horario nocturno.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas, y en archivos de hasta 12 MB en horario nocturno.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -1026,7 +1446,12 @@
       "case": "fresh:ticket-lookup",
       "language": "en",
       "variant": "fills-slot",
-      "resolution": "- NFR-020: For up to 12 clerks, the matching tickets MUST be displayed no later than 1000 ms after Search is pressed; archived tickets are excluded.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- NFR-020: For up to 12 clerks, the matching tickets MUST be displayed no later than 1000 ms after Search is pressed; archived tickets are excluded.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -1038,7 +1463,12 @@
       "case": "fresh:acuse-devolucion",
       "language": "es",
       "variant": "misses-slot",
-      "resolution": "- FR-101: El kiosco DEBE emitir rápidamente y de forma fiable un acuse para una devolución interna.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "- FR-101: El kiosco DEBE emitir rápidamente y de forma fiable un acuse para una devolución interna.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -1050,7 +1480,12 @@
       "case": "fresh:status-icon",
       "language": "en",
       "variant": "invented",
-      "resolution": "FR-071: The sync icon MUST disappear when the user closes the settings panel.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-071: The sync icon MUST disappear when the user closes the settings panel.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -1062,7 +1497,12 @@
       "case": "fresh:aviso-entrega",
       "language": "es",
       "variant": "fills-slot",
-      "resolution": "FR-040: El aviso de entrega DEBE desaparecer automáticamente en cuanto el repartidor confirme la entrega. Solo la supervisora puede cerrar el aviso manualmente.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-040: El aviso de entrega DEBE desaparecer automáticamente en cuanto el repartidor confirme la entrega. Solo la supervisora puede cerrar el aviso manualmente.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "yes",
@@ -1074,7 +1514,12 @@
       "case": "fresh:playlist-preset",
       "language": "en",
       "variant": "breaks",
-      "resolution": "FR-091: The kiosk MAY use the profile `fast` only for standard playlists.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-091: The kiosk MAY use the profile `fast` only for standard playlists.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -1086,7 +1531,12 @@
       "case": "fresh:cola-impresion",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-010: La cola DEBE mostrar un trabajo nuevo en pantalla en menos de 1 segundo sin eliminar los trabajos pausados.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-010: La cola DEBE mostrar un trabajo nuevo en pantalla en menos de 1 segundo sin eliminar los trabajos pausados.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -1098,7 +1548,12 @@
       "case": "fresh:gallery-preview",
       "language": "en",
       "variant": "preserves",
-      "resolution": "NFR-082: Gallery preview MUST load within 350 ms.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "NFR-082: Gallery preview MUST load within 350 ms.",
+        "note": null
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -1110,7 +1565,12 @@
       "case": "fresh:acuse-etiquetado",
       "language": "es",
       "variant": "breaks",
-      "resolution": "FR-214: El servicio DEBE emitir un acuse.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-214: El servicio DEBE emitir un acuse.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",
@@ -1122,7 +1582,12 @@
       "case": "fresh:document-roster",
       "language": "en",
       "variant": "invented",
-      "resolution": "FR-005: The roster search MUST be fast within 200 ms, measured from submitting the search until the search box is cleared.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-005: The roster search MUST be fast within 200 ms, measured from submitting the search until the search box is cleared.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "yes",
@@ -1134,7 +1599,12 @@
       "case": "fresh:cierre-senal",
       "language": "es",
       "variant": "preserves",
-      "resolution": "FR-019 sin cambios. Registrado: la condición de desaparición queda bloqueada hasta designar a la persona responsable.",
+      "response": {
+        "action": "escalate",
+        "scope": null,
+        "text": null,
+        "note": "La condición de desaparición queda bloqueada hasta designar a la persona responsable."
+      },
       "key": {
         "acceptable": "yes",
         "fills_slot": "not_applicable",
@@ -1146,7 +1616,12 @@
       "case": "fresh:locate-summary",
       "language": "en",
       "variant": "misses-slot",
-      "resolution": "FR-054: The summary search MUST be fast, measured from search submission until the search result is displayed.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-054: The summary search MUST be fast, measured from search submission until the search result is displayed.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "no",
@@ -1158,7 +1633,12 @@
       "case": "fresh:cierre-alerta",
       "language": "es",
       "variant": "invented",
-      "resolution": "FR-113: La alerta DEBE cerrarse cuando el operador confirme o cuando pase una hora.",
+      "response": {
+        "action": "edit",
+        "scope": "target line",
+        "text": "FR-113: La alerta DEBE cerrarse cuando el operador confirme o cuando pase una hora.",
+        "note": null
+      },
       "key": {
         "acceptable": "no",
         "fills_slot": "not_applicable",

@@ -22,15 +22,22 @@
         "message": "Unbounded wording: “fast”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "openspec/specs/ledger-load/spec.md:5"
+          {
+            "at": "openspec/specs/ledger-load/spec.md:5",
+            "text": "- **NFR-041** Ledger search SHALL be fast for up to 20 concurrent analysts and MUST NOT include archived entries."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "bound-and-measurement",
-        "text": "What maximum elapsed time applies here, and which events start and end its measurement?",
+        "question": "What maximum elapsed time applies here, and which events start and end its measurement?",
+        "reason": "The cited evidence leaves this decision open.",
         "evidence": [
-          "openspec/specs/ledger-load/spec.md:5"
+          {
+            "at": "openspec/specs/ledger-load/spec.md:5",
+            "text": "- **NFR-041** Ledger search SHALL be fast for up to 20 concurrent analysts and MUST NOT include archived entries."
+          }
         ]
       },
       "outcome": "ask",
@@ -117,15 +124,22 @@
         "message": "Unbounded wording: “fast”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md:5"
+          {
+            "at": "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md:5",
+            "text": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C."
+          }
         ]
       },
       "armB": {
         "kind": "abstain",
         "focus": "named-option",
-        "text": "The highlighted word names an option in this requirement.",
+        "question": null,
+        "reason": "The highlighted word names an option in this requirement.",
         "evidence": [
-          "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md:5"
+          {
+            "at": "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md:5",
+            "text": "- **FR-305** The sampler SHALL use the preset named “fast” only when the probe temperature is below 5 °C."
+          }
         ]
       },
       "outcome": "clear",
@@ -173,15 +187,22 @@
         "message": "Unbounded wording: “rápido”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md:5"
+          {
+            "at": "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md:5",
+            "text": "- **NFR-073** El receptor DEBE emitir un acuse rápido durante el turno nocturno y excluir los paquetes de prueba."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "bound-and-measurement",
-        "text": "¿Qué tiempo máximo se admite y qué eventos marcan el inicio y el fin de su medición?",
+        "question": "¿Qué tiempo máximo se admite y qué eventos marcan el inicio y el fin de su medición?",
+        "reason": "La evidencia deja esta decisión abierta.",
         "evidence": [
-          "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md:5"
+          {
+            "at": "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md:5",
+            "text": "- **NFR-073** El receptor DEBE emitir un acuse rápido durante el turno nocturno y excluir los paquetes de prueba."
+          }
         ]
       },
       "outcome": "ask",
@@ -299,15 +320,22 @@
         "message": "Unbounded wording: “as needed”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/001-dispatch-banner/spec.md:5"
+          {
+            "at": "specs/001-dispatch-banner/spec.md:5",
+            "text": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear as needed."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "trigger",
-        "text": "What event or condition should make it disappear?",
+        "question": "What event or condition should make it disappear?",
+        "reason": "The cited evidence leaves this decision open.",
         "evidence": [
-          "specs/001-dispatch-banner/spec.md:5"
+          {
+            "at": "specs/001-dispatch-banner/spec.md:5",
+            "text": "- **FR-603** The portal MUST display the dispatch banner when an allocation expires, and the banner MUST disappear as needed."
+          }
         ]
       },
       "outcome": "ask",
@@ -421,15 +449,22 @@
         "message": "Unbounded wording: “fácilmente”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/001-consulta-retiro/spec.md:5"
+          {
+            "at": "specs/001-consulta-retiro/spec.md:5",
+            "text": "- **FR-812** El tablero DEBE retirar fácilmente el aviso de incidente sin retirar los avisos de mantenimiento."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "criterion",
-        "text": "¿Qué criterio observable permitiría determinar si esta acción es suficientemente fácil?",
+        "question": "¿Qué criterio observable permitiría determinar si esta acción es suficientemente fácil?",
+        "reason": "La evidencia deja esta decisión abierta.",
         "evidence": [
-          "specs/001-consulta-retiro/spec.md:5"
+          {
+            "at": "specs/001-consulta-retiro/spec.md:5",
+            "text": "- **FR-812** El tablero DEBE retirar fácilmente el aviso de incidente sin retirar los avisos de mantenimiento."
+          }
         ]
       },
       "outcome": "ask",
@@ -512,15 +547,22 @@
         "message": "Unbounded wording: “rápido”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/001-carga-perfil/spec.md:5"
+          {
+            "at": "specs/001-carga-perfil/spec.md:5",
+            "text": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas."
+          }
         ]
       },
       "armB": {
         "kind": "abstain",
         "focus": "named-option",
-        "text": "La palabra resaltada identifica una opción en este requisito.",
+        "question": null,
+        "reason": "La palabra resaltada identifica una opción en este requisito.",
         "evidence": [
-          "specs/001-carga-perfil/spec.md:5"
+          {
+            "at": "specs/001-carga-perfil/spec.md:5",
+            "text": "- **NFR-233** El importador DEBE usar el perfil «rápido» solo en archivos de hasta 8 MB, salvo para las actas firmadas."
+          }
         ]
       },
       "outcome": "clear",
@@ -568,15 +610,22 @@
         "message": "Unbounded wording: “fast”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "openspec/specs/ticket-lookup/spec.md:4"
+          {
+            "at": "openspec/specs/ticket-lookup/spec.md:4",
+            "text": "- NFR-020: Ticket lookup MUST be fast for up to 12 clerks, excluding archived tickets."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "bound-and-measurement",
-        "text": "What maximum elapsed time applies here, and which events start and end its measurement?",
+        "question": "What maximum elapsed time applies here, and which events start and end its measurement?",
+        "reason": "The cited evidence leaves this decision open.",
         "evidence": [
-          "openspec/specs/ticket-lookup/spec.md:4"
+          {
+            "at": "openspec/specs/ticket-lookup/spec.md:4",
+            "text": "- NFR-020: Ticket lookup MUST be fast for up to 12 clerks, excluding archived tickets."
+          }
         ]
       },
       "outcome": "ask",
@@ -620,15 +669,22 @@
         "message": "Unbounded wording: “rápido”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "openspec/changes/return/slips/spec.md:4"
+          {
+            "at": "openspec/changes/return/slips/spec.md:4",
+            "text": "- FR-101: El kiosco DEBE emitir un acuse rápido para una devolución interna."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "bound-and-measurement",
-        "text": "¿Qué tiempo máximo se admite y qué eventos marcan el inicio y el fin de su medición?",
+        "question": "¿Qué tiempo máximo se admite y qué eventos marcan el inicio y el fin de su medición?",
+        "reason": "La evidencia deja esta decisión abierta.",
         "evidence": [
-          "openspec/changes/return/slips/spec.md:4"
+          {
+            "at": "openspec/changes/return/slips/spec.md:4",
+            "text": "- FR-101: El kiosco DEBE emitir un acuse rápido para una devolución interna."
+          }
         ]
       },
       "outcome": "ask",
@@ -664,15 +720,22 @@
         "message": "Unbounded wording: “as needed”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/051-status-icon/spec.md:3"
+          {
+            "at": "specs/051-status-icon/spec.md:3",
+            "text": "FR-071: The sync icon MUST disappear as needed."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "trigger",
-        "text": "What event or condition should make it disappear?",
+        "question": "What event or condition should make it disappear?",
+        "reason": "The cited evidence leaves this decision open.",
         "evidence": [
-          "specs/051-status-icon/spec.md:3"
+          {
+            "at": "specs/051-status-icon/spec.md:3",
+            "text": "FR-071: The sync icon MUST disappear as needed."
+          }
         ]
       },
       "outcome": "ask",
@@ -704,15 +767,22 @@
         "message": "Unbounded wording: “cuando sea necesario”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/039-aviso-entrega/spec.md:3"
+          {
+            "at": "specs/039-aviso-entrega/spec.md:3",
+            "text": "FR-040: El aviso de entrega DEBE desaparecer cuando sea necesario."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "trigger",
-        "text": "¿Qué evento o condición debe hacer que desaparezca?",
+        "question": "¿Qué evento o condición debe hacer que desaparezca?",
+        "reason": "La evidencia deja esta decisión abierta.",
         "evidence": [
-          "specs/039-aviso-entrega/spec.md:3"
+          {
+            "at": "specs/039-aviso-entrega/spec.md:3",
+            "text": "FR-040: El aviso de entrega DEBE desaparecer cuando sea necesario."
+          }
         ]
       },
       "outcome": "ask",
@@ -748,15 +818,22 @@
         "message": "Unbounded wording: “fast”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/093-playlist-preset/spec.md:3"
+          {
+            "at": "specs/093-playlist-preset/spec.md:3",
+            "text": "FR-091: The kiosk MUST use the profile `fast` only for standard playlists."
+          }
         ]
       },
       "armB": {
         "kind": "abstain",
         "focus": "named-option",
-        "text": "The highlighted word names an option in this requirement.",
+        "question": null,
+        "reason": "The highlighted word names an option in this requirement.",
         "evidence": [
-          "specs/093-playlist-preset/spec.md:3"
+          {
+            "at": "specs/093-playlist-preset/spec.md:3",
+            "text": "FR-091: The kiosk MUST use the profile `fast` only for standard playlists."
+          }
         ]
       },
       "outcome": "clear",
@@ -792,15 +869,22 @@
         "message": "Unbounded wording: “rápido”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/011-cola-impresion/spec.md:3"
+          {
+            "at": "specs/011-cola-impresion/spec.md:3",
+            "text": "FR-010: La cola DEBE reaccionar rápido sin eliminar los trabajos pausados."
+          }
         ]
       },
       "armB": {
         "kind": "abstain",
         "focus": "unsupported",
-        "text": "El texto citado no identifica la decisión con suficiente precisión para formular una pregunta.",
+        "question": null,
+        "reason": "El texto citado no identifica la decisión con suficiente precisión para formular una pregunta.",
         "evidence": [
-          "specs/011-cola-impresion/spec.md:3"
+          {
+            "at": "specs/011-cola-impresion/spec.md:3",
+            "text": "FR-010: La cola DEBE reaccionar rápido sin eliminar los trabajos pausados."
+          }
         ]
       },
       "outcome": "abstain",
@@ -836,17 +920,30 @@
         "message": "Unbounded wording: “quickly”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/002-gallery-preview/spec.md:3"
+          {
+            "at": "specs/002-gallery-preview/spec.md:3",
+            "text": "NFR-082: Gallery preview MUST load quickly within 350 ms."
+          }
         ]
       },
       "armB": {
         "kind": "abstain",
         "focus": "already-specified",
-        "text": "The cited evidence already specifies this decision.",
+        "question": null,
+        "reason": "The cited evidence already specifies this decision.",
         "evidence": [
-          "specs/002-gallery-preview/spec.md:3",
-          "specs/002-gallery-preview/plan.md:1",
-          "specs/002-gallery-preview/plan.md:2"
+          {
+            "at": "specs/002-gallery-preview/spec.md:3",
+            "text": "NFR-082: Gallery preview MUST load quickly within 350 ms."
+          },
+          {
+            "at": "specs/002-gallery-preview/plan.md:1",
+            "text": "- NFR-082 Measurement start: click on the thumbnail."
+          },
+          {
+            "at": "specs/002-gallery-preview/plan.md:2",
+            "text": "- NFR-082 Measurement end: first preview paint."
+          }
         ]
       },
       "outcome": "clear",
@@ -898,24 +995,37 @@
         "message": "Unbounded wording: “rápido”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "openspec/changes/labels/specs/dispatch/spec.md:4"
+          {
+            "at": "openspec/changes/labels/specs/dispatch/spec.md:4",
+            "text": "FR-214: El servicio DEBE emitir un acuse rápido."
+          }
         ]
       },
       "armB": {
         "kind": "review",
         "focus": "conflicting-evidence",
-        "text": "Las fuentes citadas dan valores distintos para la misma decisión. Revísalas juntas.",
+        "question": null,
+        "reason": "Las fuentes citadas dan valores distintos para la misma decisión. Revísalas juntas.",
         "evidence": [
-          "openspec/changes/labels/specs/dispatch/spec.md:4",
-          "openspec/changes/labels/design.md:1",
-          "openspec/changes/labels/design.md:2"
+          {
+            "at": "openspec/changes/labels/specs/dispatch/spec.md:4",
+            "text": "FR-214: El servicio DEBE emitir un acuse rápido."
+          },
+          {
+            "at": "openspec/changes/labels/design.md:1",
+            "text": "- FR-214 Límite de latencia: 40 ms."
+          },
+          {
+            "at": "openspec/changes/labels/design.md:2",
+            "text": "- FR-214 Límite de latencia: 90 ms."
+          }
         ]
       },
       "outcome": "review",
       "openSlot": null,
       "roleBrief": "Mantienes el cambio de etiquetado. El diseño del cambio activo da 40 ms y 90 ms para FR-214; la especificación vigente, que el cambio todavía no ha sustituido, dice 60 ms. No puedes elegir ningún valor para el cambio activo. (Dato de rol aportado por el protocolo: decide el responsable del servicio de despacho.)",
       "acceptableResolutions": [
-        "FR-214 no recibe un valor nuevo; se registra el conflicto entre 40 ms, 90 ms y los 60 ms vigentes y se deriva al responsable del servicio de despacho."
+        "FR-214 no recibe un valor nuevo para el cambio activo; se registra el conflicto entre 40 ms y 90 ms del diseño activo, con los 60 ms de la especificación vigente como contexto aparte, y se deriva al responsable del servicio de despacho."
       ],
       "invariants": [
         {
@@ -928,7 +1038,11 @@
         },
         {
           "kind": "conflict",
-          "assertion": "40 ms y 90 ms en el diseño frente a 60 ms vigentes"
+          "assertion": "40 ms y 90 ms en el diseño activo"
+        },
+        {
+          "kind": "context",
+          "assertion": "60 ms en la especificación vigente, otra versión"
         }
       ]
     },
@@ -944,16 +1058,26 @@
         "message": "Unbounded wording: “fast”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/048-document-roster/spec.md:3"
+          {
+            "at": "specs/048-document-roster/spec.md:3",
+            "text": "FR-005: The roster search MUST be fast within 200 ms."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "measurement-end",
-        "text": "Which event ends the elapsed-time measurement?",
+        "question": "Which event ends the elapsed-time measurement?",
+        "reason": "The cited evidence leaves this decision open.",
         "evidence": [
-          "specs/048-document-roster/spec.md:3",
-          "specs/048-document-roster/tasks.md:1"
+          {
+            "at": "specs/048-document-roster/spec.md:3",
+            "text": "FR-005: The roster search MUST be fast within 200 ms."
+          },
+          {
+            "at": "specs/048-document-roster/tasks.md:1",
+            "text": "- FR-005 Measurement start: submit the search."
+          }
         ]
       },
       "outcome": "ask",
@@ -997,16 +1121,26 @@
         "message": "Unbounded wording: “cuando sea necesario”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/041-cierre-senal/spec.md:3"
+          {
+            "at": "specs/041-cierre-senal/spec.md:3",
+            "text": "FR-019: La señal DEBE desaparecer cuando sea necesario."
+          }
         ]
       },
       "armB": {
         "kind": "review",
         "focus": "owner-unavailable",
-        "text": "La evidencia vinculada indica que falta designar al responsable o que no está disponible.",
+        "question": null,
+        "reason": "La evidencia vinculada indica que falta designar al responsable o que no está disponible.",
         "evidence": [
-          "specs/041-cierre-senal/spec.md:3",
-          "specs/041-cierre-senal/plan.md:1"
+          {
+            "at": "specs/041-cierre-senal/spec.md:3",
+            "text": "FR-019: La señal DEBE desaparecer cuando sea necesario."
+          },
+          {
+            "at": "specs/041-cierre-senal/plan.md:1",
+            "text": "- FR-019 Responsable de la decisión: pendiente."
+          }
         ]
       },
       "outcome": "review",
@@ -1042,17 +1176,30 @@
         "message": "Unbounded wording: “fast”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/065-locate-summary/spec.md:3"
+          {
+            "at": "specs/065-locate-summary/spec.md:3",
+            "text": "FR-054: The summary search MUST be fast."
+          }
         ]
       },
       "armB": {
         "kind": "question",
         "focus": "bound",
-        "text": "What maximum elapsed time applies under the cited measurement conditions?",
+        "question": "What maximum elapsed time applies under the cited measurement conditions?",
+        "reason": "The cited evidence leaves this decision open.",
         "evidence": [
-          "specs/065-locate-summary/spec.md:3",
-          "specs/065-locate-summary/plan.md:1",
-          "specs/065-locate-summary/plan.md:2"
+          {
+            "at": "specs/065-locate-summary/spec.md:3",
+            "text": "FR-054: The summary search MUST be fast."
+          },
+          {
+            "at": "specs/065-locate-summary/plan.md:1",
+            "text": "- FR-054 Measurement start: search submission."
+          },
+          {
+            "at": "specs/065-locate-summary/plan.md:2",
+            "text": "- FR-054 Measurement end: search result displayed."
+          }
         ]
       },
       "outcome": "ask",
@@ -1088,16 +1235,26 @@
         "message": "Unbounded wording: “cuando sea necesario”.",
         "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
         "evidence": [
-          "specs/122-cierre-alerta/spec.md:3"
+          {
+            "at": "specs/122-cierre-alerta/spec.md:3",
+            "text": "FR-113: La alerta DEBE cerrarse cuando sea necesario."
+          }
         ]
       },
       "armB": {
         "kind": "abstain",
         "focus": "already-specified",
-        "text": "La evidencia citada ya especifica esta decisión.",
+        "question": null,
+        "reason": "La evidencia citada ya especifica esta decisión.",
         "evidence": [
-          "specs/122-cierre-alerta/spec.md:3",
-          "specs/122-cierre-alerta/tasks.md:1"
+          {
+            "at": "specs/122-cierre-alerta/spec.md:3",
+            "text": "FR-113: La alerta DEBE cerrarse cuando sea necesario."
+          },
+          {
+            "at": "specs/122-cierre-alerta/tasks.md:1",
+            "text": "- FR-113 Evento disparador: confirmación del operador."
+          }
         ]
       },
       "outcome": "clear",
