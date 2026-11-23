@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Research note on outcome-driven development and failure semantics, engine unchanged at 0.1.4: no ODD profile is added; follow-ups are a clarification actionability measurement (#57) and an EN/ES lexical parity spike (#58). See docs/research.md.
 - Research tooling (#39, #51), engine unchanged at 0.1.4: paired precision replay with synthetic minimal pairs and natural-source scans, blind adjudication packets, the label-derived calibration audit and the F2 span-classification trial. No detector candidate (H1, H2–H2e) met its gates; see docs/precision-decisions.md.
 - Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.
 
