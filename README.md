@@ -68,11 +68,20 @@ Find the host integration guides and copy the local MCP configuration for your p
 Each integration brings the same engine into the host you already use. Captures use the bundled ambiguous booking draft. Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
 
 <details open>
-<summary><strong>Claude Code</strong> · <code>/spectorque</code> pane</summary>
+<summary><strong>Claude Code (CLI)</strong> · <code>/spectorque</code> pane</summary>
 
 Read dimension scores and findings beside the conversation, refresh the analysis or open the common workbench. The pane calls no model.
 
 [![SpecTorque pane beside the Claude Code prompt, showing dimension scores and the first finding](docs/assets/panels/claude.png)](docs/assets/panels/claude.png)
+
+</details>
+
+<details>
+<summary><strong>Claude Code Desktop</strong> · <code>/spectorque</code> pane</summary>
+
+Run `/spectorque` in an active Code session to view dimension scores and findings in the native pane.
+
+[![SpecTorque pane in Claude Code Desktop showing dimension scores and the first of five findings](docs/assets/panels/claude-desktop.png)](docs/assets/panels/claude-desktop.png)
 
 </details>
 
