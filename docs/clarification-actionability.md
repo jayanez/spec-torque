@@ -203,6 +203,11 @@ Recorded after independent review, to be read with every result:
 - Output is well formed only when the whole trimmed text parses as one JSON object; anything else gets the single reviewer retry.
 - Calls that return no output are retried up to three times as transport failures; these are not reviewer retries.
 
+**2026-11-23. R1 authentication.** Made before any R1 run or participant data. Model, client, effort, prompt, seeds and every decision rule are unchanged.
+
+- R1 authenticates with the maintainer's Claude subscription instead of an API key, which has no balance. `--bare` requires an API key, so R1 runs `claude -p --setting-sources "" --tools "" --strict-mcp-config --no-session-persistence --disable-slash-commands --model claude-sonnet-5-5 --effort medium` from an empty directory, with `ANTHROPIC_API_KEY` removed from its environment.
+- Verified before any run: the session reports no tools, MCP servers, skills or user plugins; asked yes-or-no whether its instructions mention CodeGraph, Context7, caveman or commit attribution (all present in the maintainer's user instructions), it answers no to all four, and its input falls from 7,636 to 3,228 tokens against the same run with user settings loaded. Built-in client plugins remain; with no tools and an empty working directory they give the reviewer no access to files.
+
 ## Appendix: reviewer prompt
 
 ```text
