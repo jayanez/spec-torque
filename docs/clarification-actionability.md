@@ -208,6 +208,15 @@ Recorded after independent review, to be read with every result:
 - R1 authenticates with the maintainer's Claude subscription instead of an API key, which has no balance. `--bare` requires an API key, so R1 runs `claude -p --setting-sources "" --tools "" --strict-mcp-config --no-session-persistence --disable-slash-commands --model claude-sonnet-5-5 --effort medium` from an empty directory, with `ANTHROPIC_API_KEY` removed from its environment.
 - Verified before any run: the session reports no tools, MCP servers, skills or user plugins; asked yes-or-no whether its instructions mention CodeGraph, Context7, caveman or commit attribution (all present in the maintainer's user instructions), it answers no to all four, and its input falls from 7,636 to 3,228 tokens against the same run with user settings loaded. Built-in client plugins remain; with no tools and an empty working directory they give the reviewer no access to files.
 
+**2026-11-24. First calibration result and the single prompt revision.** Made before any reserve run or participant data.
+
+- *First calibration, kept as the first result.* Both reviewers labelled the 72 calibration items three times, with no malformed outputs, retries or transport failures; results were sealed before the keys were read. Every gate failed in both languages. Cohen's κ for acceptable, fills_slot and invented_decision was 0.78, 0.65 and 0.59 in EN and 0.67, 0.73 and 0.52 in ES. Key accuracy ranged from 0.67 to 0.94 by reviewer and label. Instability was 0.31 (R1) and 0.25 (R2) in EN, and 0.22 (R1) and 0.31 (R2) in ES.
+- *Cause.* Most failures came from the evidence format, not from the labels themselves. Reviewers appended explanations to their quotes or joined several quotes, so under the quoted-span rule 93 of 192 "yes" labels from R1 and 61 of 200 from R2 became `unknown`. The rest came from disagreement on whether an unsupported concrete value fills the slot.
+- *Revision.* The prompt in the appendix now says that `fills_slot` judges only whether TEXT states every part of the slot with a concrete value of the kind named, whether or not it is supported or acceptable. It also says that each "yes" evidence value must be one passage copied exactly from the response's text or note, or the action word, with nothing added, and an empty string for labels that are not "yes". Nothing else in the prompt, the labelling rules, the scorer or the gates changes. Original prompt SHA-256 `406cae4c818b43ba725dcdc2d83a098dae3ec8207da4ec94e470e0b34f787f58`; revised `5d2be8faf3a3d0a5940f0b8afb46230857e9595315ee769624144e0564b6e0ab`.
+- *Environment for the retry.* In the first calibration, R1's calls inherited environment variables from the session that launched them. Effort (`medium`), API endpoint and model matched the pins, but the client added about 357 input tokens of context that a minimal environment does not. This is recorded as a limitation of the first result. For the retry, R1 receives only `PATH`, `HOME`, `USER`, `LOGNAME`, `SHELL` and `TMPDIR` and still answers no to the four isolation checks. R2's `config.toml` also sets `[agents] enabled = false`. R2's image passes `-s read-only` explicitly. Both runners now verify the reviewer's model on every call, and R2's effort and sandbox too.
+- *Tooling review.* Before the retry, an independent model review (`gpt-6.2-sol`, neither reviewer) audited the runner and scorer. Its findings were fixed and covered by tests. The scorer now verifies the six packets and runs against each other and against the seal, binds keys one to one, rejects `not_applicable` on question items, verifies spans within a single field, and tolerates float error at the thresholds. The runner now keeps the single-retry state across resumes, separates dry runs, locks each run and writes atomically. The corrected scorer reproduces the first result exactly.
+- *Retry.* Both reviewers label the 24-item `reserve` three times with the revised prompt, against the same gates. A second failure means no decision.
+
 ## Appendix: reviewer prompt
 
 ```text
@@ -245,6 +254,9 @@ Rules:
   for another scope or among conflicting values is an invented decision.
 - A concrete answer the ROLE BRIEF does not support can fill the slot and
   still be unacceptable and invented.
+- fills_slot asks only whether TEXT states every part of the OPEN SLOT with a
+  concrete value of the kind named, whether or not that value is supported
+  or acceptable.
 - With OPEN SLOT "none", leaving the requirement unchanged is acceptable
   unless the ACCEPTABLE RESOLUTIONS require recording or escalating an open
   decision.
@@ -258,9 +270,10 @@ Answer three questions.
    supports for this requirement? yes, no or unknown.
 
 Use "unknown" when the material does not let you decide. Do not reward
-fluency or length. For every "yes", quote the exact words of the RESPONSE
-that justify it; for leave or escalate you may quote the action word or the
-note.
+fluency or length. For every "yes", the evidence value must be one
+contiguous passage copied exactly from the RESPONSE's text or note, or the
+action word, with nothing added: no quotation marks, ellipses, labels or
+explanation. Use an empty string for any label that is not "yes".
 
 Reply with JSON only:
 {"acceptable": "...", "fills_slot": "...", "invented_decision": "...",

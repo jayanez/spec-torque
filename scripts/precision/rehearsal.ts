@@ -19,8 +19,10 @@ export const PROTOCOL = 'docs/clarification-actionability.md';
  * dated amendment does not reorder packets or change page IDs (amendment of 2026-11-23).
  */
 export const FROZEN_PROTOCOL_SHA256 = '16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed17fcb7e9a8a024984525826';
-/** SHA-256 of the frozen reviewer prompt; amendments must not change it. */
+/** SHA-256 of the frozen reviewer prompt, used for the first calibration. */
 export const FROZEN_PROMPT_SHA256 = '406cae4c818b43ba725dcdc2d83a098dae3ec8207da4ec94e470e0b34f787f58';
+/** SHA-256 of the prompt after the single permitted revision (amendment of 2026-11-24). No further change is allowed. */
+export const REVISED_PROMPT_SHA256 = '5d2be8faf3a3d0a5940f0b8afb46230857e9595315ee769624144e0564b6e0ab';
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
@@ -112,7 +114,7 @@ export async function load(root: string): Promise<Loaded> {
   for (const item of [...calibration.items, ...calibration.reserve])
     if (!material.has(item.case)) throw new Error(`Calibration item ${item.id} names unknown case ${item.case}.`);
   const prompt = extractPrompt(lf(protocol));
-  if (sha256(prompt) !== FROZEN_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the frozen prompt.');
+  if (sha256(prompt) !== REVISED_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the revised prompt of the 2026-11-24 amendment.');
   return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration, material };
 }
 
