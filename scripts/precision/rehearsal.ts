@@ -13,6 +13,14 @@ import { z } from 'zod';
 import { analyze, classifyArtifact, clarifyE12 } from '../../src/core.js';
 
 export const PROTOCOL = 'docs/clarification-actionability.md';
+/**
+ * LF-normalised SHA-256 of the protocol at its freeze commit (6a2dc0f, posted in #57).
+ * Seeds and presentation IDs derive from this value, not from the current file, so a
+ * dated amendment does not reorder packets or change page IDs (amendment of 2026-11-23).
+ */
+export const FROZEN_PROTOCOL_SHA256 = '16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed17fcb7e9a8a024984525826';
+/** SHA-256 of the frozen reviewer prompt; amendments must not change it. */
+export const FROZEN_PROMPT_SHA256 = '406cae4c818b43ba725dcdc2d83a098dae3ec8207da4ec94e470e0b34f787f58';
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
@@ -59,7 +67,10 @@ export type Calibration = z.infer<typeof calibrationSchema>;
 export interface Material { source: string; path: string; target: number; companions: Record<string, string> }
 
 export interface Loaded {
+  /** Frozen protocol SHA-256: the source of seeds and presentation IDs. */
   protocolSha256: string;
+  /** SHA-256 of the protocol as checked out, including any amendments. */
+  currentProtocolSha256: string;
   prompt: string;
   rehearsal: Rehearsal;
   calibration: Calibration;
@@ -100,7 +111,9 @@ export async function load(root: string): Promise<Loaded> {
   }
   for (const item of [...calibration.items, ...calibration.reserve])
     if (!material.has(item.case)) throw new Error(`Calibration item ${item.id} names unknown case ${item.case}.`);
-  return { protocolSha256: fileSha256(protocol), prompt: extractPrompt(lf(protocol)), rehearsal, calibration, material };
+  const prompt = extractPrompt(lf(protocol));
+  if (sha256(prompt) !== FROZEN_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the frozen prompt.');
+  return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration, material };
 }
 
 /** Re-renders every case with the engine and lists any field that differs from the frozen record. */

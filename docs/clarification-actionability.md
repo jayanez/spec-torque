@@ -189,7 +189,12 @@ Recorded after independent review, to be read with every result:
 
 ## Amendments
 
-None.
+**2026-11-23. Reviewer execution.** Made before any reviewer run or participant data. Models, clients, effort, the reviewer prompt and every decision rule are unchanged.
+
+- R1 runs as Claude Code 2.1.311 in headless print mode instead of as a subagent: `claude -p --bare --tools "" --strict-mcp-config --no-session-persistence --disable-slash-commands --model claude-sonnet-5-5 --effort medium`, from an empty directory. It has no tools, memory, hooks or project instructions, so it can read only the item it receives.
+- R2 runs `codex exec` from codex-cli 0.170.0 inside a container whose only mounts are the item being labelled and the client's credentials, read-only, with an empty `CODEX_HOME`, so it cannot read the repository, keys, operator files or other packets.
+- Each item is labelled in its own call: the frozen prompt followed by that item's material, in packet order. A run is the sequence of calls over one packet.
+- Packet seeds and presentation IDs keep deriving from the frozen protocol SHA-256 `16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed17fcb7e9a8a024984525826`, so the calibration packets, their digests and the page manifest already recorded stay valid.
 
 ## Appendix: reviewer prompt
 

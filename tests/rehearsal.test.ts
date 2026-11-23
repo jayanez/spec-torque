@@ -6,6 +6,12 @@ import { calibrationItems, checkRenderings, leaked, liveItems, load, order, pack
 const loaded = await load(fileURLToPath(new URL('..', import.meta.url)));
 const live = loaded.rehearsal.cases.filter(c => c.live);
 
+test('seeds and IDs use the frozen protocol hash and the prompt is unchanged', async () => {
+  const { FROZEN_PROTOCOL_SHA256 } = await import('../scripts/precision/rehearsal.js');
+  assert.equal(loaded.protocolSha256, FROZEN_PROTOCOL_SHA256);
+  assert.match(loaded.currentProtocolSha256, /^[0-9a-f]{64}$/);
+});
+
 test('fixtures load with matching source hashes and the protocol prompt', () => {
   assert.equal(live.length, 18);
   assert.match(loaded.prompt, /^You are reviewing one person's response/);
