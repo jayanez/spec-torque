@@ -1,6 +1,6 @@
 # E1.2 clarification actionability protocol
 
-Status: **draft, not frozen.** The freeze is the last commit of the pull request that adds this file. That commit sets this line to "frozen", fills the pins marked *at freeze*, and its SHA-256 values for this file, `tests/fixtures/e12/rehearsal.json` and `tests/fixtures/e12/calibration.json` are posted in [#57](https://github.com/jayanez/spec-torque/issues/57) with the maintainer's confirmation, before the first session and before the pilot SHA freeze on 2026-11-30. After the freeze, changes need a dated amendment below. An amendment made after any participant data exists governs only a separately identified new run; the original run is analysed under its original rules and its result is kept.
+Status: **frozen.** The freeze is the last commit of the pull request that adds this file. With the maintainer’s confirmation, the freeze commit and SHA-256 values for this file, `tests/fixtures/e12/rehearsal.json` and `tests/fixtures/e12/calibration.json` are posted in [#57](https://github.com/jayanez/spec-torque/issues/57) before the first session and before the pilot SHA freeze on 2026-11-30. After the freeze, changes need a dated amendment below. An amendment made after any participant data exists governs only a separately identified new run; the original run is analysed under its original rules and its result is kept.
 
 ## Decision
 
@@ -16,7 +16,7 @@ This protocol adds one pre-registered endpoint to the optional E1.2 rehearsal in
 - Cases: `tests/fixtures/e12/study.json` (12 cases from #39) and `tests/fixtures/e12/fresh.json` (12 lineages from #49), with `tests/fixtures/e12/rehearsal.json`. Both case sets are authored synthetic controls whose authors saw them while writing the rules, so participants are the only independent element.
 - **Live cases** (`live: true`, 18) are those where the engine emits an E1.2 finding. **Calibration-only cases** (`live: false`, 6: four injected and two silent study cases) produce no finding, so neither arm has anything to show; they are used only for reviewer calibration.
 - **Arms, frozen as rendered.** `rehearsal.json` records, per live case, the engine fields each arm shows: `armA` is the finding message, its suggestion and its evidence lines; `armB` adds the clarification result (kind, question if any, localized reason) and its evidence lines. The finding message and suggestion are the engine's English text in both languages, as in the current workbench. The four hand-authored questions from #39 are not used.
-- **Presentation pages.** Participants see static pages, not the workbench, because the workbench always shows the clarification and arm A must not. A page builder (pending, not started) renders one page per live case, arm and language from `rehearsal.json` and fixed UI strings: the source with the target line marked, every fixture companion with its path, the role brief, the finding with its evidence, and in arm B a clarification block with the question or reason and its evidence. Arm A has no clarification block. Out-of-scope companions (the video preview plan, the current OpenSpec specification) are shown like any other companion; only evidence lines are highlighted. Each page carries an opaque presentation ID, the first 12 hex digits of SHA-256 over `<protocol SHA-256>:<case id>:<arm>`. At freeze the engine fields are re-captured on the pilot SHA and must match byte for byte, and the SHA-256 of every page is recorded. Both arms get the same source, companions and role brief.
+- **Presentation pages.** Participants see static pages, not the workbench, because the workbench always shows the clarification and arm A must not. The page builder uses `rehearsal.json` and fixed UI strings to render one page per live case and arm in the case’s language. Each page shows the source with the target line marked, every fixture companion with its path, the role brief, the finding with its evidence, and in arm B a clarification block with the question or reason and its evidence. Arm A has no clarification block. Out-of-scope companions (the video preview plan, the current OpenSpec specification) are shown like any other companion; only evidence lines are highlighted. Each page carries an opaque presentation ID, the first 12 hex digits of SHA-256 over `<protocol SHA-256>:<case id>:<arm>`. At protocol freeze the page builder verifies that the engine fields match byte for byte and records the SHA-256 of each page in the manifest. Once the pilot SHA is pinned, verify the engine fields and page hashes again on that SHA before using the pages. Both arms get the same source, companions and role brief.
 
 | Live case group | EN | ES | Use |
 |---|---|---|---|
@@ -36,10 +36,10 @@ The sets are not balanced: Spanish has fewer question cases, and only Spanish ha
 |---|---|
 | `rehearsal.json`: role briefs, open slots, acceptable resolutions, invariants, live flags and arm renderings for all 24 cases | Drafted, revised after independent review |
 | `calibration.json`: 72 keyed items plus a 24-item reserve | Drafted, revised after independent review |
-| Participant information sheet with the consent text below | Pending |
-| Page builder (`scripts/precision/rehearsal-pages.ts`) and packet builder (`scripts/precision/rehearsal-packets.ts`), tested in `tests/rehearsal.test.ts` | Built; maintainer review pending |
-| Pins marked *at freeze* | Pending |
-| Maintainer review, then the freeze commit | Pending |
+| [Participant information and consent sheet](clarification-rehearsal-participant.md) | Available in English and Spanish |
+| Page builder (`scripts/precision/rehearsal-pages.ts`) and packet builder (`scripts/precision/rehearsal-packets.ts`), tested in `tests/rehearsal.test.ts` | Built and tested |
+| Reviewer client and settings pins | Recorded in the Reviewers table |
+| Maintainer confirmation and freeze commit | Recorded in #57 |
 
 Both fixture files were written by a contributor who did not write the E1.2 detector, the clarification rules or the study and fresh fixtures, and were reviewed by a third model (`gpt-6.2-sol`) that is neither reviewer below. Neither reviewer may see either file before calibration. They are constructed controls, not independent labels.
 
@@ -68,16 +68,17 @@ For each case the participant submits:
 - `note`: optional for `edit` and `leave`, required for `escalate` (what is open and for whom);
 - in arm B only, the answer to "Did the question help you decide?": `yes`, `no`, `not useful`, `no answer`.
 
-The workbench records case and build, elapsed time, iterations, consultations, pending ambiguities and completion status as defined in #8.
+The operator records case and build, elapsed time, iterations, consultations, pending ambiguities and completion status as defined in #8.
 
 ## Consent and data boundary
 
-Model adjudication sends participant-written text to two model providers, Anthropic and OpenAI. The participant information sheet says so before the first case and asks for an explicit yes.
+Model adjudication sends participant-written text to two model providers, Anthropic and OpenAI. The [participant information and consent sheet](clarification-rehearsal-participant.md) explains this before the first case and asks for an explicit yes.
 
 - Without consent, the participant's attempts are not sent anywhere. They are reported as `not adjudicated` and excluded from every endpoint, with their count.
 - Only the operator starts a review run, by hand, from a local packet. Nothing is sent automatically by the workbench, the CLI or the engine.
 - Packets contain the case material and the participant's `action`, `scope`, `text` and `note`. They never contain identity, session IDs, timing or the arm.
 - Before sending, the operator checks every `text` and `note` for names, contact details, credentials, or details of a real system or organisation. The operator never edits participant text. An attempt with any such content is not sent and is reported as `not adjudicated (sanitization)`.
+- The operator uses a random session ID to group attempts and never records participant identity. Participants may withdraw consent by giving that ID to the operator through the session channel. Any attempts that have yet to be sent are treated as attempts without consent. If a packet was already sent, the operator tells the participant what was shared. Withdrawal cannot undo that transfer.
 - Records stay with the operator. Only aggregates are published, as in [privacy](privacy.md).
 
 ## Endpoints
@@ -127,10 +128,10 @@ Two model reviewers label every eligible, consenting attempt. Neither is an auth
 
 | Reviewer | Pin | Notes |
 |---|---|---|
-| R1 | `claude-sonnet-5-5`, as a Claude Code subagent | Client version *at freeze* |
-| R2 | `gpt-6-luna`, through `codex exec` | Accepted by `codex-cli 0.170.0` on 2026-11-23; client version *at freeze* |
+| R1 | `claude-sonnet-5-5`, as a Claude Code 2.1.311 subagent | Model-default effort `medium`. No client controls for temperature, top-p or seed. [Claude Code model configuration](https://code.claude.com/docs/en/model-config#adjust-effort-level) |
+| R2 | `gpt-6-luna`, through `codex exec` in `codex-cli 0.170.0` | Model-default reasoning effort `medium`. No client controls for temperature, top-p or seed. |
 
-Each reviewer runs in a fresh context with read access to the packet only. The clients do not expose a fixed sampling temperature; their defaults are recorded at freeze, and the three runs per item absorb sampling variation. If a pinned model is unavailable when a run starts, the run waits; substituting a model is an amendment.
+Each reviewer runs in a fresh context with read access to the packet only. Use the settings in the table for every run and leave sampling at the clients’ defaults. Three runs per item are used to measure label stability across runs. If a pinned model is unavailable when a run starts, the run waits; substituting a model is an amendment.
 
 **Packet.** One item per attempt or calibration resolution, containing: the source with line numbers and the target line marked; the scoped companion documents with paths; the role brief; the open slot, or `none` on controls; the acceptable resolutions; the invariants; and the response (`action`, `scope`, `text`, `note`). It never contains the arm, the question text, timing, participant data, the other reviewer's labels or the case outcome type.
 
