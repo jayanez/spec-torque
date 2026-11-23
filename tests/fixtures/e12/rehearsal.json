@@ -8,7 +8,7 @@
     "tests/fixtures/e12/fresh.json": "d7195fd51c7b528296af76761c4ce4c5ee8121ab63530fa2059c3015d08afa73"
   },
   "authorship": "Written by a contributor who did not write the E1.2 detector, the clarification rules or the study and fresh fixtures. Role briefs, acceptable resolutions and calibration keys are constructed controls, not independent labels.",
-  "note": "Role briefs and acceptable resolutions for the 24 E1.2 cases. Only \"ask\" cases have an open slot the participant may fill; every other case is a control and its packet shows OPEN SLOT as \"none\". Study-set invariants are copied from study.json expected.invariants.",
+  "note": "Role briefs, acceptable resolutions and invariants for the 24 E1.2 cases. live=true cases are shown to participants; armA and armB are what the engine at the drafting commit renders for each arm, and are re-captured and compared at freeze. live=false cases (runtime none) are calibration only. Only \"ask\" cases have an open slot the participant may fill; every other case is a control and its packet shows OPEN SLOT as \"none\". Study-set invariants are copied from study.json expected.invariants, with the overrides listed in the protocol.",
   "cases": [
     {
       "id": "study:c82e8832fe47",
@@ -16,6 +16,23 @@
       "lineage": "ledger-load",
       "language": "en",
       "sourceSha256": "2c83608f83e71f3c9398857985c8a2aa3b5827f84f0e1911c0de133b21ec690b",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “fast”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "openspec/specs/ledger-load/spec.md:5"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "bound-and-measurement",
+        "text": "What maximum elapsed time applies here, and which events start and end its measurement?",
+        "evidence": [
+          "openspec/specs/ledger-load/spec.md:5"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "maximum elapsed response time for live searches and the events that start and end its measurement",
       "roleBrief": "You own the ledger search service and can set its performance requirements. Product research agreed with the analysts that a live search is acceptable when the result list appears within 2 seconds of submitting the query, with up to 20 analysts searching at once. Archived entries stay excluded.",
@@ -55,6 +72,10 @@
       "lineage": "vault-suspension",
       "language": "en",
       "sourceSha256": "6fc6b35902b5aae157647f03dd1b5741e1c6a71bb277994777fa4e3ae77e1f5d",
+      "live": false,
+      "runtime": "none",
+      "armA": null,
+      "armB": null,
       "outcome": "abstain",
       "openSlot": null,
       "roleBrief": "You maintain this change specification but you are not the policy owner. No policy owner is assigned yet, so you cannot decide whether auditors are exempt from the suspension.",
@@ -90,6 +111,23 @@
       "lineage": "sensor-threshold",
       "language": "en",
       "sourceSha256": "42eb8a412733046b738bc6d788118ed5fe8770f0b45ff5c982787922271c7ae6",
+      "live": true,
+      "runtime": "abstain",
+      "armA": {
+        "message": "Unbounded wording: “fast”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md:5"
+        ]
+      },
+      "armB": {
+        "kind": "abstain",
+        "focus": "named-option",
+        "text": "The highlighted word names an option in this requirement.",
+        "evidence": [
+          "openspec/changes/sensor-threshold/specs/sensor-threshold/spec.md:5"
+        ]
+      },
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "You own the sampler. “fast” is the name of a sampler preset, not a performance target. The 5 °C threshold and the boundary behavior are approved.",
@@ -129,6 +167,23 @@
       "lineage": "acuse-nocturno",
       "language": "es",
       "sourceSha256": "0d7632a2d4a7c54f7c5194c881ceaf6031410ec2d7ba6160136c2472209bec14",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “rápido”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md:5"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "bound-and-measurement",
+        "text": "¿Qué tiempo máximo se admite y qué eventos marcan el inicio y el fin de su medición?",
+        "evidence": [
+          "openspec/changes/acuse-nocturno/specs/acuse-nocturno/spec.md:5"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "plazo máximo del acuse nocturno y eventos de inicio y fin de su medición",
       "roleBrief": "Eres responsable del receptor y puedes fijar sus requisitos de rendimiento. Operaciones acordó que, durante el turno nocturno, el acuse de un paquete operativo se emita en un máximo de 500 ms, medidos desde la recepción del paquete hasta el envío del acuse. Los paquetes de prueba siguen excluidos.",
@@ -160,6 +215,10 @@
       "lineage": "licencias-reserva",
       "language": "es",
       "sourceSha256": "ae7eb2b8e5f16bc4eeed48a6d831bde21ffc14a842ac6964a4f99470903e7162",
+      "live": false,
+      "runtime": "none",
+      "armA": null,
+      "armB": null,
       "outcome": "abstain",
       "openSlot": null,
       "roleBrief": "Mantienes esta especificación pero no formas parte de ningún órgano de gobernanza. Hay dos órganos con competencias sin delimitar y nadie ha decidido cuál autoriza la excepción.",
@@ -195,6 +254,10 @@
       "lineage": "sonda-sellada",
       "language": "es",
       "sourceSha256": "f6495aa13dda92cd6baed0460ec601311413d0c2a5ced3448f282db68c7b5376",
+      "live": false,
+      "runtime": "none",
+      "armA": null,
+      "armB": null,
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "Eres responsable de la sonda. La duración mínima de 3 horas y el evento de activación están aprobados.",
@@ -230,6 +293,23 @@
       "lineage": "dispatch-banner",
       "language": "en",
       "sourceSha256": "3008c07b0c246346e8fd533c05c6073d0803220a21453c3d369cd19beb0fcf57",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “as needed”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/001-dispatch-banner/spec.md:5"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "trigger",
+        "text": "What event or condition should make it disappear?",
+        "evidence": [
+          "specs/001-dispatch-banner/spec.md:5"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "event or condition for automatic banner dismissal",
       "roleBrief": "You are the dispatch product owner and can decide when the banner is removed automatically. Dispatch agreed that the banner should disappear automatically when the expired allocation is renewed or reassigned. Manual dismissal stays limited to the shift supervisor.",
@@ -258,8 +338,8 @@
           "assertion": "other roles cannot dismiss manually"
         },
         {
-          "kind": "open decision",
-          "assertion": "automatic dismissal condition"
+          "kind": "obligation qualified",
+          "assertion": "the banner must disappear automatically under a condition"
         }
       ]
     },
@@ -269,9 +349,13 @@
       "lineage": "receipt-assertion",
       "language": "en",
       "sourceSha256": "c7c08a96c6393c2eb5cb3655fe1458c3414016e188d8a1c7c21849048072c4c3",
+      "live": false,
+      "runtime": "none",
+      "armA": null,
+      "armB": null,
       "outcome": "abstain",
       "openSlot": null,
-      "roleBrief": "You maintain the acceptance scenarios. The verification endpoint contract is still under negotiation and there is no product owner, so you cannot choose a response code or status for the accepted receipt.",
+      "roleBrief": "You maintain the acceptance scenarios. The verification endpoint contract is still under negotiation and no product owner is assigned, so you cannot choose any observable success signal for the accepted receipt.",
       "acceptableResolutions": [
         "The scenario keeps the accepted outcome and the sandbox scope, and the dependency on the verification contract and a product owner is recorded as open."
       ],
@@ -296,6 +380,10 @@
       "lineage": "station-access",
       "language": "en",
       "sourceSha256": "0b4de8f920180685ddc3d7266be63d33a12056af7cc57cb8d98a34aabdb0eff2",
+      "live": false,
+      "runtime": "none",
+      "armA": null,
+      "armB": null,
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "You own the station. The denial for inactive badges, including during maintenance, is approved.",
@@ -327,11 +415,28 @@
       "lineage": "consulta-retiro",
       "language": "es",
       "sourceSha256": "db54ca42556feb1838f8a0513e35ef14885d43ee49e7c5dd820a373b51b3f46d",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “fácilmente”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/001-consulta-retiro/spec.md:5"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "criterion",
+        "text": "¿Qué criterio observable permitiría determinar si esta acción es suficientemente fácil?",
+        "evidence": [
+          "specs/001-consulta-retiro/spec.md:5"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "criterio observable para aceptar la facilidad del retiro del aviso",
       "roleBrief": "Eres responsable del tablero y puedes fijar el criterio de aceptación. En la última revisión de usabilidad se acordó que el personal de guardia debe poder retirar el aviso de incidente con una sola acción desde la vista del aviso, sin confirmación adicional. Los avisos de mantenimiento no se retiran.",
       "acceptableResolutions": [
-        "FR-812 fija como criterio que el personal de guardia retire el aviso de incidente con una sola acción desde la vista del aviso, sin confirmación adicional, y conserva que no se retiren los avisos de mantenimiento."
+        "FR-812 conserva la obligación del tablero, fija como criterio que el retiro del aviso de incidente se complete con una sola acción desde la vista del aviso, sin confirmación adicional, conserva que solo el personal de guardia puede solicitarlo y que no se retiran los avisos de mantenimiento."
       ],
       "invariants": [
         {
@@ -355,8 +460,8 @@
           "assertion": "solo el personal de guardia solicita el retiro"
         },
         {
-          "kind": "open decision",
-          "assertion": "criterio de facilidad"
+          "kind": "obligation qualified",
+          "assertion": "el retiro del aviso de incidente debe ser fácil según un criterio observable"
         }
       ]
     },
@@ -366,11 +471,15 @@
       "lineage": "pesaje-exportacion",
       "language": "es",
       "sourceSha256": "0529ef9047ebfdc4af10bc9cd375d319901b53941ece525c4989196ef196d6b2",
+      "live": false,
+      "runtime": "none",
+      "armA": null,
+      "armB": null,
       "outcome": "abstain",
       "openSlot": null,
       "roleBrief": "Mantienes esta especificación. La responsable de cumplimiento aún no ha confirmado si la autorización cubre cada categoría por separado o solo el envío conjunto, y tú no puedes decidirlo.",
       "acceptableResolutions": [
-        "FR-906 se conserva sin desambiguar y las dos interpretaciones se escalan a la responsable de cumplimiento."
+        "FR-906 se conserva sin desambiguar, con la prohibición vigente mientras se aclara su alcance, y las dos interpretaciones se escalan a la responsable de cumplimiento."
       ],
       "invariants": [
         {
@@ -379,7 +488,7 @@
         },
         {
           "kind": "prohibition",
-          "assertion": "exportación sin autorización en el alcance aún por confirmar"
+          "assertion": "no exportar sin autorización, vigente mientras se confirma el alcance"
         },
         {
           "kind": "exception",
@@ -397,6 +506,23 @@
       "lineage": "carga-perfil",
       "language": "es",
       "sourceSha256": "b8ee49f476ec273b7ebc45454cb3f563e39c8db9a0a7d0a17fb75a93e944e895",
+      "live": true,
+      "runtime": "abstain",
+      "armA": {
+        "message": "Unbounded wording: “rápido”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/001-carga-perfil/spec.md:5"
+        ]
+      },
+      "armB": {
+        "kind": "abstain",
+        "focus": "named-option",
+        "text": "La palabra resaltada identifica una opción en este requisito.",
+        "evidence": [
+          "specs/001-carga-perfil/spec.md:5"
+        ]
+      },
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "Eres responsable del importador. «rápido» es el nombre de un perfil, no un objetivo de rendimiento. El límite de 8 MB y la excepción de las actas firmadas están aprobados.",
@@ -436,6 +562,23 @@
       "lineage": "ticket-lookup",
       "language": "en",
       "sourceSha256": "e90b3504061cdda9a08297b97d4bff05f7f23e320818ffcd07af464874c0c0eb",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “fast”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "openspec/specs/ticket-lookup/spec.md:4"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "bound-and-measurement",
+        "text": "What maximum elapsed time applies here, and which events start and end its measurement?",
+        "evidence": [
+          "openspec/specs/ticket-lookup/spec.md:4"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "maximum elapsed time for a lookup and the events that start and end its measurement",
       "roleBrief": "You own ticket lookup at the counter and can set its performance requirement. Counter staff agreed that a lookup must show the matching tickets within 1 second of pressing Search, with up to 12 clerks working at once. Archived tickets stay excluded.",
@@ -461,7 +604,7 @@
         },
         {
           "kind": "exclusion",
-          "assertion": "archived tickets"
+          "assertion": "archived tickets must not be included"
         }
       ]
     },
@@ -471,6 +614,23 @@
       "lineage": "acuse-devolucion",
       "language": "es",
       "sourceSha256": "b8c2f2296dbb7e69b051a582e2a26afb8208335445380750b5b5dfec22253c52",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “rápido”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "openspec/changes/return/slips/spec.md:4"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "bound-and-measurement",
+        "text": "¿Qué tiempo máximo se admite y qué eventos marcan el inicio y el fin de su medición?",
+        "evidence": [
+          "openspec/changes/return/slips/spec.md:4"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "plazo máximo del acuse de devolución y eventos de inicio y fin de su medición",
       "roleBrief": "Eres responsable del kiosco de devoluciones y puedes fijar sus requisitos de rendimiento. Se acordó que el acuse de una devolución interna se emita en un máximo de 3 segundos, desde que se escanea el artículo devuelto hasta que se imprime el acuse.",
@@ -498,6 +658,23 @@
       "lineage": "status-icon",
       "language": "en",
       "sourceSha256": "419ee82f0d23cc89334293ec3adb4e0112f10e7bbf40fcb73263a01b9ddb9d50",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “as needed”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/051-status-icon/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "trigger",
+        "text": "What event or condition should make it disappear?",
+        "evidence": [
+          "specs/051-status-icon/spec.md:3"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "event or condition that makes the sync icon disappear",
       "roleBrief": "You own the sync status icon and can decide when it disappears. The team agreed that the icon should disappear when the sync completes successfully.",
@@ -521,8 +698,25 @@
       "lineage": "aviso-entrega",
       "language": "es",
       "sourceSha256": "228b0e0d41b50f3a6f58e1cadb7b37afeaaf299e135e7ad6fb5d523f3caf885d",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “cuando sea necesario”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/039-aviso-entrega/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "trigger",
+        "text": "¿Qué evento o condición debe hacer que desaparezca?",
+        "evidence": [
+          "specs/039-aviso-entrega/spec.md:3"
+        ]
+      },
       "outcome": "ask",
-      "openSlot": "evento o condición que hace desaparecer el aviso de entrega",
+      "openSlot": "evento o condición que hace desaparecer automáticamente el aviso de entrega",
       "roleBrief": "Eres responsable del aviso de entrega y puedes decidir cuándo desaparece. Se acordó que el aviso desaparezca cuando el repartidor confirme la entrega. El cierre manual sigue reservado a la supervisora.",
       "acceptableResolutions": [
         "FR-040 establece que el aviso desaparece cuando el repartidor confirma la entrega y conserva que solo la supervisora puede cerrarlo manualmente."
@@ -548,6 +742,23 @@
       "lineage": "playlist-preset",
       "language": "en",
       "sourceSha256": "65dec63a6540094493e85dab9dccb50e4124a4755f401d7159012a31cdfa1ef5",
+      "live": true,
+      "runtime": "abstain",
+      "armA": {
+        "message": "Unbounded wording: “fast”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/093-playlist-preset/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "abstain",
+        "focus": "named-option",
+        "text": "The highlighted word names an option in this requirement.",
+        "evidence": [
+          "specs/093-playlist-preset/spec.md:3"
+        ]
+      },
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "You own the kiosk. `fast` is the name of a kiosk profile, not a performance target. Its use for standard playlists only is approved.",
@@ -575,11 +786,28 @@
       "lineage": "cola-impresion",
       "language": "es",
       "sourceSha256": "7e9134a0ab6376db96e56916916163c257e92f77b309130f3df57ee5deb6eda3",
+      "live": true,
+      "runtime": "abstain",
+      "armA": {
+        "message": "Unbounded wording: “rápido”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/011-cola-impresion/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "abstain",
+        "focus": "unsupported",
+        "text": "El texto citado no identifica la decisión con suficiente precisión para formular una pregunta.",
+        "evidence": [
+          "specs/011-cola-impresion/spec.md:3"
+        ]
+      },
       "outcome": "abstain",
       "openSlot": null,
       "roleBrief": "Mantienes la especificación de la cola de impresión. No se ha acordado qué significa reaccionar rápido ni ante qué evento, y el responsable de la cola no ha dado ningún criterio. No puedes fijarlo tú.",
       "acceptableResolutions": [
-        "FR-010 se conserva, incluida la prohibición de eliminar los trabajos pausados, y se registra como decisión abierta qué comportamiento y plazo cuentan como reaccionar rápido."
+        "FR-010 se conserva, incluida la prohibición de eliminar los trabajos pausados, y se registra como decisión abierta ante qué evento, con qué comportamiento y en qué plazo cuenta reaccionar rápido."
       ],
       "invariants": [
         {
@@ -602,6 +830,25 @@
       "lineage": "gallery-preview",
       "language": "en",
       "sourceSha256": "af6924a71b5c4dfd8c8246fca7f312f7036efc29f818a334818bbbf7399df795",
+      "live": true,
+      "runtime": "abstain",
+      "armA": {
+        "message": "Unbounded wording: “quickly”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/002-gallery-preview/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "abstain",
+        "focus": "already-specified",
+        "text": "The cited evidence already specifies this decision.",
+        "evidence": [
+          "specs/002-gallery-preview/spec.md:3",
+          "specs/002-gallery-preview/plan.md:1",
+          "specs/002-gallery-preview/plan.md:2"
+        ]
+      },
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "You own gallery preview. The 350 ms limit is approved, and the feature plan already fixes the measurement from the thumbnail click to the first preview paint. The 900 ms limit in the video preview plan belongs to a different feature.",
@@ -614,12 +861,24 @@
           "assertion": "NFR-082"
         },
         {
+          "kind": "obligation",
+          "assertion": "gallery preview must load within the limit"
+        },
+        {
           "kind": "quantity",
           "assertion": "350"
         },
         {
           "kind": "unit",
           "assertion": "ms"
+        },
+        {
+          "kind": "measurement start",
+          "assertion": "thumbnail click"
+        },
+        {
+          "kind": "measurement end",
+          "assertion": "first preview paint"
         },
         {
           "kind": "scope",
@@ -633,9 +892,28 @@
       "lineage": "acuse-etiquetado",
       "language": "es",
       "sourceSha256": "c701ae4b336fc2abf46f4c426f7dc3027859b61c6e5ff6724bb1c345f936fb96",
+      "live": true,
+      "runtime": "review",
+      "armA": {
+        "message": "Unbounded wording: “rápido”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "openspec/changes/labels/specs/dispatch/spec.md:4"
+        ]
+      },
+      "armB": {
+        "kind": "review",
+        "focus": "conflicting-evidence",
+        "text": "Las fuentes citadas dan valores distintos para la misma decisión. Revísalas juntas.",
+        "evidence": [
+          "openspec/changes/labels/specs/dispatch/spec.md:4",
+          "openspec/changes/labels/design.md:1",
+          "openspec/changes/labels/design.md:2"
+        ]
+      },
       "outcome": "review",
       "openSlot": null,
-      "roleBrief": "Mantienes el cambio de etiquetado. El diseño del cambio da 40 ms y 90 ms para FR-214, y el requisito vigente dice 60 ms. No puedes elegir entre ellos: decide el responsable del servicio de despacho.",
+      "roleBrief": "Mantienes el cambio de etiquetado. El diseño del cambio activo da 40 ms y 90 ms para FR-214; la especificación vigente, que el cambio todavía no ha sustituido, dice 60 ms. No puedes elegir ningún valor para el cambio activo. (Dato de rol aportado por el protocolo: decide el responsable del servicio de despacho.)",
       "acceptableResolutions": [
         "FR-214 no recibe un valor nuevo; se registra el conflicto entre 40 ms, 90 ms y los 60 ms vigentes y se deriva al responsable del servicio de despacho."
       ],
@@ -660,6 +938,24 @@
       "lineage": "document-roster",
       "language": "en",
       "sourceSha256": "2d11f8e96a55ddaed0ea6c12081d6a26c842c2290b55c910af79d518c0cfc750",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “fast”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/048-document-roster/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "measurement-end",
+        "text": "Which event ends the elapsed-time measurement?",
+        "evidence": [
+          "specs/048-document-roster/spec.md:3",
+          "specs/048-document-roster/tasks.md:1"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "event that ends the elapsed-time measurement",
       "roleBrief": "You own roster search. The 200 ms limit and the start event (submitting the search) are approved. The team agreed that the measurement ends when the first page of matching documents is displayed.",
@@ -670,6 +966,10 @@
         {
           "kind": "identifier",
           "assertion": "FR-005"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "roster search must meet the response-time requirement"
         },
         {
           "kind": "quantity",
@@ -691,11 +991,29 @@
       "lineage": "cierre-senal",
       "language": "es",
       "sourceSha256": "bede5585d2346810e1149a86c0ea8bf8c88ddea1a8ba95f2b47db79a167d6831",
+      "live": true,
+      "runtime": "review",
+      "armA": {
+        "message": "Unbounded wording: “cuando sea necesario”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/041-cierre-senal/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "review",
+        "focus": "owner-unavailable",
+        "text": "La evidencia vinculada indica que falta designar al responsable o que no está disponible.",
+        "evidence": [
+          "specs/041-cierre-senal/spec.md:3",
+          "specs/041-cierre-senal/plan.md:1"
+        ]
+      },
       "outcome": "review",
       "openSlot": null,
       "roleBrief": "Mantienes la especificación. El plan indica que la persona responsable de decidir cuándo desaparece la señal está pendiente de designar, y tú no puedes decidirlo.",
       "acceptableResolutions": [
-        "FR-019 se conserva y se registra que la condición de desaparición depende de designar a la persona responsable."
+        "FR-019 se conserva y se registra que la condición de desaparición depende de designar a la persona responsable. Registrar ese bloqueo basta; no hace falta otra escalada."
       ],
       "invariants": [
         {
@@ -718,6 +1036,25 @@
       "lineage": "locate-summary",
       "language": "en",
       "sourceSha256": "482f8ab76e7d174b8eea7592a46c8e20830b2be4fb43b53bdf6ade123d70fe9a",
+      "live": true,
+      "runtime": "question",
+      "armA": {
+        "message": "Unbounded wording: “fast”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/065-locate-summary/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "question",
+        "focus": "bound",
+        "text": "What maximum elapsed time applies under the cited measurement conditions?",
+        "evidence": [
+          "specs/065-locate-summary/spec.md:3",
+          "specs/065-locate-summary/plan.md:1",
+          "specs/065-locate-summary/plan.md:2"
+        ]
+      },
       "outcome": "ask",
       "openSlot": "maximum elapsed time under the stated measurement conditions",
       "roleBrief": "You own summary search and can set its limit. The plan already fixes the measurement from search submission until the search result is displayed. The team agreed on a maximum of 800 ms.",
@@ -745,6 +1082,24 @@
       "lineage": "cierre-alerta",
       "language": "es",
       "sourceSha256": "af39e2395223fb11655bc9c0a0c32d0bee3bd452b51befdd9d4037691afce81f",
+      "live": true,
+      "runtime": "abstain",
+      "armA": {
+        "message": "Unbounded wording: “cuando sea necesario”.",
+        "suggestion": "Specify observable behavior and its conditions. Ask for any missing limit.",
+        "evidence": [
+          "specs/122-cierre-alerta/spec.md:3"
+        ]
+      },
+      "armB": {
+        "kind": "abstain",
+        "focus": "already-specified",
+        "text": "La evidencia citada ya especifica esta decisión.",
+        "evidence": [
+          "specs/122-cierre-alerta/spec.md:3",
+          "specs/122-cierre-alerta/tasks.md:1"
+        ]
+      },
       "outcome": "clear",
       "openSlot": null,
       "roleBrief": "Eres responsable de la alerta. Las tareas ya fijan el evento disparador: la confirmación del operador.",
