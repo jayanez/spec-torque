@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { calibrationItems, checkRenderings, leaked, liveItems, load, order, packet, page, presentationId, seed, type Attempt } from '../scripts/precision/rehearsal.js';
 
-const loaded = await load(new URL('..', import.meta.url).pathname);
+const loaded = await load(fileURLToPath(new URL('..', import.meta.url)));
 const live = loaded.rehearsal.cases.filter(c => c.live);
 
 test('fixtures load with matching source hashes and the protocol prompt', () => {
