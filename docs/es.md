@@ -12,6 +12,12 @@ Con Node.js 22.20 o superior, instala desde el repositorio con `npm ci --ignore-
 
 Las puntuaciones son una ayuda heurística: no certifican la corrección de la spec ni predicen defectos. «Desconocido» indica evidencia insuficiente; «no aplicable» requiere justificación. Consulta [el estado real de las integraciones](compatibility.md) y [su instalación](integrations.md).
 
+## Fundamento científico
+
+EPIC reúne 40 prácticas en diez dimensiones a partir de un estudio de 114 repositorios de código abierto y la evaluación de 15 profesionales. SpecTorque usa ese marco para revisar especificaciones, planes y tareas con evidencias en inglés y español. [Estudio EPIC](https://arxiv.org/abs/2610.07534)
+
+La precisión permite comprobar una obligación. Si una reserva debe confirmarse «rápido», queda por decidir qué tiempo de respuesta se acepta y en qué condiciones. La selectividad consiste en preguntar por decisiones que cambian la implementación o la aceptación. Los estudios de aclaración con agentes evalúan esa capacidad en tareas concretas. El efecto de SpecTorque sobre los defectos de implementación sigue pendiente de evaluación. [Fundamento y límites](research.md) · [Corpus EN/ES](format-corpus.md)
+
 ## Entorno y verificación reproducible
 
 Para desarrollar y verificar usa Node 22.20.0, fijado en `.nvmrc`. `npm run check` comprueba el ejecutable efectivo. Instala los navegadores dentro del proyecto con `npm run browsers:install` y ejecuta `npm run test:browser`; conserva los fallos y límites en el informe, sin convertirlos en aceptación.

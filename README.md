@@ -19,9 +19,54 @@
 
 SpecTorque is a local workbench for writing and reviewing software specifications. It takes you from a rough idea or an existing Markdown workspace to a spec, plan and tasks with traceable requirements, reviewable changes and explicit open decisions.
 
-[Quickstart](#quickstart) · [How it works](#how-it-works) · [Research](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
+[Quickstart](#quickstart) · [How it works](#how-it-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
 
 **40 EPIC practice checks · 10 quality dimensions · English and Spanish · One deterministic engine**
+
+## Quickstart
+
+Requires **Node.js 22.20+** and npm.
+
+```sh
+git clone https://github.com/jayanez/spec-torque.git
+cd spec-torque
+npm ci --ignore-scripts
+npm run build
+node dist/cli.js serve --root fixtures/en-draft
+```
+
+Open the printed loopback URL. Select the finding for `FR-001`, jump to its source line, and review the suggested clarification. To use your own Markdown workspace, replace `fixtures/en-draft` with its path.
+
+Download the CLI package or a host integration from the [0.2.0 pilot prerelease](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0), or follow the [EN/ES pilot walkthrough](docs/pilot.md) and its [Spanish version](docs/pilot.es.md). See the [qualification record](docs/common-workbench-qualification.md) for observed results and remaining checks.
+
+## See the difference
+
+The [booking draft](fixtures/en-draft/specs/booking/spec.md#room-booking) starts with a requirement an agent cannot test as written.
+
+> **FR-001** The system MUST be fast.
+
+1. **Find the gap.** SpecTorque flags **fast** as unbounded wording at `specs/booking/spec.md:5`. An agent still has to decide which operation to time, what limit to meet and under what load.
+2. **Ask what changes acceptance.** Which booking operation should we measure, what response time is acceptable, and under what load? The answers determine the performance test and can change implementation choices.
+3. **Keep the decision open.** Preview the change before accepting it. The proposed wording preserves the requirement ID and obligation and records what the team still needs to decide.
+
+   > **FR-001** The system MUST be [NEEDS CLARIFICATION: define the response-time limit and measurement conditions].
+
+Once the team answers, it can write a testable requirement. For example, if the team chooses booking confirmation, a 500 ms limit at the 95th percentile and a load of 50 concurrent users, the requirement could read:
+
+> **FR-001** The system MUST return a booking confirmation within 500 ms at the 95th percentile under a load of 50 concurrent users.
+
+These values illustrate a possible team decision. Follow the [pilot walkthrough](docs/pilot.md#analyze-review-and-export) to preview the clarification and see how the workbench records it as pending.
+
+## Why wording matters
+
+**Precision** makes an obligation testable by naming observable behavior and its conditions. **Selectivity** directs questions to decisions that affect implementation or acceptance. The studies below examine specification quality, wording signals and clarification behavior.
+
+- **EPIC defines what to review.** Claudino et al. assessed specifications, plans and tasks from 114 open-source repositories using ISO/IEC/IEEE 29148 as a reference. They derived 40 practices across ten dimensions, then sought feedback from 15 practitioners. The study observed a lower share of bug-fix commits in repositories with higher-rated specifications. Its observational design supports an association. [The EPIC Framework for Spec-Driven Development](https://arxiv.org/abs/2610.07534)
+- **Wording can flag requirements that need review.** Femmer et al. found that lightweight checks surfaced relevant requirements problems, with detection accuracy varying substantially across cases. [Requirements Smells](https://doi.org/10.1016/j.jss.2016.02.047)
+- **Ambiguity can change program behavior.** Mu et al. used divergent outputs from candidate implementations to identify requirements worth clarifying in function-generation benchmarks. [ClarifyGPT](https://doi.org/10.1145/3660810)
+- **Agent studies examine when to ask.** On an underspecified variant of SWE-bench Verified, Edwards and Schuster's uncertainty-aware setup asked fewer questions on simpler tasks and sought more information on complex ones. That finding applies to the systems and tasks evaluated in the study. [Ask or Assume?](https://arxiv.org/abs/2603.26233)
+
+EPIC is the basis for SpecTorque's rubric. SpecTorque implements explainable English and Spanish heuristics, cites the evidence behind each finding, and keeps unsupported evidence and unresolved decisions visible. Scores are advisory. Estimating the tool's effect on implementation defects would require a separate outcome study. [Rubric](docs/rubric.md) · [Research methods and limitations](docs/research.md) · [EN/ES corpus and reproduction](docs/format-corpus.md)
 
 ## Explore the workbench
 
@@ -65,12 +110,12 @@ Find the host integration guides and copy the local MCP configuration for your p
 
 ## Native panels
 
-Each integration brings the same engine into the host you already use. Captures use the bundled ambiguous booking draft. Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
+Each integration brings the same engine into the host you already use. The captures use the bundled booking draft or, in ThinkRail, a SpecTorque test checkout with repository fixtures. Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
 
-<details open>
+<details>
 <summary><strong>Claude Code (CLI)</strong> · <code>/spectorque</code> pane</summary>
 
-Read dimension scores and findings beside the conversation, refresh the analysis or open the common workbench. The pane calls no model.
+Read dimension scores and findings beside the conversation, refresh the analysis or open the common workbench. The pane calls no model. [Install for Claude Code CLI](docs/integrations.md#claude-code)
 
 [![SpecTorque pane beside the Claude Code prompt, showing dimension scores and the first finding](docs/assets/panels/claude.png)](docs/assets/panels/claude.png)
 
@@ -79,7 +124,7 @@ Read dimension scores and findings beside the conversation, refresh the analysis
 <details>
 <summary><strong>Claude Code Desktop</strong> · <code>/spectorque</code> pane</summary>
 
-Run `/spectorque` in an active Code session to view dimension scores and findings in the native pane.
+Install the plugin from a local marketplace at project scope. Start a session in the Code tab, then run `/spectorque` to view dimension scores and findings in the native pane. Starting the session takes a model turn. The pane runs its analysis locally. [Install for Claude Desktop](docs/host-common-qualification.md#claude-desktop)
 
 [![SpecTorque pane in Claude Code Desktop showing dimension scores and the first of five findings](docs/assets/panels/claude-desktop.png)](docs/assets/panels/claude-desktop.png)
 
@@ -88,7 +133,7 @@ Run `/spectorque` in an active Code session to view dimension scores and finding
 <details>
 <summary><strong>Codex Desktop</strong> · inline viewer</summary>
 
-The viewer opens in the conversation from the project's local MCP server. Choose a finding, preview a change, then hand off to the local workbench to approve or export. Opening it takes one model turn.
+The viewer opens in the conversation from the project's local MCP server. Choose a finding, preview a change, then hand off to the local workbench to approve or export. Opening it takes one model turn. [Install the Codex Desktop viewer](integrations/codex/README.md)
 
 [![SpecTorque inline viewer in a Codex Desktop conversation](docs/assets/panels/codex.jpg)](docs/assets/panels/codex.jpg)
 
@@ -97,7 +142,7 @@ The viewer opens in the conversation from the project's local MCP server. Choose
 <details>
 <summary><strong>OpenCode</strong> · <code>/spectorque</code> panel</summary>
 
-Press **e** for the exact source line, **r** for reviewed changes and **w** for the local workbench URL.
+Press **e** for the exact source line, **r** for reviewed changes and **w** for the local workbench URL. [Install for OpenCode](docs/integrations.md#opencode)
 
 [![SpecTorque panel in the OpenCode terminal UI with dimension scores and findings](docs/assets/panels/opencode.png)](docs/assets/panels/opencode.png)
 
@@ -106,7 +151,7 @@ Press **e** for the exact source line, **r** for reviewed changes and **w** for 
 <details>
 <summary><strong>Pi</strong> · <code>/spectorque</code> in ThinkRail</summary>
 
-Pi is shown through ThinkRail, a desktop host that runs Pi natively. Pick a finding to open its exact evidence, then review the before and after wording. The workspace in this capture is a SpecTorque test checkout, so it lists findings from the repository's own fixtures.
+Pi is shown through ThinkRail, a desktop host that runs Pi natively. Pick a finding to open its exact evidence, then review the before and after wording. The workspace in this capture is a SpecTorque test checkout, so it lists findings from the repository's own fixtures. [Install in ThinkRail](docs/host-common-qualification.md#thinkrail-desktop-with-pi-package) · [Install for Pi CLI](docs/integrations.md#pi)
 
 [![SpecTorque evidence picker in ThinkRail running Pi](docs/assets/panels/pi.jpg)](docs/assets/panels/pi.jpg)
 
@@ -115,33 +160,13 @@ Pi is shown through ThinkRail, a desktop host that runs Pi natively. Pick a find
 <details>
 <summary><strong>VS Code</strong> · embedded workbench (preview)</summary>
 
-The shared workbench opens in an editor tab, with findings that jump to source.
+The shared workbench opens in an editor tab, with findings that jump to source. [Install the VS Code preview](docs/integrations.md#vs-code-workbench)
 
 [![SpecTorque workbench in a VS Code editor tab](docs/assets/panels/vscode.png)](docs/assets/panels/vscode.png)
 
 </details>
 
 See the [integration guides](docs/integrations.md) for each host's behavior and limits.
-
-## See the difference
-
-> **FR-001** The system MUST respond quickly.
-
-SpecTorque flags **quickly** at the exact source line. A focused review asks what response time is acceptable and under which conditions. If the team has yet to decide, record that question in the spec and preserve the obligation. Review the original and proposed wording before approving any change.
-
-## Quickstart
-
-Requires **Node.js 22.20+** and npm.
-
-```sh
-git clone https://github.com/jayanez/spec-torque.git
-cd spec-torque
-npm ci --ignore-scripts
-npm run build
-node dist/cli.js serve --root /absolute/path/to/your/project
-```
-
-Open the printed loopback URL and try the built-in ambiguous draft. Select a finding to jump to the source, review a clarification, then export the result. Download a published package from [GitHub Releases](https://github.com/jayanez/spec-torque/releases) and follow the installation guide for its version. For the reproducible EN/ES pilot, see [the demonstration](docs/pilot.md) and [the Spanish walkthrough](docs/pilot.es.md). See [qualification](docs/common-workbench-qualification.md) for observed results and remaining checks on this branch.
 
 ## How it works
 
@@ -164,17 +189,6 @@ Open the printed loopback URL and try the built-in ambiguous draft. Select a fin
 | **Share the result** | Export editable artifacts as a scoped ZIP with original paths, download Markdown or JSON reports and a revision-bound SVG badge, or revisit a prior assessment in session history. Save or export unsaved drafts before ending the session. |
 
 The basic workflow runs locally without an account, a model, a GPU or telemetry. Model assistance is optional through a host prompt, local Ollama or an explicitly configured OpenAI request. See [privacy and data flows](docs/privacy.md).
-
-## Why wording matters
-
-**Precision makes obligations inspectable. Selectivity makes clarification useful.** In a specification, distinguish a requirement from a preference, name the conditions and observable result, and spend clarification effort on questions whose answers would change the implementation.
-
-- **EPIC is the direct basis for the rubric.** Claudino et al. derived 40 practices across ten dimensions from an observational study of 114 open-source spec-driven development repositories and evaluated the practices with 15 practitioners. The framework addresses ambiguity, verifiability and other qualities across specs, plans and tasks for coding agents. [The EPIC Framework for Spec-Driven Development](https://arxiv.org/abs/2610.07534)
-- **Closely related research evaluates when agents should ask.** On an underspecified variant of SWE-bench Verified, Edwards and Schuster observed that an uncertainty-aware setup asked fewer questions on simple tasks and sought more information on complex ones. That result comes from the setup and benchmark in their study. [Ask or Assume?](https://arxiv.org/abs/2603.26233)
-
-SpecTorque turns the EPIC practices into explainable EN/ES heuristics and makes unresolved decisions visible for human review. Scores are advisory. The studies support the design rationale, while the accuracy of SpecTorque’s checks and their effect on project outcomes require separate evaluation. [Research and limitations](docs/research.md) · [Rubric](docs/rubric.md)
-
-The EN/ES corpus covers seven Markdown layout families, nested workspaces, and ambiguous wording. Its reproducible comparison reports false positives, false negatives, and abstentions by rule, family, and language. The current reference labels come from blind agent review and describe the sampled cases. [Corpus, results and reproduction](docs/format-corpus.md)
 
 ## Browser, CLI and coding agents
 

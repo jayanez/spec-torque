@@ -2,9 +2,22 @@
 
 ## EPIC
 
-[The EPIC Framework for Spec-Driven Development](https://arxiv.org/abs/2610.07534), Claudino et al., 2026, introduces forty practices across ten dimensions. Its observational repository study and practitioner validation motivate inspectable specification review. They do not establish that raising an automatic score causes fewer bugs. Repository selection, framework mix, activity and human judgment limit generalization.
+Claudino et al. assessed specifications, plans and tasks from 114 open-source repositories practicing spec-driven development. The authors used ISO/IEC/IEEE 29148 as a reference, derived practices from higher-scoring artifacts and sought feedback from 15 practitioners. EPIC organizes 40 practices into ten dimensions for making requirements and decisions explicit. [The EPIC Framework for Spec-Driven Development](https://arxiv.org/abs/2610.07534)
 
-SpecTorque paraphrases the practices with attribution, implements explainable EN/ES signals and labels unsupported or incomplete evidence. These checks are not a replication of human scoring, an ISO conformance assessment, or an independently calibrated predictor. We do not apply the paper's quality bands as marketing guarantees. See [NOTICE](../NOTICE).
+Repositories in the top third by specification quality spent 11.8% of their commits on bug fixes, compared with 20.4% in the bottom third. The outcome is the share of bug-fix commits in that sample. Repository selection, project activity, framework mix and human scoring limit generalization. A causal estimate would require a study that isolates the effect of specification changes. [EPIC study](https://arxiv.org/abs/2610.07534)
+
+SpecTorque paraphrases EPIC's practices with attribution and turns them into explainable EN/ES signals. It cites source evidence, keeps unknowns visible and uses scores as review aids. Human scoring, standards conformance and prediction of implementation defects each require separate evaluation. [Attribution](../NOTICE) · [Rubric](rubric.md)
+
+## Wording precision and selective clarification
+
+| Study | Evidence and scope |
+| --- | --- |
+| **Femmer et al., Requirements Smells (JSS, 2017)** | Their Smella prototype averaged 59% precision and 82% recall in the evaluated cases, with substantial variation. The results show why lexical cues can start a review and why reviewers still need the source context. [Paper](https://doi.org/10.1016/j.jss.2016.02.047) |
+| **Mu et al., ClarifyGPT (FSE, 2024)** | The framework used differences in candidate programs' outputs to identify ambiguity and ask targeted questions. Its human evaluation used ten participants and two function-generation benchmarks. [Paper](https://doi.org/10.1145/3660810) |
+| **Edwards and Schuster, Ask or Assume? (2026)** | The uncertainty-aware system separated detection of underspecification from implementation. In its underspecified SWE-bench Verified tasks it conserved questions on simpler tasks and sought more information on complex ones. [Camera-ready manuscript](https://arxiv.org/abs/2603.26233v3) |
+| **Fang et al., ClarifyCodeBench (2026 preprint)** | The benchmark measures whether models ask the questions that resolve annotated ambiguities and how efficiently they do so. The evaluations reported weaker clarification as ambiguity density rose and found that code generation ability alone was an unreliable guide to clarification performance. [Preprint](https://arxiv.org/abs/2607.00711) |
+
+For a requirement such as `The system MUST be fast`, SpecTorque points to the wording and can propose asking which response-time limit applies under which conditions. The answer belongs to the team. A useful evaluation measures whether a finding cites the right evidence and whether its question resolves a decision relevant to implementation or acceptance. Code correctness is a separate outcome. The EN/ES corpus covers seven Markdown layout families, nested workspaces and ambiguous wording. Its reproducible comparison reports false positives, false negatives and abstentions by rule, family and language. The reference labels come from blind agent review of the sampled cases. [EN/ES corpus and reproduction](format-corpus.md)
 
 ## Article and visual requirements
 
@@ -31,8 +44,6 @@ SpecTorque paraphrases the practices with attribution, implements explainable EN
 [spec-compare](https://github.com/cameronsjo/spec-compare) is a discovery inventory and comparison guide, not a universal parser specification. V1 supports bounded Markdown layout detection for Spec Kit, Spec Kitty, OpenSpec, Kiro, BMAD, ZeeSpec and generic PRDs. Layout names are hints. Variants, nested monorepos and cross-feature links need fixtures and evaluation; unsupported context remains visible.
 
 ## Linguistic refinement and models
-
-The literature search through Consensus informed the separation between requirement-smell detection and clarification. Useful related directions include [automated smell detection and recommendation](https://consensus.app/papers/veizaga-shin-automated-smell-detection-and-recommendation-in/w:92669d84-e68c-4fe0-bf52-cbf27bd92326/) and [ClarifyGPT](https://doi.org/10.1145/3660810). Neither supplies an out-of-the-box guarantee for bilingual agent specifications. Evidence must be reproduced on our corpus before comparative claims.
 
 A stronger practical V1 combination is deterministic linting, explicit clarification questions, source-grounded host-model proposals and human review with preservation checks. A provider's fluent text is not evidence that a decision was preserved. The optional model cannot silently alter numbers or obligations.
 
