@@ -1,15 +1,16 @@
 # Spike: inventory bilingual lexical signals
 
-## Problem and result
+Closes #58.
 
-The lexical practices can change status when equivalent EN/ES wording changes, and can count a keyword without the intended information. This spike adds reproducible synthetic controls and records each observation, the current decision and the limits of a bounded natural-source search. The scan covered all 974 matching specs at the authorized DEV revisions. E3.3 meets the two-repository, two-lineage intake criterion for missing fully described exceptional scenarios. A separate corrective issue draft records the sources and proposed acceptance gates. The remaining practices have no admitted correction on the evidence reviewed.
+SpecTorque can miss equivalent EN/ES wording and count keywords without the intended information. This spike adds 51 hashed synthetic controls and a contextual scanner for the authorized DEV sources. It records each observation and the evidence supporting its disposition.
 
-The engine, rubric, scoring, UI and integrations are unchanged. H2c remains stopped. The historical replay measured zero changes across the 716 predictions at the unchanged engine revision. A future candidate needs its own replay and independent evaluation.
+The scan covered all 974 matching specifications across 17 pinned revisions. **One defect meets intake.** E3.3 reports `missing` for exceptional scenarios with explicit conditions and observable outcomes in two independent repositories and feature lineages. Two additional scenarios in those repositories corroborate the finding. The separate corrective issue draft in `research/58/e33-issue-draft.md` records the evidence and evaluation gates.
 
-## Validation and limitations
+The report keeps C2.3 pending because the authorized documents contain only specification artifacts. It records the other unadmitted observations and recommends explaining the partial ceiling in a follow-up. H2c remains stopped.
 
-- Node 22.20.0; `npm ci`, `npm run check` (154 tests) and `npm run package:integrations` passed.
-- The broad `npm run check` loaded clarification-study fixtures through `tests/clarify.test.ts`; their relationship to excluded #57/#60 calibration material has not been verified. No findings from those fixtures are used in the spike.
-- The expanded scanner passed five focused tests, strict TypeScript checking, two identical runs and the 51 synthetic controls. The unrestricted suite was not rerun because clearance of the clarification fixtures remains unresolved.
-- The DEV scan and synthetic controls are development evidence. C2.3 remains pending because the authorized scan only contains specs.
-- Independent Luna Latest review of the final change remains required before merge, with access limited to #58 material; do not proceed if calibration material cannot be isolated.
+## Verification
+
+- Seven focused tests, strict script type checking, all 51 synthetic controls, the build and integration packaging passed under Node 22.20.0.
+- Two executions on the same 974-spec cache produced byte-identical results and coverage reports. The historical comparator and the spike engine agreed on all 716 predictions. Any corrective candidate requires its own replay and independent precision evaluation.
+- An earlier full `npm run check` passed 154 tests but loaded committed E1.2 clarification fixtures. Their relationship to the excluded #57/#60 material could not be established, so the full check was not repeated.
+- Exact-commit Luna Latest review with access restricted to this spike remains required before merge.
