@@ -1,0 +1,14 @@
+# Contextual scan of the authorized DEV cache
+
+```sh
+node --import tsx scripts/spike-58/scan-context.ts /private/tmp/spec58-natural \
+  > /tmp/spec58-leads.jsonl 2> /tmp/spec58-coverage.json
+```
+
+The input index must match repository names, revisions and manifest licenses from the authorized #52 DEV allowlist. The output keeps the source path, original line and its two neighbors on each side, Markdown heading chain, row kind, byte SHA-256 and a fragment hash. Fragment hashes use NFC, lowercase and collapsed whitespace. They identify identical normalized text and can flag reusable template text. Source history and context still determine lineage. The script emits a separate coverage ledger, including skipped documents, missing sources and truncated inventories.
+
+The original four-pattern scan remains available as a reference. This pass borrows contextual matching from [Presidio](https://github.com/data-privacy-stack/presidio/blob/main/docs/tutorial/06_context.md), token normalization from [SQLite FTS5](https://sqlite.org/fts5.html#unicode61_tokenizer) and exact fingerprinting from [NeMo Curator](https://docs.nvidia.com/nemo/curator/latest/curate-text/process-data/deduplication). Here, cues compose within a source line or with its Markdown section heading. For example, a table row with a response can be recovered under an exceptional-behavior heading. The search uses accent folding on a separate representation and retains the original line as evidence. It excludes fenced text and selects one uncaught non-heading line per document using stable hashes of repository, revision, path and line. The sample is a review queue for possible misses.
+
+Each document is analyzed once through the existing engine, using its classified role and feature. Its status and up to four returned evidence lines belong to the **whole document**. Only findings anchored to the candidate line are attached. The presence of a heading in the review queue does not imply that the engine assessed that heading positively. C2.3 requires a tasks companion and remains outside this spec-only pass. H2c references are informational.
+
+The cached run on engine 0.1.4 and rubric epic-heuristic-1 scanned 223 specs from 16 of the 17 authorized repositories, with one repository having no matching spec and one capped at 100. It produced 691 lead records across seven practices, 223 uncaught samples and three cross-repository groups with identical normalized fragments. Records may repeat a fragment under different practice cues. For example, E3.1 found the same success-criteria heading followed by a nested outcomes heading in ambient-code/platform and fmnapoli/md2confl. The engine returned `missing` at document level in both cases. These are leads from shared template structure and require review of the actual criteria and lineage. Recurrence remains pending. No estimate of search coverage or language parity follows from the raw lead counts.
