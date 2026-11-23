@@ -86,6 +86,69 @@ starts, peak RAM/VRAM, context failures and all egress and persistence.
 An integration decision requires measurable benefit in both languages and
 separate product approval.
 
+## Outcome-driven development and failure semantics
+
+"Outcome-Driven Development" appeared in 2026 practitioner writing with
+incompatible meanings. [Rauf](https://zohaib.me/outcome-driven-development/)
+places it between vibe coding and agentic engineering.
+[Gohil](https://kartikgohil.com/articles/outcome-driven-development/)
+defines it as specification, tests first and interface contracts with
+acceptance evidence. We found no empirical study of it under any definition.
+Vendor guidance verifies an agent's artifact before merge. Anthropic's
+[outcomes](https://platform.claude.com/docs/en/managed-agents/define-outcomes)
+grade a deliverable against a rubric. No reviewed source describes
+verification of a business result after release. A text analyzer cannot
+observe such a result, so SpecTorque adds no ODD profile or rubric.
+
+Two parts of the discussion can be checked in specification text. The first
+is explicit failure behavior for state-changing operations: what is returned,
+what data state remains and whether a retry is allowed.
+[RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) advises
+clients against automatically retrying non-idempotent requests. Three
+preprints give the most direct evidence.
+[Onagh and Nayebi](https://arxiv.org/abs/2611.20195) report 47.2% fewer
+hidden-test failures with explicit behavioral obligations, against 8.7% for
+lightweight structure, with 72 participants.
+[LIMBO](https://arxiv.org/abs/2609.29095) reports duplicated effects in 56%
+to 74% of episodes when an agent cannot read back state, and a fall from 28%
+to 4% when idempotency keys are offered.
+[RetryBench](https://arxiv.org/abs/2610.15884) reports that the wording of
+an idempotency-key description moved correct reuse from 10 of 40 to 39 of 40.
+None of them tests asking about failure behavior before generation.
+
+The second part is clarification.
+[Ask or Assume?](https://arxiv.org/abs/2603.26233) reports 69.40% resolved
+tasks with selective asking against 54.80% without the missing information,
+and a fall to 47.20% for one model when asking was forced. It was consulted
+as a preprint. No study compares fixed template questions with generated
+ones for coding tasks. The published precision of deterministic smell
+detectors, 59% for [Smella](https://doi.org/10.1016/j.jss.2016.02.047) and
+89% for [Paska](https://arxiv.org/html/2305.07097v2) in one financial domain,
+is far from this project's 5% error gate.
+[Hill](https://drops.dagstuhl.de/storage/00lipics/lipics-vol394-esem2026/LIPIcs.ESEM.2026.84/LIPIcs.ESEM.2026.84.pdf)
+mined 88,052 pull requests in 119 repositories and found none of five
+hypotheses about specification-driven tooling supported. The study is
+observational. No controlled comparison of specification-driven and other
+development on one codebase was found.
+
+Local measurement on engine 0.1.4 shows the limits of the current lexical
+practices. Across 42 fixture feature sets, P2.2 is partial in 2 and missing
+in 40, and P1.4 is partial in 1 and missing in 41. These practices report
+partial on any keyword hit and cannot report supported. A failure table
+reworded without the keywords stays missing. "casos límite" does not match
+where "edge cases" does. The fixtures are authored and come from effectively
+one author. A single unblinded reader did the hand reading. The result
+counts toward no gate.
+
+**Recommendation.** Measure whether authors act on E1.2 clarification
+questions before building further clarifiers (#57). Record the EN/ES and
+keyword asymmetries as a spike with no engine change (#58). Asking about
+failure behavior depends on the result of #57 and is not planned. Any
+correction to a lexical practice follows the precision process in
+[requirement classification](requirement-classification.md). The search used
+Consensus, a research-paper index, arXiv, Context7, Claude Academy and Vercel
+documentation. Consensus rate limits reduced peer-reviewed coverage.
+
 ## Evaluation policy
 
 Measure detection precision/recall on independently reviewed EN/ES examples, false positives by format, preserved decisions, accepted/rejected proposals, time to first analysis and installation success. Separate original/synthetic cases, human labels, offline contracts and real-client results. No observed outcome yet establishes reduced implementation defects or international adoption.
