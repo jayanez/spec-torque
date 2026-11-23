@@ -78,7 +78,9 @@ Unless stated, every rate is computed per arm and per language over **eligible a
 
 **Primary: supplied-decision uptake.** On question cases, the share of eligible attempts labelled `acceptable: yes` **and** `fills_slot: yes`. An attempt that was not completed, or whose combined label is `unknown`, counts as not taken up, in both arms.
 
-**Lineage balancing.** Cohort assignment gives each arm a different mix of lineages, and unequal enrollment can weight that mix further. Every rate used by the decision rule is therefore computed per lineage and then averaged over the lineages that have at least one eligible attempt in both arms, with equal weight per lineage. Lineages without both arms are excluded from the decision and reported. Attempt-pooled rates are reported alongside.
+**Lineage balancing.** Cohort assignment gives each arm a different mix of lineages, and unequal enrollment can weight that mix further. Every rate used by the decision rule is therefore computed per lineage and averaged with equal weight per lineage. For each endpoint, a lineage enters the average only if that endpoint's denominator is at least 1 in every arm the endpoint compares; the not-useful rate is arm B only, so a lineage enters it if it has at least one answer. An endpoint with no qualifying lineage is undefined, and an undefined endpoint makes that language insufficient. Excluded lineages are reported. Attempt-pooled rates are reported alongside.
+
+**Missing adjudication.** Attempts withheld for lack of consent or by the sanitization check are excluded from every endpoint and reported with their count. Among sent attempts, a combined `unknown` label counts as not taken up for the primary endpoint and is excluded from the adjudicated denominators of the other endpoints, which report it separately.
 
 **Secondary.**
 - *Not-useful rate:* arm B question-case attempts answered `no` or `not useful`, over arm B question-case attempts with an answer. `no answer` is reported separately.
@@ -98,7 +100,8 @@ Per language:
 |---|---|
 | Insufficient | Fewer than **10** eligible question-case attempts in either arm; **or** fewer than **5** arm B question-case attempts with a usefulness answer; **or** fewer than **3** adjudicated control or referral attempts in either arm; **or** fewer than **80%** of eligible question-case attempts in either arm with a combined `acceptable` and `fills_slot` label other than `unknown`. |
 | Proceed | Arm B uptake ≥ **0.60**, **and** ≥ arm A uptake + **0.15**, **and** not-useful rate ≤ **0.30**, **and** arm B invented-decision rate counting its `unknown` labels as inventions ≤ arm A observed rate, **and** arm B control damage ≤ arm A. |
-| Stop | Sufficient data and any proceed condition fails. |
+| Stop | Sufficient data and any proceed condition fails when evaluated with observed values only. |
+| No decision | Sufficient data, every proceed condition passes on observed values, and only the conservative invented-decision comparison fails. |
 
 Combined across languages, EN and ES carrying equal weight:
 
@@ -106,7 +109,7 @@ Combined across languages, EN and ES carrying equal weight:
 - **Proceed** only if both languages proceed and every adjudication gate passes.
 - **No decision** otherwise. The results are reported as provisional and the follow-ups stay unplanned.
 
-Proceeding is gated on the conservative invented-decision comparison, which counts arm B's `unknown` labels as inventions; the observed-only comparison is reported alongside. Reviewer uncertainty can therefore block proceeding but cannot by itself cause a stop.
+Proceeding is gated on the conservative invented-decision comparison, which counts arm B's `unknown` labels as inventions; the observed-only comparison is reported alongside. Reviewer uncertainty can therefore block proceeding, giving no decision, but cannot by itself cause a stop.
 
 ## Adjudication
 
@@ -121,7 +124,7 @@ Two model reviewers label every eligible, consenting attempt. Neither is an auth
 
 Each reviewer runs in a fresh context with read access to the packet only. The clients do not expose a fixed sampling temperature; their defaults are recorded at freeze, and the three runs per item absorb sampling variation. If a pinned model is unavailable when a run starts, the run waits; substituting a model is an amendment.
 
-**Packet.** One item per attempt or calibration resolution, containing: the source with line numbers and the target line marked; the scoped companion documents with paths; the role brief; the open slot, or `none` on controls; the acceptable resolutions; the invariants; and the response (`action`, `text`, `note`). It never contains the arm, the question text, timing, participant data, the other reviewer's labels or the case outcome type.
+**Packet.** One item per attempt or calibration resolution, containing: the source with line numbers and the target line marked; the scoped companion documents with paths; the role brief; the open slot, or `none` on controls; the acceptable resolutions; the invariants; and the response (`action`, `scope`, `text`, `note`). It never contains the arm, the question text, timing, participant data, the other reviewer's labels or the case outcome type.
 
 **Order.** Items are sorted by SHA-256 over `<seed>:<item id>`, where the seed is the first 16 hex digits of SHA-256 over `<protocol SHA-256>:<phase>:<reviewer>:<run>`, with phase `calibration`, `reserve` or `live`, reviewer `R1` or `R2`, and run `1` to `3`.
 
@@ -164,6 +167,16 @@ If a gate fails, the prompt may be revised once, under a dated amendment, and bo
 **Live gates**, per language, for a proceed or stop decision: κ ≥ **0.60** on `acceptable` and on `fills_slot`; instability ≤ **10%** for each reviewer; `leaked` items ≤ **20%** of question-case attempts in arm B.
 
 **Audit.** The maintainer may read any packet and label and record observations. The maintainer cannot change labels.
+
+## Known limitations
+
+Recorded after independent review, to be read with every result:
+
+- The calibration reserve holds new responses to the same 24 scenarios, not new scenarios.
+- The harm gates are relative: they can pass when both arms do substantial harm. Absolute harm rates are reported.
+- The endpoint measures uptake of a supplied decision on authored synthetic cases, not new decisions or real specifications.
+- Labels are model-adjudicated by two reviewers; they are not human or scientific acceptance.
+- Samples are pilot-sized; results are descriptive for these fixed cases.
 
 ## Amendments
 
