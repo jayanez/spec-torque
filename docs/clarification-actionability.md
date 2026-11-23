@@ -196,6 +196,13 @@ Recorded after independent review, to be read with every result:
 - Each item is labelled in its own call: the frozen prompt followed by that item's material, in packet order. A run is the sequence of calls over one packet.
 - Packet seeds and presentation IDs keep deriving from the frozen protocol SHA-256 `16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed17fcb7e9a8a024984525826`, so the calibration packets, their digests and the page manifest already recorded stay valid.
 
+**2026-11-23. Reviewer environment and scoring mechanics.** Made before any reviewer run or participant data. Models, clients, effort, the reviewer prompt, seeds and every decision rule are unchanged.
+
+- R2's container adds CA certificates and a `config.toml` that disables the shell tool, remote apps, plugins, browser, computer use and web search, validated with `--strict-config`, so the reviewer has no tools. This replaces the empty `CODEX_HOME` of the previous amendment.
+- A quoted span is verified when, after trimming whitespace and one pair of enclosing quotation marks, it occurs verbatim in the response's action, scope, text or note.
+- Output is well formed only when the whole trimmed text parses as one JSON object; anything else gets the single reviewer retry.
+- Calls that return no output are retried up to three times as transport failures; these are not reviewer retries.
+
 ## Appendix: reviewer prompt
 
 ```text
