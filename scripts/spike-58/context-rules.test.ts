@@ -70,3 +70,22 @@ test('CLI reports a missing local download and rejects out-of-scope index entrie
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('empty-input search requires a condition and an explicit outcome in the same passage', () => {
+  for (const text of [
+    'What happens when a feed has no content? A placeholder is created.',
+    'Si el buzón está vacío, se mostrará un aviso.',
+  ]) {
+    assert.ok(leadsFor(parse(text)[0]).some(lead =>
+      lead.practice === 'P2.2' && lead.cues.includes('empty-condition-and-outcome')));
+  }
+  for (const text of [
+    '## When the inbox is empty, a placeholder is created',
+    'When the inbox is empty, decide later.',
+    'When the inbox is empty.\n\nA placeholder is created.',
+    'When the inbox has messages, a placeholder is created.',
+    'The inbox is empty. The docs mention that a placeholder is created.',
+    'When diagnostics are enabled, consult `--empty`. See `output create`.',
+  ]) assert.ok(!parse(text).some(passage => leadsFor(passage).some(lead =>
+    lead.cues.includes('empty-condition-and-outcome'))), text);
+});
