@@ -11,7 +11,7 @@ This protocol adds one pre-registered endpoint to the optional E1.2 rehearsal in
 ## Materials
 
 - Engine and workbench: the frozen pilot SHA.
-- Cases: `tests/fixtures/e12/study.json` (12 cases from #39) and `tests/fixtures/e12/fresh.json` (12 lineages from #49), at the SHA-256 values recorded at freeze. Both sets are authored synthetic controls. Their authors saw them while writing the rules, so participants are the only independent element.
+- Cases: `tests/fixtures/e12/study.json` (12 cases from #39) and `tests/fixtures/e12/fresh.json` (12 lineages from #49), with the role briefs and acceptable resolutions in `tests/fixtures/e12/rehearsal.json`, at the SHA-256 values recorded at freeze. Both sets are authored synthetic controls. Their authors saw them while writing the rules, so participants are the only independent element.
 - Arm A shows the finding and the existing guidance. Arm B adds the clarification question, the documented abstention or the review referral. Both arms get the same source, context and role brief.
 
 | Case group | EN | ES | Use |
@@ -26,9 +26,14 @@ The sets are not balanced: Spanish has fewer question cases, and only Spanish ha
 
 ### Before freeze
 
-- The fresh set records a `focus` per lineage but no role brief and no acceptable resolutions. Write both for its 12 lineages, in the style of `expected.role` and `expected.resolution` in the study set, by someone who did not write the E1.2 rules or fixtures. Freeze them with their SHA-256.
-- Author and freeze the calibration set described under Adjudication.
-- Pin the reviewer model IDs, client versions, sampling settings and packet seeds.
+| Item | State |
+|---|---|
+| Role briefs, open slots, acceptable resolutions and invariants for all 24 cases, in `tests/fixtures/e12/rehearsal.json`. The fresh set had no role brief or acceptable resolution; the study set's existing `expected` fields are kept and only a role brief is added. | Drafted |
+| Calibration set of 72 constructed resolutions with keys, in `tests/fixtures/e12/calibration.json` | Drafted |
+| Reviewer model IDs, client versions and packet seeds | Proposed below |
+| Review of both files by the maintainer, then freeze of this file and both fixtures with their SHA-256 in #57 | Pending |
+
+Both files were written by a contributor who did not write the E1.2 detector, the clarification rules or the study and fresh fixtures. Role briefs give each participant the facts needed to decide, so that an `invented_decision` can be judged against them. They are constructed controls, not independent labels.
 
 ## Unit and records
 
@@ -70,7 +75,16 @@ A stop closes clarification beyond E1.2 and the failure-behavior follow-up, reco
 
 Two model reviewers label every attempt. Neither is an author of the E1.2 detector, the clarification rules or the fixture expectations, and the rule author's own readings do not count. Results are reported as **model-adjudicated**. They are a product decision input, not human or scientific acceptance.
 
-**Reviewers.** Two models from different vendors, so that their errors are less likely to coincide: one Claude model run as a Claude Code subagent, and one OpenAI model run through Codex. Pin the exact model IDs, client versions and sampling settings at freeze. Each reviewer runs in a fresh context with no repository access beyond the packet.
+**Reviewers.** Two models from different vendors, so that their errors are less likely to coincide. Each runs in a fresh context with no repository access beyond the packet.
+
+| Reviewer | Proposed pin | Notes |
+|---|---|---|
+| R1 | `claude-sonnet-5-5`, as a Claude Code subagent | Not the model that drafted the rehearsal and calibration files |
+| R2 | `gpt-6-luna`, through `codex` CLI | The review model named in `AGENTS.md`; confirm availability at freeze. Local CLI at drafting: `codex-cli 0.170.0` |
+
+Record the exact client versions at freeze. The clients do not expose a fixed sampling temperature, so record their defaults; the three runs per item below absorb sampling variation.
+
+**Seeds.** Each reviewer's packet order is shuffled with a seed derived from the frozen file, so it cannot be chosen after the fact: the first 16 hex digits of SHA-256 over `<protocol SHA-256>:<reviewer>:<run>`, for reviewer `R1` or `R2` and run `1` to `3`. Calibration and live packets use the same rule with the prefix `calibration:` or `live:`.
 
 **Blind packet.** One item per attempt, in a random order drawn from a recorded seed, different for each reviewer. An item contains the case source, the role brief, the predeclared acceptable resolutions and open slot, and the participant's resolution. It never contains the arm, the question text, timing, the participant, the other reviewer's label or the case outcome type. If a resolution quotes or paraphrases the question, record the item as `leaked` and report it separately.
 
@@ -88,7 +102,7 @@ Malformed output is retried once, then recorded as `unknown`.
 
 **Combining.** When both reviewers agree, that is the label. When they disagree, the label is `unknown`. On the primary endpoint and on invented decisions, `unknown` counts against arm B: it is not actionable and it counts as an invented decision in arm B only. This is conservative, in line with counting `unknown` as an error in the precision process.
 
-**Calibration before any participant data.** Before the first session, author a calibration set of 3 resolutions per case for all 24 cases: one acceptable that fills the slot, one plausible that misses the slot, and one with an invented decision, in the case's language. The calibration author is not an author of the E1.2 rules or fixtures. Freeze it with its SHA-256 alongside this file. Run both reviewers on it. Each label must reach Cohen's κ ≥ 0.80 between the reviewers in each language, and each reviewer must match the constructed key on at least 90% of items. If either check fails, revise the prompt once under a dated amendment and re-run on the same set. A second failure means the rehearsal results are reported as provisional and no proceed decision is taken.
+**Calibration before any participant data.** `tests/fixtures/e12/calibration.json` holds 3 constructed resolutions per case for all 24 cases, in the case's language. Ask cases have one that fills the slot from the role brief, one that rewords without deciding, and one that fills the slot with a value the brief does not support. Controls have one that preserves the requirement, one that drops an invariant without adding anything, and one that adds an unsupported value, owner or condition. Freeze it with its SHA-256 alongside this file. Run both reviewers on it. Each label must reach Cohen's κ ≥ 0.80 between the reviewers in each language, and each reviewer must match the constructed key on at least 90% of items. If either check fails, revise the prompt once under a dated amendment and re-run on the same set. A second failure means the rehearsal results are reported as provisional and no proceed decision is taken.
 
 **Live consistency gates.** Report κ per label and language on the live items. The result can support a proceed decision only if, in each language, κ ≥ 0.60 on `acceptable` and `fills_slot`, the 3-run disagreement rate is at most 10%, and `leaked` items are at most 20%. Otherwise report the results as provisional.
 

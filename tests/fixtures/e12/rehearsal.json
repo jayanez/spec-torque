@@ -1,0 +1,770 @@
+{
+  "version": "e12-rehearsal/1",
+  "status": "draft, not frozen",
+  "protocol": "docs/clarification-actionability.md",
+  "issue": 57,
+  "sources": {
+    "tests/fixtures/e12/study.json": "56710e687f8f1ba22212e018b7fdf39c77a797d74911e6b0ba3627c382a0a383",
+    "tests/fixtures/e12/fresh.json": "d7195fd51c7b528296af76761c4ce4c5ee8121ab63530fa2059c3015d08afa73"
+  },
+  "authorship": "Written by a contributor who did not write the E1.2 detector, the clarification rules or the study and fresh fixtures. Role briefs, acceptable resolutions and calibration keys are constructed controls, not independent labels.",
+  "note": "Role briefs and acceptable resolutions for the 24 E1.2 cases. Only \"ask\" cases have an open slot the participant may fill; every other case is a control and its packet shows OPEN SLOT as \"none\". Study-set invariants are copied from study.json expected.invariants.",
+  "cases": [
+    {
+      "id": "study:c82e8832fe47",
+      "set": "study",
+      "lineage": "ledger-load",
+      "language": "en",
+      "sourceSha256": "2c83608f83e71f3c9398857985c8a2aa3b5827f84f0e1911c0de133b21ec690b",
+      "outcome": "ask",
+      "openSlot": "maximum elapsed response time for live searches and the events that start and end its measurement",
+      "roleBrief": "You own the ledger search service and can set its performance requirements. Product research agreed with the analysts that a live search is acceptable when the result list appears within 2 seconds of submitting the query, with up to 20 analysts searching at once. Archived entries stay excluded.",
+      "acceptableResolutions": [
+        "NFR-041 states a maximum of 2 seconds (or 2000 ms), measured from query submission until the result list is displayed, for up to 20 concurrent analysts, and still excludes archived entries."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "NFR-041"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "ledger search must meet the response-time requirement"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "up to 20"
+        },
+        {
+          "kind": "unit",
+          "assertion": "concurrent analysts"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "archived entries"
+        },
+        {
+          "kind": "prohibition",
+          "assertion": "must not include archived entries"
+        }
+      ]
+    },
+    {
+      "id": "study:9ebdf2c874cf",
+      "set": "study",
+      "lineage": "vault-suspension",
+      "language": "en",
+      "sourceSha256": "6fc6b35902b5aae157647f03dd1b5741e1c6a71bb277994777fa4e3ae77e1f5d",
+      "outcome": "abstain",
+      "openSlot": null,
+      "roleBrief": "You maintain this change specification but you are not the policy owner. No policy owner is assigned yet, so you cannot decide whether auditors are exempt from the suspension.",
+      "acceptableResolutions": [
+        "Both FR-212 and the scenario stay as written, and the conflict between them is recorded as an open decision routed to a policy owner."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-212"
+        },
+        {
+          "kind": "permission",
+          "assertion": "requirement permits auditors to download signed statements"
+        },
+        {
+          "kind": "condition",
+          "assertion": "during a suspension"
+        },
+        {
+          "kind": "prohibition",
+          "assertion": "scenario prohibits downloads by every role including auditors"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "policy owner is pending"
+        }
+      ]
+    },
+    {
+      "id": "study:11b83067c80f",
+      "set": "study",
+      "lineage": "sensor-threshold",
+      "language": "en",
+      "sourceSha256": "42eb8a412733046b738bc6d788118ed5fe8770f0b45ff5c982787922271c7ae6",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "You own the sampler. “fast” is the name of a sampler preset, not a performance target. The 5 °C threshold and the boundary behavior are approved.",
+      "acceptableResolutions": [
+        "FR-305 stays unchanged, optionally with a note that “fast” names a preset and needs no time limit."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-305"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "use the named “fast” preset in the specified scope"
+        },
+        {
+          "kind": "condition",
+          "assertion": "only below 5 °C"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "5"
+        },
+        {
+          "kind": "unit",
+          "assertion": "°C"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "at 5 °C use the standard preset"
+        }
+      ]
+    },
+    {
+      "id": "study:01680b6ed038",
+      "set": "study",
+      "lineage": "acuse-nocturno",
+      "language": "es",
+      "sourceSha256": "0d7632a2d4a7c54f7c5194c881ceaf6031410ec2d7ba6160136c2472209bec14",
+      "outcome": "ask",
+      "openSlot": "plazo máximo del acuse nocturno y eventos de inicio y fin de su medición",
+      "roleBrief": "Eres responsable del receptor y puedes fijar sus requisitos de rendimiento. Operaciones acordó que, durante el turno nocturno, el acuse de un paquete operativo se emita en un máximo de 500 ms, medidos desde la recepción del paquete hasta el envío del acuse. Los paquetes de prueba siguen excluidos.",
+      "acceptableResolutions": [
+        "NFR-073 fija un máximo de 500 ms, medidos desde la recepción del paquete hasta el envío del acuse, durante el turno nocturno, y sigue excluyendo los paquetes de prueba."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "NFR-073"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "emitir un acuse"
+        },
+        {
+          "kind": "condition",
+          "assertion": "turno nocturno"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "paquetes de prueba"
+        }
+      ]
+    },
+    {
+      "id": "study:1e2929e25d1d",
+      "set": "study",
+      "lineage": "licencias-reserva",
+      "language": "es",
+      "sourceSha256": "ae7eb2b8e5f16bc4eeed48a6d831bde21ffc14a842ac6964a4f99470903e7162",
+      "outcome": "abstain",
+      "openSlot": null,
+      "roleBrief": "Mantienes esta especificación pero no formas parte de ningún órgano de gobernanza. Hay dos órganos con competencias sin delimitar y nadie ha decidido cuál autoriza la excepción.",
+      "acceptableResolutions": [
+        "FR-420 se conserva tal cual, con la prohibición y la excepción, y se registra la dependencia de gobernanza para designar el órgano competente."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-420"
+        },
+        {
+          "kind": "prohibition",
+          "assertion": "no conceder licencias de reserva"
+        },
+        {
+          "kind": "exception",
+          "assertion": "aprobación del órgano competente"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "dos órganos"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "órgano competente pendiente"
+        }
+      ]
+    },
+    {
+      "id": "study:76ca85b99820",
+      "set": "study",
+      "lineage": "sonda-sellada",
+      "language": "es",
+      "sourceSha256": "f6495aa13dda92cd6baed0460ec601311413d0c2a5ced3448f282db68c7b5376",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "Eres responsable de la sonda. La duración mínima de 3 horas y el evento de activación están aprobados.",
+      "acceptableResolutions": [
+        "NFR-307 se conserva sin cambios."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "NFR-307"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "mantener la carcasa sellada"
+        },
+        {
+          "kind": "condition",
+          "assertion": "desde la activación de la sonda"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "al menos 3"
+        },
+        {
+          "kind": "unit",
+          "assertion": "horas"
+        }
+      ]
+    },
+    {
+      "id": "study:228ec77b3f37",
+      "set": "study",
+      "lineage": "dispatch-banner",
+      "language": "en",
+      "sourceSha256": "3008c07b0c246346e8fd533c05c6073d0803220a21453c3d369cd19beb0fcf57",
+      "outcome": "ask",
+      "openSlot": "event or condition for automatic banner dismissal",
+      "roleBrief": "You are the dispatch product owner and can decide when the banner is removed automatically. Dispatch agreed that the banner should disappear automatically when the expired allocation is renewed or reassigned. Manual dismissal stays limited to the shift supervisor.",
+      "acceptableResolutions": [
+        "FR-603 states that the banner disappears automatically when the expired allocation is renewed or reassigned, keeps display on allocation expiry, and keeps manual dismissal limited to the shift supervisor."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-603"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "display the banner and make it disappear under a condition"
+        },
+        {
+          "kind": "condition",
+          "assertion": "display when an allocation expires"
+        },
+        {
+          "kind": "permission",
+          "assertion": "shift supervisor may dismiss manually"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "other roles cannot dismiss manually"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "automatic dismissal condition"
+        }
+      ]
+    },
+    {
+      "id": "study:cdf3c3228237",
+      "set": "study",
+      "lineage": "receipt-assertion",
+      "language": "en",
+      "sourceSha256": "c7c08a96c6393c2eb5cb3655fe1458c3414016e188d8a1c7c21849048072c4c3",
+      "outcome": "abstain",
+      "openSlot": null,
+      "roleBrief": "You maintain the acceptance scenarios. The verification endpoint contract is still under negotiation and there is no product owner, so you cannot choose a response code or status for the accepted receipt.",
+      "acceptableResolutions": [
+        "The scenario keeps the accepted outcome and the sandbox scope, and the dependency on the verification contract and a product owner is recorded as open."
+      ],
+      "invariants": [
+        {
+          "kind": "obligation",
+          "assertion": "show the accepted receipt outcome"
+        },
+        {
+          "kind": "condition",
+          "assertion": "only the sandbox receipt scenario"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "verification contract and success signal are unavailable"
+        }
+      ]
+    },
+    {
+      "id": "study:60d37af83584",
+      "set": "study",
+      "lineage": "station-access",
+      "language": "en",
+      "sourceSha256": "0b4de8f920180685ddc3d7266be63d33a12056af7cc57cb8d98a34aabdb0eff2",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "You own the station. The denial for inactive badges, including during maintenance, is approved.",
+      "acceptableResolutions": [
+        "FR-190 stays unchanged."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-190"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "reject requests"
+        },
+        {
+          "kind": "condition",
+          "assertion": "inactive badges even during maintenance"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "active badges use the standard policy"
+        }
+      ]
+    },
+    {
+      "id": "study:436caf929622",
+      "set": "study",
+      "lineage": "consulta-retiro",
+      "language": "es",
+      "sourceSha256": "db54ca42556feb1838f8a0513e35ef14885d43ee49e7c5dd820a373b51b3f46d",
+      "outcome": "ask",
+      "openSlot": "criterio observable para aceptar la facilidad del retiro del aviso",
+      "roleBrief": "Eres responsable del tablero y puedes fijar el criterio de aceptación. En la última revisión de usabilidad se acordó que el personal de guardia debe poder retirar el aviso de incidente con una sola acción desde la vista del aviso, sin confirmación adicional. Los avisos de mantenimiento no se retiran.",
+      "acceptableResolutions": [
+        "FR-812 fija como criterio que el personal de guardia retire el aviso de incidente con una sola acción desde la vista del aviso, sin confirmación adicional, y conserva que no se retiren los avisos de mantenimiento."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-812"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "retirar el aviso de incidente"
+        },
+        {
+          "kind": "prohibition",
+          "assertion": "no retirar avisos de mantenimiento"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "avisos de mantenimiento"
+        },
+        {
+          "kind": "permission",
+          "assertion": "solo el personal de guardia solicita el retiro"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "criterio de facilidad"
+        }
+      ]
+    },
+    {
+      "id": "study:42f7f18229bc",
+      "set": "study",
+      "lineage": "pesaje-exportacion",
+      "language": "es",
+      "sourceSha256": "0529ef9047ebfdc4af10bc9cd375d319901b53941ece525c4989196ef196d6b2",
+      "outcome": "abstain",
+      "openSlot": null,
+      "roleBrief": "Mantienes esta especificación. La responsable de cumplimiento aún no ha confirmado si la autorización cubre cada categoría por separado o solo el envío conjunto, y tú no puedes decidirlo.",
+      "acceptableResolutions": [
+        "FR-906 se conserva sin desambiguar y las dos interpretaciones se escalan a la responsable de cumplimiento."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-906"
+        },
+        {
+          "kind": "prohibition",
+          "assertion": "exportación sin autorización en el alcance aún por confirmar"
+        },
+        {
+          "kind": "exception",
+          "assertion": "autorización"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "aplicación por categoría o al envío conjunto"
+        }
+      ]
+    },
+    {
+      "id": "study:91c3e9ac97cb",
+      "set": "study",
+      "lineage": "carga-perfil",
+      "language": "es",
+      "sourceSha256": "b8ee49f476ec273b7ebc45454cb3f563e39c8db9a0a7d0a17fb75a93e944e895",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "Eres responsable del importador. «rápido» es el nombre de un perfil, no un objetivo de rendimiento. El límite de 8 MB y la excepción de las actas firmadas están aprobados.",
+      "acceptableResolutions": [
+        "NFR-233 se conserva sin cambios, opcionalmente con una nota de que «rápido» nombra un perfil."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "NFR-233"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "usar el perfil «rápido» en el alcance indicado"
+        },
+        {
+          "kind": "condition",
+          "assertion": "solo archivos de hasta 8 MB"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "hasta 8"
+        },
+        {
+          "kind": "unit",
+          "assertion": "MB"
+        },
+        {
+          "kind": "exception",
+          "assertion": "actas firmadas usan perfil de auditoría con cualquier tamaño"
+        }
+      ]
+    },
+    {
+      "id": "fresh:ticket-lookup",
+      "set": "fresh",
+      "lineage": "ticket-lookup",
+      "language": "en",
+      "sourceSha256": "e90b3504061cdda9a08297b97d4bff05f7f23e320818ffcd07af464874c0c0eb",
+      "outcome": "ask",
+      "openSlot": "maximum elapsed time for a lookup and the events that start and end its measurement",
+      "roleBrief": "You own ticket lookup at the counter and can set its performance requirement. Counter staff agreed that a lookup must show the matching tickets within 1 second of pressing Search, with up to 12 clerks working at once. Archived tickets stay excluded.",
+      "acceptableResolutions": [
+        "NFR-020 states a maximum of 1 second (or 1000 ms), measured from pressing Search until the matching tickets are displayed, for up to 12 clerks, still excluding archived tickets."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "NFR-020"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "ticket lookup must meet the response-time requirement"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "up to 12"
+        },
+        {
+          "kind": "unit",
+          "assertion": "clerks"
+        },
+        {
+          "kind": "exclusion",
+          "assertion": "archived tickets"
+        }
+      ]
+    },
+    {
+      "id": "fresh:acuse-devolucion",
+      "set": "fresh",
+      "lineage": "acuse-devolucion",
+      "language": "es",
+      "sourceSha256": "b8c2f2296dbb7e69b051a582e2a26afb8208335445380750b5b5dfec22253c52",
+      "outcome": "ask",
+      "openSlot": "plazo máximo del acuse de devolución y eventos de inicio y fin de su medición",
+      "roleBrief": "Eres responsable del kiosco de devoluciones y puedes fijar sus requisitos de rendimiento. Se acordó que el acuse de una devolución interna se emita en un máximo de 3 segundos, desde que se escanea el artículo devuelto hasta que se imprime el acuse.",
+      "acceptableResolutions": [
+        "FR-101 fija un máximo de 3 segundos, medidos desde el escaneo del artículo devuelto hasta la impresión del acuse, para devoluciones internas."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-101"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "emitir un acuse"
+        },
+        {
+          "kind": "condition",
+          "assertion": "devolución interna"
+        }
+      ]
+    },
+    {
+      "id": "fresh:status-icon",
+      "set": "fresh",
+      "lineage": "status-icon",
+      "language": "en",
+      "sourceSha256": "419ee82f0d23cc89334293ec3adb4e0112f10e7bbf40fcb73263a01b9ddb9d50",
+      "outcome": "ask",
+      "openSlot": "event or condition that makes the sync icon disappear",
+      "roleBrief": "You own the sync status icon and can decide when it disappears. The team agreed that the icon should disappear when the sync completes successfully.",
+      "acceptableResolutions": [
+        "FR-071 states that the sync icon disappears when the sync completes successfully."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-071"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "the sync icon disappears under a condition"
+        }
+      ]
+    },
+    {
+      "id": "fresh:aviso-entrega",
+      "set": "fresh",
+      "lineage": "aviso-entrega",
+      "language": "es",
+      "sourceSha256": "228b0e0d41b50f3a6f58e1cadb7b37afeaaf299e135e7ad6fb5d523f3caf885d",
+      "outcome": "ask",
+      "openSlot": "evento o condición que hace desaparecer el aviso de entrega",
+      "roleBrief": "Eres responsable del aviso de entrega y puedes decidir cuándo desaparece. Se acordó que el aviso desaparezca cuando el repartidor confirme la entrega. El cierre manual sigue reservado a la supervisora.",
+      "acceptableResolutions": [
+        "FR-040 establece que el aviso desaparece cuando el repartidor confirma la entrega y conserva que solo la supervisora puede cerrarlo manualmente."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-040"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "el aviso desaparece bajo una condición"
+        },
+        {
+          "kind": "permission",
+          "assertion": "solo la supervisora cierra manualmente"
+        }
+      ]
+    },
+    {
+      "id": "fresh:playlist-preset",
+      "set": "fresh",
+      "lineage": "playlist-preset",
+      "language": "en",
+      "sourceSha256": "65dec63a6540094493e85dab9dccb50e4124a4755f401d7159012a31cdfa1ef5",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "You own the kiosk. `fast` is the name of a kiosk profile, not a performance target. Its use for standard playlists only is approved.",
+      "acceptableResolutions": [
+        "FR-091 stays unchanged, optionally with a note that `fast` names a profile."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-091"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "use the `fast` profile in the stated scope"
+        },
+        {
+          "kind": "condition",
+          "assertion": "only for standard playlists"
+        }
+      ]
+    },
+    {
+      "id": "fresh:cola-impresion",
+      "set": "fresh",
+      "lineage": "cola-impresion",
+      "language": "es",
+      "sourceSha256": "7e9134a0ab6376db96e56916916163c257e92f77b309130f3df57ee5deb6eda3",
+      "outcome": "abstain",
+      "openSlot": null,
+      "roleBrief": "Mantienes la especificación de la cola de impresión. No se ha acordado qué significa reaccionar rápido ni ante qué evento, y el responsable de la cola no ha dado ningún criterio. No puedes fijarlo tú.",
+      "acceptableResolutions": [
+        "FR-010 se conserva, incluida la prohibición de eliminar los trabajos pausados, y se registra como decisión abierta qué comportamiento y plazo cuentan como reaccionar rápido."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-010"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "la cola debe reaccionar"
+        },
+        {
+          "kind": "prohibition",
+          "assertion": "no eliminar los trabajos pausados"
+        }
+      ]
+    },
+    {
+      "id": "fresh:gallery-preview",
+      "set": "fresh",
+      "lineage": "gallery-preview",
+      "language": "en",
+      "sourceSha256": "af6924a71b5c4dfd8c8246fca7f312f7036efc29f818a334818bbbf7399df795",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "You own gallery preview. The 350 ms limit is approved, and the feature plan already fixes the measurement from the thumbnail click to the first preview paint. The 900 ms limit in the video preview plan belongs to a different feature.",
+      "acceptableResolutions": [
+        "NFR-082 stays at 350 ms, unchanged or with the plan's measurement boundaries (thumbnail click to first preview paint) written in."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "NFR-082"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "350"
+        },
+        {
+          "kind": "unit",
+          "assertion": "ms"
+        },
+        {
+          "kind": "scope",
+          "assertion": "the 900 ms limit belongs to video preview"
+        }
+      ]
+    },
+    {
+      "id": "fresh:acuse-etiquetado",
+      "set": "fresh",
+      "lineage": "acuse-etiquetado",
+      "language": "es",
+      "sourceSha256": "c701ae4b336fc2abf46f4c426f7dc3027859b61c6e5ff6724bb1c345f936fb96",
+      "outcome": "review",
+      "openSlot": null,
+      "roleBrief": "Mantienes el cambio de etiquetado. El diseño del cambio da 40 ms y 90 ms para FR-214, y el requisito vigente dice 60 ms. No puedes elegir entre ellos: decide el responsable del servicio de despacho.",
+      "acceptableResolutions": [
+        "FR-214 no recibe un valor nuevo; se registra el conflicto entre 40 ms, 90 ms y los 60 ms vigentes y se deriva al responsable del servicio de despacho."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-214"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "emitir un acuse"
+        },
+        {
+          "kind": "conflict",
+          "assertion": "40 ms y 90 ms en el diseño frente a 60 ms vigentes"
+        }
+      ]
+    },
+    {
+      "id": "fresh:document-roster",
+      "set": "fresh",
+      "lineage": "document-roster",
+      "language": "en",
+      "sourceSha256": "2d11f8e96a55ddaed0ea6c12081d6a26c842c2290b55c910af79d518c0cfc750",
+      "outcome": "ask",
+      "openSlot": "event that ends the elapsed-time measurement",
+      "roleBrief": "You own roster search. The 200 ms limit and the start event (submitting the search) are approved. The team agreed that the measurement ends when the first page of matching documents is displayed.",
+      "acceptableResolutions": [
+        "FR-005 keeps 200 ms and states the measurement from submitting the search until the first page of matching documents is displayed."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-005"
+        },
+        {
+          "kind": "quantity",
+          "assertion": "200"
+        },
+        {
+          "kind": "unit",
+          "assertion": "ms"
+        },
+        {
+          "kind": "start event",
+          "assertion": "submit the search"
+        }
+      ]
+    },
+    {
+      "id": "fresh:cierre-senal",
+      "set": "fresh",
+      "lineage": "cierre-senal",
+      "language": "es",
+      "sourceSha256": "bede5585d2346810e1149a86c0ea8bf8c88ddea1a8ba95f2b47db79a167d6831",
+      "outcome": "review",
+      "openSlot": null,
+      "roleBrief": "Mantienes la especificación. El plan indica que la persona responsable de decidir cuándo desaparece la señal está pendiente de designar, y tú no puedes decidirlo.",
+      "acceptableResolutions": [
+        "FR-019 se conserva y se registra que la condición de desaparición depende de designar a la persona responsable."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-019"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "la señal desaparece bajo una condición"
+        },
+        {
+          "kind": "open decision",
+          "assertion": "responsable pendiente"
+        }
+      ]
+    },
+    {
+      "id": "fresh:locate-summary",
+      "set": "fresh",
+      "lineage": "locate-summary",
+      "language": "en",
+      "sourceSha256": "482f8ab76e7d174b8eea7592a46c8e20830b2be4fb43b53bdf6ade123d70fe9a",
+      "outcome": "ask",
+      "openSlot": "maximum elapsed time under the stated measurement conditions",
+      "roleBrief": "You own summary search and can set its limit. The plan already fixes the measurement from search submission until the search result is displayed. The team agreed on a maximum of 800 ms.",
+      "acceptableResolutions": [
+        "FR-054 states a maximum of 800 ms, measured from search submission until the search result is displayed."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-054"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "summary search must meet the response-time requirement"
+        },
+        {
+          "kind": "measurement",
+          "assertion": "search submission to search result displayed"
+        }
+      ]
+    },
+    {
+      "id": "fresh:cierre-alerta",
+      "set": "fresh",
+      "lineage": "cierre-alerta",
+      "language": "es",
+      "sourceSha256": "af39e2395223fb11655bc9c0a0c32d0bee3bd452b51befdd9d4037691afce81f",
+      "outcome": "clear",
+      "openSlot": null,
+      "roleBrief": "Eres responsable de la alerta. Las tareas ya fijan el evento disparador: la confirmación del operador.",
+      "acceptableResolutions": [
+        "FR-113 se conserva, sin cambios o con el evento ya aprobado escrito («cuando el operador confirme»)."
+      ],
+      "invariants": [
+        {
+          "kind": "identifier",
+          "assertion": "FR-113"
+        },
+        {
+          "kind": "obligation",
+          "assertion": "la alerta se cierra bajo una condición"
+        },
+        {
+          "kind": "trigger",
+          "assertion": "confirmación del operador"
+        }
+      ]
+    }
+  ]
+}
