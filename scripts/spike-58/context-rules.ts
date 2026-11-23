@@ -22,7 +22,7 @@ export interface Passage {
   start: number;
   end: number;
   headings: string[];
-  kind: 'heading' | 'table' | 'list' | 'prose';
+  kind: 'heading' | 'table' | 'list' | 'prose' | 'scenario';
   text: string;
   tableHeader?: string;
 }
@@ -100,6 +100,24 @@ export function passagesOf(lines: readonly string[]): Passage[] {
   return passages;
 }
 
+const scenarioHeading = /^(?:scenario|escenario)\s*:/u;
+const whenStep = /^(?:[-+*] |\d+[.)] )?\*{0,2}(?:when|cuando)\b[\s*:]*(.*)$/u;
+const thenStep = /^(?:[-+*] |\d+[.)] )?\*{0,2}(?:then|entonces)\b[\s*:]*(.*)$/u;
+const missingSetting = /\b(?:no tiene valor configurado|sin valor configurado|(?:no|without a) configured value|no (?:--)?port is given|ningun puerto (?:es indicado|se indica))\b/u;
+const explicitOutcome = /\b(?:uses? (?:the |a )?(?:fallback|default)|exits? non-zero|returns? (?:an error|http [45]\d\d)|usa (?:el |un )?(?:valor por defecto|default)|utiliza (?:el |un )?valor predeterminado|devuelve (?:un error|http [45]\d\d))\b/u;
+
+export function scenarioPairs(passages: readonly Passage[]): Passage[] {
+  return passages.flatMap((trigger, index) => {
+    const outcome = passages[index + 1];
+    // Require adjacent steps so omitted Markdown cannot bridge unrelated text.
+    if (trigger.kind !== 'list' || outcome?.kind !== 'list' || outcome.start !== trigger.end + 1 ||
+        !scenarioHeading.test(fold(trigger.headings.at(-1) ?? '')) ||
+        !missingSetting.test(whenStep.exec(fold(trigger.text).replace(/`/g, ''))?.[1] ?? '') ||
+        !explicitOutcome.test(thenStep.exec(fold(outcome.text))?.[1] ?? '')) return [];
+    return [{ ...trigger, end: outcome.end, kind: 'scenario' as const, text: trigger.text + '\n' + outcome.text }];
+  });
+}
+
 type Practice = 'P2.2' | 'P1.4' | 'E3.1' | 'E3.2' | 'E3.3' | 'E3.4' | 'I1.2';
 type Rule = (input: { body: string; headings: string; table: string; passage: Passage }) => string[];
 
@@ -124,6 +142,7 @@ const rules = {
 } satisfies Record<Practice, Rule>;
 
 export function leadsFor(passage: Passage) {
+  if (passage.kind === 'scenario') return [{ practice: 'E3.3' as const, cues: ['missing-setting-scenario'] }];
   const input = { passage, body: fold(passage.text), headings: fold(passage.headings.join(' ')),
     table: fold(passage.tableHeader ?? '') };
   return (Object.keys(rules) as Practice[]).flatMap(practice => {

@@ -3,7 +3,7 @@ import { readFile, realpath } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { analyze, ENGINE_VERSION, RUBRIC_VERSION } from '../../src/core/analyze.js';
 import { z } from 'zod';
-import { leadsFor, normalize, passagesOf, type Passage } from './context-rules.js';
+import { leadsFor, normalize, passagesOf, scenarioPairs, type Passage } from './context-rules.js';
 import { classifyArtifact } from '../../src/core/artifacts.js';
 
 const sourceSchema = z.object({ repository: z.string(), commit: z.string(), license: z.string() });
@@ -93,7 +93,7 @@ for (const source of index) {
         },
       }));
     }
-    for (const block of blocks) {
+    for (const block of [...blocks, ...scenarioPairs(blocks)]) {
       const hits = leadsFor(block);
       if (hits.length) {
         const fingerprint = hash(normalize(block.text));

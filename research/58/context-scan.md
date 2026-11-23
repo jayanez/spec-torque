@@ -49,3 +49,9 @@ Development review inspected candidate groups and one uncaught sample per reposi
 The scanner now looks for an explicit empty-input condition and an outcome in the same passage. It recognizes bounded EN/ES wording and ignores inline command names and flags for this cue. In a paired run on the same 974 specs, the new cue added one P2.2 lead, the md2confl case at line 111. An initial version also flagged a command and option in a Spec Kitty table row. That candidate was rejected on inspection and led to the inline-code exclusion, which has a synthetic regression check.
 
 The md2confl document remains `partial` and the engine already points to the recovered line. The measured improvement is to search coverage. It does not add an admissible engine defect or estimate search precision beyond this development corpus. The table above records the scan before this cue was added.
+
+## Adjacent steps under a scenario heading
+
+A second review of the uncaught queue surfaced two missing-setting scenarios. The scanner now pairs adjacent WHEN/THEN or CUANDO/ENTONCES list items under a scenario heading when the condition names an absent setting and the outcome specifies a default or an observable error. The pair preserves both source lines. Blank lines, intervening steps, fences and headings break the pair.
+
+The paired run on the same 974 specs added two E3.3 leads and kept the original lead set. Both new passages were checked against their source context. Both whole-document assessments returned `missing` with zero E3.3 evidence. The examples come from different features in the two repositories already counted for intake. They corroborate the existing E3.3 draft and do not add repositories. They informed the retrieval rule, so this comparison measures recovery of development examples rather than an independent precision estimate. The scan emitted 6,170 leads and 974 uncaught samples, with byte-identical output and coverage in two runs.

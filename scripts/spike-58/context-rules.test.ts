@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { leadsFor, passagesOf } from './context-rules.js';
+import { leadsFor, passagesOf, scenarioPairs } from './context-rules.js';
 import { analyze } from '../../src/core/analyze.js';
 import { classifyArtifact } from '../../src/core/artifacts.js';
 
@@ -88,4 +88,19 @@ test('empty-input search requires a condition and an explicit outcome in the sam
     'When diagnostics are enabled, consult `--empty`. See `output create`.',
   ]) assert.ok(!parse(text).some(passage => leadsFor(passage).some(lead =>
     lead.cues.includes('empty-condition-and-outcome'))), text);
+});
+
+test('adjacent exceptional scenario steps retain their source span', () => {
+  for (const [heading, when, then] of [
+    ['Scenario: Missing option', '- **WHEN** no `--port` is given', '- **THEN** the runner returns an error'],
+    ['Escenario: Sin configuración', '- **CUANDO** la clave no tiene valor configurado', '- **ENTONCES** el cliente utiliza el valor predeterminado'],
+  ]) {
+    const [scenario] = scenarioPairs(parse(['### ' + heading, when, then].join('\n')));
+    assert.deepEqual([scenario.start, scenario.end, scenario.text], [2, 3, when + '\n' + then]);
+    assert.deepEqual(leadsFor(scenario), [{ practice: 'E3.3', cues: ['missing-setting-scenario'] }]);
+    for (const separator of ['### Other scenario', '- AND the session is active', '', '~~~\nomitted text\n~~~']) {
+      assert.deepEqual(scenarioPairs(parse(['### ' + heading, when, separator, then].join('\n'))), [], separator);
+    }
+    assert.deepEqual(scenarioPairs(parse([when, then].join('\n'))), []);
+  }
 });
