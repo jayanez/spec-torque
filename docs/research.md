@@ -105,26 +105,27 @@ is explicit failure behavior for state-changing operations: what is returned,
 what data state remains and whether a retry is allowed.
 [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) advises
 clients against automatically retrying non-idempotent requests. Three
-preprints give the most direct evidence.
-[Onagh and Nayebi](https://arxiv.org/abs/2611.20195) report 47.2% fewer
+studies give the most direct evidence.
+[Onagh and Nayebi](https://arxiv.org/abs/2611.20195) (ICSE 2026) report 47.2% fewer
 hidden-test failures with explicit behavioral obligations, against 8.7% for
 lightweight structure, with 72 participants.
-[LIMBO](https://arxiv.org/abs/2609.29095) reports duplicated effects in 56%
+[LIMBO](https://arxiv.org/abs/2609.29095) (preprint) reports duplicated effects in 56%
 to 74% of episodes when an agent cannot read back state, and a fall from 28%
 to 4% when idempotency keys are offered.
-[RetryBench](https://arxiv.org/abs/2610.15884) reports that the wording of
+[RetryBench](https://arxiv.org/abs/2610.15884) (preprint) reports that the wording of
 an idempotency-key description moved correct reuse from 10 of 40 to 39 of 40.
 None of them tests asking about failure behavior before generation.
 
 The second part is clarification.
-[Ask or Assume?](https://arxiv.org/abs/2603.26233) reports 69.40% resolved
+[Ask or Assume?](https://arxiv.org/abs/2603.26233) (EMNLP 2026) reports 69.40% resolved
 tasks with selective asking against 54.80% without the missing information,
-and a fall to 47.20% for one model when asking was forced. It was consulted
-as a preprint. No study compares fixed template questions with generated
+and a fall to 47.20% for one model when asking was forced. No study compares fixed template questions with generated
 ones for coding tasks. The published precision of deterministic smell
 detectors, 59% for [Smella](https://doi.org/10.1016/j.jss.2016.02.047) and
 89% for [Paska](https://arxiv.org/html/2305.07097v2) in one financial domain,
-is far from this project's 5% error gate.
+measures detector precision on other populations. It is not directly
+comparable with this project's gate, an upper confidence bound on
+classification error counted by lineage.
 [Hill](https://drops.dagstuhl.de/storage/00lipics/lipics-vol394-esem2026/LIPIcs.ESEM.2026.84/LIPIcs.ESEM.2026.84.pdf)
 mined 88,052 pull requests in 119 repositories and found none of five
 hypotheses about specification-driven tooling supported. The study is
@@ -133,7 +134,8 @@ development on one codebase was found.
 
 Local measurement on engine 0.1.4 shows the limits of the current lexical
 practices. Across 42 fixture feature sets, P2.2 is partial in 2 and missing
-in 40, and P1.4 is partial in 1 and missing in 41. These practices report
+in 40, and P1.4 is partial in 1 and missing in 41
+(`bash scripts/precision/lexical-status.sh` reproduces the counts). These practices report
 partial on any keyword hit and cannot report supported. A failure table
 reworded without the keywords stays missing. "casos límite" does not match
 where "edge cases" does. The fixtures are authored and come from effectively
