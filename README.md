@@ -63,6 +63,57 @@ Find the host integration guides and copy the local MCP configuration for your p
 
 </details>
 
+## Native panels
+
+Each integration brings the same engine into the host you already use. Captures use the bundled ambiguous booking draft. Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
+
+<details open>
+<summary><strong>Claude Code</strong> · <code>/spectorque</code> pane</summary>
+
+Read dimension scores and findings beside the conversation, refresh the analysis or open the common workbench. The pane calls no model.
+
+[![SpecTorque pane beside the Claude Code prompt, showing dimension scores and the first finding](docs/assets/panels/claude.png)](docs/assets/panels/claude.png)
+
+</details>
+
+<details>
+<summary><strong>Codex Desktop</strong> · inline viewer</summary>
+
+The viewer opens in the conversation from the project's local MCP server. Choose a finding, preview a change, then hand off to the local workbench to approve or export. Opening it takes one model turn.
+
+[![SpecTorque inline viewer in a Codex Desktop conversation](docs/assets/panels/codex.jpg)](docs/assets/panels/codex.jpg)
+
+</details>
+
+<details>
+<summary><strong>OpenCode</strong> · <code>/spectorque</code> panel</summary>
+
+Press **e** for the exact source line, **r** for reviewed changes and **w** for the local workbench URL.
+
+[![SpecTorque panel in the OpenCode terminal UI with dimension scores and findings](docs/assets/panels/opencode.png)](docs/assets/panels/opencode.png)
+
+</details>
+
+<details>
+<summary><strong>Pi</strong> · <code>/spectorque</code> in ThinkRail</summary>
+
+Pi is shown through ThinkRail, a desktop host that runs Pi natively. Pick a finding to open its exact evidence, then review the before and after wording. The workspace in this capture is a SpecTorque test checkout, so it lists findings from the repository's own fixtures.
+
+[![SpecTorque evidence picker in ThinkRail running Pi](docs/assets/panels/pi.jpg)](docs/assets/panels/pi.jpg)
+
+</details>
+
+<details>
+<summary><strong>VS Code</strong> · embedded workbench (preview)</summary>
+
+The shared workbench opens in an editor tab, with findings that jump to source.
+
+[![SpecTorque workbench in a VS Code editor tab](docs/assets/panels/vscode.png)](docs/assets/panels/vscode.png)
+
+</details>
+
+See the [integration guides](docs/integrations.md) for each host's behavior and limits.
+
 ## See the difference
 
 > **FR-001** The system MUST respond quickly.
@@ -118,7 +169,7 @@ The EN/ES corpus covers seven Markdown layout families, nested workspaces, and a
 
 ## Browser, CLI and coding agents
 
-The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode and Pi. The project also provides a VS Code workbench preview. Check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
+The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode and Pi. The project also provides a VS Code workbench preview. See the [native panels](#native-panels) and check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
 
 ```sh
 node dist/cli.js analyze fixtures/en-complete --json
