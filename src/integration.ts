@@ -8,7 +8,7 @@ export function terminalSummary(a: Assessment): string[] {
 }
 export async function openWorkbench(root: string, feature: string | null = null) { return startServer(root, 0, feature); }
 export { analyze } from './core/analyze.js';
-export { contentHash, selectFeature } from './core/artifacts.js';
+export { contentHash, listFeatures, selectFeature } from './core/artifacts.js';
 export { createProposal } from './core/refine.js';
 export { applyWorkspaceProposal, discoverWorkspace, readScope, readWorkspaceArtifact } from './node/workspace.js';
 export * from './node/host-scope.js';
