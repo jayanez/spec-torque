@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.4';
+export const ENGINE_VERSION = '0.1.8';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -15,15 +15,45 @@ const monthEnumerationMay = new RegExp(
 const hasNormativeModal = (text: string) => modal.test(
   text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );
-interface Line extends Evidence { artifact: Artifact; requirement: boolean }
+interface Line extends Evidence { artifact: Artifact; requirement: boolean; heading: boolean }
 function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   return artifact.content.split(/\r?\n/).map((text, index) => {
     if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
     const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
-    return { path: artifact.path, line: index + 1, text, artifact, requirement };
+    return { path: artifact.path, line: index + 1, text, artifact, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text) };
   });
+}
+// H3 (#83): an ID defines a requirement only in a defining position: first on the line after an
+// optional heading marker, list marker, task checkbox, first table cell and bold or code markup.
+const definingId = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\|[ \t]*)?(?:\*\*|__|`)?[ \t]*((?:FR|NFR|REQ|R)-\d+)\b/i;
+const definedId = (text: string) => definingId.exec(text)?.[1]?.toUpperCase();
+/** Spec requirement lines without their own ID that inherit one from the nearest preceding defining heading. */
+function inheritedLines(lines: Line[]): Set<Line> {
+  const inherited = new Set<Line>();
+  let path = '';
+  let current: string | undefined;
+  for (const line of lines) {
+    if (line.path !== path) { path = line.path; current = undefined; }
+    if (line.artifact.role !== 'spec') continue;
+    if (line.heading) { current = definedId(line.text); continue; }
+    if (line.requirement && current && !requirementIdIn(line.text)) inherited.add(line);
+  }
+  return inherited;
+}
+const requirementIdIn = (text: string) => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(text);
+/** Defining positions per feature-qualified ID, among admitted spec lines and spec headings. */
+function definitionsOf(lines: Line[]): Map<string, Line[]> {
+  const definitions = new Map<string, Line[]>();
+  for (const line of lines) {
+    if (line.artifact.role !== 'spec' || !(line.requirement || line.heading)) continue;
+    const id = definedId(line.text);
+    if (!id) continue;
+    const key = line.artifact.featureId + ':' + id;
+    definitions.set(key, [...(definitions.get(key) ?? []), line]);
+  }
+  return definitions;
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
@@ -53,9 +83,10 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
     return { status: specRequirements.length && context ? 'partial' : 'missing', hits: specRequirements.length && context ? specRequirements.slice(0, 3) : [] };
   }
   if (id === 'I1.2' || id === 'I2.2') {
-    const ids = specRequirements.flatMap(l => (l.text.match(requirementId) ?? []).map(x => l.artifact.featureId + ':' + x.toUpperCase()));
-    const unique = new Set(ids);
-    return { status: !specRequirements.length ? 'unknown' : ids.length === specRequirements.length && ids.length === unique.size ? 'supported' : ids.length ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
+    const inherited = inheritedLines(lines);
+    const identified = specRequirements.filter(l => requirementIdIn(l.text) || inherited.has(l)).length;
+    const unique = ![...definitionsOf(lines).values()].some(entries => entries.length > 1);
+    return { status: !specRequirements.length ? 'unknown' : identified === specRequirements.length && unique ? 'supported' : identified ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
   }
   if (['I2.3', 'C1.3', 'C2.3'].includes(id)) {
     const hits = lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role) && /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text));
@@ -105,21 +136,24 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const add = (practiceId: string, line: Evidence, message: string, suggestion: string, severity: Finding['severity'] = 'warning') => {
     findings.push({ id: `${practiceId}:${line.path}:${line.line}:${findings.length}`, practiceId, dimension: practiceId.split('.')[0], severity, message, suggestion, evidence: [evidenceOf(line)], source: 'rule' });
   };
+  const inherited = inheritedLines(lines);
   for (const line of requirements) {
     for (const match of line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, '').matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
     if (/^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:it|this|that|esto|eso|ello)\b/i.test(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
-    if (!/\b(?:FR|NFR|REQ|R)-\d+\b/i.test(line.text) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
+    if (!requirementIdIn(line.text) && !inherited.has(line) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
     if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }
-  const definitions = new Map<string, Line[]>();
+  const definitions = definitionsOf(lines);
+  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${definingId.exec(entries[1].text)?.[1]}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
+  // References resolve against defining positions and, as before, any ID on an admitted spec line.
+  const resolvable = new Set(definitions.keys());
   for (const line of requirements.filter(l => l.artifact.role === 'spec')) {
-    for (const raw of line.text.match(requirementId) ?? []) { const id = line.artifact.featureId + ':' + raw.toUpperCase(); definitions.set(id, [...(definitions.get(id) ?? []), line]); }
+    for (const raw of line.text.match(requirementId) ?? []) resolvable.add(line.artifact.featureId + ':' + raw.toUpperCase());
   }
-  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${entries[1].text.match(requirementId)?.[0]}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
   const traceability: Assessment['traceability'] = [];
   for (const line of lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role))) {
     for (const raw of line.text.match(requirementId) ?? []) {
-      const id = raw.toUpperCase(); const resolved = definitions.has(line.artifact.featureId + ':' + id);
+      const id = raw.toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
       if (!resolved && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
