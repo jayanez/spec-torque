@@ -1,6 +1,7 @@
 /** @jsxImportSource @opentui/solid */
 import { Plugin } from '@opencode/plugin/tui';
 import { createEffect, createMemo, createRoot, createSignal, For, Show } from 'solid-js';
+import { spawn } from 'node:child_process';
 import type { ArtifactSet, Assessment, Evidence, Finding } from '../../src/core/types.js';
 import {
   analyze, applyWorkspaceProposal, choiceScope, contentHash, createProposal, defaultScope, hostIndex, openWorkbench,
@@ -19,6 +20,15 @@ type Snapshot = {
 const panelName = 'spectorque.review';
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
 
+// Terminals link plain http://localhost URLs; the loopback server accepts both host names.
+const browserUrl = (url: string) => url.replace('http://127.0.0.1:', 'http://localhost:') + '/';
+function openInBrowser(url: string) {
+  const [command, ...args] = process.platform === 'darwin' ? ['open', url] : process.platform === 'win32' ? ['explorer.exe', url] : ['xdg-open', url];
+  const child = spawn(command, args, { detached: true, stdio: 'ignore', windowsHide: true });
+  child.on('error', () => {});
+  child.unref();
+}
+
 function sourceLine(snapshot: Snapshot, evidence: Evidence) {
   return snapshot.source.artifacts.find(artifact => artifact.path === evidence.path)
     ?.content.split(/\r?\n/)[evidence.line - 1];
@@ -29,6 +39,7 @@ export default Plugin.define({
   setup(context) {
     const [snapshot, setSnapshot] = createSignal<Snapshot>();
     const [status, setStatus] = createSignal('Run /spectorque to analyze the workspace.');
+    const [workbenchUrl, setWorkbenchUrl] = createSignal<string>();
     let generation = 0;
     let scope: HostScope | undefined;
     let index: WorkspaceIndex | undefined;
@@ -39,6 +50,7 @@ export default Plugin.define({
       if (!workbench) return;
       workbench.opened.server.close();
       workbench = undefined;
+      setWorkbenchUrl(undefined);
     }
 
     function readTarget(): Target {
@@ -220,11 +232,12 @@ export default Plugin.define({
           return;
         }
         workbench = { root, opened };
+        setWorkbenchUrl(browserUrl(opened.url));
       }
       await context.ui.dialog.prompt({
         title: 'SpecTorque · common workbench',
-        description: 'Copy this local URL into your browser and load the workspace' + (view.scope.kind === 'feature' ? '; it opens on ' + view.scope.id : '') + '.',
-        value: workbench.opened.url,
+        description: 'Press o in the panel to open it in your browser, or copy this local URL' + (view.scope.kind === 'feature' ? '; it opens on ' + view.scope.id : '') + '.',
+        value: browserUrl(workbench.opened.url),
       });
     });
 
@@ -235,6 +248,7 @@ export default Plugin.define({
           { id: 'spectorque.evidence', title: 'Inspect evidence', bind: 'e', enabled: () => Boolean(snapshot()), run: inspect },
           { id: 'spectorque.panel.review', title: 'Review change', bind: 'r', enabled: () => Boolean(snapshot()), run: review },
           { id: 'spectorque.workbench', title: 'Open common workbench', bind: 'w', enabled: () => Boolean(snapshot()), run: handoff },
+          { id: 'spectorque.browser', title: 'Open workbench in browser', bind: 'o', enabled: () => Boolean(workbenchUrl()), run: () => { const url = workbenchUrl(); if (url) openInBrowser(url); } },
           { id: 'spectorque.close', title: 'Close SpecTorque', bind: 'q', run: () => context.ui.panel.close() },
         ],
       }));
@@ -251,6 +265,7 @@ export default Plugin.define({
           }</For>
           <Show when={view.index.features.length > 1}><text>s Select scope</text></Show>
           <text>e Inspect evidence · r Review change · w Common workbench</text>
+          <Show when={workbenchUrl()}>{url => <text>Workbench: {url()} · o Open in browser</text>}</Show>
         </>}</Show>
         <text>q Close panel</text>
       </box>;

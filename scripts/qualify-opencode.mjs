@@ -245,8 +245,9 @@ async function walkthrough(language) {
       await see('NEEDS CLARIFICATION');
       await key('w');
       await see('common workbench');
-      const frame = await see(/http:\/\/127\.0\.0\.1:\d+/);
-      browserUrl = frame.match(/http:\/\/127\.0\.0\.1:\d+/)[0];
+      // The panel shows a localhost link; the handoff check connects to the same loopback port by address.
+      const frame = await see(/http:\/\/localhost:\d+/);
+      browserUrl = frame.match(/http:\/\/localhost:\d+/)[0].replace('localhost', '127.0.0.1');
       const handoff = await run(process.execPath, ['--import', 'tsx', resolve('scripts/qualify-common-handoff.mjs'),
         workspace, '--url', browserUrl, '--feature', scope], { timeout: 90_000 });
       const result = JSON.parse(handoff.stdout);

@@ -146,7 +146,7 @@ export function register(on) {
   });
   on('ui.render', { component: 'Pane' }, async ($, e, next) => {
     if (e.requestId !== PANE) return next(e);
-    const { Box, Text, Button, Input, Select } = $.ui.resolve(e);
+    const { Box, Text, Button, Input, Select, Link } = $.ui.resolve(e);
     const redraw = () => $.ui.invalidate('ui.render');
     const choose = value => refresh($, value);
     const finding = assessment?.findings[selected];
@@ -165,7 +165,11 @@ export function register(on) {
         redraw();
       } }),
     ];
-    if (workbench?.url) children.push(Text({ children: ['Common workbench' + (workbench.copied ? ' (address copied)' : '') + ': ' + workbench.url + '\nOpen it in a browser and load the local workspace' + (scope?.kind === 'feature' ? '; it opens on ' + scope.id : '') + '.'] }));
+    if (workbench?.url) {
+      children.push(Text({ children: ['Common workbench' + (workbench.copied ? ' (address copied)' : '') + ': ' + workbench.url + '\nOpen it in a browser and load the local workspace' + (scope?.kind === 'feature' ? '; it opens on ' + scope.id : '') + '.'] }));
+      // Desktop and VS Code make a Link clickable only for https: or http://localhost; the loopback server accepts both hosts.
+      children.push(Link({ key: 'workbench-link', href: workbench.url.replace('http://127.0.0.1:', 'http://localhost:') + '/', label: 'Open the common workbench' }));
+    }
     if (workbenchNote) children.push(Text({ children: [workbenchNote] }));
     if (index) {
       children.push(Text({ children: ['Scope: ' + scopeLabel(scope) + ' · ' + index.features.length + ' features · ' + index.mode] }));

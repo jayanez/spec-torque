@@ -214,6 +214,7 @@ test('common workbench opens for the session workspace, copies its address and s
   expect(spawned[0].cwd).toBe('/sample');
   expect(JSON.stringify(copied)).toContain('http://127.0.0.1:4321');
   expect(await ui.find({ type: 'Text', text: /Common workbench \(address copied\): http:\/\/127\.0\.0\.1:4321\nOpen it in a browser and load the local workspace\./ })).toBeDefined();
+  expect((await ui.find({ type: 'Link' }))?.props.href).toBe('http://localhost:4321/');
   expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Close common workbench');
   await ui.press({ key: 'workbench' });
   expect(await ui.find({ type: 'Text', text: /Common workbench/ })).toBeUndefined();

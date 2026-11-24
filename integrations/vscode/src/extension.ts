@@ -95,6 +95,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (disposed) return;
         const origin = new URL(uri.toString()).origin;
         const src = uri.toString().replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+        // Offer the same loopback workbench outside the editor as a clickable link.
+        void vscode.window.showInformationMessage('SpecTorque workbench: ' + uri.toString(), 'Open in browser').then(choice => {
+          if (choice === 'Open in browser' && !disposed) void vscode.env.openExternal(uri);
+        });
         panel.webview.html = '<!doctype html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; frame-src ' + origin + '; style-src \'unsafe-inline\'"><style>html,body,iframe{width:100%;height:100%;margin:0;border:0}body{overflow:hidden}</style></head><body><iframe title="SpecTorque workbench" src="' + src + '"></iframe></body></html>';
       }, () => { fail(); stopChild(); });
     });
