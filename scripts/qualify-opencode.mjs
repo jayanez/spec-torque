@@ -308,8 +308,8 @@ async function walkthrough(language) {
       await assertDisconnected(browserUrl);
       await key('w');
       await see('common workbench');
-      const recoveredFrame = await see(/http:\/\/127\.0\.0\.1:\d+/);
-      const recoveredUrl = recoveredFrame.match(/http:\/\/127\.0\.0\.1:\d+/)[0];
+      const recoveredFrame = await see(/http:\/\/localhost:\d+/);
+      const recoveredUrl = recoveredFrame.match(/http:\/\/localhost:\d+/)[0].replace('localhost', '127.0.0.1');
       assert.notEqual(recoveredUrl, browserUrl);
       assert.equal((await fetch(recoveredUrl)).ok, true);
       browserUrl = recoveredUrl;
