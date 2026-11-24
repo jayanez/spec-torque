@@ -402,6 +402,65 @@ any file content:
 The list is committed in `fixtures/precision/h3-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H3a (frozen before sources are chosen or the candidate is built)
+
+**Why.** H3 failed gate 3 because its fresh set gained 431 duplicates. In a sample
+of 100:
+- 75 are traceability table rows whose first cell restates an ID already defined
+  by a heading;
+- 10 are dotted sub-requirements (`REQ-2.1`) read as their parent (`REQ-2`).
+
+H3's sources and twins are now development data.
+
+**Policy.** H3 with two narrowings:
+1. Table cells are not defining positions. A table row's ID still resolves
+   references, as any ID on an admitted spec line does in 0.1.4.
+2. A defining ID ends before a following `.` and digit. `REQ-2.1` therefore
+   defines no `REQ-2`. A dotted ID is not itself a definition, and its line
+   counts as identified, as in 0.1.4.
+
+Nothing else changes.
+
+**Comparators.** 0.1.4 (`865af59`) and H3 (`6a33bee`).
+
+**Gate (all must hold to proceed).**
+1. The H3 twins plus new EN/ES twins, all committed before the candidate, are met.
+   The new twins are:
+   - a heading definition with a traceability table that restates the ID;
+   - two table rows defining the same ID, which no longer counts as a duplicate;
+   - dotted sub-IDs under a parent heading;
+   - a real duplicate of two defining list items, as a control.
+
+   The existing minimal pairs show no admission, E1.4 or E1.2 change.
+2. The 716 historical predictions are unchanged.
+3. On a fresh public set, a provisional review covers every finding the candidate
+   adds or removes relative to 0.1.4, or 100 of each drawn with seed 42039:
+   - every added finding is correct;
+   - no removed finding was a true problem.
+
+   The same review is repeated on the H3 development set, for the added findings
+   only.
+4. No evidence becomes invalid.
+
+Independent adjudication is still required before any merge.
+
+**Stop rule.** If a gate fails, H3a stops and there is no H3b. The owner decides
+between merging the best candidate with its failures recorded as known limits
+after adjudication, and stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"### FR-001"` and `"| REQ-001 |"`, limited
+  to Markdown files named `spec.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52 and H3, and the pilot
+  repository, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h3a-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
