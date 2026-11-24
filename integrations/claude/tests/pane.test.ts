@@ -11,21 +11,31 @@ const report = (scope: string | null) => ({
   findings: [finding(scope === 'specs/payments' ? 'specs/payments/spec.md' : 'specs/booking/spec.md')],
 });
 
-function stubHost(on: any, cli: (args: string[]) => unknown | Promise<unknown>) {
+const feature = (id: string, layout = true) => ({ id, framework: layout ? 'spec-kit' : 'generic', layout, artifacts: 1 });
+const twoFeatures = { root: '/sample', mode: 'git', focus: null, total: 2, features: [feature('specs/booking'), feature('specs/payments')] };
+
+// Pane callbacks start a refresh without waiting for it; wait until the expected command runs.
+async function until(check: () => boolean) { for (let i = 0; i < 200 && !check(); i++) await new Promise(done => setTimeout(done, 5)); }
+const lastIs = (calls: string[][], args: string[]) => () => JSON.stringify(calls.at(-1)) === JSON.stringify(args);
+
+function stubHost(on: any, cli: (args: string[]) => unknown | Promise<unknown>, index: unknown = twoFeatures) {
   const calls: string[][] = [];
+  const saved = new Map<string, unknown>();
   on('session.cwd', () => ({ value: '/sample' }));
   on('ui.open', () => ({ value: undefined }));
+  on('store.get', (_: unknown, e: { key: string }) => ({ value: saved.get(e.key) }));
+  on('store.set', (_: unknown, e: { key: string; value: unknown }) => { saved.set(e.key, e.value); return { value: undefined }; });
   on('process.run', (_: unknown, e: { argv: string[] }) => {
     if (e.argv[1] === '--version') return ok('v22.20.0\n');
     const args = e.argv.slice(2);
     calls.push(args);
-    return cli(args);
+    return args[0] === 'features' ? ok(index) : cli(args);
   });
   return calls;
 }
 
 test('native pane loads in terminal and desktop render harnesses without model calls', async ($, on) => {
-  stubHost(on, () => ok({ name: 'Sample', summary: { score: null }, findings: [], decisions: [], dimensions: [], artifacts: [] }));
+  stubHost(on, () => ok({ name: 'Sample', summary: { score: null }, findings: [], decisions: [], dimensions: [], artifacts: [] }), { ...twoFeatures, total: 1, features: [feature('specs/booking')] });
   await $.command.run({ command: 'spectorque', args: '' });
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({ ...PANE, surface });
@@ -33,7 +43,7 @@ test('native pane loads in terminal and desktop render harnesses without model c
     await ui.press({ key: 'refresh' });
     expect(await ui.find({ type: 'Text', text: /Incomplete assessment/ })).toBeDefined();
     expect(await ui.find({ type: 'Text', text: 'No rule findings in this scope.' })).toBeDefined();
-    expect(await ui.find({ key: 'scope-all' })).toBeUndefined();
+    expect(await ui.find({ key: 'scope-filter' })).toBeUndefined();
     await ui.unmount();
   }
 });
@@ -62,9 +72,11 @@ test('scope selection, hash-bound proposal, rejection, application and stale rej
   });
   await $.command.run({ command: 'spectorque', args: '' });
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
-  expect(await ui.find({ type: 'Text', text: 'Scope: All documents' })).toBeDefined();
-  await ui.press({ key: 'scope-1' });
-  expect(await ui.find({ type: 'Text', text: 'Scope: specs/payments' })).toBeDefined();
+  expect(await ui.find({ type: 'Text', text: 'Scope: All documents · 2 features · git' })).toBeDefined();
+  expect(calls[0]).toEqual(['features', '--json']);
+  await ui.select({ key: 'scope', value: 'f:specs/payments' });
+  await until(lastIs(calls, ['analyze', '/sample', '--json', '--feature', 'specs/payments']));
+  expect(await ui.find({ type: 'Text', text: /^Scope: specs\/payments/ })).toBeDefined();
   expect(calls.at(-1)).toEqual(['analyze', '/sample', '--json', '--feature', 'specs/payments']);
   expect(await ui.find({ type: 'Text', text: /specs\/payments\/spec\.md:5/ })).toBeDefined();
 
@@ -90,7 +102,8 @@ test('scope selection, hash-bound proposal, rejection, application and stale rej
   expect(await ui.find({ type: 'Text', text: /Apply failed: Source changed: this edit is stale\. Refresh the analysis/ })).toBeDefined();
   expect(await ui.find({ key: 'apply' })).toBeUndefined();
 
-  await ui.press({ key: 'scope-all' });
+  await ui.select({ key: 'scope', value: 'all' });
+  await until(lastIs(calls, ['analyze', '/sample', '--json']));
   expect(calls.at(-1)).toEqual(['analyze', '/sample', '--json']);
   await ui.unmount();
 });
@@ -115,11 +128,13 @@ test('superseded refreshes and proposals do not replace newer state', async ($, 
   await $.command.run({ command: 'spectorque', args: '' });
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
 
-  const slowScope = ui.press({ key: 'scope-1' });
-  await ui.press({ key: 'scope-0' });
+  const slowScope = $.command.run({ command: 'spectorque', args: 'specs/payments' });
+  await until(() => calls.some(args => args.includes('specs/payments')));
+  await ui.select({ key: 'scope', value: 'f:specs/booking' });
+  await until(lastIs(calls, ['analyze', '/sample', '--json', '--feature', 'specs/booking']));
   releaseAnalysis();
   await slowScope;
-  expect(await ui.find({ type: 'Text', text: 'Scope: specs/booking' })).toBeDefined();
+  expect(await ui.find({ type: 'Text', text: /^Scope: specs\/booking/ })).toBeDefined();
   expect(await ui.find({ type: 'Text', text: /specs\/booking\/spec\.md:5/ })).toBeDefined();
   expect(await ui.find({ type: 'Text', text: /specs\/payments\/spec\.md/ })).toBeUndefined();
 
@@ -132,8 +147,47 @@ test('superseded refreshes and proposals do not replace newer state', async ($, 
   expect(await ui.find({ key: 'apply' })).toBeUndefined();
   expect(await ui.find({ type: 'Text', text: /After: late/ })).toBeUndefined();
 
-  await ui.press({ key: 'scope-all' });
+  await ui.select({ key: 'scope', value: 'all' });
   await ui.unmount();
+});
+
+test('large work trees wait for a feature, filter the list and accept command arguments', async ($, on) => {
+  const many = { root: '/repo', mode: 'git', focus: null, total: 640, features: [...Array.from({ length: 30 }, (_, i) => feature(`specs/${String(i + 1).padStart(3, '0')}-item`)), feature('docs/adr', false)] };
+  const calls = stubHost(on, args => args[0] === 'analyze' ? ok(report(null)) : fail('unexpected ' + args.join(' ')), many);
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  expect(calls.some(args => args[0] === 'analyze')).toBe(false);
+  expect(await ui.find({ type: 'Text', text: /640 documents, more than 500/ })).toBeDefined();
+  const options = () => ui.find({ key: 'scope' }).then(select => select!.props.options.map((o: { value: string }) => o.value));
+  expect(await options()).not.toContain('all');
+  expect(await options()).toHaveLength(13);
+  await ui.input({ key: 'scope-filter', text: 'adr', kind: 'change' });
+  expect((await ui.find({ key: 'scope' }))!.props.options.at(-1).label).toBe('Other · docs/adr');
+  await ui.input({ key: 'scope-filter', text: '017', kind: 'change' });
+  expect(await options()).toEqual(['changed', 'f:specs/017-item']);
+  await ui.select({ key: 'scope', value: 'f:specs/017-item' });
+  await until(lastIs(calls, ['analyze', '/repo', '--json', '--feature', 'specs/017-item']));
+  expect(calls.at(-1)).toEqual(['analyze', '/repo', '--json', '--feature', 'specs/017-item']);
+  await ui.unmount();
+
+  await $.command.run({ command: 'spectorque', args: '--changed develop' });
+  expect(calls.at(-1)).toEqual(['analyze', '/repo', '--json', '--changed', '--base', 'develop']);
+  await $.command.run({ command: 'spectorque', args: 'specs/003-item' });
+  expect(calls.at(-1)).toEqual(['analyze', '/repo', '--json', '--feature', 'specs/003-item']);
+  await $.command.run({ command: 'spectorque', args: 'docs/specs/' });
+  expect(calls.at(-1)).toEqual(['analyze', '/repo', '--json', '--path', 'docs/specs']);
+});
+
+test('a subfolder session focuses its folder and the last scope is remembered per work tree', async ($, on) => {
+  const calls = stubHost(on, args => args[0] === 'analyze' ? ok(report(null)) : fail('unexpected'), { ...twoFeatures, focus: 'specs/payments' });
+  await $.command.run({ command: 'spectorque', args: '' });
+  expect(calls.at(-1)).toEqual(['analyze', '/sample', '--json', '--path', 'specs/payments']);
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  await ui.select({ key: 'scope', value: 'f:specs/booking' });
+  await until(lastIs(calls, ['analyze', '/sample', '--json', '--feature', 'specs/booking']));
+  await ui.unmount();
+  await $.command.run({ command: 'spectorque', args: '' });
+  expect(calls.at(-1)).toEqual(['analyze', '/sample', '--json', '--feature', 'specs/booking']);
 });
 
 const READY = { stream: 'stdout', text: 'SpecTorque workbench: http://127.0.0.1:4321\nWorkspace: /sample\nOnly loopback connections are accepted.\n' };
@@ -159,7 +213,7 @@ test('common workbench opens for the session workspace, copies its address and s
   expect(spawned[0].argv.slice(2)).toEqual(['serve', '--root', '/sample', '--port', '0']);
   expect(spawned[0].cwd).toBe('/sample');
   expect(JSON.stringify(copied)).toContain('http://127.0.0.1:4321');
-  expect(await ui.find({ type: 'Text', text: /Common workbench \(address copied\): http:\/\/127\.0\.0\.1:4321\nOpen it in a browser, load the local workspace and select: All documents/ })).toBeDefined();
+  expect(await ui.find({ type: 'Text', text: /Common workbench \(address copied\): http:\/\/127\.0\.0\.1:4321\nOpen it in a browser and load the local workspace\./ })).toBeDefined();
   expect((await ui.find({ key: 'workbench' }))?.props.label).toBe('Close common workbench');
   await ui.press({ key: 'workbench' });
   expect(await ui.find({ type: 'Text', text: /Common workbench/ })).toBeUndefined();

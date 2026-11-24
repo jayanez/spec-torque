@@ -1,8 +1,13 @@
 const PANE = 'spectorque';
 const ALL = 'All documents';
+const LIMIT = 500;
+const SHOWN = 12;
 let assessment;
-let scope = null;
-let scopes = [];
+// The workspace index: root, mode, focus, total and the shared feature list.
+let index;
+// { kind: 'all' } | { kind: 'feature', id } | { kind: 'path', path } | { kind: 'changed', base? }
+let scope;
+let filter = '';
 let selected = 0;
 let proposal;
 let error = '';
@@ -18,32 +23,54 @@ async function checkNode($) {
     throw new Error('Node.js 22.20 or later is required on PATH; found ' + (output.stdout?.trim() || 'none') + '.');
   }
 }
-async function run($, args) {
-  const output = await $.process.run(['node', cli, ...args]);
+async function run($, args, cwd) {
+  const output = await $.process.run(['node', cli, ...args], cwd ? { cwd } : undefined);
   if (output.exitCode || output.isStdoutTruncated) throw new Error(output.stderr?.trim() || 'Command failed or exceeded the output limit. Select a smaller workspace.');
   return JSON.parse(output.stdout);
 }
 // Each refresh starts a generation; results from a superseded one are discarded.
 let generation = 0;
-const analyzeScope = ($, cwd, feature) => run($, ['analyze', cwd, '--json', ...(feature === null ? [] : ['--feature', feature])]);
-async function refresh($) {
+const scopeLabel = value => !value ? 'not selected' : value.kind === 'all' ? ALL : value.kind === 'feature' ? value.id
+  : value.kind === 'path' ? 'Folder · ' + value.path : 'Changed on this branch' + (value.base ? ' (vs ' + value.base + ')' : '');
+const scopeArgs = value => value.kind === 'feature' ? ['--feature', value.id] : value.kind === 'path' ? ['--path', value.path]
+  : value.kind === 'changed' ? ['--changed', ...(value.base ? ['--base', value.base] : [])] : [];
+const fits = () => index && index.total <= LIMIT;
+const storeKey = () => 'scope:' + index.root;
+// `/spectorque specs/001-x`, `/spectorque docs/specs` or `/spectorque --changed [base]` narrow the scope.
+function parseArgs(text) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return undefined;
+  if (words[0] === '--changed') return { kind: 'changed', ...(words[1] ? { base: words[1] } : {}) };
+  const target = words.join(' ').replace(/\/+$/, '');
+  return index.features.some(f => f.id === target) ? { kind: 'feature', id: target } : { kind: 'path', path: target };
+}
+async function defaultScope($) {
+  const saved = await $.store.get(storeKey()).catch(() => undefined);
+  if (saved?.kind === 'feature' && index.features.some(f => f.id === saved.id)) return saved;
+  if (saved?.kind === 'changed' || saved?.kind === 'path') return saved;
+  if (saved?.kind === 'all' && fits()) return saved;
+  if (index.focus) return { kind: 'path', path: index.focus };
+  if (index.features.length === 1) return { kind: 'feature', id: index.features[0].id };
+  return fits() ? { kind: 'all' } : undefined;
+}
+async function refresh($, requested) {
   const request = ++generation;
-  let feature = scope;
   proposal = undefined;
   try {
     await checkNode($);
     const cwd = await $.session.cwd();
-    let result;
-    try { result = await analyzeScope($, cwd, feature); }
-    catch (e) {
-      if (feature === null || !/Unknown feature/.test(message(e))) throw e;
-      feature = null;
-      result = await analyzeScope($, cwd, feature);
-    }
+    const next = await run($, ['features', '--json'], cwd);
     if (request !== generation) return;
-    assessment = result; scope = feature;
-    if (feature === null) scopes = [...new Set(result.artifacts.filter(a => !a.archived && a.role !== 'instructions').map(a => a.featureId))].sort();
-    selected = 0; proposal = undefined; error = '';
+    index = next;
+    let target = requested ?? scope ?? await defaultScope($);
+    if (target?.kind === 'feature' && !index.features.some(f => f.id === target.id)) target = await defaultScope($);
+    if (target?.kind === 'all' && !fits()) target = undefined;
+    scope = target;
+    if (!target) { assessment = undefined; error = ''; selected = 0; $.ui.invalidate('ui.render'); return; }
+    const result = await run($, ['analyze', index.root, '--json', ...scopeArgs(target)], cwd);
+    if (request !== generation) return;
+    assessment = result; selected = 0; proposal = undefined; error = '';
+    await $.store.set(storeKey(), target).catch(() => {});
   } catch (e) {
     if (request !== generation) return;
     assessment = undefined; proposal = undefined; error = 'Analysis failed: ' + message(e);
@@ -65,9 +92,10 @@ async function openWorkbench($) {
   const current = { root: '', url: '' };
   workbench = current;
   $.ui.invalidate('ui.render');
-  const root = await $.session.cwd();
+  const root = index?.root ?? await $.session.cwd();
   if (workbench !== current) return;
-  const handle = $.process.spawn({ argv: ['node', cli, 'serve', '--root', root, '--port', '0'], cwd: root });
+  const feature = scope?.kind === 'feature' ? ['--feature', scope.id] : [];
+  const handle = $.process.spawn({ argv: ['node', cli, 'serve', '--root', root, '--port', '0', ...feature], cwd: root });
   Object.assign(current, { handle, root });
   let output = '';
   try {
@@ -96,7 +124,7 @@ async function openWorkbench($) {
 }
 export function register(on) {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: PANE, description: 'Review specification quality and evidence' });
+    await $.command.register({ name: PANE, description: 'Review specification quality and evidence', argumentHint: '[feature | folder | --changed [base]]' });
     return next(e);
   });
   on('session.end', async ($, e, next) => {
@@ -107,16 +135,20 @@ export function register(on) {
     if (e.id === PANE) closeWorkbench();
     return next(e);
   });
-  on('command.run', { command: PANE }, async ($) => {
-    await refresh($);
+  on('command.run', { command: PANE }, async ($, e) => {
+    if (e.args?.trim()) {
+      // Resolve the arguments against a fresh index of the session's work tree.
+      try { await checkNode($); index = await run($, ['features', '--json'], await $.session.cwd()); await refresh($, parseArgs(e.args)); }
+      catch (failure) { error = 'Analysis failed: ' + message(failure); }
+    } else await refresh($);
     await $.ui.open({ id: PANE, title: 'SpecTorque', focus: true, closeOnEscape: true });
     return {};
   });
   on('ui.render', { component: 'Pane' }, async ($, e, next) => {
     if (e.requestId !== PANE) return next(e);
-    const { Box, Text, Button, Input } = $.ui.resolve(e);
+    const { Box, Text, Button, Input, Select } = $.ui.resolve(e);
     const redraw = () => $.ui.invalidate('ui.render');
-    const choose = value => { scope = value; return refresh($); };
+    const choose = value => refresh($, value);
     const finding = assessment?.findings[selected];
     const ev = finding?.evidence[0];
     const children = [
@@ -133,14 +165,22 @@ export function register(on) {
         redraw();
       } }),
     ];
-    if (workbench?.url) children.push(Text({ children: ['Common workbench' + (workbench.copied ? ' (address copied)' : '') + ': ' + workbench.url + '\nOpen it in a browser, load the local workspace and select: ' + (scope ?? ALL)] }));
+    if (workbench?.url) children.push(Text({ children: ['Common workbench' + (workbench.copied ? ' (address copied)' : '') + ': ' + workbench.url + '\nOpen it in a browser and load the local workspace' + (scope?.kind === 'feature' ? '; it opens on ' + scope.id : '') + '.'] }));
     if (workbenchNote) children.push(Text({ children: [workbenchNote] }));
-    if (scopes.length > 1) {
-      children.push(Text({ children: ['Scope: ' + (scope ?? ALL)] }));
-      children.push(Box({ flexDirection: 'row', columnGap: 2, children: [
-        Button({ key: 'scope-all', label: ALL, onPress: () => choose(null) }),
-        ...scopes.map((value, index) => Button({ key: 'scope-' + index, label: value, onPress: () => choose(value) })),
-      ] }));
+    if (index) {
+      children.push(Text({ children: ['Scope: ' + scopeLabel(scope) + ' · ' + index.features.length + ' features · ' + index.mode] }));
+      if (index.features.length > 1 || !scope) {
+        const needle = filter.toLowerCase();
+        const matches = index.features.filter(f => f.id.toLowerCase().includes(needle));
+        const options = [
+          ...(fits() ? [{ value: 'all', label: ALL }] : []),
+          { value: 'changed', label: 'Changed on this branch' },
+          ...matches.slice(0, SHOWN).map(f => ({ value: 'f:' + f.id, label: (f.layout ? '' : 'Other · ') + f.id })),
+        ];
+        if (index.features.length > SHOWN) children.push(Input({ key: 'scope-filter', label: 'Filter features (' + matches.length + ' of ' + index.features.length + ')', value: filter, submitLabel: 'filter', onInput: text => { filter = text; redraw(); }, onSubmit: text => { filter = text; redraw(); } }));
+        children.push(Select({ key: 'scope', label: scope ? 'Change scope' : 'Choose a feature to analyze', value: scope?.kind === 'feature' ? 'f:' + scope.id : scope?.kind === 'all' ? 'all' : scope?.kind === 'changed' ? 'changed' : undefined, options, onSelect: value => choose(value === 'all' ? { kind: 'all' } : value === 'changed' ? { kind: 'changed' } : { kind: 'feature', id: value.slice(2) }) }));
+        if (!scope && !fits()) children.push(Text({ children: ['This work tree has ' + index.total + ' documents, more than ' + LIMIT + ' analyzed at once. Choose a feature, or run /spectorque <feature | folder | --changed>.'] }));
+      }
     }
     if (error) children.push(Text({ children: [error] }));
     if (assessment) {
@@ -160,10 +200,10 @@ export function register(on) {
         const current = () => request === generation && at === selected;
         let result, failure;
         try {
-          const cwd = await $.session.cwd();
+          const root = index.root;
           const source = assessment.artifacts.find(a => a.path === ev.path);
           if (!source) throw new Error('Evidence source is not in this assessment. Refresh the analysis.');
-          result = (await run($, ['refine', cwd + '/' + ev.path, '--root', cwd, '--line', String(ev.line), '--replacement', replacement, '--expect-hash', source.hash])).proposal;
+          result = (await run($, ['refine', root + '/' + ev.path, '--root', root, '--line', String(ev.line), '--replacement', replacement, '--expect-hash', source.hash])).proposal;
         } catch (e) { failure = 'Proposal failed: ' + message(e); }
         if (!current()) return;
         proposal = result; error = failure ?? '';
@@ -173,7 +213,7 @@ export function register(on) {
     if (proposal) {
       children.push(Text({ children: ['Before: ' + proposal.original + '\nAfter: ' + proposal.replacement] }));
       children.push(Button({ key: 'apply', label: 'Apply reviewed change', onPress: async () => {
-        try { await run($, ['apply', '--root', await $.session.cwd(), '--proposal', JSON.stringify(proposal), '--apply']); await refresh($); }
+        try { await run($, ['apply', '--root', index.root, '--proposal', JSON.stringify(proposal), '--apply']); await refresh($); }
         catch (e) { error = 'Apply failed: ' + message(e) + ' Refresh the analysis before proposing again.'; proposal = undefined; redraw(); }
       } }));
       children.push(Button({ key: 'reject', label: 'Reject proposal', onPress: () => { proposal = undefined; redraw(); } }));

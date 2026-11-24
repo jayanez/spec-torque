@@ -61,7 +61,7 @@ async function main() {
     const changed = values.changed ? await changedFeatures(index, values.base) : undefined;
     if (command === 'features') {
       const features = changed ? index.features.filter(f => changed.includes(f.id)) : index.features;
-      console.log(values.json ? JSON.stringify({ root: index.root, mode: index.mode, focus: index.focus, features }, null, 2)
+      console.log(values.json ? JSON.stringify({ root: index.root, mode: index.mode, focus: index.focus, total: index.entries.length, features }, null, 2)
         : [`Workspace: ${index.root} (${index.mode}${index.focus ? `, focus ${index.focus}` : ''})`, ...features.map(f => `${f.id}  ${f.framework} · ${f.artifacts} artifacts`)].join('\n') || 'No features.');
       return;
     }
