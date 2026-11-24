@@ -631,3 +631,47 @@ node --import tsx scripts/precision/audit-denominators.ts --fixture <f.jsonl> --
 The public roots file lists repositories and pinned SHAs. The external inventory's
 non-MIT and unconfirmed-license sources were scanned only as restricted, so none of
 their text was stored. None of their text is copied into the corpus.
+
+### H3: requirement definitions in defining positions — **iterate (owner decision)**
+
+Tracking: [#83](https://github.com/jayanez/spec-torque/issues/83).
+- Pre-registered at `7eeefa0`.
+- The sources (8 repositories, `"### REQ-001"` and `"**REQ-001"` queries) and the
+  synthetic twins were frozen at `31f16af`.
+- The twin for mentions was amended at `57f87ac`, before the candidate existed,
+  because it contradicted the frozen policy.
+- Candidate: `6a33bee`, engine 0.1.8.
+
+| Gate | Result |
+|---|---|
+| 1. Synthetic twins (14 EN/ES) and existing minimal pairs | holds: 14 of 14 (0.1.4 meets 8), and no admission, E1.4 or E1.2 change in the minimal pairs |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh set review | **fails on added findings** |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** The candidate was compared with 0.1.4 across 1,369 Spec Kit features
+in 8 roots, 4 of which contribute changes. It:
+- removes 2,227 I1.2/I2.3 findings: 1,086 missing identifiers, 994 duplicates and
+  147 unresolved references;
+- adds 431 duplicates.
+
+**Gate 3, added findings.** Provisional review of 100 added findings, seed 42039:
+- 75 are traceability table rows whose first cell restates an ID already defined
+  by a heading (`| REQ-005 | T4 | S6 | INV-005 |`);
+- 10 are dotted sub-requirements (`- REQ-2.1: …`) read as their parent `REQ-2`;
+- 15 are other cases: prose lines that begin with a cited ID, and a few real
+  restatements.
+
+Most added findings are therefore false. **Removed findings**, provisional review
+of 100: they are predominantly mentions that were counted as duplicates and body
+lines under a defining heading. No lost true problem was identified, but the full
+labelled review was not completed because gate 3 had already failed.
+
+**Decision.** The candidate stays on its branch, unmerged. The failing
+constructions are first-cell table IDs and dotted sub-IDs. The owner decides
+between:
+- **H3a**: exclude table cells from defining positions, and stop an ID at a
+  following `.digit`. Pre-register it, freeze new twins and select a fresh set
+  before the candidate.
+- stopping H3.
+
