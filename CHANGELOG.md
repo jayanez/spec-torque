@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Engine 0.1.9 (#83, H3a): requirement IDs define a requirement only in a defining position (first on the line after an optional heading marker, list marker, checkbox or bold/code markup). Headings such as `### REQ-001 — Title` now define requirements and identify their body lines; mentions, table restatements and dotted sub-IDs (`REQ-2.1`) are no longer counted as duplicates. Reference resolution is unchanged otherwise. Known limit: an ID restated as the first token of a list item or wrapped line elsewhere in the feature's spec documents still counts as a duplicate. Admission and other rules are unchanged; see docs/precision-decisions.md.
 - Research note on outcome-driven development and failure semantics, engine unchanged at 0.1.4: no ODD profile is added; follow-ups are a clarification actionability measurement (#57) and an EN/ES lexical parity spike (#58). See docs/research.md.
 - Research tooling (#39, #51), engine unchanged at 0.1.4: paired precision replay with synthetic minimal pairs and natural-source scans, blind adjudication packets, the label-derived calibration audit and the F2 span-classification trial. No detector candidate (H1, H2–H2e) met its gates; see docs/precision-decisions.md.
 - Pi: offer the feature scope picker in every interactive mode, including RPC hosts such as ThinkRail, which previously reached only All documents. `qualify:pi` now checks the picker over RPC.

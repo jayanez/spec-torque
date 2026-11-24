@@ -719,3 +719,35 @@ candidate. It goes to independent adjudication under
 
 The owner decides on the product change after adjudication.
 
+### H3a adjudication — **holds; proposed for merge with known limits**
+
+The owner fixed the threshold on 2026-11-25 (`caba058`), before labeling: at most
+2 of 100 sampled removed findings may be agreed true problems.
+
+The packet was built at `156e895` from the H3a fresh-set scan: 100 removed
+findings (seed 42039) and all 12 added ones, shuffled. Two independent agent
+sessions labeled it separately. Neither saw engine output, the key, the code or
+the other's labels.
+
+| Direction | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Removed (100) | 100 | 0 | 0 | 0 |
+| Added (12) | 12 | 0 | 0 | 0 |
+
+- **Removed:** 0 of 100 are true problems, within the threshold. Reviewers
+  described the removed duplicates as the only definition of the ID, or as lines
+  that cite, restate or trace it: wrapped continuations, checklist ranges,
+  traceability cells, assumptions, plan steps and test descriptions. The 4
+  missing-identifier items sit under an enclosing ID heading; one of them rests
+  on an inference beyond the context window. The single unresolved reference has
+  a visible heading definition.
+- **Added:** all 12 are false duplicates, which confirms the known limit.
+
+**Limits of this adjudication.**
+- Both reviewers are sessions of the same model family; calibrating an
+  alternative second reviewer is tracked in #65.
+- The packet shows three lines of context and at most 8 same-ID occurrences.
+
+**Decision.** Propose H3a (engine 0.1.9) for merge. The known limits are recorded
+in the H3a entry above. The owner decides at review.
+
