@@ -1,7 +1,6 @@
 import { execFile } from 'node:child_process';
 import { lstat, readdir, readFile, realpath } from 'node:fs/promises';
 import { basename, join, relative, resolve } from 'node:path';
-import { z } from 'zod';
 import { classifyPath, isSpecCandidate, listFeatures, type FeatureSummary, type PathClassification } from '../core/artifacts.js';
 
 /** Directory names never read as project input, in git and walk mode alike. */
@@ -50,27 +49,36 @@ export async function resolveImplicitRoot(cwd: string): Promise<{ root: string; 
   return { root: tree.toplevel, focus: tree.prefix || null };
 }
 
-const configSchema = z.object({
-  include: z.array(z.string().min(1).max(500).refine(
-    glob => !/^[\\/]|^[A-Za-z]:|^:|\\/.test(glob) && !glob.split('/').includes('..'),
-    'Use relative glob patterns inside the work tree (no "..", absolute paths, backslashes or pathspec magic).',
-  )).max(50).default([]),
-  submodules: z.boolean().default(false),
-}).strict();
-export type ScopeConfig = z.infer<typeof configSchema>;
+export interface ScopeConfig { include: string[]; submodules: boolean }
+
+// Validated by hand: discovery stays dependency-free so archived engine revisions can be replayed.
+function parseScopeConfig(raw: unknown): ScopeConfig {
+  const problems: string[] = [];
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new Error(`Invalid ${CONFIG_FILE}: root: expected an object`);
+  const value = raw as Record<string, unknown>;
+  for (const key of Object.keys(value)) if (key !== 'include' && key !== 'submodules') problems.push(`${key}: unrecognized key`);
+  const include = value.include ?? [];
+  if (!Array.isArray(include) || include.length > 50) problems.push('include: expected at most 50 glob strings');
+  else include.forEach((glob, i) => {
+    if (typeof glob !== 'string' || !glob || glob.length > 500) problems.push(`include.${i}: expected a non-empty string up to 500 characters`);
+    else if (/^[\\/]|^[A-Za-z]:|^:|\\/.test(glob) || glob.split('/').includes('..')) problems.push(`include.${i}: use relative glob patterns inside the work tree (no "..", absolute paths, backslashes or pathspec magic)`);
+  });
+  const submodules = value.submodules ?? false;
+  if (typeof submodules !== 'boolean') problems.push('submodules: expected a boolean');
+  if (problems.length) throw new Error(`Invalid ${CONFIG_FILE}: ${problems.join('; ')}`);
+  return { include: include as string[], submodules: submodules as boolean };
+}
 
 /** Reads `.spectorque.json` at the root. Configuration may only widen discovery inside the work tree. */
 export async function loadScopeConfig(root: string): Promise<ScopeConfig> {
   const file = join(root, CONFIG_FILE);
   const info = await lstat(file).catch(() => null);
-  if (!info) return configSchema.parse({});
+  if (!info) return { include: [], submodules: false };
   if (!info.isFile()) throw new Error(`${CONFIG_FILE} must be a regular file.`);
   if (info.size > 65_536) throw new Error(`${CONFIG_FILE} exceeds 64 KB.`);
   let raw: unknown;
   try { raw = JSON.parse(await readFile(file, 'utf8')); } catch { throw new Error(`${CONFIG_FILE} is not valid JSON.`); }
-  const parsed = configSchema.safeParse(raw);
-  if (!parsed.success) throw new Error(`Invalid ${CONFIG_FILE}: ${parsed.error.issues.map(i => `${i.path.join('.') || 'root'}: ${i.message}`).join('; ')}`);
-  return parsed.data;
+  return parseScopeConfig(raw);
 }
 
 const excludedPath = (path: string) => path.split('/').some(segment => excludedNames.has(segment) || segment.startsWith('.env'));
