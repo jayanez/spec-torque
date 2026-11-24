@@ -43,4 +43,10 @@ Everything in the protocol as amended through 2026-11-24 applies to run 2, excep
 
 ## Amendments
 
-None.
+**2026-11-24. First run-2 result and the single prompt revision.** Made before the run-2 reserve run or any participant data.
+
+- *First run-2 result, kept.* 96 items, both reviewers, three runs each; no malformed outputs or transport failures; results sealed before keys were read. R1 passed every gate in both languages, with key accuracy 0.96–1.00 and instability 0.00 (EN) and 0.02 (ES). R2 failed instability, 0.125 (6 of 48, EN) and 0.27 (13 of 48, ES), and in ES also `acceptable` κ (0.76) and its own `acceptable` accuracy (0.875). Every other κ and accuracy gate passed. Calibration therefore failed.
+- *Cause.* R2's labels changed between runs on identical inputs, mostly `acceptable` on judgement calls about whether a note records or routes a decision and whether a filled slot is acceptable. R1 was stable on the same items and prompt, so this is read as R2 sampling variance rather than an ambiguous rule.
+- *Revision, within the permitted scope.* The prompt asks for a short "checks" line per applicable rule before the labels (protocol amendment *Run-2 prompt revision*). No label meaning, rule, key, scorer behaviour or gate changes. Prompt SHA-256 → `c5a28aecbf6fc09ce8b9d50279cd9a23b746cdb3054e6618e167f9a340ed7464`.
+- *Seeds.* Run-2 packet seeds keep deriving from this file's frozen SHA-256 `847ed2750fd7aaf71290e9a9d1ae04dd764082cbfbd63b8b3e7fcfbd152a5724`, not from the amended file.
+- *Retry.* Both reviewers label the 48-item run-2 reserve three times with the revised prompt, against the same gates. A failure means **no decision**, with no further calibration run under #57.

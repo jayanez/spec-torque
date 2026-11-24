@@ -225,6 +225,8 @@ Recorded after independent review, to be read with every result:
 - The prompt and the labelling rules now state that, when two clauses or sources conflict, deleting or weakening one so the other prevails is an invented decision, and that vague wording stating no concrete value, owner, trigger or condition is neither an invented decision nor a filled slot. They also state that wording changes are acceptable only once the slot is filled as an acceptable resolution requires, that `fills_slot` asks about TEXT, that question 3 covers resolving a conflict by deletion or weakening, and that the action word is valid evidence only for leave or escalate.
 - Prompt SHA-256 `5d2be8faf3a3d0a5940f0b8afb46230857e9595315ee769624144e0564b6e0ab` → `2ac88d84b776f336bbfd16f69badea2598663d4717b79c6687369ad81bf97a50`. The run-2 items were aligned with these rules before freezing; no keys exist for any output under this prompt.
 
+**2026-11-24. Run-2 prompt revision (answer format only).** Made under the retry rule of [calibration run 2](clarification-actionability-run2.md), after its first result and before its reserve run or any participant data. The prompt now asks the reviewer to list a short "checks" line for each applicable rule before the labels. The labels, their meaning and every labelling rule are unchanged, and the scorer ignores the checks. Prompt SHA-256 `2ac88d84b776f336bbfd16f69badea2598663d4717b79c6687369ad81bf97a50` → `c5a28aecbf6fc09ce8b9d50279cd9a23b746cdb3054e6618e167f9a340ed7464`. If run 2's reserve passes, this prompt governs the live phase.
+
 ## Appendix: reviewer prompt
 
 ```text
@@ -290,8 +292,12 @@ contiguous passage copied exactly from the RESPONSE's text or note, or, for
 leave or escalate, the action word, with nothing added: no quotation marks,
 ellipses, labels or explanation. Use an empty string for any label that is not "yes".
 
+Before the labels, write "checks": one short line for each rule above that
+applies to this response, saying what you find. Then give the labels.
+
 Reply with JSON only:
-{"acceptable": "...", "fills_slot": "...", "invented_decision": "...",
+{"checks": ["..."],
+ "acceptable": "...", "fills_slot": "...", "invented_decision": "...",
  "evidence": {"acceptable": "...", "fills_slot": "...",
  "invented_decision": "..."}}
 ```

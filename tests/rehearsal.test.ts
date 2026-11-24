@@ -109,8 +109,9 @@ test('run-2 calibration packets: 96 and 48 items, seeded from the run-2 pre-regi
     assert.equal(loaded.calibrationRun2!.reserve.filter(i => i.language === lang).length, 24);
   }
   const p = packet(loaded, 'calibration-run2', 'R1', 1, cal);
-  assert.equal(p.runProtocolSha256, loaded.run2ProtocolSha256);
-  assert.equal(p.seed, seed(loaded.run2ProtocolSha256!, 'calibration-run2', 'R1', 1));
+  const { RUN2_FROZEN_SHA256 } = await import('../scripts/precision/rehearsal.js');
+  assert.equal(p.runProtocolSha256, RUN2_FROZEN_SHA256);
+  assert.equal(p.seed, seed(RUN2_FROZEN_SHA256, 'calibration-run2', 'R1', 1));
   assert.deepEqual(p.items.map(i => i.id), order(cal, p.seed).map(i => i.id));
   const run1 = new Set(calibrationItems(loaded, 'calibration').map(i => i.id));
   assert.ok(cal.every(i => !run1.has(i.id)));

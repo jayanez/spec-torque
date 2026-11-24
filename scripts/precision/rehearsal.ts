@@ -26,8 +26,12 @@ export const FROZEN_PROTOCOL_SHA256 = '16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed
 export const FROZEN_PROMPT_SHA256 = '406cae4c818b43ba725dcdc2d83a098dae3ec8207da4ec94e470e0b34f787f58';
 /** SHA-256 of the prompt after the single permitted revision of run 1 (amendment of 2026-11-24), used for the run-1 reserve. */
 export const REVISED_PROMPT_SHA256 = '5d2be8faf3a3d0a5940f0b8afb46230857e9595315ee769624144e0564b6e0ab';
-/** SHA-256 of the prompt clarified before calibration run 2 (amendment of 2026-11-24); used for run 2 and the live phase. */
+/** SHA-256 of the prompt clarified before calibration run 2 (amendment of 2026-11-24); used for run-2 calibration. */
 export const RUN2_PROMPT_SHA256 = '2ac88d84b776f336bbfd16f69badea2598663d4717b79c6687369ad81bf97a50';
+/** SHA-256 of the prompt after run 2's single format revision; used for the run-2 reserve and the live phase. */
+export const RUN2_REVISED_PROMPT_SHA256 = 'c5a28aecbf6fc09ce8b9d50279cd9a23b746cdb3054e6618e167f9a340ed7464';
+/** LF SHA-256 of the run-2 pre-registration at its freeze (cc53307); run-2 seeds derive from it, not from the amended file. */
+export const RUN2_FROZEN_SHA256 = '847ed2750fd7aaf71290e9a9d1ae04dd764082cbfbd63b8b3e7fcfbd152a5724';
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
@@ -125,7 +129,7 @@ export async function load(root: string): Promise<Loaded> {
   for (const item of [...calibration.items, ...calibration.reserve])
     if (!material.has(item.case)) throw new Error(`Calibration item ${item.id} names unknown case ${item.case}.`);
   const prompt = extractPrompt(lf(protocol));
-  if (sha256(prompt) !== RUN2_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the prompt clarified before calibration run 2.');
+  if (sha256(prompt) !== RUN2_REVISED_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the prompt revised in run 2.');
   const run2Path = join(root, `${FIXTURES}/calibration-run2.json`);
   const calibrationRun2 = existsSync(run2Path) ? calibrationRun2Schema.parse(JSON.parse(lf(await readFile(run2Path)))) : null;
   for (const item of [...(calibrationRun2?.items ?? []), ...(calibrationRun2?.reserve ?? [])])
@@ -309,8 +313,8 @@ export function packet(loaded: Loaded, phase: Phase, reviewer: Reviewer, run: nu
   if (![1, 2, 3].includes(run)) throw new Error('Run must be 1, 2 or 3.');
   if (isRun2(phase)) {
     if (!loaded.run2ProtocolSha256) throw new Error(`${RUN2_PROTOCOL} is missing.`);
-    const s = seed(loaded.run2ProtocolSha256, phase, reviewer, run);
-    return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, runProtocolSha256: loaded.run2ProtocolSha256,
+    const s = seed(RUN2_FROZEN_SHA256, phase, reviewer, run);
+    return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, runProtocolSha256: RUN2_FROZEN_SHA256,
       prompt: loaded.prompt, items: order(items, s) };
   }
   const s = seed(loaded.protocolSha256, phase, reviewer, run);
