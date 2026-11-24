@@ -1,11 +1,45 @@
 import * as vscode from 'vscode';
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { join } from 'node:path';
 
-let active: { root: string; panel: vscode.WebviewPanel } | undefined;
+let active: { root: string; feature: string | null; panel: vscode.WebviewPanel } | undefined;
+interface FeatureList { total: number; features: { id: string; layout: boolean }[] }
+const LIMIT = 500;
+
+/** Lists the work tree's features through the shared index, without reading document content. */
+function listFeatures(cli: string, root: string, changed: boolean): Promise<FeatureList> {
+  return new Promise((done, fail) => execFile(process.execPath, [cli, 'features', root, '--json', ...(changed ? ['--changed'] : [])],
+    { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, windowsHide: true, timeout: 60_000, maxBuffer: 64 * 1024 * 1024 },
+    (error, stdout, stderr) => error ? fail(new Error(String(stderr).trim() || error.message)) : done(JSON.parse(stdout))));
+}
+
+type Pick = vscode.QuickPickItem & { value: string };
+/** Asks for a scope: all documents when they fit, one feature, or a feature changed on this branch. */
+async function chooseFeature(context: vscode.ExtensionContext, cli: string, root: string): Promise<string | null | undefined> {
+  const index = await listFeatures(cli, root, false);
+  if (index.features.length < 2 && index.total <= LIMIT) return null;
+  const remembered = context.workspaceState.get<string | null>('spectorque.feature:' + root);
+  const items: Pick[] = [
+    ...(index.total <= LIMIT ? [{ label: 'All documents', value: '' }] : []),
+    { label: "Only this branch's changes", description: 'Features changed since the default branch', value: ':changed' },
+    { label: 'Features', kind: vscode.QuickPickItemKind.Separator, value: '' },
+    ...index.features.map(f => ({ label: f.id, description: f.layout ? undefined : 'Other documents', value: f.id, picked: f.id === remembered })),
+  ];
+  let picked = await vscode.window.showQuickPick(items, { title: 'SpecTorque · choose a scope', placeHolder: 'Filter ' + index.features.length + ' features', matchOnDescription: true });
+  if (picked?.value === ':changed') {
+    const changed = await listFeatures(cli, root, true);
+    if (!changed.features.length) { void vscode.window.showInformationMessage('No feature changed on this branch.'); return undefined; }
+    picked = changed.features.length === 1 ? { label: changed.features[0].id, value: changed.features[0].id }
+      : await vscode.window.showQuickPick(changed.features.map(f => ({ label: f.id, value: f.id })), { title: 'SpecTorque · features changed on this branch' });
+  }
+  if (!picked) return undefined;
+  const feature = picked.value || null;
+  await context.workspaceState.update('spectorque.feature:' + root, feature);
+  return feature;
+}
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(vscode.commands.registerCommand('spectorque.review', async () => {
+  context.subscriptions.push(vscode.commands.registerCommand('spectorque.review', async (requestedFeature?: unknown) => {
     if (!vscode.workspace.isTrusted) {
       void vscode.window.showWarningMessage('Trust this workspace before starting the SpecTorque workbench.');
       return;
@@ -16,13 +50,22 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
     const root = folder.uri.fsPath;
-    if (active?.root === root) { active.panel.reveal(vscode.ViewColumn.Beside); return; }
+    const cli = join(context.extensionPath, 'runtime', 'cli.js');
+    let feature: string | null | undefined;
+    try {
+      feature = typeof requestedFeature === 'string' && requestedFeature ? requestedFeature : await chooseFeature(context, cli, root);
+    } catch (error) {
+      void vscode.window.showErrorMessage('SpecTorque could not list features: ' + (error as Error).message);
+      return;
+    }
+    if (feature === undefined) return;
+    if (active?.root === root && active.feature === feature) { active.panel.reveal(vscode.ViewColumn.Beside); return; }
     active?.panel.dispose();
     const output = vscode.window.createOutputChannel('SpecTorque');
     const panel = vscode.window.createWebviewPanel('spectorque', 'SpecTorque', vscode.ViewColumn.Beside, { enableScripts: true, retainContextWhenHidden: true });
-    active = { root, panel };
+    active = { root, feature, panel };
     panel.webview.html = '<p role="status">Starting the local specification workbench…</p>';
-    const child = spawn(process.execPath, [join(context.extensionPath, 'runtime', 'cli.js'), 'serve', '--root', root, '--port', '0'], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, shell: false, windowsHide: true });
+    const child = spawn(process.execPath, [cli, 'serve', '--root', root, '--port', '0', ...(feature ? ['--feature', feature] : [])], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, shell: false, windowsHide: true });
     function stopChild() {
       if (child.exitCode !== null || child.signalCode !== null) return;
       child.kill();
