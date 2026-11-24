@@ -57,7 +57,7 @@
           "",
           "**REQ-001 Consent.** The system MUST ask for consent before recording.",
           "",
-          "REQ-001 also MUST apply to imported records."
+          "Imported records MUST also follow REQ-001."
         ],
         "specs/001-demo/plan.md": [
           "# Plan",
@@ -66,7 +66,7 @@
         ]
       },
       "expected": [],
-      "note": "A later mention of REQ-001 is not a second definition."
+      "note": "A later mid-line mention of REQ-001 is not a second definition. (Amended before the candidate: a line that starts with the ID is a defining position under the frozen H3 policy.)"
     },
     {
       "id": "two-list-definitions-en",
@@ -217,7 +217,7 @@
           "",
           "**REQ-001 Consentimiento.** El sistema DEBE pedir consentimiento antes de grabar.",
           "",
-          "REQ-001 también DEBE aplicarse a los registros importados."
+          "Los registros importados también DEBEN cumplir REQ-001."
         ],
         "specs/001-demo/plan.md": [
           "# Plan",
@@ -226,7 +226,7 @@
         ]
       },
       "expected": [],
-      "note": "A later mention of REQ-001 is not a second definition."
+      "note": "A later mid-line mention of REQ-001 is not a second definition. (Amended before the candidate: a line that starts with the ID is a defining position under the frozen H3 policy.)"
     },
     {
       "id": "two-list-definitions-es",
