@@ -47,8 +47,8 @@ across that profile's workspaces. Remove it and restart OpenCode to uninstall.
 The ZIP exports `./tui` and includes the bundled runtime and workbench assets.
 It contains no auto-discovered OpenCode skills.
 
-`/spectorque [feature | folder | --changed [base]]` opens the native panel for a local, existing session and a summary
-dialog from home. Without an argument, a searchable dialog lists the work tree's features, with known layouts first. Focus the panel and press **s** for scope, **e** for the exact
+`/spectorque` opens the native panel for a local, existing session and a summary
+dialog from home; `/spectorque-scope <feature | folder | --changed [base]>` opens it on a scope. When no scope is set, a searchable dialog lists the work tree's features, with known layouts first. Focus the panel and press **s** for scope, **e** for the exact
 source line, **r** for reviewed changes, **w** for the local workbench URL and
 **q** to close it. `/spectorque-review` remains available from the command
 palette and prompt. The workbench uses the session's local workspace. In the

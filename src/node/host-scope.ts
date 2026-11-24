@@ -22,14 +22,14 @@ export function parseScopeArgs(text: string | undefined, index: WorkspaceIndex):
   return index.features.some(f => f.id === target) ? { kind: 'feature', id: target } : { kind: 'path', path: target };
 }
 
-/** A still-valid remembered scope, else the focus folder, a single feature, or everything when it fits. */
+/** A still-valid remembered scope, else the focus folder, everything when it fits, or a single feature. */
 export function defaultScope(index: WorkspaceIndex, remembered?: HostScope): HostScope | undefined {
   if (remembered?.kind === 'feature' && index.features.some(f => f.id === remembered.id)) return remembered;
   if (remembered?.kind === 'changed' || remembered?.kind === 'path') return remembered;
   if (remembered?.kind === 'all' && fitsReadLimit(index)) return remembered;
   if (index.focus) return { kind: 'path', path: index.focus };
-  if (index.features.length === 1) return { kind: 'feature', id: index.features[0].id };
-  return fitsReadLimit(index) ? { kind: 'all' } : undefined;
+  if (fitsReadLimit(index)) return { kind: 'all' };
+  return index.features.length === 1 ? { kind: 'feature', id: index.features[0].id } : undefined;
 }
 
 export function scopeRequest(scope: HostScope): ScopeRequest {

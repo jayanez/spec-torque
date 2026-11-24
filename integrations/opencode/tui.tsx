@@ -258,7 +258,9 @@ export default Plugin.define({
 
     context.ui.slot({ append: 'session.panel', render: panel => <Show when={panel.name === panelName}><ReviewPanel /></Show> });
     context.keymap.layer(() => ({ mode: 'global', commands: [
-      { id: 'spectorque.open', title: 'Open SpecTorque', palette: true, slash: { name: 'spectorque', arguments: true }, run: (input?: string) => open(input) },
+      { id: 'spectorque.open', title: 'Open SpecTorque', palette: true, slash: { name: 'spectorque' }, run: () => open() },
+      // A separate command keeps /spectorque runnable with Enter; arguments narrow the scope.
+      { id: 'spectorque.scope', title: 'Open SpecTorque on a scope', palette: true, slash: { name: 'spectorque-scope', arguments: true }, run: (input?: string) => open(input) },
       { id: 'spectorque.review', title: 'Review SpecTorque evidence', palette: true, slash: { name: 'spectorque-review' }, run: review },
     ] }));
     return () => { disposed = true; stopWatching(); closeWorkbench(); };

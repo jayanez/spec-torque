@@ -50,8 +50,8 @@ async function defaultScope($) {
   if (saved?.kind === 'changed' || saved?.kind === 'path') return saved;
   if (saved?.kind === 'all' && fits()) return saved;
   if (index.focus) return { kind: 'path', path: index.focus };
-  if (index.features.length === 1) return { kind: 'feature', id: index.features[0].id };
-  return fits() ? { kind: 'all' } : undefined;
+  if (fits()) return { kind: 'all' };
+  return index.features.length === 1 ? { kind: 'feature', id: index.features[0].id } : undefined;
 }
 async function refresh($, requested) {
   const request = ++generation;
