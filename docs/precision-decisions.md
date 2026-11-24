@@ -675,3 +675,47 @@ between:
   before the candidate.
 - stopping H3.
 
+### H3a: no table-cell definitions, dotted IDs end before `.digit` — **stop; best candidate to adjudication (owner decision)**
+
+- Pre-registered at `0903db2`.
+- The sources (8 repositories, `"### FR-001"` and `"| REQ-001 |"` queries) and 20
+  twins were frozen at `5244317`.
+- Candidate: `7a476d1`, engine 0.1.9.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (20 EN/ES) and existing minimal pairs | holds: 20 of 20 (0.1.4 meets 8, H3 meets 14), and no admission, E1.4 or E1.2 change |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh set and H3 development set | **fails on added findings** |
+| 4. Evidence | holds |
+
+**Fresh set.** 192 features in 8 roots: 204 findings are removed and 12 added.
+- Removed: 192 duplicates, 10 missing identifiers and 2 unresolved references.
+  Provisional review of a sample of 100 (seed 42039): the removed duplicates are
+  mid-line mentions, checklist citations and repeated mentions of an ID already
+  defined in a list or table. No lost true problem was identified.
+- Added: all 12 duplicates are restatements, not real duplicates. There are two
+  kinds:
+  - a hard-wrapped continuation line that starts with the ID (`   FR-010.`);
+  - a list item that restates the ID in another spec-role document of the
+    feature (`requirements.md` traceability lists, `spec-compact.md`, PR
+    descriptions classified as spec).
+
+**H3 development set.** 1,369 features: 2,487 findings removed and 81 added, down
+from 431 added under H3. The added findings fall into the same two kinds.
+
+**Pilot repository (development data, all 83 features).** 975 of 1,269 I1.2/I2.3
+findings are removed: 777 unresolved references, 141 duplicates and 57 missing
+identifiers. 10 duplicates are added.
+
+**Decision.** Stop under the H3a stop rule. There is no H3b. H3a is the best
+candidate. It goes to independent adjudication under
+[precision adjudication](precision-adjudication.md), with these known limits:
+- an ID restated as the first token of a list item, or of a wrapped line, in
+  another spec-role document or later in the same one is counted as a second
+  definition;
+- spec-role classification of summary documents (compact specs, validation
+  reports, PR descriptions) is unchanged and outside H3.
+
+The owner decides on the product change after adjudication.
+
