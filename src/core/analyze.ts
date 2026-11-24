@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.8';
+export const ENGINE_VERSION = '0.1.9';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -25,9 +25,10 @@ function linesOf(artifact: Artifact): Line[] {
     return { path: artifact.path, line: index + 1, text, artifact, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text) };
   });
 }
-// H3 (#83): an ID defines a requirement only in a defining position: first on the line after an
-// optional heading marker, list marker, task checkbox, first table cell and bold or code markup.
-const definingId = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\|[ \t]*)?(?:\*\*|__|`)?[ \t]*((?:FR|NFR|REQ|R)-\d+)\b/i;
+// H3a (#83): an ID defines a requirement only in a defining position: first on the line after an
+// optional heading marker, list marker, task checkbox and bold or code markup. Table cells restate
+// IDs (traceability), and a dotted sub-ID such as REQ-2.1 does not define its parent REQ-2.
+const definingId = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\*\*|__|`)?[ \t]*((?:FR|NFR|REQ|R)-\d+)(?!\.\d)\b/i;
 const definedId = (text: string) => definingId.exec(text)?.[1]?.toUpperCase();
 /** Spec requirement lines without their own ID that inherit one from the nearest preceding defining heading. */
 function inheritedLines(lines: Line[]): Set<Line> {
