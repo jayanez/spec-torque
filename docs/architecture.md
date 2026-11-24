@@ -40,6 +40,20 @@ feature's ID namespace. The local [corpus evaluator](format-corpus.md)
 compares revisions through shared discovery and analysis and tests these
 boundaries independently of the host adapters.
 
+## Discovery criteria
+
+Discovery analyzes the work tree you are in, on its checked-out branch, as it is on disk ([#68](https://github.com/jayanez/spec-torque/issues/68)). Configuration may only widen discovery, and only inside the work tree. Invocation modifiers only narrow it.
+
+| Level | Rule |
+|---|---|
+| Boundary | The implicit root is the git toplevel of the current directory, or the directory itself outside git. An explicit root (`--root`, `SPECTORQUE_ROOT`, `analyze <folder>`) is used as given, with paths relative to it. Inside a work tree, files come from `git ls-files --cached --others --exclude-standard`: uncommitted edits and unadded drafts are included, ignored paths and files missing from disk are not. Nested work trees, submodules and repositories are never crossed. Without git, or for an explicit root that its repository ignores, a bounded walk runs instead and stops at nested `.git` folders. The fixed exclusions (`node_modules`, `.venv`, `dist`, `.env*`, symbolic links…) apply in both modes. Git runs without a shell, with `core.fsmonitor` disabled and repository overrides removed from the environment. |
+| Default scope | A path-only index classifies every candidate without reading content. Only the selected scope plus its ancestor instruction files is read, and the 500-artifact limit applies to that read. When the current directory is below the root, it is the default focus, while classification stays relative to the root. |
+| Features | `listFeatures` returns non-archived feature IDs that contain a spec. Known layouts come first and generic groups last. Every adapter uses this list. |
+| Widen | An optional `.spectorque.json` at the root: `include` (relative globs that re-include ignored paths) and `submodules` (initialized submodules). Escapes, absolute paths and pathspec magic are rejected, and invalid configuration is an error. Configuration cannot change the root or raise the limit. |
+| Narrow | `feature`, `paths` or `changed` (features with changes since the merge-base with the remote default branch or an explicit base, including uncommitted edits). They are available on the CLI, in MCP and in host adapters. Only one applies at a time. |
+
+The index and `features` output state the mode (`git` or `walk`) and the root. `ArtifactSet` and `Assessment` are unchanged. A review across more features than the limit aggregates one feature at a time; the limit is not raised.
+
 ## Reversible implementation choices
 
 Node 22 plus a single TypeScript motor minimizes adapter drift. React/esbuild serves a shared local workbench; adapters are thin views. Bounded in-memory session state avoids a database dependency. No ADR workflow or server deployment is required. Meaningful changes to these choices are recorded with their implementation issue/PR.

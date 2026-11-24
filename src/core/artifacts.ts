@@ -10,7 +10,10 @@ const zeePlan = /(?:^|\/)\.spec\/how\.md$/i;
 const specKitDataModel = /(?:^|\/)specs\/\d{3}-[^/]+\/data-model\.md$/i;
 const byName = /spec|requirement|prd|plan|design|task|todo|agents|claude|gemini|constitution|architecture|what|where|when|who|why|how/i;
 
-export function classifyArtifact(path: string, content: string): Artifact {
+/** Path-derived classification. Content can only refine the framework label (Spec Kitty banner). */
+export interface PathClassification { path: string; role: Role; framework: Framework; featureId: string; archived: boolean }
+
+export function classifyPath(path: string, content = ''): PathClassification {
   const p = path.replaceAll('\\', '/');
   const lower = p.toLowerCase();
   const base = lower.split('/').at(-1) ?? '';
@@ -33,7 +36,12 @@ export function classifyArtifact(path: string, content: string): Artifact {
   const featureId = scopedPath ? p.slice(0, scopedPath.index + scopedPath[0].length - 1)
     : markerAt >= 0 ? p.slice(0, markerAt + marker.length) + p.slice(markerAt + marker.length).split('/')[0]
     : p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '(root)';
-  return { path: p, content, role, framework, featureId, archived: /(?:^|\/)(archive|archives|archived)(?:\/|$)/i.test(p) };
+  return { path: p, role, framework, featureId, archived: /(?:^|\/)(archive|archives|archived)(?:\/|$)/i.test(p) };
+}
+
+export function classifyArtifact(path: string, content: string): Artifact {
+  const { path: p, role, framework, featureId, archived } = classifyPath(path, content);
+  return { path: p, content, role, framework, featureId, archived };
 }
 
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {
@@ -49,17 +57,37 @@ export async function contentHash(content: string): Promise<string> {
   return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
 }
 
+type Scoped = Pick<PathClassification, 'path' | 'role' | 'featureId' | 'archived'>;
+const directoryOf = (path: string) => { const p = path.replaceAll('\\', '/'); return p.slice(0, p.lastIndexOf('/') + 1); };
+
+/** Whether an artifact belongs to a feature scope: the feature's own artifacts plus active ancestor instructions. */
+export function inFeatureScope(artifact: Scoped, feature: string): boolean {
+  if (artifact.role !== 'instructions') return artifact.featureId === feature;
+  if (artifact.archived) return false;
+  return (feature.replaceAll('\\', '/') + '/').startsWith(directoryOf(artifact.path));
+}
+
+/** Whether an artifact lies under one of the path prefixes, or is an active instruction file above one of them. */
+export function inPathScope(artifact: Scoped, prefixes: string[]): boolean {
+  const path = artifact.path.replaceAll('\\', '/');
+  return prefixes.some(prefix => {
+    const p = prefix.replaceAll('\\', '/').replace(/\/+$/, '');
+    if (p === '' || path === p || path.startsWith(p + '/')) return true;
+    return artifact.role === 'instructions' && !artifact.archived && (p + '/').startsWith(directoryOf(path));
+  });
+}
+
 export function selectFeature(set: ArtifactSet, feature: string | null): ArtifactSet {
   if (feature === null) return set;
-  const selected = feature.replaceAll('\\', '/') + '/';
-  return {
-    ...set,
-    artifacts: set.artifacts.filter(artifact => {
-      if (artifact.role !== 'instructions') return artifact.featureId === feature;
-      if (artifact.archived) return false;
-      const path = artifact.path.replaceAll('\\', '/');
-      const directory = path.slice(0, path.lastIndexOf('/') + 1);
-      return selected.startsWith(directory);
-    }),
-  };
+  return { ...set, artifacts: set.artifacts.filter(artifact => inFeatureScope(artifact, feature)) };
+}
+
+export interface FeatureSummary { id: string; framework: Framework; layout: boolean; artifacts: number }
+
+/** The selectable features: non-archived spec-role feature IDs. Known layouts first, then generic groups. */
+export function listFeatures(artifacts: Pick<PathClassification, 'role' | 'framework' | 'featureId' | 'archived'>[]): FeatureSummary[] {
+  const byId = new Map<string, FeatureSummary>();
+  for (const a of artifacts) if (!a.archived && a.role === 'spec' && !byId.has(a.featureId)) byId.set(a.featureId, { id: a.featureId, framework: a.framework, layout: a.framework !== 'generic', artifacts: 0 });
+  for (const a of artifacts) { const f = byId.get(a.featureId); if (f && a.role !== 'instructions') f.artifacts++; }
+  return [...byId.values()].sort((a, b) => Number(b.layout) - Number(a.layout) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }

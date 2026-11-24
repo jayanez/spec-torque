@@ -2,9 +2,9 @@ import { isAbsolute } from 'node:path';
 import { realpath, stat } from 'node:fs/promises';
 import { isDeepStrictEqual } from 'node:util';
 import { analyze } from '../core/analyze.js';
-import { selectFeature } from '../core/artifacts.js';
 import { createProposal } from '../core/refine.js';
 import { discoverWorkspace, readWorkspaceArtifactBytes } from './workspace.js';
+import { indexWorkspace } from './scope.js';
 import { zipArtifactBytes } from '../web/archive.js';
 import type { PatchProposal } from '../core/types.js';
 
@@ -20,12 +20,10 @@ export async function bindWorkspace(configuredRoot: string | undefined) {
   if (!(await stat(root)).isDirectory()) throw new Error('The configured worktree is not a directory.');
 
   async function load(feature: string | null) {
-    const workspace = await discoverWorkspace(root);
-    const features = [...new Set(workspace.artifacts
-      .filter(artifact => !artifact.archived && artifact.role === 'spec')
-      .map(artifact => artifact.featureId))].sort();
+    const index = await indexWorkspace(root);
+    const features = index.features.map(item => item.id);
     if (feature !== null && !features.includes(feature)) throw new Error('The selected feature is unavailable. Refresh the workspace.');
-    const scope = selectFeature(workspace, feature);
+    const scope = await discoverWorkspace(root, { feature }, index);
     return { scope, assessment: await analyze(scope), features };
   }
 
