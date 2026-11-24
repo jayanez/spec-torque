@@ -322,6 +322,86 @@ any file content:
 The list is committed in `fixtures/precision/h2e-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H3 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#83](https://github.com/jayanez/spec-torque/issues/83). The #8 pilot
+repository is development data for H3. In its 32 open features, 455 of 599 engine
+false positives come from requirement definitions:
+- **Heading definitions.** A requirement defined as `### REQ-001 — Title` is not a
+  definition, because headings are never admitted. Its references get I2.3 errors,
+  and its body lines get "Requirement has no stable identifier" (I1.2).
+- **Mentions as redefinitions.** An admitted spec line that only mentions an ID is
+  counted as a second definition, which gives "Duplicate requirement identifier"
+  (I1.2).
+
+**Policy.** Only requirement definitions change. Admission (which lines are
+requirements), the ID family (`FR`, `NFR`, `REQ`, `R`) and every other rule are
+unchanged from 0.1.4. H2d's admission anchoring, which was rejected, is not
+reused.
+1. An ID is in a **defining position** on a spec-role line when it comes first on
+   the line, after optional leading whitespace and these optional prefixes in
+   order:
+   - a heading marker (`#` to `######` plus a space);
+   - a list marker (`-`, `*`, `+`, `1.`, `1)`);
+   - a task checkbox;
+   - the opening `|` of a table row (first cell only);
+   - bold or code markup.
+
+   Heading lines are considered even though they are not admitted.
+2. **Duplicates** (I1.2) count only defining positions, among admitted spec lines
+   and spec headings of the same feature.
+3. **Resolution** (I2.3): a plan or task reference resolves when its ID has a
+   defining position in the feature's specs, or appears anywhere on an admitted
+   spec line, as in 0.1.4.
+4. **Inheritance** (I1.2): an admitted spec line without its own ID counts as
+   identified when the nearest preceding heading in the same document defines an
+   ID. This applies to the "no stable identifier" finding and to the I1.2/I2.2
+   ratio.
+
+**Endpoints.** I1.2 findings (missing identifier and duplicate), I2.3
+unresolved-reference findings and the I1.2/I2.2 practice status, by language.
+
+**Comparator.** 0.1.4 (`865af59`).
+
+**Gate (all must hold to proceed).**
+1. Synthetic twins in EN and ES are committed before the candidate. Each
+   construction has a twin with the opposite expected outcome:
+   - heading, bold-lead, list and table definitions;
+   - a mention after a definition;
+   - a body line under a defining heading;
+   - a body line after a heading that defines no ID.
+
+   The candidate meets every twin's expectation. The existing minimal pairs show
+   no admission, E1.4 or E1.2 change.
+2. The 716 historical predictions are unchanged, except `I1.2:duplicate` and
+   `I2.3:resolved` units. Each of those changes is listed and justified line by
+   line, and blocks the gate until the owner accepts it.
+3. On a fresh public set, a provisional review covers every finding the candidate
+   removes or adds relative to 0.1.4, or 100 of each drawn with seed 42039:
+   - no removed finding was a true problem (a real duplicate, a requirement
+     really lacking an ID, or a reference with no definition anywhere);
+   - every added finding is correct.
+4. No evidence becomes invalid.
+
+Independent adjudication is still required before any merge.
+
+**Stop rule.** If gate 1, 2 or 4 fails, the candidate is reverted. If gate 3 finds
+lost true problems, the failing construction is recorded. The owner decides
+between narrowing the policy as a new pre-registered H3a, or stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"### REQ-001"` and `"**REQ-001"`, limited to
+  Markdown files named `spec.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51 and #52, and the pilot
+  repository, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h3-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
