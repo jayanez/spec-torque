@@ -97,3 +97,21 @@ test('the live split applies consent, sanitization and completion, and keeps lea
   assert.throws(() => liveItems(loaded, [{ ...base, attempt: 1, response }, { ...base, attempt: 1, response }]));
   assert.throws(() => liveItems(loaded, [{ ...base, attempt: 1, response: { action: 'escalate', scope: null, text: null, note: null } }]));
 });
+
+test('run-2 calibration packets: 96 and 48 items, seeded from the run-2 pre-registration', async () => {
+  const { calibrationItems, packet, seed, order } = await import('../scripts/precision/rehearsal.js');
+  assert.ok(loaded.calibrationRun2 && loaded.run2ProtocolSha256);
+  const cal = calibrationItems(loaded, 'calibration-run2');
+  const res = calibrationItems(loaded, 'reserve-run2');
+  assert.equal(cal.length, 96); assert.equal(res.length, 48);
+  for (const lang of ['en', 'es']) {
+    assert.equal(loaded.calibrationRun2!.items.filter(i => i.language === lang).length, 48);
+    assert.equal(loaded.calibrationRun2!.reserve.filter(i => i.language === lang).length, 24);
+  }
+  const p = packet(loaded, 'calibration-run2', 'R1', 1, cal);
+  assert.equal(p.runProtocolSha256, loaded.run2ProtocolSha256);
+  assert.equal(p.seed, seed(loaded.run2ProtocolSha256!, 'calibration-run2', 'R1', 1));
+  assert.deepEqual(p.items.map(i => i.id), order(cal, p.seed).map(i => i.id));
+  const run1 = new Set(calibrationItems(loaded, 'calibration').map(i => i.id));
+  assert.ok(cal.every(i => !run1.has(i.id)));
+});

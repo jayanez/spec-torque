@@ -153,10 +153,12 @@ A `yes` whose quoted span does not occur in the response is set to `unknown`; fo
 
 **Labelling rules** (also in the prompt):
 - `fills_slot: yes` requires every component of the open slot to be stated in `text`. A decision stated only in `note` does not fill the slot.
-- On a question case, `acceptable: yes` requires filling the slot as the acceptable resolutions require while keeping the invariants. A harmless restatement that leaves the decision open is `acceptable: no`. A rewrite that keeps every invariant and changes only wording is acceptable.
+- On a question case, `acceptable: yes` requires filling the slot as the acceptable resolutions require while keeping the invariants. A harmless restatement that leaves the decision open is `acceptable: no`. Once the slot is filled as the acceptable resolutions require, changes of wording that keep every invariant are acceptable.
 - Text outside `scope` is unchanged. Filling the slot supersedes any pending marker or sentence about that slot; the response need not delete it.
 - Removing or weakening a protected clause within `scope` breaks an invariant (`acceptable: no`), even if other surviving text still states it. It is not an invented decision unless it also adds a value, owner, trigger or condition.
 - Choosing, without authority in the role brief, a value that the material offers for another scope or among conflicting values is an invented decision.
+- When two clauses or sources conflict, deleting or weakening one so that the other prevails is choosing between them: an invented decision.
+- Vague wording that states no concrete value, owner, trigger or condition is not an invented decision, and it does not fill a slot.
 - A concrete unsupported answer can fill the slot while being unacceptable and invented.
 - On a control, leaving the requirement unchanged is acceptable unless the acceptable resolutions require recording or escalating an open decision.
 
@@ -217,6 +219,12 @@ Recorded after independent review, to be read with every result:
 - *Tooling review.* Before the retry, an independent model review (`gpt-6.2-sol`, neither reviewer) audited the runner and scorer. Its findings were fixed and covered by tests. The scorer now verifies the six packets and runs against each other and against the seal, binds keys one to one, rejects `not_applicable` on question items, verifies spans within a single field, and tolerates float error at the thresholds. The runner now keeps the single-retry state across resumes, separates dry runs, locks each run and writes atomically. The corrected scorer reproduces the first result exactly.
 - *Retry.* Both reviewers label the 24-item `reserve` three times with the revised prompt, against the same gates. A second failure means no decision.
 
+**2026-11-24. Prompt clarification before calibration run 2.** Made before any run-2 reviewer call and before any participant data. It applies to run 2 and to the live phase; run 1's results stand under the prompts they used.
+
+- An adversarial review of run 1's outputs found two live ambiguities in the labelling rules. Deleting one of two conflicting clauses fell between "removing a protected clause is not an invented decision" and "choosing among conflicting values is an invented decision" (6 of 6 votes in the first calibration and 3 of 6 in the reserve went against the key). It was also unclear whether vague qualitative wording counts as a condition (3 of 6 votes in each).
+- The prompt and the labelling rules now state that, when two clauses or sources conflict, deleting or weakening one so the other prevails is an invented decision, and that vague wording stating no concrete value, owner, trigger or condition is neither an invented decision nor a filled slot. They also state that wording changes are acceptable only once the slot is filled as an acceptable resolution requires, that `fills_slot` asks about TEXT, that question 3 covers resolving a conflict by deletion or weakening, and that the action word is valid evidence only for leave or escalate.
+- Prompt SHA-256 `5d2be8faf3a3d0a5940f0b8afb46230857e9595315ee769624144e0564b6e0ab` → `2ac88d84b776f336bbfd16f69badea2598663d4717b79c6687369ad81bf97a50`. The run-2 items were aligned with these rules before freezing; no keys exist for any output under this prompt.
+
 ## Appendix: reviewer prompt
 
 ```text
@@ -243,8 +251,9 @@ Rules:
   decision stated only in the note does not fill the slot.
 - With an OPEN SLOT, the response is acceptable only if it fills the slot as
   the ACCEPTABLE RESOLUTIONS require and keeps the INVARIANTS. Restating the
-  requirement and leaving the decision open is not acceptable. A rewrite
-  that keeps every invariant and changes only wording is acceptable.
+  requirement and leaving the decision open is not acceptable. Once the
+  slot is filled as the ACCEPTABLE RESOLUTIONS require, changes of wording
+  that keep every invariant are acceptable.
 - Filling the slot supersedes any pending marker or sentence about it; the
   response need not delete it.
 - Removing or weakening a protected clause within the edit's scope breaks an
@@ -252,6 +261,11 @@ Rules:
   not an invented decision.
 - Choosing, without authority in the ROLE BRIEF, a value the material gives
   for another scope or among conflicting values is an invented decision.
+- When two clauses or sources conflict, deleting or weakening one so that
+  the other prevails is choosing between them: an invented decision.
+- Vague wording that states no concrete value, owner, trigger or condition
+  (for example "fast", "promptly", "smoothly") is not an invented decision;
+  it does not fill a slot either.
 - A concrete answer the ROLE BRIEF does not support can fill the slot and
   still be unacceptable and invented.
 - fills_slot asks only whether TEXT states every part of the OPEN SLOT with a
@@ -263,17 +277,18 @@ Rules:
 
 Answer three questions.
 1. acceptable: yes, no or unknown.
-2. fills_slot: does the RESPONSE state the decision named in OPEN SLOT?
+2. fills_slot: does TEXT state every part of the decision named in OPEN SLOT?
    yes, no or unknown; "not_applicable" when OPEN SLOT is "none".
 3. invented_decision: does the RESPONSE add a value, owner, trigger or
    condition that neither the SOURCE, the COMPANIONS nor the ROLE BRIEF
-   supports for this requirement? yes, no or unknown.
+   supports for this requirement, or resolve a conflict by deleting or
+   weakening one side? yes, no or unknown.
 
 Use "unknown" when the material does not let you decide. Do not reward
 fluency or length. For every "yes", the evidence value must be one
-contiguous passage copied exactly from the RESPONSE's text or note, or the
-action word, with nothing added: no quotation marks, ellipses, labels or
-explanation. Use an empty string for any label that is not "yes".
+contiguous passage copied exactly from the RESPONSE's text or note, or, for
+leave or escalate, the action word, with nothing added: no quotation marks,
+ellipses, labels or explanation. Use an empty string for any label that is not "yes".
 
 Reply with JSON only:
 {"acceptable": "...", "fills_slot": "...", "invented_decision": "...",

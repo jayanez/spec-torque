@@ -7,12 +7,15 @@
  * operator, who starts any review run by hand.
  */
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { analyze, classifyArtifact, clarifyE12 } from '../../src/core.js';
 
 export const PROTOCOL = 'docs/clarification-actionability.md';
+/** Pre-registration of the second calibration run; its frozen SHA-256 seeds the run-2 packets. */
+export const RUN2_PROTOCOL = 'docs/clarification-actionability-run2.md';
 /**
  * LF-normalised SHA-256 of the protocol at its freeze commit (6a2dc0f, posted in #57).
  * Seeds and presentation IDs derive from this value, not from the current file, so a
@@ -21,8 +24,10 @@ export const PROTOCOL = 'docs/clarification-actionability.md';
 export const FROZEN_PROTOCOL_SHA256 = '16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed17fcb7e9a8a024984525826';
 /** SHA-256 of the frozen reviewer prompt, used for the first calibration. */
 export const FROZEN_PROMPT_SHA256 = '406cae4c818b43ba725dcdc2d83a098dae3ec8207da4ec94e470e0b34f787f58';
-/** SHA-256 of the prompt after the single permitted revision (amendment of 2026-11-24). No further change is allowed. */
+/** SHA-256 of the prompt after the single permitted revision of run 1 (amendment of 2026-11-24), used for the run-1 reserve. */
 export const REVISED_PROMPT_SHA256 = '5d2be8faf3a3d0a5940f0b8afb46230857e9595315ee769624144e0564b6e0ab';
+/** SHA-256 of the prompt clarified before calibration run 2 (amendment of 2026-11-24); used for run 2 and the live phase. */
+export const RUN2_PROMPT_SHA256 = '2ac88d84b776f336bbfd16f69badea2598663d4717b79c6687369ad81bf97a50';
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
@@ -60,11 +65,14 @@ const common = { status: z.string(), protocol: z.literal(PROTOCOL), issue: z.lit
 export const rehearsalSchema = z.strictObject({ version: z.literal('e12-rehearsal/1'), ...common, cases: z.array(caseSchema).length(24) });
 export const calibrationSchema = z.strictObject({ version: z.literal('e12-calibration/1'), ...common,
   rehearsal: z.string(), items: z.array(itemSchema).length(72), reserve: z.array(itemSchema).length(24) });
+export const calibrationRun2Schema = z.strictObject({ version: z.literal('e12-calibration-run2/1'), ...common,
+  protocol: z.literal(RUN2_PROTOCOL), items: z.array(itemSchema).length(96), reserve: z.array(itemSchema).length(48) });
 
 export type Case = z.infer<typeof caseSchema>;
 export type Response = z.infer<typeof responseSchema>;
 export type Rehearsal = z.infer<typeof rehearsalSchema>;
 export type Calibration = z.infer<typeof calibrationSchema>;
+export type CalibrationRun2 = z.infer<typeof calibrationRun2Schema>;
 
 export interface Material { source: string; path: string; target: number; companions: Record<string, string> }
 
@@ -76,6 +84,9 @@ export interface Loaded {
   prompt: string;
   rehearsal: Rehearsal;
   calibration: Calibration;
+  /** Run-2 calibration items and the LF SHA-256 of the run-2 pre-registration, when present. */
+  calibrationRun2: CalibrationRun2 | null;
+  run2ProtocolSha256: string | null;
   material: Map<string, Material>;
 }
 
@@ -114,8 +125,14 @@ export async function load(root: string): Promise<Loaded> {
   for (const item of [...calibration.items, ...calibration.reserve])
     if (!material.has(item.case)) throw new Error(`Calibration item ${item.id} names unknown case ${item.case}.`);
   const prompt = extractPrompt(lf(protocol));
-  if (sha256(prompt) !== REVISED_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the revised prompt of the 2026-11-24 amendment.');
-  return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration, material };
+  if (sha256(prompt) !== RUN2_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the prompt clarified before calibration run 2.');
+  const run2Path = join(root, `${FIXTURES}/calibration-run2.json`);
+  const calibrationRun2 = existsSync(run2Path) ? calibrationRun2Schema.parse(JSON.parse(lf(await readFile(run2Path)))) : null;
+  for (const item of [...(calibrationRun2?.items ?? []), ...(calibrationRun2?.reserve ?? [])])
+    if (!material.has(item.case)) throw new Error(`Run-2 item ${item.id} names unknown case ${item.case}.`);
+  const run2ProtocolSha256 = existsSync(join(root, RUN2_PROTOCOL)) ? fileSha256(await read(RUN2_PROTOCOL)) : null;
+  return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration,
+    calibrationRun2, run2ProtocolSha256, material };
 }
 
 /** Re-renders every case with the engine and lists any field that differs from the frozen record. */
@@ -194,7 +211,8 @@ ${clarification}</body></html>
 
 // ---------------------------------------------------------------- packets
 
-export type Phase = 'calibration' | 'reserve' | 'live';
+export type Phase = 'calibration' | 'reserve' | 'live' | 'calibration-run2' | 'reserve-run2';
+export const isRun2 = (phase: Phase) => phase.endsWith('-run2');
 export type Reviewer = 'R1' | 'R2';
 
 export const seed = (protocolSha256: string, phase: Phase, reviewer: Reviewer, run: number) =>
@@ -254,6 +272,8 @@ export type Attempt = z.infer<typeof attemptSchema>;
 
 export interface Packet {
   phase: Phase; reviewer: Reviewer; run: number; seed: string; protocolSha256: string;
+  /** Run 2 only: LF SHA-256 of the run-2 pre-registration, the base of its seeds. */
+  runProtocolSha256?: string;
   prompt: string; items: PacketItem[];
 }
 
@@ -287,12 +307,24 @@ export function liveItems(loaded: Loaded, attempts: Attempt[]): LiveSplit {
 
 export function packet(loaded: Loaded, phase: Phase, reviewer: Reviewer, run: number, items: PacketItem[]): Packet {
   if (![1, 2, 3].includes(run)) throw new Error('Run must be 1, 2 or 3.');
+  if (isRun2(phase)) {
+    if (!loaded.run2ProtocolSha256) throw new Error(`${RUN2_PROTOCOL} is missing.`);
+    const s = seed(loaded.run2ProtocolSha256, phase, reviewer, run);
+    return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, runProtocolSha256: loaded.run2ProtocolSha256,
+      prompt: loaded.prompt, items: order(items, s) };
+  }
   const s = seed(loaded.protocolSha256, phase, reviewer, run);
   return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, prompt: loaded.prompt, items: order(items, s) };
 }
 
-export function calibrationItems(loaded: Loaded, phase: 'calibration' | 'reserve'): PacketItem[] {
-  const list = phase === 'calibration' ? loaded.calibration.items : loaded.calibration.reserve;
+export type CalibrationPhase = 'calibration' | 'reserve' | 'calibration-run2' | 'reserve-run2';
+export function calibrationList(loaded: Loaded, phase: CalibrationPhase) {
+  if (!isRun2(phase)) return phase === 'calibration' ? loaded.calibration.items : loaded.calibration.reserve;
+  if (!loaded.calibrationRun2) throw new Error('tests/fixtures/e12/calibration-run2.json is missing.');
+  return phase === 'calibration-run2' ? loaded.calibrationRun2.items : loaded.calibrationRun2.reserve;
+}
+export function calibrationItems(loaded: Loaded, phase: CalibrationPhase): PacketItem[] {
+  const list = calibrationList(loaded, phase);
   // Items carry an opaque ID so the variant name in the fixture ID never reaches a reviewer.
   return list.map(item => packetItem(loaded, `${phase}:${sha256(`${loaded.protocolSha256}:${item.id}`).slice(0, 12)}`, item.case, item.response));
 }
