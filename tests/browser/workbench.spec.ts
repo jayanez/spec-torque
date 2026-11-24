@@ -433,3 +433,19 @@ for (const es of [false, true]) {
     expect(Buffer.from(zip['specs/booking/spec.md'])).toEqual(await readFile(file));
   });
 }
+
+test('large local workspaces load one feature at a time', async ({ page, workspace }) => {
+  for (let i = 1; i <= 102; i++) {
+    const folder = join(workspace.root, 'specs', `${String(i).padStart(3, '0')}-feature`);
+    await mkdir(folder, { recursive: true });
+    for (const name of ['spec.md', 'plan.md', 'tasks.md', 'research-plan.md', 'design.md']) await writeFile(join(folder, name), `# ${name}\n\n- FR-001: The system MUST confirm a booking within 2 seconds.\n`);
+  }
+  await page.goto(workspace.url);
+  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  const picker = page.getByRole('combobox', { name: 'Local workspace feature' });
+  await expect(picker).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await picker.selectOption('specs/042-feature');
+  await expect(picker).toHaveValue('specs/042-feature');
+  await expect(page.getByTitle('specs/042-feature/spec.md')).toBeVisible();
+});
