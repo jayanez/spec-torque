@@ -116,3 +116,21 @@ test('run-2 calibration packets: 96 and 48 items, seeded from the run-2 pre-regi
   const run1 = new Set(calibrationItems(loaded, 'calibration').map(i => i.id));
   assert.ok(cal.every(i => !run1.has(i.id)));
 });
+
+test('run-3 calibration items: 96 and 48, new, and refused until the run-3 freeze is pinned', async () => {
+  const { calibrationItems, packet, RUN3_FROZEN_SHA256 } = await import('../scripts/precision/rehearsal.js');
+  assert.ok(loaded.calibrationRun3 && loaded.run3ProtocolSha256);
+  const cal = calibrationItems(loaded, 'calibration-run3');
+  const res = calibrationItems(loaded, 'reserve-run3');
+  assert.equal(cal.length, 96); assert.equal(res.length, 48);
+  for (const lang of ['en', 'es']) {
+    assert.equal(loaded.calibrationRun3!.items.filter(i => i.language === lang).length, 48);
+    assert.equal(loaded.calibrationRun3!.reserve.filter(i => i.language === lang).length, 24);
+  }
+  // No run-3 response repeats a response shown to reviewers on the same case in runs 1 or 2.
+  const sig = (i: { case: string; response: unknown }) => `${i.case}:${JSON.stringify(i.response)}`;
+  const earlier = new Set([...loaded.calibration.items, ...loaded.calibration.reserve,
+    ...loaded.calibrationRun2!.items, ...loaded.calibrationRun2!.reserve].map(sig));
+  assert.ok([...loaded.calibrationRun3!.items, ...loaded.calibrationRun3!.reserve].every(i => !earlier.has(sig(i))));
+  if (RUN3_FROZEN_SHA256 === null) assert.throws(() => packet(loaded, 'calibration-run3', 'R1', 1, cal), /not frozen/);
+});

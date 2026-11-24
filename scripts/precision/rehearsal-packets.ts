@@ -1,7 +1,7 @@
 /**
  * Builds blind reviewer packets for the E1.2 rehearsal (#57).
  *
- *   node --import tsx scripts/precision/rehearsal-packets.ts --phase calibration|reserve|calibration-run2|reserve-run2 [--out dir]
+ *   node --import tsx scripts/precision/rehearsal-packets.ts --phase calibration|reserve|calibration-run2|reserve-run2|calibration-run3|reserve-run3 [--out dir]
  *   node --import tsx scripts/precision/rehearsal-packets.ts --phase live --attempts <attempts.json> [--out dir]
  *
  * Writes one packet per reviewer (R1, R2) and run (1-3), ordered by the seed
@@ -18,7 +18,7 @@ import { attemptSchema, calibrationItems, calibrationList, liveItems, load, pack
 const { values } = parseArgs({ options: {
   phase: { type: 'string' }, attempts: { type: 'string' }, out: { type: 'string', default: '.spec-torque/rehearsal/packets' },
 } });
-const phase = z.enum(['calibration', 'reserve', 'live', 'calibration-run2', 'reserve-run2']).parse(values.phase) as Phase;
+const phase = z.enum(['calibration', 'reserve', 'live', 'calibration-run2', 'reserve-run2', 'calibration-run3', 'reserve-run3']).parse(values.phase) as Phase;
 const loaded = await load(process.cwd());
 const dir = join(values.out!, phase);
 const operator = join(dir, 'operator');

@@ -16,6 +16,8 @@ import { analyze, classifyArtifact, clarifyE12 } from '../../src/core.js';
 export const PROTOCOL = 'docs/clarification-actionability.md';
 /** Pre-registration of the second calibration run; its frozen SHA-256 seeds the run-2 packets. */
 export const RUN2_PROTOCOL = 'docs/clarification-actionability-run2.md';
+/** Pre-registration of the third calibration run (#65); its frozen SHA-256 seeds the run-3 packets. */
+export const RUN3_PROTOCOL = 'docs/clarification-actionability-run3.md';
 /**
  * LF-normalised SHA-256 of the protocol at its freeze commit (6a2dc0f, posted in #57).
  * Seeds and presentation IDs derive from this value, not from the current file, so a
@@ -32,6 +34,11 @@ export const RUN2_PROMPT_SHA256 = '2ac88d84b776f336bbfd16f69badea2598663d4717b79
 export const RUN2_REVISED_PROMPT_SHA256 = 'c5a28aecbf6fc09ce8b9d50279cd9a23b746cdb3054e6618e167f9a340ed7464';
 /** LF SHA-256 of the run-2 pre-registration at its freeze (cc53307); run-2 seeds derive from it, not from the amended file. */
 export const RUN2_FROZEN_SHA256 = '847ed2750fd7aaf71290e9a9d1ae04dd764082cbfbd63b8b3e7fcfbd152a5724';
+/**
+ * LF SHA-256 of the run-3 pre-registration at its freeze. Null until the maintainer confirms the freeze in #65;
+ * run-3 packets are refused while it is null.
+ */
+export const RUN3_FROZEN_SHA256: string | null = null;
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
@@ -71,12 +78,15 @@ export const calibrationSchema = z.strictObject({ version: z.literal('e12-calibr
   rehearsal: z.string(), items: z.array(itemSchema).length(72), reserve: z.array(itemSchema).length(24) });
 export const calibrationRun2Schema = z.strictObject({ version: z.literal('e12-calibration-run2/1'), ...common,
   protocol: z.literal(RUN2_PROTOCOL), items: z.array(itemSchema).length(96), reserve: z.array(itemSchema).length(48) });
+export const calibrationRun3Schema = z.strictObject({ version: z.literal('e12-calibration-run3/1'), ...common,
+  protocol: z.literal(RUN3_PROTOCOL), issue: z.literal(65), items: z.array(itemSchema).length(96), reserve: z.array(itemSchema).length(48) });
 
 export type Case = z.infer<typeof caseSchema>;
 export type Response = z.infer<typeof responseSchema>;
 export type Rehearsal = z.infer<typeof rehearsalSchema>;
 export type Calibration = z.infer<typeof calibrationSchema>;
 export type CalibrationRun2 = z.infer<typeof calibrationRun2Schema>;
+export type CalibrationRun3 = z.infer<typeof calibrationRun3Schema>;
 
 export interface Material { source: string; path: string; target: number; companions: Record<string, string> }
 
@@ -91,6 +101,9 @@ export interface Loaded {
   /** Run-2 calibration items and the LF SHA-256 of the run-2 pre-registration, when present. */
   calibrationRun2: CalibrationRun2 | null;
   run2ProtocolSha256: string | null;
+  /** Run-3 calibration items and the LF SHA-256 of the run-3 pre-registration, when present. */
+  calibrationRun3: CalibrationRun3 | null;
+  run3ProtocolSha256: string | null;
   material: Map<string, Material>;
 }
 
@@ -130,13 +143,19 @@ export async function load(root: string): Promise<Loaded> {
     if (!material.has(item.case)) throw new Error(`Calibration item ${item.id} names unknown case ${item.case}.`);
   const prompt = extractPrompt(lf(protocol));
   if (sha256(prompt) !== RUN2_REVISED_PROMPT_SHA256) throw new Error('The reviewer prompt differs from the prompt revised in run 2.');
-  const run2Path = join(root, `${FIXTURES}/calibration-run2.json`);
-  const calibrationRun2 = existsSync(run2Path) ? calibrationRun2Schema.parse(JSON.parse(lf(await readFile(run2Path)))) : null;
-  for (const item of [...(calibrationRun2?.items ?? []), ...(calibrationRun2?.reserve ?? [])])
-    if (!material.has(item.case)) throw new Error(`Run-2 item ${item.id} names unknown case ${item.case}.`);
-  const run2ProtocolSha256 = existsSync(join(root, RUN2_PROTOCOL)) ? fileSha256(await read(RUN2_PROTOCOL)) : null;
+  const optional = async <T extends { items: { id: string; case: string }[]; reserve: { id: string; case: string }[] }>(
+    run: number, schema: z.ZodType<T>, doc: string) => {
+    const path = join(root, `${FIXTURES}/calibration-run${run}.json`);
+    const fixture = existsSync(path) ? schema.parse(JSON.parse(lf(await readFile(path)))) : null;
+    for (const item of [...(fixture?.items ?? []), ...(fixture?.reserve ?? [])])
+      if (!material.has(item.case)) throw new Error(`Run-${run} item ${item.id} names unknown case ${item.case}.`);
+    return { fixture, docSha256: existsSync(join(root, doc)) ? fileSha256(await read(doc)) : null };
+  };
+  const run2 = await optional(2, calibrationRun2Schema, RUN2_PROTOCOL);
+  const run3 = await optional(3, calibrationRun3Schema, RUN3_PROTOCOL);
   return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration,
-    calibrationRun2, run2ProtocolSha256, material };
+    calibrationRun2: run2.fixture, run2ProtocolSha256: run2.docSha256,
+    calibrationRun3: run3.fixture, run3ProtocolSha256: run3.docSha256, material };
 }
 
 /** Re-renders every case with the engine and lists any field that differs from the frozen record. */
@@ -215,8 +234,10 @@ ${clarification}</body></html>
 
 // ---------------------------------------------------------------- packets
 
-export type Phase = 'calibration' | 'reserve' | 'live' | 'calibration-run2' | 'reserve-run2';
-export const isRun2 = (phase: Phase) => phase.endsWith('-run2');
+export type Phase = 'calibration' | 'reserve' | 'live' | 'calibration-run2' | 'reserve-run2' | 'calibration-run3' | 'reserve-run3';
+/** Calibration run a phase belongs to: 1 for the original protocol's phases (and live), else the run suffix. */
+export const runOf = (phase: Phase): 1 | 2 | 3 => phase.endsWith('-run2') ? 2 : phase.endsWith('-run3') ? 3 : 1;
+const RUN_DOCS = { 2: { doc: RUN2_PROTOCOL, frozen: RUN2_FROZEN_SHA256 }, 3: { doc: RUN3_PROTOCOL, frozen: RUN3_FROZEN_SHA256 } } as const;
 export type Reviewer = 'R1' | 'R2';
 
 export const seed = (protocolSha256: string, phase: Phase, reviewer: Reviewer, run: number) =>
@@ -311,21 +332,25 @@ export function liveItems(loaded: Loaded, attempts: Attempt[]): LiveSplit {
 
 export function packet(loaded: Loaded, phase: Phase, reviewer: Reviewer, run: number, items: PacketItem[]): Packet {
   if (![1, 2, 3].includes(run)) throw new Error('Run must be 1, 2 or 3.');
-  if (isRun2(phase)) {
-    if (!loaded.run2ProtocolSha256) throw new Error(`${RUN2_PROTOCOL} is missing.`);
-    const s = seed(RUN2_FROZEN_SHA256, phase, reviewer, run);
-    return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, runProtocolSha256: RUN2_FROZEN_SHA256,
+  const n = runOf(phase);
+  if (n !== 1) {
+    const { doc, frozen } = RUN_DOCS[n];
+    if (!(n === 2 ? loaded.run2ProtocolSha256 : loaded.run3ProtocolSha256)) throw new Error(`${doc} is missing.`);
+    if (!frozen) throw new Error(`Run ${n} is not frozen: its pre-registration hash is not pinned.`);
+    const s = seed(frozen, phase, reviewer, run);
+    return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, runProtocolSha256: frozen,
       prompt: loaded.prompt, items: order(items, s) };
   }
   const s = seed(loaded.protocolSha256, phase, reviewer, run);
   return { phase, reviewer, run, seed: s, protocolSha256: loaded.protocolSha256, prompt: loaded.prompt, items: order(items, s) };
 }
 
-export type CalibrationPhase = 'calibration' | 'reserve' | 'calibration-run2' | 'reserve-run2';
+export type CalibrationPhase = Exclude<Phase, 'live'>;
 export function calibrationList(loaded: Loaded, phase: CalibrationPhase) {
-  if (!isRun2(phase)) return phase === 'calibration' ? loaded.calibration.items : loaded.calibration.reserve;
-  if (!loaded.calibrationRun2) throw new Error('tests/fixtures/e12/calibration-run2.json is missing.');
-  return phase === 'calibration-run2' ? loaded.calibrationRun2.items : loaded.calibrationRun2.reserve;
+  const n = runOf(phase);
+  const fixture = n === 1 ? loaded.calibration : n === 2 ? loaded.calibrationRun2 : loaded.calibrationRun3;
+  if (!fixture) throw new Error(`${FIXTURES}/calibration-run${n}.json is missing.`);
+  return phase.startsWith('calibration') ? fixture.items : fixture.reserve;
 }
 export function calibrationItems(loaded: Loaded, phase: CalibrationPhase): PacketItem[] {
   const list = calibrationList(loaded, phase);

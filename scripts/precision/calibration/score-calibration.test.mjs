@@ -219,3 +219,13 @@ test('exploratory screening runs never enter a gated score', () => {
   const done2 = Buffer.from(JSON.stringify({ reviewer: 'R2', run: 1, packetSha256: pSha, rawSha256: sha256(raw) }));
   assert.throws(() => parseRun('R2-run1', raw, done2, packet, pSha), /exploratory/);
 });
+
+test('run-3 phases: live prompt unchanged, seeds wait for the run-3 freeze', async () => {
+  const { runOf, RUN3_PROTOCOL_SHA256, ITEM_COUNT } = await import('./protocol.mjs');
+  assert.equal(PROMPT_SHA256['calibration-run3'], PROMPT_SHA256.live, 'run 3 calibrates the live prompt');
+  assert.deepEqual([runOf('calibration'), runOf('live'), runOf('reserve-run2'), runOf('calibration-run3')], [1, 1, 2, 3]);
+  assert.equal(ITEM_COUNT['calibration-run3'], 96);
+  const p = { phase: 'calibration-run3', reviewer: 'R1', run: 1, seed: 'x', protocolSha256: FROZEN_PROTOCOL_SHA256,
+    runProtocolSha256: 'y', prompt: '', items: [] };
+  if (RUN3_PROTOCOL_SHA256 === null) assert.ok(packetProblems(p).some(m => /run 3 is not frozen/.test(m)));
+});

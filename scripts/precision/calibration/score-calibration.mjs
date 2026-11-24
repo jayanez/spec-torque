@@ -14,7 +14,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { ITEM_COUNT, LABELS, LANGUAGES, packetProblems, RUNS, sha256 } from './protocol.mjs';
+import { ITEM_COUNT, LABELS, LANGUAGES, packetProblems, PHASES, RUNS, runOf, sha256 } from './protocol.mjs';
 
 export { RUNS, LABELS };
 export const GATES = { kappa: 0.80, accuracy: 0.90, instability: 0.10, undefinedKappaAgreement: 0.90 };
@@ -244,8 +244,9 @@ function main() {
     phase: { type: 'string' }, results: { type: 'string' }, packets: { type: 'string' }, fixture: { type: 'string' }, out: { type: 'string' },
   } });
   if (mode === 'seal') { console.log(JSON.stringify(seal(values.results), null, 2)); return; }
-  if (mode !== 'score' || !['calibration', 'reserve', 'calibration-run2', 'reserve-run2'].includes(values.phase)) {
-    console.error('Usage: seal --results <dir> | score --phase calibration|reserve|calibration-run2|reserve-run2 --results <dir> --packets <dir> --fixture <calibration*.json> [--out report.json]');
+  const phases = PHASES.filter(p => p !== 'live');
+  if (mode !== 'score' || !phases.includes(values.phase)) {
+    console.error(`Usage: seal --results <dir> | score --phase ${phases.join('|')} --results <dir> --packets <dir> --fixture <calibration*.json> [--out report.json]`);
     process.exit(2);
   }
   const sealed = readSealed(values.results);
@@ -259,7 +260,8 @@ function main() {
   // Keys and the item map are read only after the seal, packets and runs are verified.
   const map = JSON.parse(readFileSync(join(values.packets, 'operator', 'item-map.json'), 'utf8'));
   const fixture = JSON.parse(readFileSync(values.fixture, 'utf8'));
-  const expectedFixture = values.phase.endsWith('-run2') ? 'e12-calibration-run2/1' : 'e12-calibration/1';
+  const n = runOf(values.phase);
+  const expectedFixture = n === 1 ? 'e12-calibration/1' : `e12-calibration-run${n}/1`;
   if (fixture.version !== expectedFixture) throw new Error(`Fixture ${fixture.version} does not match phase ${values.phase}.`);
   const items = bindKeys(packets['R1-run1'].items, map, values.phase.startsWith('calibration') ? fixture.items : fixture.reserve);
   const runs = Object.fromEntries(RUNS.map(run => [run, parsed[run].records]));

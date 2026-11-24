@@ -34,6 +34,12 @@ export const IMAGE = 'spectorque-r2:codex-0.170.0';
 /** Exploratory screening of second-reviewer candidates (#57 follow-up). Never used for a gated run. */
 export const SCREEN_IMAGE = 'spectorque-screen:codex-0.170.0';
 export const SCREEN_CANDIDATES = { 'gpt-6-luna:high': { model: 'gpt-6-luna', effort: 'high' }, 'gpt-6.2-astra:medium': { model: 'gpt-6.2-astra', effort: 'medium' } };
+/**
+ * R2 for calibration run 3 (#65): the screening candidate chosen by the selection rule in
+ * docs/clarification-actionability-run3.md, run in the screening image. Null until pinned at the run-3 freeze;
+ * run-3 R2 calls are refused while it is null.
+ */
+export const RUN3_R2 = null;
 
 /** Serialises one item with the names and order the prompt uses. */
 export function material(item) {
@@ -171,6 +177,11 @@ function main() {
     const problems = packetProblems(packet, { reviewer, run });
     if (problems.length) throw new Error(`Packet rejected: ${problems.join('; ')}.`);
   } else if (packet.reviewer !== reviewer) throw new Error(`Packet is for ${packet.reviewer}, not ${reviewer}.`);
+  // Run 3 replaces R2's model and effort with the pinned candidate; it is a gated run, not a screening one.
+  const run3 = reviewer === 'R2' && String(packet.phase).endsWith('-run3');
+  if (run3 && values.screen) throw new Error('--screen is for exploratory runs; run-3 packets use the pinned RUN3_R2.');
+  if (run3 && !SCREEN_CANDIDATES[RUN3_R2]) throw new Error('Run 3 is not frozen: RUN3_R2 is not pinned.');
+  const r2 = screen ?? (run3 ? SCREEN_CANDIDATES[RUN3_R2] : null);
   const out = resolve(values.out);
   mkdirSync(out, { recursive: true });
   const lockFile = join(out, '.lock');
@@ -185,7 +196,7 @@ function main() {
   if (authPath && !existsSync(authPath)) throw new Error(`No credentials at ${authPath}.`);
   const version = clientVersion(reviewer);
   if (!PINS[reviewer].client.test(version)) throw new Error(`Pinned client not available (got "${version}"). The run waits, per the protocol.`);
-  const image = reviewer === 'R2' ? (screen ? spawnSync('docker', ['image', 'inspect', SCREEN_IMAGE, '--format', '{{.Id}}'], { encoding: 'utf8' }).stdout.trim() : imageId()) : null;
+  const image = reviewer === 'R2' ? (r2 ? spawnSync('docker', ['image', 'inspect', SCREEN_IMAGE, '--format', '{{.Id}}'], { encoding: 'utf8' }).stdout.trim() : imageId()) : null;
 
   const rawFile = join(out, 'raw.jsonl');
   const doneFile = join(out, 'done.json');
@@ -208,7 +219,7 @@ function main() {
     for (; attempt <= 2; attempt++) {
       let result, transportFailures = 0;
       for (;;) {
-        result = call(reviewer, input, authPath, screen);
+        result = call(reviewer, input, authPath, r2);
         if (result.fatal) { console.error(`Stopping: ${result.fatal}. Nothing recorded for ${item.id}.`); process.exit(1); }
         if (!result.error || ++transportFailures >= 3) break;
         spawnSync('sleep', ['15']);
