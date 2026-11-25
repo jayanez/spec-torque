@@ -816,6 +816,111 @@ Adjudication: up to 30 of the first new E3.2 evidence lines (seed 42039), dedupl
 by line text and labeled blind by two agent sessions. **Threshold (owner, fixed
 before selection):** at most 2 agreed not genuine or unknown.
 
+## Pre-registered hypothesis H7 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#79](https://github.com/jayanez/spec-torque/issues/79). The #8 pilot
+repository is development data for H7. Spec Kit writes a quality checklist to
+`specs/<NNN-name>/checklists/requirements.md`. The checklist reviews the
+specification and cites its requirement IDs (`- [x] REQ-001 has a task and a
+validation procedure.`). Its basename matches the spec role pattern, so engine
+0.1.12 classifies it as a spec:
+- its citations become definitions, so I1.2 reports a duplicate for an ID that only
+  `spec.md` defines, and the evidence points at the real definition;
+- its items become spec requirement lines, so they can be reported as lacking an
+  identifier, and they count toward spec-only practices (the H6 adjudication found
+  one such E3.1 gain, `- [x] Requirements and acceptance scenarios are testable.`);
+- its template line `No [NEEDS CLARIFICATION] markers remain` counts as an open
+  decision.
+
+The pilot has 36 such checklists among 81 Spec Kit features (a path count; no
+content was read). Checklists with other basenames (`ux.md`, `security.md`) are
+either not discovered or are classified as context or plan, depending on their name.
+
+**Owner expectation (#79).** A Spec Kit checklist is a review of the
+specification. It is not requirements text.
+
+**Policy.** Comparator 0.1.12. Two changes, nothing else:
+1. **Classification.** A Markdown file directly under the `checklists/` folder of a
+   Spec Kit feature (`specs/<NNN-name>/checklists/*.md`) has role `context`,
+   whatever its basename. Framework, feature ID and archive marker are unchanged,
+   and discovery is unchanged.
+2. **Scope.** As with the quickstart (H6a), the lines of such a checklist are never
+   admitted as requirements, so the line rules (E1.2, E1.3, E2.1, opposite
+   obligations) do not run on them. They count for no practice and no open
+   decision. Unlike the quickstart, there is no E3.2 exception. The artifact is
+   still discovered and hashed.
+
+**Comparator.** 0.1.12 (`develop` at `3a888f0`). Engine 0.1.13, product 0.2.6.
+
+**Predictions.**
+- The 716 historical predictions and the 36 corpus artifact sets do not change. The
+  corpus has no `checklists/` folder.
+- The minimal pairs and the H3a, H5a, H6 and H6a twins do not change.
+- On natural sources, every change is in a feature that has a Spec Kit checklist,
+  and each checklist changes role only from `spec`, `plan` or `tasks` to `context`.
+  - Findings: every finding whose evidence is on a checklist line is removed, and so
+    is every I1.2 duplicate whose other definition is on a checklist line (that
+    evidence may be on a `spec.md` line). No finding is added, except an I2.3
+    unresolved reference where a plan or task cites an ID that only a checklist
+    states; each such case is listed.
+  - Decisions: decisions on checklist lines are no longer counted; none is added.
+  - Status: practices that read all roles can only move down, and only where a
+    checklist line was their only evidence. Spec-only pattern practices (E1.3, E1.5,
+    E2.4, E2.5, E3.1, P1.2, P2.2, P2.3, I3.3) can only move down, for the same
+    reason. Spec-only ratio practices (E1.2, E1.4, E2.1, I1.2, I2.2) can move either
+    way, because their denominator loses the checklist lines. A feature whose only
+    spec-role file is a checklist is no longer listed. Where a checklist was a
+    feature's only plan or tasks file, practices that need that role become
+    `unknown`. Every status change is listed.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - a checklist that cites `REQ-001` from `spec.md` (no duplicate), against a second
+     spec document that defines `REQ-001` again (the duplicate stays);
+   - a checklist item with a modal word and no ID (no I1.2 finding), against the same
+     line in `spec.md` (the finding stays);
+   - a checklist with `No [NEEDS CLARIFICATION] markers remain` (no decision),
+     against a spec line with a real `[NEEDS CLARIFICATION: …]` marker (the decision
+     stays);
+   - a checklist item naming acceptance scenarios as the only E3.1 candidate (E3.1
+     `missing`), against a spec with a real acceptance-scenario block (`partial`);
+   - a checklist file under `checklists/` with a non-spec basename that matches the
+     plan pattern (`design.md`, role `context`), against a feature `design.md`
+     (role `plan`).
+
+   The candidate meets every twin. The minimal pairs and the H3a, H5a, H6 and H6a
+   twins are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report -- --baseline
+   origin/develop`).
+3. On a fresh public set:
+   - every change is in a feature with a checklist, and every removed finding,
+     decision and status change is of a predicted kind; each is listed by practice;
+   - no finding is added outside the I2.3 exception, and each exception is listed.
+4. Independent adjudication of the reclassified checklists: up to 30 distinct
+   checklist files whose role changes on the fresh set (seed 42039), each labeled
+   blind against the proposition "This document states the feature's requirements,
+   rather than reviewing them or citing them." The owner fixes the threshold before
+   selection.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, the failing change (1 or 2) is reverted and
+recorded. The owner decides between a narrowed H7a and stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"Specification Quality Checklist"
+  path:checklists` and `"FR-001" path:checklists`, limited to Markdown files named
+  `requirements.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a, H6
+  and H6a, and the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h7-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
