@@ -845,6 +845,9 @@ longer identify wrapped lines), pre-registered as H5a below.
   eligible repository) and 22 EN/ES twins were frozen at `816fcf7`.
 - Candidate: `81ed209`, engine 0.1.11 (0.1.10 is H6). Comparators: 0.1.9 (`c3f79b0`)
   and H5 (`9336e2b`).
+- **Version at merge.** H5a lands before H6, so it ships as engine 0.1.10 (merged with
+  `develop` after #95, product 0.2.3). The rules are those of `81ed209`; only the
+  version string changes.
 
 | Gate | Result |
 |---|---|
@@ -886,4 +889,4 @@ the 6 it no longer removes are units identified only by a cited ID.
   as lacking an identifier. That is deliberate: such items were disputed.
 - Other line-local rules (E1.2, E1.3, E2.1) still read one physical line.
 
-**Decision.** Propose H5a (engine 0.1.11) for merge.
+**Decision.** Propose H5a (engine 0.1.10 at merge) for merge.

@@ -48,10 +48,12 @@ test('scope choices keep a current folder or based branch scope selectable', () 
   const features = listFeatures([
     { role: 'spec', framework: 'spec-kit', featureId: '.specify/templates', archived: false },
     { role: 'spec', framework: 'spec-kit', featureId: 'specs/001-a', archived: false },
+    { role: 'spec', framework: 'generic', featureId: 'docs/notes', archived: false },
   ]);
-  assert.deepEqual(features.map(f => [f.id, f.layout]), [['specs/001-a', true], ['.specify/templates', false]]);
+  // Templates sort after every other group, including generic ones such as docs/.
+  assert.deepEqual(features.map(f => [f.id, f.layout]), [['specs/001-a', true], ['docs/notes', false], ['.specify/templates', false]]);
   const index = { root: '/r', name: 'r', mode: 'git' as const, focus: null, entries: [], features };
-  assert.deepEqual(scopeChoices(index).map(c => c.title), ['All documents', 'Changed on this branch', 'specs/001-a', 'Other · .specify/templates']);
+  assert.deepEqual(scopeChoices(index).map(c => c.title), ['All documents', 'Changed on this branch', 'specs/001-a', 'Other · docs/notes', 'Other · .specify/templates']);
   for (const scope of [{ kind: 'path', path: 'docs/specs' }, { kind: 'changed', base: 'develop' }, { kind: 'feature', id: 'specs/001-a' }, { kind: 'all' }, { kind: 'changed' }] as HostScope[]) {
     const choices = scopeChoices(index, scope);
     assert.ok(choices.some(c => c.value === scopeValue(scope)), JSON.stringify(scope));
