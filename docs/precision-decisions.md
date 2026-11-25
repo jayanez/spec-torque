@@ -1216,11 +1216,12 @@ finding or traceability edge changes. The other 19 stay: 10 plan-local `R-n` lab
   feature happens to define the same bare ID (`SPEC-028 REQ-001` in a feature with
   its own REQ-001), which then also counts that local requirement as referenced.
 
-**After H8 (#80).** H8 and H9 read the same plan and tasks references, so H9 now
-iterates H8's reference matches. Against `develop` with H8 (`0738464`), every
-measurement above is unchanged: twins, minimal pairs, the 716 predictions, the dev
-and fresh sets. On the pilot, H8 removes the 10 `R-n` findings and H9 the same 23,
-none is added, and I2.3 unresolved references go from 42 (0.1.12) to 32 (H8) to 9.
+**After H8 and H85.** H8 (#80) and H9 read the same plan and tasks references, so H9
+now iterates H8's reference matches. H85 (#85) changes only E1.3 and the E1.2
+clarifier. Against `develop` with H8 (`0738464`), and again with H85 (`79bb539`), every
+measurement above is unchanged: the twins, the minimal pairs, the 716 predictions, the
+dev and fresh sets. On the pilot, H8 removes the 10 `R-n` findings and H9 the same 23,
+none is added, and I2.3 unresolved references go from 42 (0.1.12) to 32 (H8, H85) to 9.
 That is the pre-registered subtraction, so no deviation is recorded.
 
 **Rule 2 reverted (owner decision, 2026-11-25).** Asked whether rule 2 should ship on
