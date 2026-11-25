@@ -964,6 +964,14 @@ reports. On the fresh set it restores 1 of the 29 adjudicated lines (23 findings
 all from one inherited instruction file). The 28 removed lines that remain are a
 subset of the adjudicated items, so the adjudication result carries over.
 
+### Amendment H85-3 (2026-11-25, after adjudication; code review)
+
+A second review found that negative contractions of the listed auxiliaries
+("This isn't …", "That doesn't …", "This shouldn't …") matched no rule and read as
+determiners. A next word that ends in `n't` (straight or curly apostrophe) is now a
+pronoun cue. Like H85-2, this only keeps findings that 0.1.12 reports. The fresh set
+and the pilot were measured again; see the decision record.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

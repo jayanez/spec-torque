@@ -18,6 +18,8 @@ const { values } = parseArgs({ options: {
 } });
 if (!values.detail || !values.roots || !values.out) throw new Error('Use: subject-packet.ts --detail <h6-scan.json> --roots <roots.json> --out <dir>');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
+const [size, seed, around] = [values.sample, values.seed, values.context].map(Number);
+if (![size, seed, around].every(Number.isInteger)) throw new Error('--sample, --seed and --context must be integers.');
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
 type Finding = { practiceId: string; path: string; line: number; message: string; text: string };
 const scan = JSON.parse(await readFile(values.detail, 'utf8')) as { detail: { root: string; sha: string; feature: string; findingsRemoved: Finding[]; findingsAdded: Finding[] }[] };
@@ -31,8 +33,7 @@ for (const d of scan.detail) for (const f of d.findingsRemoved.filter(f => f.pra
   else distinct.set(f.text.trim(), { root: d.root, sha: d.sha, feature: d.feature, path: f.path, line: f.line, occurrences: 1 });
 }
 // The same seeded generator as the H3a, H5 and H6 packets, drawn without replacement.
-const chosen = sample([...distinct.values()], Number(values.sample), Number(values.seed));
-const around = Number(values.context);
+const chosen = sample([...distinct.values()], size, seed);
 const byId = new Map(roots.map(r => [r.id, r]));
 const files = new Map<string, string[]>();
 const linesOf = (root: string, sha: string, path: string) => {
