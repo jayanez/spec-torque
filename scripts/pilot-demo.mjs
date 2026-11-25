@@ -103,7 +103,7 @@ function workflow(page, lang) {
     async loadScoped() {
       // Let the load on connect finish, so the explicit reload below is the only one in flight.
       await page.getByTitle(fixtureFile).first().waitFor();
-      if (lang === 'es') await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
+      if (lang === 'es') await page.getByRole('button', { name: 'Switch to Spanish', exact: true }).click();
       await load();
       await expect(page.getByRole('status')).toContainText(label('Artifacts loaded.', 'Documentos cargados.'));
       const scope = page.getByLabel(label('Artifact set', 'Conjunto de documentos'));

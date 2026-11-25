@@ -56,7 +56,7 @@ try {
     await artifactSet.or(localFeature).first().waitFor();
     if (await localFeature.count()) {
       if (await localFeature.inputValue() !== feature) {
-        await Promise.all([page.waitForResponse(response => response.url().includes('/api/workspace?feature=')), localFeature.selectOption(feature)]);
+        await Promise.all([page.waitForResponse(response => response.url().includes('/api/workspace?feature=')), localFeature.fill(feature).then(() => page.getByRole('option').filter({ hasText: new RegExp('(^|· )' + feature.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).click())]);
       }
       await page.getByTitle(feature + '/spec.md').first().waitFor();
     } else await artifactSet.selectOption(feature);

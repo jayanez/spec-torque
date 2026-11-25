@@ -1,4 +1,4 @@
-import { ALL, CHANGED, DISCLAIMER, dimensionsLine, featureLabel, findingCard, replacementLabel, scopeLabel, scopeValue, summaryLine, titleLine, valueScope, workbenchLine, workbenchUrl } from './text.js';
+import { ALL, CHANGED, DISCLAIMER, dimensionsLine, featureLabel, findingCard, replacementLabel, scopeLabel, scopeValue, summaryLine, titleLine, valueScope, workbenchUrl } from './text.js';
 
 const PANE = 'spectorque';
 const SHOWN = 12;
@@ -229,9 +229,15 @@ export function register(on) {
         redraw();
       } }),
     ] }));
+    // Mods Links and Buttons have no tooltip, so the secondary details are dimmed lines next to them.
+    if (!workbench) children.push(Text({ dimColor: true, children: ['Opening copies the workbench address to the clipboard.'] }));
     if (workbench?.url) {
       // Desktop and VS Code make a Link clickable only for https: or http://localhost; the loopback server accepts both hosts.
-      children.push(Link({ key: 'workbench-link', href: workbenchUrl(workbench.url), label: workbenchLine(workbench.url, workbench.feature) + (workbench.copied ? ' (address copied)' : '') }));
+      // Without a label the address is the link text, drawn once on every surface (a terminal adds the URL after a label).
+      children.push(Box({ flexDirection: 'row', columnGap: 1, children: [Text({ children: ['Workbench:'] }), Link({ key: 'workbench-link', href: workbenchUrl(workbench.url) })] }));
+      // Its own line: beside the link it would wrap into narrow columns on the terminal.
+      const details = [...(workbench.copied ? ['Address copied to the clipboard'] : []), ...(workbench.feature ? ['Opens on ' + workbench.feature] : [])];
+      if (details.length) children.push(Text({ dimColor: true, children: [details.join(' · ')] }));
     }
     if (workbenchNote) children.push(Text({ children: [workbenchNote] }));
     children.push(Text({ children: [DISCLAIMER + ' No model is called by this pane.'] }));
