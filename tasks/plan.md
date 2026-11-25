@@ -65,4 +65,6 @@ unchanged and the clarifier treats a quoted label after a label noun as a named
 option. H7 (#79) failed its redesigned
 adjudication on the evidence it removed; the narrowed H7a (engine 0.1.15, product
 0.2.8) reads Spec Kit checklists as review context that is never requirements text or an
-open decision.
+open decision. H9 (#84, engine 0.1.16, product 0.2.9) leaves out of I2.3 the
+references a line qualifies by another specification; its "not adopted" rule was
+reverted.

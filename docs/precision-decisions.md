@@ -1263,3 +1263,110 @@ and C identical except E1.1/P2.5).**
   (#65), and one reviewer pair's judgment on N1 decides about 80 features.
 
 **Decision.** Propose H7a (engine 0.1.15, version 0.2.8 at merge) for merge, closing #79.
+
+### H9: qualified and non-adopted references in I2.3 — **rule 1 holds and is proposed for merge; rule 2 reverted (owner decision)**
+
+Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
+- Pre-registered at `e2313f5`, as one hypothesis with two separately gated rules:
+  references qualified by another specification (rule 1) and references marked not
+  adopted (rule 2).
+- The 24 EN/ES twins and the 10 fresh sources were frozen at `5cd81e7`.
+- Candidate: `bf908cf`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12 (`develop`,
+  `3a888f0`).
+- The adjudication threshold was fixed at `656e023`, before any packet was built.
+- Amendment H9-2 (owner decision) and its 16 sources were frozen at `c6dabd1`,
+  before any scan.
+- Rule 2 was reverted at `d58628e` (owner decision), after two independent reviews;
+  see "Rule 2 reverted" below. The gates below cover the full candidate; the rule 2
+  rows are kept as measured.
+- **Version at merge.** H8 (#80), H85 (#85) and H7a (#79) merged first as engines
+  0.1.13 (#100), 0.1.14 (#101) and 0.1.15 (#103), so H9 ships as engine 0.1.16 with
+  product 0.2.9. After each was merged in, every measurement was repeated against
+  `develop`; see "After H8, H85 and H7a" below.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (24 EN/ES), H3a, H5a, H6 and H6a twins, minimal pairs | holds: 24 of 24 (0.1.12 meets 12, failing exactly the 12 target cases); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier fresh sets (H3a, H5a, H6, H6a, H6a-2; 33 roots, 984 features) | holds: nothing changes |
+| 4. Fresh sets and adjudication | holds for rule 1 with low power: 1 finding removed, 0 agreed positive (threshold 2). Rule 2 removes nothing and is **unconfirmed**; it was then reverted |
+| 5. Evidence | holds: no evidence, status, other finding or traceability edge changes anywhere |
+
+**Fresh sets.** The first set holds 2567 Spec Kit features in 10 roots. H9 removes
+1 I2.3 finding there and adds none: a plan line that "inherits spec-005's FR-023"
+from feature 006 (rule 1). The second set (H9-2) holds 191 features in 16 roots,
+and nothing changes. Code search splits `SPEC-0` into separate tokens, so neither
+query selected the qualified construction, and `not adopted` occurs in the
+fresh repositories but never attached to a requirement ID.
+
+**Adjudication.** The owner fixed the threshold before any packet was built: at
+most 2 agreed positive per rule, disputed items counting against it. The packet
+holds the single removed finding. Two blind agent sessions labeled it separately,
+both `negative`: the line attributes the ID to another specification. With one item
+this is a weak confirmation, and both reviewers are sessions of the same model
+family (#65).
+
+**Pilot repository (development data, the 32 open features, counts only).** Of 42
+I2.3 unresolved-reference findings, 23 are removed, exactly the hyphen-qualified
+ones the pre-registration predicted, and none is added. No status, evidence, other
+finding or traceability edge changes. The other 19 stay: 10 plan-local `R-n` labels
+(#80), 7 IDs whose line calls them a proposal without the words "not adopted", and
+2 IDs with another specification named elsewhere on the line.
+
+**Known limits.**
+- Only the forms of the pre-registration qualify an ID: a qualifier linked
+  (`[SPEC-028](…) REQ-004`), wrapped in markup (`**SPEC-028** REQ-004`,
+  `` `SPEC-028` REQ-004 ``), put before a parenthesis (`SPEC-028 (REQ-004)`) or
+  placed after the ID (`REQ-004 of SPEC-028`), or a second ID after a qualified one
+  (`SPEC-028 REQ-004 and REQ-005`), still resolves locally.
+- Qualifiers are read within 64 characters before the ID.
+- A hyphen-joined prefix counts as a namespace whatever it means, so a task-ID
+  prefix such as `T001-FR-001` makes the reference external.
+- Whether the other specification exists or defines the ID is not checked; the
+  workspace index (#68) is not consulted.
+- Traceability does not distinguish an external reference. Its edge is resolved
+  by the bare ID, as in 0.1.12: `resolved: false` usually, but `true` when the
+  feature happens to define the same bare ID (`SPEC-028 REQ-001` in a feature with
+  its own REQ-001), which then also counts that local requirement as referenced.
+
+**After H8, H85 and H7a.** H8 (#80) and H9 read the same plan and tasks references,
+so H9 now iterates H8's reference matches. H85 (#85) changes only E1.3 and the E1.2
+clarifier, and H7a (#79) only how Spec Kit checklists are read. Against `develop` with
+H8 (`0738464`), with H85 (`79bb539`) and with H7a (`7ad3586`), every measurement above
+is unchanged: the twins, the minimal pairs, the 716 predictions, the dev and fresh
+sets. On the pilot, H8 removes the 10 `R-n` findings and H9 the same 23, none is
+added, and I2.3 unresolved references go from 42 (0.1.12) to 32 (H8, H85, H7a) to 9.
+That is the pre-registered subtraction, so no deviation is recorded.
+
+**Rule 2 reverted (owner decision, 2026-11-25).** Asked whether rule 2 should ship on
+its twins alone, the owner requested an adversarial review and then a counterfactual
+one. Both were run by independent agent sessions on the code and the policy, with
+probes through `analyze()`.
+- *Adversarial review.* The marker is not tied to the line's meaning, so it silences
+  true problems: `- [ ] T002 Implement REQ-007 (not adopted) …`, `The old ADR was not
+  adopted REQ-007 replaces it.` and `Previously not adopted REQ-007 is now in scope.`
+  all lose their error. It also misses the natural forms (`REQ-007 no adoptado`,
+  `REQ-007: not adopted`, a status column, strikethrough, "rejected", "withdrawn",
+  `(proposal, not adopted)`) and the pilot's own phrasing.
+- *Counterfactual review.* Of 103 natural lines with "not adopted" in the pinned
+  public roots, 71 record a design alternative that was not adopted, 23 use "adopt" as
+  a verb about code or ownership, 8 describe an external status and 1 is a data value.
+  None puts the marker against an ID on a plan or tasks line, so rule 2 acts on none
+  of them, rightly or wrongly. The harm is as theoretical as the benefit. A demoted
+  finding instead of a suppressed one would inherit the same misses with no natural
+  case to measure it.
+- *Author guidance.* Recording the proposal in `spec.md` resolves the reference but
+  admits a non-normative line as a requirement, lowers E1.2 and E1.4, and hides later
+  real references to the same ID. The two forms that clear the error with no side
+  effect are dropping the bare ID from the plan or tasks line, or prefixing it
+  (`PROPOSAL-REQ-007`), which rule 1 already reads as external.
+
+Rule 2's code and its 10 twins were removed. The remaining 14 twins are met (0.1.13
+meets 8, failing exactly the 6 rule 1 targets), and every other measurement is
+unchanged, because rule 2 never acted on the corpus, the dev and fresh sets or the
+pilot.
+
+**Decision.** Propose H9 rule 1 (engine 0.1.16, product 0.2.9) for merge. It holds
+within the threshold on low fresh power and on the pilot. Rule 2 stops; it is
+reconsidered only if a fresh, pre-registered set shows the construction in natural
+plan or tasks text.

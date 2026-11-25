@@ -1,7 +1,8 @@
 import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
+import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.15';
+export const ENGINE_VERSION = '0.1.16';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -77,10 +78,10 @@ function definitionsOf(lines: Line[]): Map<string, Line[]> {
  * Requirement references per plan or tasks line. H8 (#80): a bare R-n is a reference only when the
  * feature's spec documents use the R- family; otherwise it is a label local to that document.
  */
-function referencesOf(lines: Line[]): Map<Line, string[]> {
+function referencesOf(lines: Line[]): Map<Line, RegExpExecArray[]> {
   const rFamily = new Set(lines.filter(l => l.artifact.role === 'spec' && /\bR-\d+\b/i.test(l.text)).map(l => l.artifact.featureId));
   return new Map(lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role)).map(l => [l,
-    (l.text.match(requirementId) ?? []).filter(raw => !raw.toUpperCase().startsWith('R-') || rFamily.has(l.artifact.featureId))]));
+    [...l.text.matchAll(requirementId)].filter(match => !match[0].toUpperCase().startsWith('R-') || rFamily.has(l.artifact.featureId))]));
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
@@ -113,7 +114,7 @@ function hasObservableCue(text: string): boolean {
     (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
 }
 
-function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, string[]>): { status: Status; hits: Line[] } | undefined {
+function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, RegExpExecArray[]>): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
     const hits = specRequirements.filter(predicate);
@@ -197,12 +198,24 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   for (const line of requirements.filter(l => l.artifact.role === 'spec')) {
     for (const raw of line.text.match(requirementId) ?? []) resolvable.add(line.artifact.featureId + ':' + raw.toUpperCase());
   }
+  // H9: namespaces that the feature's own spec lines join to an ID.
+  const ownNamespaces = new Set<string>();
+  for (const line of lines.filter(l => l.artifact.role === 'spec' && (l.requirement || l.heading))) {
+    for (const match of line.text.matchAll(requirementId)) {
+      const namespace = namespaceOf(textBefore(line.text, match.index));
+      if (namespace) ownNamespaces.add(line.artifact.featureId + ':' + namespace);
+    }
+  }
+  const external = (featureId: string, prefix: string) => {
+    const qualifier = qualifierOf(prefix);
+    return qualifier !== undefined && !ownNamespaces.has(featureId + ':' + qualifier) && !isOwnSpec(qualifier, featureId);
+  };
   const traceability: Assessment['traceability'] = [];
-  for (const [line, ids] of references) {
-    for (const raw of ids) {
-      const id = raw.toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
+  for (const [line, matches] of references) {
+    for (const match of matches) {
+      const id = match[0].toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
-      if (!resolved && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
+      if (!resolved && roles.has('spec') && !external(line.artifact.featureId, textBefore(line.text, match.index))) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.

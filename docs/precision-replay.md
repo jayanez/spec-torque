@@ -1269,6 +1269,164 @@ sessions of the same model family (#65). The decision record states both limits.
 - Below 30 changed features, gate 4 is reported as underpowered.
 - Committed in `fixtures/precision/h7-2-sources.json` before any scan.
 
+## Pre-registered hypothesis H9 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
+
+**Failure.** I2.3 resolves every requirement ID on a plan or tasks line against the
+current feature. Two kinds of reference are reported as undefined although the line
+itself says they are not this feature's requirements:
+- **Qualified references.** The ID is qualified by another specification:
+  `reuses SPEC-028 REQ-004 unchanged` reports `REQ-004`. The same happens when the
+  qualifier is joined to the ID by a hyphen: `VPC-REQ-01` is read as `REQ-01`,
+  because the ID pattern starts at the word boundary after the hyphen.
+- **Non-adopted references.** The line marks the ID as not adopted:
+  `The proposed (not adopted) REQ-007 text is not installed` reports `REQ-007`.
+
+**Development data.** The #8 pilot repository. On its 32 open features, engine
+0.1.12 reports 42 I2.3 unresolved-reference findings:
+- 23 are hyphen-qualified IDs (`<NS>-REQ-<n>`, three namespaces) that no spec line
+  of their feature uses;
+- 10 are plan-local `R-n` labels, the subject of #80;
+- 7 cite an ID whose line calls it a proposal. Their committed text does not use
+  the words "not adopted"; the shorter form in the #84 comment does;
+- 2 cite an ID with another specification named elsewhere on the line, not
+  directly before the ID.
+
+The issue's `SPEC-028 REQ-004` form does not occur in the open features.
+
+**One hypothesis, two rules.** Both constructions are a reference that the line
+itself places outside the feature, and both are judged by the same proposition. They
+are pre-registered together and adjudicated in one packet. Their cues differ, so each
+rule is measured and gated on its own, and a failing rule is reverted alone.
+
+**Policy.** Only I2.3 unresolved-reference findings change. Admission, definitions,
+identification (I1.2, I2.2), the I2.3/C1.3/C2.3 practice evidence, contradiction
+checks and the `traceability` edges are unchanged. A reference that H9 leaves out
+keeps its edge, with `resolved: false`, as in 0.1.12.
+
+1. **Qualified references.** A requirement ID on a plan or tasks line is *external*
+   when it is directly qualified, and the qualifier is not the feature's own.
+   - Directly qualified means one of:
+     - a hyphen-joined namespace: an uppercase token run such as `VPC-` or
+       `SPEC-028-` immediately before the ID, with no space;
+     - a specification qualifier `SPEC-<n>` (any case) immediately before the ID,
+       separated only by spaces, `/`, `:`, `#`, `§` or a possessive `'s`.
+   - A hyphen-joined prefix that itself ends in a requirement ID is a range
+     (`FR-001-FR-003`), not a namespace. Such an ID is not external.
+   - The qualifier is the feature's own when:
+     - the same namespace is joined to an ID on an admitted spec line or a spec
+       heading of the feature; or
+     - it is `SPEC-<n>`, and `<n>` equals the leading number of the feature folder
+       (`specs/028-…`), compared as numbers.
+
+   External references are not resolved locally, so they produce no I2.3 finding.
+   The workspace index (#68) is not consulted: whether the other specification
+   exists, or defines the ID, is outside H9.
+2. **Non-adopted references.** A requirement ID on a plan or tasks line is left out
+   of I2.3 when a non-adoption marker is directly attached to it. The marker is
+   `not adopted` (or `not-adopted`) in English and `no adoptado` (`adoptada`,
+   `adoptados`, `adoptadas`) in Spanish, in either of these positions:
+   - immediately before the ID, separated only by spaces and an optional closing
+     parenthesis: `proposed (not adopted) REQ-007`;
+   - in a parenthesis immediately after the ID, optionally after `/<digits>`
+     continuations and the word "proposed" (`propuesto`, `propuesta`, …):
+     `REQ-007 (not adopted)`, `REQ-007/008 (proposed, not adopted)`,
+     `REQ-007 propuesto (no adoptado)`.
+
+   Other words ("proposal", "draft", "rejected", "superseded") are not markers.
+   Another ID elsewhere on the same line is unaffected.
+
+**Endpoints.** I2.3 unresolved-reference findings, by rule and language.
+
+**Comparator.** 0.1.12 (`develop` at `3a888f0`). The candidate is engine 0.1.13. At
+merge the engine and product patch versions are bumped on top of `develop`.
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs and the H3a, H5a, H6 and H6a
+  twins do not change.
+- H9 only removes I2.3 unresolved-reference findings. It adds none, and it changes
+  no other finding, no practice status, no evidence and no traceability edge.
+- Every removed finding is on a reference that matches rule 1 or rule 2.
+- Pilot (development data, the 32 open features): the 23 hyphen-qualified findings
+  are removed, and the other 19 stay. The 10 `R-n` findings are #80's. After #80
+  merges, its effect is subtracted, and any change in these counts is recorded as a
+  deviation.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - `SPEC-028 REQ-004` cited from feature 001 (no finding), against
+     `REQ-004` with no qualifier (the finding stays);
+   - `SPEC-028 REQ-004` cited from feature 028 itself (the finding stays);
+   - a hyphen-qualified `VPC-REQ-01` whose namespace no spec line uses (no
+     finding), against a namespace the spec does use, with an undefined ID (the
+     finding stays);
+   - a hyphenated range `FR-001-FR-003` with `FR-003` undefined (the finding
+     stays);
+   - `proposed (not adopted) REQ-007` and `REQ-007 (not adopted)` (no finding),
+     against `proposed REQ-007` and `REQ-007 is a proposal` (the finding stays);
+   - a non-adopted `REQ-007` and an undefined `REQ-009` on the same line (only the
+     `REQ-009` finding stays).
+
+   The candidate meets every twin. The minimal pairs and the H3a, H5a, H6 and H6a
+   twins are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report --
+   --baseline origin/develop`).
+3. On the earlier fresh sets (H3a, H5a, H6, H6a and H6a-2, development data for
+   H9): no finding is added, and every removed finding matches rule 1 or rule 2.
+   Each is listed.
+4. On a fresh public set, no finding is added, and the removed findings of each
+   rule (all, or 100 drawn with seed 42039) are adjudicated blind. The proposition
+   for a removed finding: *the requirement ID cited on this line is meant as a
+   requirement of this feature, and the feature's specification documents do not
+   define it.* An agreed `positive` is a true problem that H9 loses. The owner fixes
+   the threshold before labeling. A rule with no removal on the fresh set is
+   reported as unconfirmed, and the owner decides whether it ships.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails for one rule, that rule is reverted and the result is
+recorded. The other rule proceeds if its own gates hold. If both fail, H9 stops; the
+owner decides between a narrowed H9a and stopping #84.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"SPEC-0" "FR-0" path:specs` and
+  `"SPEC-0" "REQ-0" path:specs` in Markdown files named `tasks.md`, and for
+  `"not adopted" path:specs` in files named `plan.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a, H6,
+  H6a and H6a-2, and the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h9-sources.json` before the candidate
+commit.
+
+### Amendment H9-2 (2026-11-25, after the first fresh set; owner decision)
+
+The first fresh set held 2567 Spec Kit features in 10 roots, but H9 removed only 1
+finding there (rule 1) and none for rule 2. Code search splits `SPEC-0` into
+separate tokens, so the queries did not select the qualified construction. A
+broader second fresh set is added, and gate 4 applies to it:
+- GitHub code search, once each for `"FR-0" path:specs` and `"REQ-0" path:specs`,
+  limited to Markdown files named `tasks.md`;
+- up to 8 repositories per query, with the same eligibility rules and exclusions
+  (now including the H9 sources);
+- committed in `fixtures/precision/h9-2-sources.json` before any scan.
+
+All removed findings of both fresh sets (or 100 drawn with seed 42039) are
+adjudicated together, with the owner's threshold of at most 2 agreed positive per
+rule. A rule that still removes nothing is reported as unconfirmed.
+
+### Outcome of rule 2 (2026-11-25, owner decision)
+
+Rule 2 removed nothing on either fresh set. Two independent reviews then found that
+its marker also silences true problems (`Implement REQ-007 (not adopted) …`), and
+that it acts on none of 103 natural "not adopted" lines. Under the stop rule it is
+reverted at `d58628e`, and rule 1 proceeds alone. The details are in
+[precision decisions](precision-decisions.md).
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

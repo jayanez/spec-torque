@@ -7,12 +7,15 @@
  *
  * H5 (#78) reuses the builder with a wider context and a missing-identifier proposition that also
  * considers the list item or paragraph the line belongs to. H8 (#80) asks whether a removed R-n
- * reference cites a requirement of the feature's specification.
+ * reference cites a requirement of the feature's specification. H9 (#84) asks whether
+ * the ID is meant as this feature's requirement; its occurrences skip namespaced forms such as
+ * `VP-REQ-01`.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { namespaceOf, textBefore } from '../../src/core/references.js';
 import { rootSchema } from './sources.js';
 
 const { values } = parseArgs({ options: {
@@ -27,10 +30,12 @@ const MODES = {
   h3a: { guide: 'docs/precision-adjudication.md#h3a-requirement-definitions-83', missing: H3A_MISSING, reference: H3A_REFERENCE, siblings: false },
   h5: { guide: 'docs/precision-adjudication.md#h5-wrapped-continuations-78', missing: 'This line states a requirement that has no stable identifier: neither the line, nor the list item or paragraph it belongs to (including its wrapped lines), nor an enclosing requirement heading identifies it.', reference: H3A_REFERENCE, siblings: false },
   // H8: an R-n label is usually defined in a sibling document (research, plan), so search every Markdown file of the feature.
+  h9: { guide: 'docs/precision-adjudication.md#h9-qualified-and-non-adopted-references-84', missing: H3A_MISSING, reference: 'The requirement ID cited on this line is meant as a requirement of this feature, and the feature\'s specification documents do not define it.', siblings: false },
   h8: { guide: 'docs/precision-adjudication.md#h8-plan-local-r-n-labels-80', missing: H3A_MISSING, reference: 'The R-n label named in subjectId, on this line, cites a requirement of the feature\'s specification, so its missing definition is a true problem.', siblings: true },
 };
 if (!Object.hasOwn(MODES, values.propositions!)) throw new Error(`--propositions must be one of ${Object.keys(MODES).join(', ')}.`);
 const mode = MODES[values.propositions as keyof typeof MODES];
+const h9 = values.propositions === 'h9';
 const around = Number(values.context);
 if (!values.detail || !values.roots || !values.out) throw new Error('Use: definitions-packet.ts --detail <h3-scan.json> --roots <roots.json> --out <dir>');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
@@ -53,6 +58,9 @@ const git = (root: string, ...args: string[]) => execFileSync('git', ['-C', root
 const proposition = (message: string) => message.startsWith('Duplicate')
   ? 'This line states a second, separate requirement under an ID that the same feature already uses for a different requirement.'
   : message.startsWith('Requirement has no stable identifier') ? mode.missing : mode.reference;
+/** Matches of the bare ID on a line; for H9, namespaced forms such as `VP-REQ-01` are not the ID. */
+const matchesOf = (pattern: RegExp, text: string) => [...text.matchAll(pattern)]
+  .filter(match => !h9 || !namespaceOf(textBefore(text, match.index)));
 const specDocument = (path: string) => /\.md$/i.test(path) && /spec|requirement|prd|proposal/i.test(path.split('/').pop()!);
 const searched = mode.siblings ? (path: string) => /\.md$/i.test(path) : specDocument;
 
@@ -63,11 +71,12 @@ for (const change of draw(chosen, chosen.length)) {
   const lines = git(change.root, 'show', `${change.sha}:${path}`).split(/\r?\n/);
   const id = message.match(/(?:FR|NFR|REQ|R)-\d+/i)?.[0];
   const occurrences: string[] = [];
-  if (id) {
+  const pattern = id && new RegExp(`\\b${id}\\b(?!\\.\\d)`, 'gi');
+  if (pattern) {
     const files = git(change.root, 'ls-tree', '-r', '--name-only', change.sha).split('\n').filter(f => f.startsWith(change.feature + '/') && searched(f));
     for (const file of files) git(change.root, 'show', `${change.sha}:${file}`).split(/\r?\n/).forEach((text, index) => {
       if (mode.siblings && file === path && index + 1 === line) return;
-      if (occurrences.length < 8 && new RegExp(`\\b${id}\\b(?!\\.\\d)`, 'i').test(text)) occurrences.push(`${file}:${index + 1}: ${text.trim().slice(0, 240)}`);
+      if (occurrences.length < 8 && matchesOf(pattern, text).length) occurrences.push(`${file}:${index + 1}: ${text.trim().slice(0, 240)}`);
     });
   }
   const itemId: string = 'D' + String(items.length + 1).padStart(3, '0');

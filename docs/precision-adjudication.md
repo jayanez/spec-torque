@@ -271,3 +271,28 @@ against.
 
 **Reviewers.** Two independent agent sessions, as in H6a-2. They see no engine output,
 key, scan or each other's labels.
+
+## H9: qualified and non-adopted references (#84)
+
+H9 removes I2.3 unresolved-reference findings and adds none. The owner fixed the
+threshold on 2026-11-25, after the deterministic gates on the twins, the corpus and
+the pilot, and before any fresh-set packet was built or labeled.
+
+**Packet.** It is built from the H9 fresh-set scan with
+`scripts/precision/definitions-packet.ts --propositions h9`: all removed findings,
+or 100 drawn with seed 42039, shuffled, with three lines of context on each side and
+every line in the feature's spec documents that contains the bare ID (at most 8).
+`key.json` holds the rule and the direction and is not opened by reviewers.
+
+**Proposition.** *The requirement ID cited on this line is meant as a requirement
+of this feature, and the feature's specification documents do not define it.*
+`positive` means a true problem that H9 would lose.
+
+**Reviewers.** Two independent agent sessions, as in H3a, with the same limits.
+
+**Threshold.** For each rule (qualified references, non-adopted references), at
+most 2 of the adjudicated removed findings may be agreed `positive`. Disputed items
+count against the threshold until the owner resolves them.
+
+The packet held one removed finding, from rule 1. Rule 2 removed nothing and was
+later reverted, so the packet builder no longer records a rule in `key.json`.
