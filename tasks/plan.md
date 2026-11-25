@@ -57,4 +57,6 @@ ID; the narrowed H5a (engine 0.1.10) passed and is integrated through #96. H6 (#
 engine 0.1.11, product 0.2.4) adds acceptance-scenario and validation-table
 vocabulary and discovers the Spec Kit `quickstart.md`. H6a (#88, engine 0.1.12,
 product 0.2.5) reads the quickstart only as validation-method evidence and adds
-test-runner vocabulary.
+test-runner vocabulary. H7 (#79) failed its redesigned adjudication on the evidence it
+removed; the narrowed H7a (engine 0.1.13, product 0.2.6) reads Spec Kit checklists as
+review context that is never requirements text or an open decision.
