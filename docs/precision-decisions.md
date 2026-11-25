@@ -1087,17 +1087,21 @@ finding or traceability edge changes. The other 19 stay: 10 plan-local `R-n` lab
 
 **Known limits.**
 - Only the forms of the pre-registration qualify an ID: a qualifier linked
-  (`[SPEC-028](…) REQ-004`) or placed after the ID (`REQ-004 of SPEC-028`), or a
-  second ID after a qualified one (`SPEC-028 REQ-004 and REQ-005`), still resolves
-  locally.
+  (`[SPEC-028](…) REQ-004`), wrapped in markup (`**SPEC-028** REQ-004`,
+  `` `SPEC-028` REQ-004 ``), put before a parenthesis (`SPEC-028 (REQ-004)`) or
+  placed after the ID (`REQ-004 of SPEC-028`), or a second ID after a qualified one
+  (`SPEC-028 REQ-004 and REQ-005`), still resolves locally.
+- Qualifiers and markers are read within 64 characters of the ID.
 - A hyphen-joined prefix counts as a namespace whatever it means, so a task-ID
   prefix such as `T001-FR-001` makes the reference external.
 - Whether the other specification exists or defines the ID is not checked; the
   workspace index (#68) is not consulted.
 - Only "not adopted" / "no adoptado" attached to the ID is a marker. "A proposal",
   "draft", "rejected" and "superseded" are not.
-- Traceability does not distinguish an external reference; its edge stays
-  `resolved: false`.
+- Traceability does not distinguish an external reference. Its edge is resolved
+  by the bare ID, as in 0.1.12: `resolved: false` usually, but `true` when the
+  feature happens to define the same bare ID (`SPEC-028 REQ-001` in a feature with
+  its own REQ-001), which then also counts that local requirement as referenced.
 
 **Decision.** Propose H9 for merge. Rule 1 holds within the threshold on low fresh
 power and on the pilot. Rule 2 has no fresh-data change; the owner decides whether it

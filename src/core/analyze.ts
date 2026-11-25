@@ -87,6 +87,8 @@ const qualifierOf = (before: string) => {
   const spec = specQualifier.exec(before)?.[1];
   return namespaceOf(before) ?? (spec === undefined ? undefined : `SPEC-${spec}`);
 };
+// Every qualifier and marker form fits in a short window before the ID; bounding it keeps long lines linear.
+const QUALIFIER_WINDOW = 64;
 const featureNumber = (featureId: string) => /(?:^|\/)(\d+)-[^/]*$/.exec(featureId)?.[1];
 const notAdopted = '(?:not[ -]adopted|no[ \\t]+adoptad[oa]s?)';
 const proposed = '(?:proposed|propuest[oa]s?)';
@@ -192,7 +194,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const ownNamespaces = new Set<string>();
   for (const line of lines.filter(l => l.artifact.role === 'spec' && (l.requirement || l.heading))) {
     for (const match of line.text.matchAll(requirementId)) {
-      const namespace = namespaceOf(line.text.slice(0, match.index));
+      const namespace = namespaceOf(line.text.slice(Math.max(0, match.index - QUALIFIER_WINDOW), match.index));
       if (namespace) ownNamespaces.add(line.artifact.featureId + ':' + namespace);
     }
   }
@@ -207,7 +209,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     for (const match of line.text.matchAll(requirementId)) {
       const id = match[0].toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
-      const before = line.text.slice(0, match.index), after = line.text.slice(match.index + match[0].length);
+      const before = line.text.slice(Math.max(0, match.index - QUALIFIER_WINDOW), match.index), after = line.text.slice(match.index + match[0].length, match.index + match[0].length + QUALIFIER_WINDOW);
       const outside = external(line.artifact.featureId, before) || notAdoptedBefore.test(before) || notAdoptedAfter.test(after);
       if (!resolved && !outside && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }

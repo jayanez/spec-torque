@@ -64,6 +64,8 @@ test('H9: a reference qualified by another specification is not resolved locally
   assert.deepEqual((await references(['# Tasks', '', 'Wires VPC-REQ-02.'], ['# Demo', '', '- **VPC-REQ-01:** The consumer MUST revalidate.'])).findings,
     ['3:Reference REQ-02 has no definition in the supplied specs.']);
   assert.deepEqual((await references(['# Tasks', '', 'Implements REQ-001-REQ-003.'])).findings, ['3:Reference REQ-003 has no definition in the supplied specs.']);
+  assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-028-REQ-004.'])).findings, []);
+  assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-028-REQ-004.'], undefined, 'specs/028-demo')).findings, ['3:Reference REQ-004 has no definition in the supplied specs.']);
 });
 
 test('H9: a reference marked not adopted is left out, and its edge stays unresolved', async () => {
