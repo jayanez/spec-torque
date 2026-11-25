@@ -1,7 +1,7 @@
 import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.13';
+export const ENGINE_VERSION = '0.1.14';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -73,6 +73,15 @@ function definitionsOf(lines: Line[]): Map<string, Line[]> {
   }
   return definitions;
 }
+/**
+ * Requirement references per plan or tasks line. H8 (#80): a bare R-n is a reference only when the
+ * feature's spec documents use the R- family; otherwise it is a label local to that document.
+ */
+function referencesOf(lines: Line[]): Map<Line, string[]> {
+  const rFamily = new Set(lines.filter(l => l.artifact.role === 'spec' && /\bR-\d+\b/i.test(l.text)).map(l => l.artifact.featureId));
+  return new Map(lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role)).map(l => [l,
+    (l.text.match(requirementId) ?? []).filter(raw => !raw.toUpperCase().startsWith('R-') || rFamily.has(l.artifact.featureId))]));
+}
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
 const boundedQuantity = /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:%|(?:ms|seconds?|segundos?|minutes?|minutos?|MB|GB)(?![\p{L}\p{N}\p{M}_]))/iu;
@@ -87,7 +96,7 @@ function hasObservableCue(text: string): boolean {
     (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
 }
 
-function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { status: Status; hits: Line[] } | undefined {
+function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, string[]>): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
     const hits = specRequirements.filter(predicate);
@@ -107,7 +116,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
     return { status: !specRequirements.length ? 'unknown' : identified === specRequirements.length && unique ? 'supported' : identified ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
   }
   if (['I2.3', 'C1.3', 'C2.3'].includes(id)) {
-    const hits = lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role) && /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text));
+    const hits = lines.filter(l => references.get(l)?.length);
     return { status: hits.length ? 'partial' : 'missing', hits };
   }
   if (id === 'C1.2') {
@@ -125,6 +134,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const active = set.artifacts.filter(a => !a.archived);
   const lines = active.flatMap(linesOf);
   const requirements = lines.filter(l => l.requirement);
+  const references = referencesOf(lines);
   const roles = new Set(active.map(a => a.role));
   const multipleFeatures = new Set(active.filter(a => a.role === 'spec').map(a => a.featureId)).size > 1;
   const practices: PracticeResult[] = PRACTICES.map(def => {
@@ -139,7 +149,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     // H6a (#88): quickstart lines count only as validation-method evidence (E3.2). H7a (#79): checklist lines are
     // never requirements or decisions, but count like any context document.
     const relevant = lines.filter(l => def.roles.includes(l.artifact.role) && (l.scope !== 'validation' || def.id === 'E3.2'));
-    const special = evaluateSpecial(def.id, relevant, requirements);
+    const special = evaluateSpecial(def.id, relevant, requirements, references);
     const hits = special?.hits ?? relevant.filter((l, i) => {
       if (!def.pattern?.test(l.text) || l.text.trim().length < 4) return false;
       if (l.text.includes('[NEEDS CLARIFICATION:') && !['E1.1', 'P2.5'].includes(def.id)) return false;
@@ -171,8 +181,8 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     for (const raw of line.text.match(requirementId) ?? []) resolvable.add(line.artifact.featureId + ':' + raw.toUpperCase());
   }
   const traceability: Assessment['traceability'] = [];
-  for (const line of lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role))) {
-    for (const raw of line.text.match(requirementId) ?? []) {
+  for (const [line, ids] of references) {
+    for (const raw of ids) {
       const id = raw.toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
       if (!resolved && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');

@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { archiveEngine, commit, repository, type Engine } from './engines.js';
-import { rootSchema, snapshot } from './sources.js';
+import { rootSchema, snapshot, statusSchema as status } from './sources.js';
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: {
   baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' },
@@ -24,7 +24,6 @@ const mode = positionals[0];
 if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode === 'scan' && (!values.roots || !values.out))) {
   throw new Error('Use: verification.ts synthetic --baseline <ref> [--candidate <ref>] | scan --baseline <ref> --roots <roots.json> --out <dir>');
 }
-const status = z.enum(['supported', 'partial', 'missing', 'unknown', 'not_applicable']);
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
   expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(),
