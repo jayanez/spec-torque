@@ -2,7 +2,8 @@
  * H6 replay (#88): verification criteria (E3.1), validation methods (E3.2) and Spec Kit
  * quickstart.md as a feature artifact. Compares two committed engine revisions.
  *
- *   synthetic: fixtures/precision/h6-pairs.json, expected E3.1/E3.2 status per case.
+ *   synthetic: fixtures/precision/h6-pairs.json, expected practice status per case (E3.1/E3.2 for
+ *              H6); a case may also fix its findings, artifact roles and decision count (H6a, H7).
  *   scan:      every Spec Kit feature of each root. Each arm discovers with the work-tree rule
  *              (basename only) and classifies with its own rules, so a discovery change is part
  *              of the comparison.
@@ -25,8 +26,10 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 }
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
-  // H85: any practice may be an endpoint (H6 and H6a cases name E3.1 and E3.2).
-  expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(), note: z.string(),
+  // H85: any practice may be an endpoint. H7: a case may also fix roles and the decision count.
+  expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(),
+  roles: z.record(z.string(), z.enum(['spec', 'plan', 'tasks', 'instructions', 'context'])).optional(),
+  decisions: z.number().int().nonnegative().optional(), note: z.string(),
 })) });
 
 async function assess(engine: Engine, files: Map<string, string> | Record<string, string>, feature?: string) {
@@ -38,11 +41,11 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
   const findings: Record<string, number> = {};
   for (const f of report.findings) findings[f.practiceId] = (findings[f.practiceId] ?? 0) + 1;
   return {
-    paths: set.artifacts.map(a => `${a.path}:${a.role}`).sort(),
+    roles: Object.fromEntries(set.artifacts.map(a => [a.path, a.role])),
     status: Object.fromEntries(report.practices.map(p => [p.id, p.status])),
     evidence: Object.fromEntries(report.practices.map(p => [p.id, p.evidence])),
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
-    findings, decisions: report.decisions.length,
+    findings, decisions: report.decisions.length, decisionLines: report.decisions,
     findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
     // H85: structured findings with their line text, for removed/added finding lists.
     findingLines: report.findings.map(f => ({ practiceId: f.practiceId, path: f.evidence[0]?.path ?? '', line: f.evidence[0]?.line ?? 0, message: f.message, text: f.evidence[0]?.text ?? '' })),
@@ -63,11 +66,16 @@ if (mode === 'synthetic') {
     const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
     const pick = (r: typeof b) => Object.fromEntries(Object.keys(entry.expected).map(id => [id, r?.status[id]]));
     const baseline = pick(b); const candidate = pick(c);
-    // H6a: a case may also fix the complete finding list (practice|path|line).
+    // H6a: a case may also fix the complete finding list (practice|path|line). H7: and roles and decisions.
+    const rolesOf = (r: typeof b) => entry.roles && Object.fromEntries(Object.keys(entry.roles).map(path => [path, r?.roles[path]]));
     const meets = (r: typeof b, statuses: Record<string, unknown>) => JSON.stringify(statuses) === JSON.stringify(entry.expected) &&
-      (!entry.findings || JSON.stringify(r?.findingKeys) === JSON.stringify([...entry.findings].sort()));
+      (!entry.findings || JSON.stringify(r?.findingKeys) === JSON.stringify([...entry.findings].sort())) &&
+      (!entry.roles || JSON.stringify(rolesOf(r)) === JSON.stringify(entry.roles)) &&
+      (entry.decisions === undefined || r?.decisions === entry.decisions);
     rows.push({ id: entry.id, construct: entry.construct, language: entry.language, expected: entry.expected, expectedFindings: entry.findings, baseline, candidate,
       baselineFindings: entry.findings ? b?.findingKeys : undefined, candidateFindings: entry.findings ? c?.findingKeys : undefined,
+      baselineRoles: rolesOf(b), candidateRoles: rolesOf(c),
+      baselineDecisions: entry.decisions === undefined ? undefined : b?.decisions, candidateDecisions: entry.decisions === undefined ? undefined : c?.decisions,
       baselineMeets: meets(b, baseline), candidateMeets: meets(c, candidate) });
   }
   const summary = { cases: rows.length, baselineMeets: rows.filter(r => r.baselineMeets).length, candidateMeets: rows.filter(r => r.candidateMeets).length,
@@ -90,7 +98,8 @@ if (mode === 'synthetic') {
       const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
       if (!b || !c) continue;
       totals.features++;
-      const added = c.paths.filter(p => !b.paths.includes(p));
+      // Discovery additions by path; reclassified files are reported as roleChanges.
+      const added = Object.keys(c.roles).filter(p => !(p in b.roles));
       totals.artifactsAdded += added.length;
       const changes = Object.keys(c.status).filter(id => c.status[id] !== b.status[id]).map(id => ({ id, from: b.status[id], to: c.status[id] }));
       for (const ch of changes) bump((rank[ch.to] ?? -1) > (rank[ch.from] ?? -1) ? totals.statusUp : totals.statusDown, ch.id);
@@ -105,10 +114,17 @@ if (mode === 'synthetic') {
       const [bKeys, cKeys] = [b, c].map(r => new Set(r.findingLines.map(findingKey)));
       const findingsRemoved = b.findingLines.filter(f => !cKeys.has(findingKey(f)));
       const findingsAdded = c.findingLines.filter(f => !bKeys.has(findingKey(f)));
-      if (added.length || changes.length || Object.keys(findingDelta).length || findingsRemoved.length || findingsAdded.length) {
+      // H7: role changes, the exact finding locations each arm reports and the removed decision lines.
+      const roleChanges = Object.keys(c.roles).filter(path => b.roles[path] && b.roles[path] !== c.roles[path]).map(path => ({ path, from: b.roles[path], to: c.roles[path] }));
+      const before = new Set(b.findingKeys); const after = new Set(c.findingKeys);
+      const removedFindings = b.findingKeys.filter(k => !after.has(k)); const addedFindings = c.findingKeys.filter(k => !before.has(k));
+      const kept = new Set(c.decisionLines.map(l => `${l.path}:${l.line}`));
+      if (added.length || roleChanges.length || changes.length || Object.keys(findingDelta).length || findingsRemoved.length || findingsAdded.length || c.decisions !== b.decisions) {
         totals.changedFeatures++;
-        detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta, findingsRemoved, findingsAdded,
-          evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
+        detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, findingsRemoved, findingsAdded, removedFindings, addedFindings,
+          decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])),
+          baselineEvidence: Object.fromEntries(changes.map(ch => [ch.id, b.evidence[ch.id]])),
+          removedDecisions: b.decisionLines.filter(l => !kept.has(`${l.path}:${l.line}`)) });
       }
     }
   }

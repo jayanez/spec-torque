@@ -10,6 +10,8 @@ const zeePlan = /(?:^|\/)\.spec\/how\.md$/i;
 const specKitDataModel = /(?:^|\/)specs\/\d{3}-[^/]+\/data-model\.md$/i;
 // H6 (#88): the Spec Kit quickstart holds the feature's run and test commands.
 const specKitQuickstart = /(?:^|\/)specs\/\d{3}-[^/]+\/quickstart\.md$/i;
+// H7 (#79): a Spec Kit checklist reviews the feature's specification and cites its IDs.
+const specKitChecklist = /(?:^|\/)specs\/\d{3}-[^/]+\/checklists\/[^/]+\.md$/i;
 const byName = /spec|requirement|prd|plan|design|task|todo|agents|claude|gemini|constitution|architecture|what|where|when|who|why|how/i;
 
 /** Path-derived classification. Content can only refine the framework label (Spec Kitty banner). */
@@ -26,7 +28,8 @@ export function classifyPath(path: string, content = ''): PathClassification {
     : /(?:^|\/)(?:_bmad|_bmad-output)\//.test(lower) ? 'bmad'
     : mission || /(?:^|\/)\.kittify\//.test(lower) || /spec[- ]kitty/i.test(content.slice(0, 500)) ? 'spec-kitty'
     : /(?:^|\/)specs\/[^/]+\//.test(lower) || lower.includes('.specify/') ? 'spec-kit' : 'generic';
-  const role: Role = /^(agents|claude|gemini|copilot-instructions)\.md$/.test(base) ? 'instructions'
+  const role: Role = specKitChecklist.test(p) ? 'context'
+    : /^(agents|claude|gemini|copilot-instructions)\.md$/.test(base) ? 'instructions'
     : (framework === 'spec-kitty' && kittyWorkPackage.test(p)) || (framework === 'bmad' && bmadTask.test(p)) ||
       /task|todo|work.?package/i.test(base) ? 'tasks'
     : (framework === 'zeespec' && zeePlan.test(p)) || /plan|design|architecture/i.test(base) ? 'plan'
@@ -48,6 +51,14 @@ export function classifyArtifact(path: string, content: string): Artifact {
 
 /** H6a (#88): the Spec Kit quickstart is validation-method evidence only, never requirements text. */
 export const isValidationGuide = (path: string) => specKitQuickstart.test(path.replaceAll('\\', '/'));
+/**
+ * H7a (#79): a Spec Kit checklist reviews the specification. Its lines are context evidence, never requirements
+ * text or open decisions. Path-only, like the quickstart rule: any `specs/<NNN-name>/checklists/` folder.
+ */
+export const isReviewChecklist = (path: string) => specKitChecklist.test(path.replaceAll('\\', '/'));
+/** What a document's lines may count for: requirements text, validation methods only, or context evidence only. */
+export type LineScope = 'all' | 'validation' | 'context';
+export const lineScope = (path: string): LineScope => isReviewChecklist(path) ? 'context' : isValidationGuide(path) ? 'validation' : 'all';
 
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const normalized = path.replaceAll('\\', '/');

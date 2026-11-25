@@ -62,4 +62,7 @@ on a plan or tasks line as a local label unless the specification uses the `R-`
 family. H85 (#85, engine 0.1.14, product 0.2.7) stops reading a
 demonstrative that leads a noun phrase as an E1.3 pronoun subject; E1.2 detection is
 unchanged and the clarifier treats a quoted label after a label noun as a named
-option.
+option. H7 (#79) failed its redesigned
+adjudication on the evidence it removed; the narrowed H7a (engine 0.1.15, product
+0.2.8) reads Spec Kit checklists as review context that is never requirements text or an
+open decision.

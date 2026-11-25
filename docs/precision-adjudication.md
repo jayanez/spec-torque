@@ -230,3 +230,44 @@ diffs or each other's labels.
 
 **Threshold.** At most 2 of the 29 items may be agreed `positive`. Disputed items
 count against the threshold until the owner resolves them.
+
+## H7: Spec Kit checklists (#79)
+
+H7 reclassifies `specs/<NNN-name>/checklists/*.md` as review context. Amendment H7-2
+(owner-approved on 2026-11-25, before any packet) replaces the document-level gate with
+adjudication of the changes that move scores.
+
+**Packet.** It is built from the arm-C scans of both fresh sets:
+
+```sh
+node --import tsx scripts/precision/verification-packet.ts --propositions h7 --detail <set 1>/h6-scan.json --detail <set 2>/h6-scan.json --roots <roots.json> --out .spec-torque/precision/h7-adjudication
+```
+
+- At most 15 changed features per repository are kept, drawn with seed 42039.
+- Lines are deduplicated by trimmed text and practice, shuffled with the same seed and
+  shown with four lines of context. Reclassified documents show their first 40 lines.
+- Lost-evidence items state that no other document of the feature gives that evidence.
+- `key.json` holds the stratum, practice and occurrences. Reviewers do not open it.
+
+**Strata.** Each item carries its own proposition.
+
+| Stratum | Items | Proposition |
+|---|---|---|
+| N1 | every variant of the checked template item | This line explicitly states, for this feature, that no clarification remains open. |
+| N2 | every variant of the unchecked item | This line records a decision about this feature that is still open. |
+| 1a | lost evidence of spec-only practices | the practice's evidence, for example "This line identifies the intended users or actors of this feature." |
+| 1b | lost evidence of all-role practices | as 1a, for example "This line records an unresolved decision about this feature as a specific question, or explicitly states that none remains open." |
+| 2 | removed decisions | This line records a decision about this feature that is still open. |
+| 3 | up to 10 removed findings and 10 reclassified documents | the H3a/H5 finding propositions; for documents, "This document states the feature's requirements, rather than reviewing them or citing them." |
+
+Labels are `positive` (the proposition holds), `negative` and `unknown`, each with a
+one-line reason grounded in the supplied text. In every stratum except N1, an agreed
+`positive` is an error, because genuine evidence, a real open decision or a real finding
+would be lost. For N1, an agreed `positive` sends the decision to H7a.
+
+**Threshold (owner).** With 30 or more distinct items, at most 2 errors in the 30 drawn.
+With 15 to 29, at most 1. With fewer than 15, none. Disputed and `unknown` items count
+against.
+
+**Reviewers.** Two independent agent sessions, as in H6a-2. They see no engine output,
+key, scan or each other's labels.

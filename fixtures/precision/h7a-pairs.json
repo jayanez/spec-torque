@@ -1,0 +1,500 @@
+{
+  "version": 1,
+  "description": "H7a synthetic twins (#79, amendment H7-2, arm B): the H7 twins with arm-B expectations. A checklist is context and never requirements text or a decision, but its lines still count for practices that read context. Constructed before arm B; not independent labels.",
+  "cases": [
+    {
+      "id": "checklist-cites-id-en",
+      "construct": "duplicate",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [x] REQ-001 has a task and a validation procedure."
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {},
+      "findings": [],
+      "note": "A checklist that cites the spec ID is not a second definition: no duplicate."
+    },
+    {
+      "id": "second-spec-defines-id-en",
+      "construct": "duplicate",
+      "language": "en",
+      "files": {
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ],
+        "specs/001-booking/requirements.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST send a receipt within 5 minutes."
+        ]
+      },
+      "expected": {},
+      "findings": [
+        "I1.2|specs/001-booking/requirements.md|3"
+      ],
+      "note": "Control: a second spec document defines REQ-001 again; the duplicate stays."
+    },
+    {
+      "id": "checklist-modal-no-id-en",
+      "construct": "identifier",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [ ] CHK001 Support MUST review the confirmation email before launch."
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {},
+      "findings": [],
+      "note": "A checklist item with a modal word is not a requirement line: no missing-identifier finding."
+    },
+    {
+      "id": "spec-modal-no-id-en",
+      "construct": "identifier",
+      "language": "en",
+      "files": {
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds.",
+          "- [ ] CHK001 Support MUST review the confirmation email before launch."
+        ]
+      },
+      "expected": {},
+      "findings": [
+        "I1.2|specs/001-booking/spec.md|4"
+      ],
+      "note": "Control: the same line in spec.md still lacks an identifier."
+    },
+    {
+      "id": "checklist-no-markers-en",
+      "construct": "decision",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [x] No [NEEDS CLARIFICATION] markers remain"
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {},
+      "decisions": 0,
+      "note": "The checklist template line names the marker; it is not an open decision."
+    },
+    {
+      "id": "spec-real-marker-en",
+      "construct": "decision",
+      "language": "en",
+      "files": {
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds.",
+          "- REQ-002: Receipts MUST be kept for [NEEDS CLARIFICATION: retention period?]."
+        ]
+      },
+      "expected": {},
+      "decisions": 1,
+      "note": "Control: a real clarification marker in the spec stays an open decision."
+    },
+    {
+      "id": "checklist-acceptance-item-en",
+      "construct": "verification",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [x] Requirements and acceptance scenarios are testable."
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing"
+      },
+      "note": "A checklist item that names acceptance scenarios is not a verification criterion: E3.1 stays missing."
+    },
+    {
+      "id": "spec-acceptance-block-en",
+      "construct": "verification",
+      "language": "en",
+      "files": {
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds.",
+          "",
+          "**Acceptance Scenarios**:",
+          "",
+          "1. **Given** a free room, **When** a guest books it, **Then** the booking is confirmed within 2 seconds."
+        ]
+      },
+      "expected": {
+        "E3.1": "partial"
+      },
+      "note": "Control: a real acceptance-scenario block in the spec gives E3.1 partial."
+    },
+    {
+      "id": "checklist-design-name-en",
+      "construct": "role",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/design.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [ ] CHK002 The design notes name the booking component."
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {},
+      "roles": {
+        "specs/001-booking/checklists/design.md": "context"
+      },
+      "note": "Any checklist under checklists/ is review context, whatever its basename."
+    },
+    {
+      "id": "feature-design-doc-en",
+      "construct": "role",
+      "language": "en",
+      "files": {
+        "specs/001-booking/design.md": [
+          "# Design",
+          "",
+          "- The booking component stores confirmed bookings."
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {},
+      "roles": {
+        "specs/001-booking/design.md": "plan"
+      },
+      "note": "Control: a feature design.md outside checklists/ stays a plan."
+    },
+    {
+      "id": "checklist-cites-id-es",
+      "construct": "duplicate",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [x] REQ-001 tiene una tarea y un procedimiento de validación."
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {},
+      "findings": [],
+      "note": "A checklist that cites the spec ID is not a second definition: no duplicate."
+    },
+    {
+      "id": "second-spec-defines-id-es",
+      "construct": "duplicate",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ],
+        "specs/001-reservas/requirements.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE enviar un recibo en menos de 5 minutos."
+        ]
+      },
+      "expected": {},
+      "findings": [
+        "I1.2|specs/001-reservas/requirements.md|3"
+      ],
+      "note": "Control: a second spec document defines REQ-001 again; the duplicate stays."
+    },
+    {
+      "id": "checklist-modal-no-id-es",
+      "construct": "identifier",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [ ] CHK001 Soporte DEBE revisar el correo de confirmación antes del lanzamiento."
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {},
+      "findings": [],
+      "note": "A checklist item with a modal word is not a requirement line: no missing-identifier finding."
+    },
+    {
+      "id": "spec-modal-no-id-es",
+      "construct": "identifier",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos.",
+          "- [ ] CHK001 Soporte DEBE revisar el correo de confirmación antes del lanzamiento."
+        ]
+      },
+      "expected": {},
+      "findings": [
+        "I1.2|specs/001-reservas/spec.md|4"
+      ],
+      "note": "Control: the same line in spec.md still lacks an identifier."
+    },
+    {
+      "id": "checklist-no-markers-es",
+      "construct": "decision",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [x] No quedan marcadores [NEEDS CLARIFICATION]"
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {},
+      "decisions": 0,
+      "note": "The checklist template line names the marker; it is not an open decision."
+    },
+    {
+      "id": "spec-real-marker-es",
+      "construct": "decision",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos.",
+          "- REQ-002: Los recibos DEBEN conservarse durante [PENDIENTE DE ACLARAR: plazo de conservación]."
+        ]
+      },
+      "expected": {},
+      "decisions": 1,
+      "note": "Control: a real clarification marker in the spec stays an open decision."
+    },
+    {
+      "id": "checklist-acceptance-item-es",
+      "construct": "verification",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [x] Los requisitos y los escenarios de aceptación son verificables."
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing"
+      },
+      "note": "A checklist item that names acceptance scenarios is not a verification criterion: E3.1 stays missing."
+    },
+    {
+      "id": "spec-acceptance-block-es",
+      "construct": "verification",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos.",
+          "",
+          "**Escenarios de aceptación**:",
+          "",
+          "1. **Dado** una habitación libre, **cuando** un huésped la reserva, **entonces** la reserva se confirma en menos de 2 segundos."
+        ]
+      },
+      "expected": {
+        "E3.1": "partial"
+      },
+      "note": "Control: a real acceptance-scenario block in the spec gives E3.1 partial."
+    },
+    {
+      "id": "checklist-design-name-es",
+      "construct": "role",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/design.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [ ] CHK002 Las notas de diseño nombran el componente de reservas."
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {},
+      "roles": {
+        "specs/001-reservas/checklists/design.md": "context"
+      },
+      "note": "Any checklist under checklists/ is review context, whatever its basename."
+    },
+    {
+      "id": "feature-design-doc-es",
+      "construct": "role",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/design.md": [
+          "# Design",
+          "",
+          "- El componente de reservas guarda las reservas confirmadas."
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {},
+      "roles": {
+        "specs/001-reservas/design.md": "plan"
+      },
+      "note": "Control: a feature design.md outside checklists/ stays a plan."
+    },
+    {
+      "id": "checklist-none-remain-checked-en",
+      "construct": "clarification",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [x] No [NEEDS CLARIFICATION] markers remain"
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {
+        "E1.1": "partial",
+        "P2.5": "partial"
+      },
+      "decisions": 0,
+      "note": "N1 (H7-2): the checked template item is review text; under H7a it still counts for E1.1/P2.5 (context reading) but never as a decision."
+    },
+    {
+      "id": "checklist-none-remain-unchecked-en",
+      "construct": "clarification",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [ ] No [NEEDS CLARIFICATION] markers remain"
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {
+        "E1.1": "partial",
+        "P2.5": "partial"
+      },
+      "decisions": 0,
+      "note": "N2 (H7-2): the unchecked template item; under H7a it still counts for E1.1/P2.5 (context reading) but never as a decision. The unchecked item still counting is a known H7a limit (pattern accident)."
+    },
+    {
+      "id": "checklist-none-remain-checked-es",
+      "construct": "clarification",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [x] No quedan marcadores [NEEDS CLARIFICATION]"
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {
+        "E1.1": "partial",
+        "P2.5": "partial"
+      },
+      "decisions": 0,
+      "note": "N1 (H7-2): the checked template item is review text; under H7a it still counts for E1.1/P2.5 (context reading) but never as a decision."
+    },
+    {
+      "id": "checklist-none-remain-unchecked-es",
+      "construct": "clarification",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [ ] No quedan marcadores [NEEDS CLARIFICATION]"
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {
+        "E1.1": "partial",
+        "P2.5": "partial"
+      },
+      "decisions": 0,
+      "note": "N2 (H7-2): the unchecked template item; under H7a it still counts for E1.1/P2.5 (context reading) but never as a decision. The unchecked item still counting is a known H7a limit (pattern accident)."
+    }
+  ]
+}
