@@ -816,6 +816,86 @@ Adjudication: up to 30 of the first new E3.2 evidence lines (seed 42039), dedupl
 by line text and labeled blind by two agent sessions. **Threshold (owner, fixed
 before selection):** at most 2 agreed not genuine or unknown.
 
+## Pre-registered hypothesis H8 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#80](https://github.com/jayanez/spec-torque/issues/80). The #8 pilot
+repository is development data for H8. On its 86 open features, engine 0.1.12
+reports 42 unresolved-reference I2.3 errors. 10 of them cite `R-n` labels, all in
+one feature. That feature's plan and tasks number their own acceptance checks
+`R-1`, `R-2`, …, and its specification documents contain no `R-n` token at all.
+
+**Why.** `R-` is in the requirement-ID family. A plan or task list that labels its
+own checks, risks or steps `R-1`, `R-2` therefore gets one I2.3 error per label,
+although nothing in the specification uses that family. The longer prefixes
+(`FR-`, `NFR-`, `REQ-`) are rarely used as local labels; the bare `R-` is.
+
+**Policy.** One change, nothing else:
+1. **Family scope for `R-`.** On a `plan` or `tasks` line, an `R-n` token is a
+   requirement reference only when the feature's specification documents (active
+   `spec`-role artifacts of the same feature) contain at least one `R-n` token on any
+   line. Otherwise it is a document-local label:
+   - it creates no traceability edge and no I2.3 "has no definition" finding;
+   - it is not reference evidence for I2.3, C1.3 or C2.3. A line still counts when it
+     also cites an `FR-`, `NFR-` or `REQ-` ID.
+
+   `FR-`, `NFR-` and `REQ-` references, spec-side definitions (including `R-n`
+   definitions), I1.2, I2.2 and admission are unchanged. When the specification uses
+   the `R-` family, every `R-n` reference is checked exactly as in 0.1.12.
+
+**Comparator.** 0.1.12 (`develop` at `3a888f0`). Engine 0.1.13, product 0.2.6 (a
+parallel track that merges first may shift both by one patch; the rules do not
+change).
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs and the H3a, H5a, H6 and H6a
+  twins do not change.
+- On natural sources, the only findings removed are I2.3 "Reference R-n has no
+  definition" findings in features whose specification documents have no `R-n`
+  token; none is added. I2.3, C1.3 and C2.3 can only move from `partial` to
+  `missing`, and only where plan-local `R-n` lines were their sole evidence. No other
+  practice or finding changes.
+- On the pilot, the 10 `R-n` findings are removed, and nothing else changes.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - plan-local `R-1`/`R-2` acceptance labels with an `FR-`-only specification (no
+     finding), against the same plan with a specification that defines `R-1` and
+     `R-2` and a plan that also cites an undefined `R-3` (the `R-3` finding stays);
+   - local `R-n` step labels in `tasks.md` (no finding), against an undefined `FR-`
+     reference in the same tasks file (the finding stays);
+   - a specification that mentions `R-1` only in a table row, with a plan citing
+     `R-1` and `R-2` (the `R-2` finding stays, because the family is in use).
+
+   The candidate meets every twin. The minimal pairs and the H3a, H5a, H6 and H6a
+   twins are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report --
+   --baseline origin/develop`).
+3. On a fresh public set:
+   - every removed finding is a predicted `R-n` finding, and none is added;
+   - every status change is a predicted direction, and each is listed.
+4. The removed findings (all, or 100 drawn with seed 42039) are adjudicated blind by
+   two independent sessions. The proposition is: *"The `R-n` label on this line cites
+   a requirement of the feature's specification, so its missing definition is a true
+   problem."* The owner fixes the threshold before labeling.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H8 stops and there is no H8a without an owner
+decision. The owner decides between a narrowed rule and stopping #80.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"R-001" path:specs` and `"R-1" path:specs`,
+  limited to Markdown files named `plan.md` and `tasks.md` respectively;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a, H6
+  and H6a, and the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h8-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
