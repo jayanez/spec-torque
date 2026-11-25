@@ -990,7 +990,7 @@ quickstart rules are not adjudicated on fresh data.
 **Decision.** Propose H6 (engine 0.1.11 at merge) for merge, within the threshold. H6a
 (runner vocabulary such as `python3 -m unittest`) follows, as decided.
 
-### H6a: quickstart as validation evidence only, plus test runners — **holds; adjudication pending owner threshold**
+### H6a: quickstart as validation evidence only, plus test runners — **holds; proposed for merge**
 
 Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
 - Pre-registered at `97da6ce` (owner decision after H6).
@@ -1025,6 +1025,20 @@ none is added. After the candidate, E3.2 is `partial` in 50 features and
   `npm test` terms.
 - The runner terms reach every document role, not only the quickstart.
 
-**Decision.** Pending. The packet has 4 items with 1 distinct line. The owner
-fixes the threshold, or decides that this line does not need adjudication, before
-any labeling.
+**Second fresh set (amendment H6a-2).** 481 Spec Kit features in 8 roots:
+- E3.2 rises in 36 features.
+- 116 findings on `quickstart.md` lines are removed (111 E2.1, 4 E1.3, 1 E1.2), and
+  none is added. 3 open decisions written in quickstarts are no longer counted.
+- In 11 cases another practice drops to `missing` because a quickstart was its only
+  evidence (E3.3 2, P1.4 4, E1.1 1, P2.5 1, I1.3 3). That direction was predicted.
+  6 dimension scores go down as a result, which the pre-registration did not state
+  explicitly.
+
+**Adjudication.** The owner fixed the threshold before selection: at most 2 of up to
+30 lines agreed not genuine or unknown. The packet holds all 28 distinct new E3.2
+evidence lines. Two new blind agent sessions labeled it separately: 27 are agreed
+genuine and 1 is disputed. The disputed line is a checked task to rewrite named
+Ginkgo test files. One reviewer read it as an implementation task, the other as a
+test reference. Counted against the threshold, it still passes: 1 ≤ 2.
+
+**Decision.** Propose H6a (engine 0.1.12, version 0.2.5) for merge.
