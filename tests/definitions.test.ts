@@ -42,3 +42,10 @@ test('H5: a continuation that starts with an ID is not a second definition', asy
   assert.deepEqual(await findings(['# Demo', '', 'REQ-001 The system MUST record an episode.', 'REQ-002 The recorder MUST stop.',
     'REQ-001 The system MUST keep episodes.']), ['I1.2:5:Duplicate requirement identifier REQ-001.']);
 });
+
+test('H5a: an ID cited later in an item or paragraph does not identify its other lines', async () => {
+  assert.deepEqual(await findings(['# Demo', '', 'The LLM response must be a valid manifest. If parsing fails, the',
+    'import is treated as a failure (see FR-006).'], ['# Plan']), ['I1.2:3:Requirement has no stable identifier.']);
+  assert.deepEqual(await findings(['# Demo', '', '### Never', '', '- `retry` MUST NOT reset a graph that waits for input',
+    '  (FR-009), because that would dispatch the task again.'], ['# Plan']), ['I1.2:5:Requirement has no stable identifier.']);
+});
