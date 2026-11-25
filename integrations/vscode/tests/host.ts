@@ -44,13 +44,13 @@ export async function run() {
     await writeFile(join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'frames.json'), JSON.stringify(browser.contexts().flatMap(c => c.pages().flatMap(p => p.frames().map(f => f.url()))), null, 2));
     assert.ok(frame, 'The actual webview must load its loopback workbench (including CSP).');
     url = new URL(frame.url()).origin;
-    await frame.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+    // The workbench loads the workspace it was started for on connect; no click is needed.
     const finding = frame.getByRole('button').filter({ hasText: 'Unbounded wording: “fast”' });
     await finding.click();
     const editor = frame.getByRole('textbox', { name: 'Source text editor' });
     const original = await editor.inputValue();
     const replacement = 'FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].';
-    await frame.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
+    await frame.getByRole('textbox', { name: 'Proposed replacement' }).fill(replacement);
     await frame.getByRole('button', { name: 'Review difference', exact: true }).click();
     await frame.getByRole('button', { name: 'Reject', exact: true }).click();
     assert.equal(await editor.inputValue(), original);

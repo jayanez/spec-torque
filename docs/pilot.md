@@ -17,8 +17,8 @@ Open the printed loopback URL. The rest of the walkthrough needs only local file
 
 ## Analyze, review and export
 
-1. Choose **Load local workspace**, then select `specs/booking` if **Artifact set** appears. The first analysis is complete when its findings are visible and can be opened. Download JSON and Markdown as your baseline. Open the **Unbounded wording** finding at `specs/booking/spec.md:5`.
-2. In **Proposed wording**, enter the following line and select **Review difference**. Read the displayed original and replacement, then select **Reject**. The source is unchanged.
+1. The workbench loads the local workspace when it opens (**Reload local workspace** loads it again). Select `specs/booking` if **Artifact set** appears. The first analysis is complete when its findings are visible and can be opened. Download JSON and Markdown as your baseline. Open the **Unbounded wording** finding at `specs/booking/spec.md:5`.
+2. In **Proposed replacement**, enter the following line and select **Review difference**. Read the displayed original and replacement, then select **Reject**. The source is unchanged.
 
    ```markdown
    FR-001: The system MUST be [NEEDS CLARIFICATION: define the response-time limit and measurement conditions].

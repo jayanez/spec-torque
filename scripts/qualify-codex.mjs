@@ -82,11 +82,11 @@ try {
       const page = await context.newPage();
       await context.route('**/*', route => route.request().url().startsWith(url) ? route.continue() : route.abort());
       await page.goto(url);
-      await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+      // The workbench loads the served work tree on connect.
       await page.getByRole('button').filter({ hasText: finding.message }).click();
       const editor = page.getByRole('textbox', { name: 'Source text editor' });
       await expect.poll(() => editor.evaluate(node => node.value.slice(node.selectionStart, node.selectionEnd)), { message: 'Evidence selection must finish before refinement.' }).toBe(evidence.text);
-      await page.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
+      await page.getByRole('textbox', { name: 'Proposed replacement' }).fill(replacement);
       await page.getByRole('button', { name: 'Review difference', exact: true }).click();
       await page.getByRole('button', { name: 'Reject', exact: true }).click();
       assert.equal(await readFile(path, 'utf8'), original);
