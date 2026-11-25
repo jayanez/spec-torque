@@ -125,3 +125,17 @@ item otherwise has the H3a fields. `key.json` is not opened by reviewers.
 
 **Threshold.** At most 2 of the 38 removed findings may be agreed `positive`.
 Disputed items count against the threshold until the owner resolves them.
+
+## H5a: wrapped continuations, narrowed (#78)
+
+H5a removes I1.2 findings and adds none relative to 0.1.9. The owner confirmed the
+threshold on 2026-11-25, after the deterministic gates and before any labeling.
+
+**Packet.** The same builder and options as H5, from the H5a fresh-set scan (4
+repositories, 109 features): all 27 removed findings, six lines of context, seed
+42039 and the H5 propositions.
+
+**Reviewers.** Two new independent agent sessions, as in H5.
+
+**Threshold.** At most 2 of the 27 removed findings may be agreed `positive`.
+Disputed items count against the threshold until the owner resolves them.
