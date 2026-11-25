@@ -951,6 +951,22 @@ any file content:
 The list is committed in `fixtures/precision/h9-sources.json` before the candidate
 commit.
 
+### Amendment H9-2 (2026-11-25, after the first fresh set; owner decision)
+
+The first fresh set held 2567 Spec Kit features in 10 roots, but H9 removed only 1
+finding there (rule 1) and none for rule 2. Code search splits `SPEC-0` into
+separate tokens, so the queries did not select the qualified construction. A
+broader second fresh set is added, and gate 4 applies to it:
+- GitHub code search, once each for `"FR-0" path:specs` and `"REQ-0" path:specs`,
+  limited to Markdown files named `tasks.md`;
+- up to 8 repositories per query, with the same eligibility rules and exclusions
+  (now including the H9 sources);
+- committed in `fixtures/precision/h9-2-sources.json` before any scan.
+
+All removed findings of both fresh sets (or 100 drawn with seed 42039) are
+adjudicated together, with the owner's threshold of at most 2 agreed positive per
+rule. A rule that still removes nothing is reported as unconfirmed.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
