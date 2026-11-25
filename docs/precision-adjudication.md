@@ -224,3 +224,6 @@ of this feature, and the feature's specification documents do not define it.*
 **Threshold.** For each rule (qualified references, non-adopted references), at
 most 2 of the adjudicated removed findings may be agreed `positive`. Disputed items
 count against the threshold until the owner resolves them.
+
+The packet held one removed finding, from rule 1. Rule 2 removed nothing and was
+later reverted, so the packet builder no longer records a rule in `key.json`.

@@ -1047,6 +1047,14 @@ All removed findings of both fresh sets (or 100 drawn with seed 42039) are
 adjudicated together, with the owner's threshold of at most 2 agreed positive per
 rule. A rule that still removes nothing is reported as unconfirmed.
 
+### Outcome of rule 2 (2026-11-25, owner decision)
+
+Rule 2 removed nothing on either fresh set. Two independent reviews then found that
+its marker also silences true problems (`Implement REQ-007 (not adopted) …`), and
+that it acts on none of 103 natural "not adopted" lines. Under the stop rule it is
+reverted at `d58628e`, and rule 1 proceeds alone. The details are in
+[precision decisions](precision-decisions.md).
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
