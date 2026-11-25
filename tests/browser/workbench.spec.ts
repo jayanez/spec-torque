@@ -575,8 +575,8 @@ test('side panels collapse, resize from the keyboard and remember their state', 
   await page.keyboard.press('ArrowLeft');
   await expect(resizer).toHaveAttribute('aria-valuenow', String(before + 32));
   await page.keyboard.press('End');
-  // The widest Source text panel is a share of the window (34vw), so the analysis column keeps its room.
-  const widest = String(Math.floor(1400 * 0.34));
+  // The widest Source text panel is a share of the window (28vw), so the analysis column keeps its room.
+  const widest = String(Math.floor(1400 * 0.28));
   await expect(resizer).toHaveAttribute('aria-valuemax', widest);
   await expect(resizer).toHaveAttribute('aria-valuenow', widest);
   expect(Math.round((await page.locator('.detail-panel').boundingBox())!.width)).toBe(Number(widest));
@@ -641,6 +641,12 @@ test('the local feature picker filters by keyboard and loads the chosen feature'
   await expect(picker).toHaveAttribute('aria-expanded', 'true');
   const list = page.getByRole('listbox', { name: 'Local workspace feature' }).getByRole('option');
   await expect(list).toHaveCount(90);
+  // A press on the list's own padding (or its scrollbar) keeps the input focused and the list open.
+  const box = (await page.getByRole('listbox', { name: 'Local workspace feature' }).boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 2);
+  await page.mouse.down(); await page.mouse.up();
+  await expect(picker).toBeFocused();
+  await expect(picker).toHaveAttribute('aria-expanded', 'true');
   await picker.pressSequentially('066');
   await expect(list).toHaveText(['specs/066-item']);
   await page.keyboard.press('Enter');
@@ -695,4 +701,35 @@ test('the language toggle keeps light-on-dark text on hover', async ({ page, wor
   const { color, background } = await toggle.evaluate(node => { const style = getComputedStyle(node); return { color: style.color, background: style.backgroundColor }; });
   expect(color).toBe('rgb(255, 255, 255)');
   expect(background).not.toMatch(/^rgb\(2[0-9]{2}, 2[0-9]{2}, 2[0-9]{2}\)$/);
+});
+
+test('both panels at their widest never scroll sideways, and picking a finding opens Source text', async ({ page, workspace }) => {
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  for (const width of [1280, 1600, 1700]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(workspace.url);
+    await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The first system MUST be fast.\n');
+    for (const name of ['Resize Artifacts', 'Resize Source text']) {
+      await page.getByRole('separator', { name }).focus();
+      await page.keyboard.press('End');
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `no sideways scroll at ${width}px`).toBe(true);
+  }
+  await page.getByRole('button', { name: 'Collapse Source text', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toBeHidden();
+  await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).first().click();
+  await expect(page.getByRole('button', { name: 'Collapse Source text', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('textbox', { name: 'Proposed replacement' })).toBeVisible();
+});
+
+test('the Source text heading shows a focus outline after an accepted change', async ({ page, workspace }) => {
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  await page.goto(workspace.url);
+  await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).first().click();
+  await page.getByRole('textbox', { name: 'Proposed replacement' }).fill('FR-001: The first system MUST be [NEEDS CLARIFICATION: define fast].');
+  await page.getByRole('button', { name: 'Review difference', exact: true }).click();
+  await page.getByRole('button', { name: 'Accept change', exact: true }).click();
+  const heading = page.getByRole('heading', { name: 'Source text', exact: true });
+  await expect(heading).toBeFocused();
+  expect(await heading.evaluate(node => getComputedStyle(node).outlineStyle)).toBe('solid');
 });

@@ -46,9 +46,10 @@ export function FeatureCombobox({ label, placeholder, options, value, onChange, 
       value={open ? query : chosen?.label ?? ''}
       onFocus={show} onClick={() => { if (!open) show(); }} onBlur={() => { setOpen(false); setQuery(''); }} onKeyDown={key}
       onChange={event => { setQuery(event.target.value); setActive(0); setOpen(true); }}/>
-    {open && <ul id={id + '-list'} role="listbox" aria-label={label} className="combobox-list">
-      {matches.length ? matches.map((option, index) => <li key={option.value} id={`${id}-option-${index}`} role="option" aria-selected={option.value === value}
-        className={index === active ? 'active' : undefined}
+    {/* Mousedown anywhere in the list (padding, scrollbar) must not blur the input and close it. */}
+    {open && <ul id={id + '-list'} role="listbox" aria-label={label} className="combobox-list" onMouseDown={event => event.preventDefault()}>
+      {matches.length ? matches.map((option, index) => <li key={option.value} id={`${id}-option-${index}`} role="option" aria-selected={index === active}
+        className={[index === active ? 'active' : '', option.value === value ? 'chosen' : ''].join(' ').trim() || undefined}
         // Keep focus in the input so blur does not close the list before the choice lands.
         onMouseDown={event => event.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => choose(option)}>{option.label}</li>)
         : <li className="combobox-empty" role="presentation">{empty}</li>}

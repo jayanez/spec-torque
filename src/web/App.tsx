@@ -161,6 +161,8 @@ export function App() {
   function pickFinding(f: Finding) {
     if (operation.current) return;
     if (finding?.id !== f.id && !discardWording()) return;
+    // The source and its review live in the Source text panel: open it so the selection is visible.
+    if (panels.layout.right.collapsed) panels.toggle('right');
     setFinding(f); setSelected(f.evidence[0]?.path ?? ''); setReveal({ line: f.evidence[0]?.line ?? 1 });
   }
   async function accept(p: PatchProposal, persist: boolean) {

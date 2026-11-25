@@ -55,7 +55,9 @@ try {
   if (feature !== null) {
     await artifactSet.or(localFeature).first().waitFor();
     if (await localFeature.count()) {
-      if (await localFeature.inputValue() !== feature) {
+      // The picker shows a label: the ID itself, or "Other · <id>" for groups without a known layout.
+      const shown = await localFeature.inputValue();
+      if (shown !== feature && !shown.endsWith('· ' + feature)) {
         await Promise.all([page.waitForResponse(response => response.url().includes('/api/workspace?feature=')), localFeature.fill(feature).then(() => page.getByRole('option').filter({ hasText: new RegExp('(^|· )' + feature.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).click())]);
       }
       await page.getByTitle(feature + '/spec.md').first().waitFor();

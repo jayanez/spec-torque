@@ -10,10 +10,14 @@ export const LIMITS: Record<Side, { min: number; max: number; initial: number }>
 };
 const COLLAPSED = 52;
 const STEP = 16;
-// The same share of the window that the CSS grid allows (28vw / 34vw), so the stored width is the drawn one.
-const SHARE: Record<Side, number> = { left: .28, right: .34 };
-export const maxWidth = (side: Side) => Math.max(LIMITS[side].min, Math.min(LIMITS[side].max, Math.floor(innerWidth * SHARE[side])));
+// The same share of the window that the CSS grid allows. Together the two panels take at most half
+// of a wide window (22vw + 28vw), leaving the analysis column its minimum width; below 1250 px the
+// Source text panel moves under the analysis and the left panel may take 30vw.
+const share = (side: Side) => side === 'right' ? .28 : innerWidth <= 1250 ? .30 : .22;
+export const maxWidth = (side: Side) => Math.max(LIMITS[side].min, Math.min(LIMITS[side].max, Math.floor(innerWidth * share(side))));
 const clamp = (side: Side, width: number) => Math.round(Math.min(maxWidth(side), Math.max(LIMITS[side].min, width)));
+// A saved preference keeps its value on a smaller window; the drawn width is capped there.
+const keep = (side: Side, width: number) => Math.round(Math.min(LIMITS[side].max, Math.max(LIMITS[side].min, width)));
 
 function stored(): Layout {
   const fallback: Layout = { left: { collapsed: false }, right: { collapsed: false } };
@@ -21,7 +25,7 @@ function stored(): Layout {
     const value = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<Layout> | null;
     const read = (side: Side): PanelState => {
       const panel = value?.[side];
-      return { collapsed: panel?.collapsed === true, ...(typeof panel?.width === 'number' ? { width: clamp(side, panel.width) } : {}) };
+      return { collapsed: panel?.collapsed === true, ...(typeof panel?.width === 'number' ? { width: keep(side, panel.width) } : {}) };
     };
     return value ? { left: read('left'), right: read('right') } : fallback;
   } catch { return fallback; }
