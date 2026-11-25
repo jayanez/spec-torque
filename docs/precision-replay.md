@@ -921,6 +921,18 @@ any file content:
 The list is committed in `fixtures/precision/h7-sources.json` before the
 candidate commit.
 
+### Amendment H7-1 (2026-11-25, before any source was selected or read)
+
+The code search API matches `path:` as a path prefix, so `path:checklists` misses
+nested `specs/<NNN-name>/checklists/` folders. Run as written, the two queries
+returned 4 and 0 repositories, and none of the 4 has a license. The queries are
+replaced, with the same eligibility rules and exclusions:
+- `"Specification Quality Checklist" filename:requirements.md`;
+- `"FR-001" filename:requirements.md path:specs`.
+
+Only results whose path is `specs/<NNN-name>/checklists/requirements.md` count
+toward a repository's selection.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
