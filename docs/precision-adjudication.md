@@ -98,3 +98,34 @@ output, the key, this conversation, implementation diffs or each other's labels.
 - Added findings are reported. They are already recorded as a known limit and do
   not gate the decision.
 
+## H6: verification evidence (#88)
+
+H6 raises E3.1, E3.2 and E3.4 statuses; it never lowers one. The owner fixed the
+threshold on 2026-11-25, before any labeling.
+
+**Packet.** It is built from the H6 fresh-set scan:
+
+```sh
+node --import tsx scripts/precision/verification-packet.ts --detail <h6 scan>/h6-scan.json --roots <roots.json> --out .spec-torque/precision/h6-adjudication
+```
+
+Each item is the first new evidence line of a practice that the candidate moves
+from `missing` to `partial`, with four lines of context on each side, shuffled with
+seed 42039. The fresh set gives 15 items: 13 E3.1 and 2 E3.4 (no E3.2 change
+occurred). `key.json` holds the practice and feature and is not opened by reviewers.
+
+**Propositions.**
+
+| Practice | Proposition |
+|---|---|
+| E3.1 | This line states, or directly introduces, an observable verification criterion (an acceptance criterion or scenario with an expected outcome) for the feature. |
+| E3.2 | This line states, or directly introduces, a method for checking the feature: an executable test or command, or a described manual check. |
+| E3.4 | This line states, or directly introduces, what evidence is required to consider the feature's verification complete. |
+
+Labels are `positive` (the evidence is genuine), `negative` and `unknown`.
+
+**Reviewers.** Two independent agent sessions, as in H3a, with the same limits.
+
+**Threshold.** At most 1 of the 15 items may be agreed `negative` or remain
+`unknown`. Disputed items count against the threshold until the owner resolves
+them.

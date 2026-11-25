@@ -41,7 +41,7 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
   return {
     paths: set.artifacts.map(a => `${a.path}:${a.role}`).sort(),
     status: Object.fromEntries(report.practices.map(p => [p.id, p.status])),
-    evidence: Object.fromEntries(ENDPOINTS.map(id => [id, report.practices.find(p => p.id === id)?.evidence ?? []])),
+    evidence: Object.fromEntries(report.practices.map(p => [p.id, p.evidence])),
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
     findings, decisions: report.decisions.length,
   };
@@ -98,7 +98,7 @@ if (mode === 'synthetic') {
       if (added.length || changes.length || Object.keys(findingDelta).length) {
         totals.changedFeatures++;
         detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta,
-          evidence: Object.fromEntries(ENDPOINTS.filter(id => c.status[id] !== b.status[id]).map(id => [id, c.evidence[id]])) });
+          evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
       }
     }
   }
