@@ -95,7 +95,8 @@ if (mode === 'synthetic') {
       const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
       if (!b || !c) continue;
       totals.features++;
-      const added = c.paths.filter(p => !b.paths.includes(p));
+      // Discovery additions by path; reclassified files are reported as roleChanges.
+      const added = Object.keys(c.roles).filter(p => !(p in b.roles));
       totals.artifactsAdded += added.length;
       const changes = Object.keys(c.status).filter(id => c.status[id] !== b.status[id]).map(id => ({ id, from: b.status[id], to: c.status[id] }));
       for (const ch of changes) bump((rank[ch.to] ?? -1) > (rank[ch.from] ?? -1) ? totals.statusUp : totals.statusDown, ch.id);

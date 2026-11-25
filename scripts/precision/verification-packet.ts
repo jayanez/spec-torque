@@ -70,6 +70,13 @@ async function h6Packet() {
   console.log(JSON.stringify({ items: items.length, byPractice: Object.fromEntries(Object.keys(PROPOSITIONS).map(p => [p, key.filter(k => k.practice === p).length])), out: values.out }));
 }
 
+/** At most 15 features per repository, drawn with the seed (amendment H7-2). */
+function capped(details: Detail[]) {
+  const byRoot = new Map<string, Detail[]>();
+  for (const d of details) byRoot.set(d.root, [...(byRoot.get(d.root) ?? []), d]);
+  return [...byRoot.keys()].sort().flatMap(root => shuffle([...byRoot.get(root)!].sort((a, b) => a.feature < b.feature ? -1 : 1)).slice(0, 15));
+}
+
 async function h7Packet() {
   const checklist = (path: string) => /(?:^|\/)specs\/\d{3}-[^/]+\/checklists\/[^/]+\.md$/i.test(path);
   // Named items, variants listed in advance (amendment H7-2).
@@ -87,9 +94,7 @@ async function h7Packet() {
     return sources.get(k)!;
   };
   // Cap: at most 15 changed features per repository, drawn with the seed.
-  const byRoot = new Map<string, Detail[]>();
-  for (const d of scan.detail.filter(d => d.roleChanges?.length)) byRoot.set(d.root, [...(byRoot.get(d.root) ?? []), d]);
-  const features = [...byRoot.keys()].sort().flatMap(root => shuffle([...byRoot.get(root)!].sort((a, b) => a.feature < b.feature ? -1 : 1)).slice(0, 15));
+  const features = capped(scan.detail.filter(d => d.roleChanges?.length));
 
   type Candidate = { stratum: string; practice: string; root: string; sha: string; feature: string; path: string; line: number; text: string; named?: string };
   const candidates: Candidate[] = [];
@@ -128,6 +133,8 @@ async function h7Packet() {
   const distinct = [...groups.values()];
   const caps: Record<string, number> = { N1: Infinity, N2: Infinity, '1a': 30, '1b': 30, '2': 30, '3f': 10, '3d': 10 };
   const selected: Candidate[][] = []; const counts: Record<string, { distinct: number; drawn: number; features: number }> = {};
+  // Named variants in the other role (N1 as a decision, N2 as lost evidence) are outside every stratum by design.
+  counts['named-other'] = { distinct: distinct.filter(g => g[0].stratum === 'named-other').length, drawn: 0, features: new Set(distinct.filter(g => g[0].stratum === 'named-other').flat().map(c => c.root + c.feature)).size };
   for (const stratum of Object.keys(caps)) {
     const pool = distinct.filter(g => g[0].stratum === stratum);
     const drawn = shuffle(pool).slice(0, caps[stratum]);
@@ -174,9 +181,13 @@ async function h7Packet() {
 
 async function gainsPacket() {
   const rank = { missing: 0, partial: 1, supported: 2 } as Record<string, number>;
-  // The engine's admission rule, without the calendar-May exception: an ID or a modal word outside headings, quotes and fences.
+  // Approximates the engine's admission rule (no calendar-May or scenario-line exception): an ID or a modal word
+  // outside headings, quotes and fences.
   const admitted = /\b(?:FR|NFR|REQ)-\d+\b|(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
-  const raised = scan.detail.filter(d => d.changes.some(c => (rank[c.to] ?? -1) > (rank[c.from] ?? -1)));
+  const gaining = scan.detail.filter(d => d.changes.some(c => (rank[c.to] ?? -1) > (rank[c.from] ?? -1)));
+  // The cap draws only when some repository exceeds it, so a packet under the cap keeps its seeded order.
+  const perRoot = new Map<string, number>(); for (const d of gaining) perRoot.set(d.root, (perRoot.get(d.root) ?? 0) + 1);
+  const raised = [...perRoot.values()].some(n => n > 15) ? capped(gaining) : gaining;
   const byText = new Map<string, { d: Detail; path: string; line: number; text: string }[]>();
   for (const d of raised) for (const { path } of d.roleChanges ?? []) {
     let fenced = false;

@@ -51,7 +51,10 @@ export function classifyArtifact(path: string, content: string): Artifact {
 
 /** H6a (#88): the Spec Kit quickstart is validation-method evidence only, never requirements text. */
 export const isValidationGuide = (path: string) => specKitQuickstart.test(path.replaceAll('\\', '/'));
-/** H7 (#79): a Spec Kit checklist is a review of the specification; its lines count as no evidence. */
+/**
+ * H7a (#79): a Spec Kit checklist reviews the specification. Its lines are context evidence, never requirements
+ * text or open decisions. Path-only, like the quickstart rule: any `specs/<NNN-name>/checklists/` folder.
+ */
 export const isReviewChecklist = (path: string) => specKitChecklist.test(path.replaceAll('\\', '/'));
 
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {

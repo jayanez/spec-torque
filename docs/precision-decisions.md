@@ -1086,7 +1086,7 @@ packet was capped at 15 features per repository.
   the open questions were resolved.
 - The decision error is an assumption that the checklist explicitly defers to planning.
 - The finding error is a genuine two-obligation line in a checklist note.
-- N2 (unchecked item) has no occurrence.
+- N2 (unchecked item) has no occurrence. N1 is also a removed decision in 57 features. By design, that role is outside stratum 2; its agreed N1 label ("none remain") means it is not an open decision.
 
 **Decision.** By the pre-registered rule, H7 stops for "counts for nothing" and H7a
 (arm B) is proposed.
