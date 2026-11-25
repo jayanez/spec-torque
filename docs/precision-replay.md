@@ -461,6 +461,168 @@ any file content:
 The list is committed in `fixtures/precision/h3a-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H5 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#78](https://github.com/jayanez/spec-torque/issues/78). The #8 pilot
+repository is development data for H5. After H3a (engine 0.1.9), in its 32 open
+features:
+- 49 I1.2 "Requirement has no stable identifier" findings come from hard-wrapped
+  list items. The continuation line carries a modal word but no ID, so it is
+  admitted as a requirement of its own.
+- 8 I1.2 duplicates come from the same wrapping. A continuation line that happens
+  to start with an ID (`  REQ-001 episodes already written.`) is taken as a
+  defining position.
+
+**Policy.** Only requirement identification and definitions change. Admission
+(which lines are requirements), the ID family and every other rule are unchanged
+from 0.1.9.
+1. A spec-role line is a **continuation** when all of the following hold:
+   - the previous line of the same document is not blank, is outside a fenced
+     block, and is paragraph or list-item text: not a heading, table row (`|`),
+     blockquote (`>`), HTML line (`<`), fence run or thematic break;
+   - the line itself does not start a block: it is not blank, a heading, a list
+     item (`-`, `*`, `+`, `1.`, `1)`), a table row, a blockquote, an HTML line, a
+     fence run or a thematic break;
+   - it is not an unindented line whose first token is a requirement ID in a
+     defining position. One-requirement-per-line paragraphs
+     (`FR-001 …` / `FR-002 …` with no blank line between) therefore keep their
+     definitions. An indented line that starts with an ID is a continuation.
+
+   A line that is not a continuation starts a **unit**. The unit holds the line and
+   its following continuations.
+2. **Identification** (I1.2 missing identifier and the I1.2/I2.2 ratio): an
+   admitted spec line counts as identified when any line of its unit carries a
+   requirement ID, in addition to the 0.1.9 rules (its own ID, or an enclosing
+   defining heading).
+3. **Definitions** (I1.2 duplicates): a continuation line is never a defining
+   position.
+4. **Resolution** (I2.3) is unchanged: any ID on an admitted spec line still
+   resolves references.
+
+E1.2, E1.3, E1.4, E2.1, contradiction checks and evidence stay per physical line.
+
+**Endpoints.** I1.2 findings (missing identifier and duplicate), I2.3 findings and
+the I1.2/I2.2 practice status, by language.
+
+**Comparator.** 0.1.9 (`develop` at `c3f79b0`).
+
+**Predictions.**
+- The 716 historical predictions do not change. The two `I1.2:duplicate` units are
+  not continuations, and the E1.2/E1.4 probes isolate one line, so no unit forms.
+- The existing minimal pairs and the H3a twins show no change.
+- On natural sources, I1.2 findings are removed and almost none are added. An added
+  finding can only come from a duplicate group whose second defining line changes.
+  I2.3 findings do not change.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - a wrapped list item whose continuation has a modal and no ID;
+   - the same continuation after a list item without an ID (the finding stays);
+   - a continuation that starts with an ID already defined elsewhere (no duplicate);
+   - the same ID as an unindented one-per-line paragraph definition (the
+     duplicate stays);
+   - a wrapped plain paragraph;
+   - a continuation after a table row or heading (no unit forms).
+
+   The candidate meets every twin. The minimal pairs show no admission, E1.4 or
+   E1.2 change, and the H3a twins are all still met.
+2. The 716 historical predictions are unchanged (`npm run corpus:report -- --baseline
+   develop`).
+3. On a fresh public set, a provisional review covers every finding the candidate
+   adds or removes relative to 0.1.9, or 100 of each drawn with seed 42039:
+   - no removed finding was a true problem (a requirement really lacking an ID, or
+     a real duplicate);
+   - every added finding is correct.
+4. No evidence becomes invalid.
+
+Independent adjudication of the removed findings is still required before merge;
+the owner fixes its threshold before labeling.
+
+**Stop rule.** If a gate fails, the candidate is reverted and the failing
+construction is recorded. The owner decides between a narrowed H5a and stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"- **FR-001"` and `"- REQ-001"`, limited to
+  Markdown files named `spec.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3 and H3a, and the
+  pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h5-sources.json` before the
+candidate commit.
+
+## Pre-registered hypothesis H5a (frozen before sources are chosen or the candidate is built)
+
+**Why.** H5 failed its adjudication. 3 of its 38 removed findings were agreed true
+problems, against a threshold of 2, and 4 more were disputed. All 7 have the same
+construction: an item or paragraph that states its own rule, where the only ID in
+the unit is a citation (`(see FR-006)`, `(FR-009)`, "per FR-005"). Under H5, any ID
+in the unit identifies all its lines. H5's sources, twins and packet are now
+development data.
+
+**Policy.** H5 with one narrowing:
+1. Units and continuations are defined as in H5.
+2. **Identification:** an admitted spec line counts as identified when the
+   **first line of its unit** has an ID in a defining position (the H3a rule), in
+   addition to the 0.1.9 rules (its own ID anywhere on the line, or an enclosing
+   defining heading). An ID cited later in the unit no longer identifies the
+   unit's other lines.
+3. **Definitions:** a continuation line is never a defining position, as in H5.
+
+Nothing else changes.
+
+**Comparators.** 0.1.9 (`develop`, `c3f79b0`) and H5 (`9336e2b`). Engine 0.1.11,
+because 0.1.10 is H6.
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs, the H3a twins and the H5
+  twins do not change.
+- On the H5 fresh set, H5a keeps all 7 adjudicated positive or disputed findings.
+  Relative to H5, it adds back only findings whose unit does not start with a
+  defining ID. Relative to 0.1.9, it removes a subset of H5's removals and adds
+  none.
+
+**Gate (all must hold to proceed).**
+1. The H5 twins plus new EN/ES twins, all committed before the candidate, are met.
+   The new twins:
+   - a two-line paragraph that states a rule and cites an ID on its second line
+     (the finding stays);
+   - a wrapped "Never"-list item that ends with a trace tag `(FR-009)` (the
+     finding stays);
+   - a wrapped item led by a defining ID, as a control (no finding).
+
+   The minimal pairs and the H3a twins are unchanged.
+2. The 716 historical predictions are unchanged.
+3. On the H5 development set, all 7 adjudicated positive or disputed findings are
+   kept, and every finding H5a adds back relative to H5 is listed.
+4. On a fresh public set:
+   - H5a adds no finding relative to 0.1.9;
+   - its removed findings, all of them or 100 drawn with seed 42039, are
+     adjudicated as in H5. At most 2 may be agreed true problems, and disputed
+     items count against that until the owner resolves them. This is the H5
+     threshold carried over; the owner confirms it before labeling.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H5a stops and there is no H5b. The owner decides
+between stopping #78 and a different approach.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"**NFR-001**"` and `"- **REQ-001**"`, limited
+  to Markdown files named `spec.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5 and H6, and
+  the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h5a-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

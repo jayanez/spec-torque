@@ -1,0 +1,432 @@
+{
+  "version": 1,
+  "description": "H5a synthetic twins (#78): the H5 twins plus cited-ID paragraphs and trace-tag items, with a defining-item control. Constructed before the H5a candidate from the frozen policy; not independent labels.",
+  "cases": [
+    {
+      "id": "wrapped-item-modal-en",
+      "construct": "wrapped-item",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001 Consent.** The system MUST ask for consent before it records",
+          "  an episode, and it MUST stop recording when consent is withdrawn."
+        ]
+      },
+      "expected": [],
+      "note": "The continuation (line 6) belongs to the REQ-001 item, so it is identified. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-item-no-id-en",
+      "construct": "wrapped-item",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- The system MUST ask for consent before it records",
+          "  an episode, and it MUST stop recording when consent is withdrawn."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "note": "Twin: the unit carries no ID, so both admitted lines still lack one. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "continuation-starts-with-id-en",
+      "construct": "continuation-id",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode.",
+          "- **REQ-002:** The recorder MUST stop when consent is withdrawn and MUST keep",
+          "  REQ-001 episodes already written."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001 and REQ-002."
+        ]
+      },
+      "expected": [],
+      "note": "Line 7 continues the REQ-002 item; it mentions REQ-001 and is not a second definition. The plan references resolve. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "paragraph-one-per-line-duplicate-en",
+      "construct": "continuation-id",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "REQ-001 The system MUST record an episode.",
+          "REQ-002 The system MUST stop recording when consent is withdrawn.",
+          "REQ-001 The system MUST keep episodes already written."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001 and REQ-002."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|7|Duplicate requirement identifier REQ-001."
+      ],
+      "note": "Twin: unindented ID-first lines start their own units, so the real duplicate REQ-001 stays. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-paragraph-en",
+      "construct": "wrapped-paragraph",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "REQ-001: The system MUST ask for consent before it records",
+          "an episode, and it MUST stop recording when consent is withdrawn."
+        ]
+      },
+      "expected": [],
+      "note": "Line 6 continues the REQ-001 paragraph. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-paragraph-no-id-en",
+      "construct": "wrapped-paragraph",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "The system MUST ask for consent before it records",
+          "an episode, and it MUST stop recording when consent is withdrawn."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "note": "Twin: a paragraph without any ID still lacks one on every admitted line. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "after-table-row-en",
+      "construct": "no-unit",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "| REQ-001 | The system MUST ask for consent |",
+          "The system MUST stop recording when consent is withdrawn."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "note": "A table row cannot be continued, so line 6 is its own unit without an ID. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "after-heading-en",
+      "construct": "no-unit",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Consent (see REQ-001)",
+          "The system MUST stop recording when consent is withdrawn."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|4|Requirement has no stable identifier."
+      ],
+      "note": "A heading cannot be continued, and this heading defines no ID (the ID is not first). (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-item-modal-es",
+      "construct": "wrapped-item",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001 Consentimiento.** El sistema DEBE pedir consentimiento antes de grabar",
+          "  un episodio, y DEBE dejar de grabar cuando se retire el consentimiento."
+        ]
+      },
+      "expected": [],
+      "note": "The continuation (line 6) belongs to the REQ-001 item, so it is identified. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-item-no-id-es",
+      "construct": "wrapped-item",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- El sistema DEBE pedir consentimiento antes de grabar",
+          "  un episodio, y DEBE dejar de grabar cuando se retire el consentimiento."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "note": "Twin: the unit carries no ID, so both admitted lines still lack one. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "continuation-starts-with-id-es",
+      "construct": "continuation-id",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio.",
+          "- **REQ-002:** El grabador DEBE detenerse cuando se retire el consentimiento y DEBE conservar",
+          "  REQ-001 episodios ya escritos."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001 y REQ-002."
+        ]
+      },
+      "expected": [],
+      "note": "Line 7 continues the REQ-002 item; it mentions REQ-001 and is not a second definition. The plan references resolve. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "paragraph-one-per-line-duplicate-es",
+      "construct": "continuation-id",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "REQ-001 El sistema DEBE registrar un episodio.",
+          "REQ-002 El sistema DEBE dejar de grabar cuando se retire el consentimiento.",
+          "REQ-001 El sistema DEBE conservar los episodios ya escritos."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001 y REQ-002."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|7|Duplicate requirement identifier REQ-001."
+      ],
+      "note": "Twin: unindented ID-first lines start their own units, so the real duplicate REQ-001 stays. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-paragraph-es",
+      "construct": "wrapped-paragraph",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "REQ-001: El sistema DEBE pedir consentimiento antes de grabar",
+          "un episodio, y DEBE dejar de grabar cuando se retire el consentimiento."
+        ]
+      },
+      "expected": [],
+      "note": "Line 6 continues the REQ-001 paragraph. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "wrapped-paragraph-no-id-es",
+      "construct": "wrapped-paragraph",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "El sistema DEBE pedir consentimiento antes de grabar",
+          "un episodio, y DEBE dejar de grabar cuando se retire el consentimiento."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "note": "Twin: a paragraph without any ID still lacks one on every admitted line. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "after-table-row-es",
+      "construct": "no-unit",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "| REQ-001 | El sistema DEBE pedir consentimiento |",
+          "El sistema DEBE dejar de grabar cuando se retire el consentimiento."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "note": "A table row cannot be continued, so line 6 is its own unit without an ID. (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "after-heading-es",
+      "construct": "no-unit",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Consentimiento (ver REQ-001)",
+          "El sistema DEBE dejar de grabar cuando se retire el consentimiento."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|4|Requirement has no stable identifier."
+      ],
+      "note": "A heading cannot be continued, and this heading defines no ID (the ID is not first). (H5 twin, unchanged under H5a.)"
+    },
+    {
+      "id": "cited-id-paragraph-en",
+      "construct": "cited-id",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "The LLM response must be a valid recording manifest. If parsing fails, the",
+          "import is treated as a failure (see FR-006)."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "note": "The paragraph states its own rule; FR-006 is cited on the wrapped line and does not identify it. Line 6 carries the cited ID itself."
+    },
+    {
+      "id": "trace-tag-item-en",
+      "construct": "cited-id",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Never",
+          "",
+          "- `retry` MUST NOT reset a graph that is waiting for operator input",
+          "  (FR-009), because that would dispatch the gated task again."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "note": "A Never-list item whose trace tag (FR-009) sits on the continuation; the item has no defining ID of its own."
+    },
+    {
+      "id": "defining-item-control-en",
+      "construct": "cited-id",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Never",
+          "",
+          "- **FR-009:** `retry` MUST NOT reset a graph that is waiting for operator input,",
+          "  because that MUST NOT dispatch the gated task again."
+        ]
+      },
+      "expected": [],
+      "note": "Control: the item is led by a defining ID, so its continuation is identified."
+    },
+    {
+      "id": "cited-id-paragraph-es",
+      "construct": "cited-id",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "La respuesta del modelo debe ser un manifiesto de grabación válido. Si falla el análisis, la",
+          "importación se trata como un fallo (ver FR-006)."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "note": "The paragraph states its own rule; FR-006 is cited on the wrapped line and does not identify it. Line 6 carries the cited ID itself."
+    },
+    {
+      "id": "trace-tag-item-es",
+      "construct": "cited-id",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Nunca",
+          "",
+          "- `reintentar` NO DEBE reiniciar un grafo que espera una respuesta del operador",
+          "  (FR-009), porque eso volvería a lanzar la tarea retenida."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "note": "A Never-list item whose trace tag (FR-009) sits on the continuation; the item has no defining ID of its own."
+    },
+    {
+      "id": "defining-item-control-es",
+      "construct": "cited-id",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Nunca",
+          "",
+          "- **FR-009:** `reintentar` NO DEBE reiniciar un grafo que espera una respuesta del operador,",
+          "  porque eso NO DEBE volver a lanzar la tarea retenida."
+        ]
+      },
+      "expected": [],
+      "note": "Control: the item is led by a defining ID, so its continuation is identified."
+    }
+  ]
+}
