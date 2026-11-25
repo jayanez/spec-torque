@@ -1059,14 +1059,15 @@ Tracking: [#85](https://github.com/jayanez/spec-torque/issues/85).
 |---|---|
 | 1. Twins (13 EN/ES), H3a, H5a, H6 and H6a twins, minimal pairs | holds: 13 of 13 (0.1.12 meets 10, failing exactly the 3 determiner targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12; minimal pairs: 0 rows changed, 0 regressions |
 | 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
-| 3. Fresh set | holds: 387 Spec Kit features in 8 roots; 51 E1.3 findings removed (29 distinct lines, 5 repositories), all on lines that start with `this` or `that`; nothing added; no status, dimension, open decision or artifact set changes. The #39 replay over all 399 features agrees: E1.3 only, 69 removals (43 unique), 0 admission or E1.2/E1.4 decision changes |
+| 3. Fresh set | holds: 387 Spec Kit features in 8 roots; 28 E1.3 findings removed (28 distinct lines, 4 repositories), all on lines that start with `this` or `that`; nothing added; no status, dimension, open decision or artifact set changes. The #39 replay over all 399 features agrees: E1.3 only, 42 unique removals, 0 admission or E1.2/E1.4 decision changes. Before Amendment H85-2: 51 findings, 29 distinct lines, 5 repositories |
 | 4. Evidence | holds: 0 invalid |
 
 **Adjudication.** The owner fixed the threshold before labeling: at most 2 of the 29
-items may be agreed `positive` or remain disputed. Two independent blind agent
+items (the pre-H85-2 removals) may be agreed `positive` or remain disputed. Two independent blind agent
 sessions labeled every item `negative`: 0 agreed positives and 0 disputes. Raw
 agreement was 29/29. Kappa is undefined because every label was the same. 11 of the 29
 lines are wrapped continuation lines whose first word is not the sentence's subject.
+After Amendment H85-2 the 28 remaining removed lines are a subset of these items.
 
 **Pilot repository (development data, 32 open features, work tree, counts only).**
 E1.3 drops from 6 to 4. The 2 removed findings are the predicted "This *noun*" lines,
@@ -1079,8 +1080,8 @@ arms unchanged. New EN/ES tests cover:
 - the unquoted form stays `unsupported`.
 
 **Known limits.**
-- `cannot` is not in the modal list. "that cannot …" reads as a determiner. In the
-  fresh set this occurred only on a wrapped continuation line.
+- Nouns that end in `-ly`, `-ed` or `-s` ("This reply", "This seed", "This alias")
+  are read as pronoun cues, so those lines keep their 0.1.12 finding.
 - Wrapped continuation lines that start with `it` or `that` + verb are still
   flagged. They are a separate class: the first word of a continuation is not the
   requirement's subject.

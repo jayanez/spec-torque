@@ -955,6 +955,15 @@ Two EN twins are added to gate 1, both expected to keep their E1.3 finding:
 `That's why the export MUST …` and `This in turn means the export MUST …`. Nothing
 else changes.
 
+### Amendment H85-2 (2026-11-25, after adjudication; code review)
+
+The pre-merge review found that `cannot` and `won't` were missing from rule 2, so
+"That cannot happen …" read as a determiner. Both are added as pronoun cues
+(`cannot`, and `won` before `'t`). The change only keeps findings that 0.1.12
+reports. On the fresh set it restores 1 of the 29 adjudicated lines (23 findings,
+all from one inherited instruction file). The 28 removed lines that remain are a
+subset of the adjudicated items, so the adjudication result carries over.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
