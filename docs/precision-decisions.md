@@ -1059,7 +1059,7 @@ Tracking: [#80](https://github.com/jayanez/spec-torque/issues/80).
 |---|---|
 | 1. Twins (10 EN/ES), H6a, H6, H5a and H3a twins, minimal pairs | holds: 10 of 10 (0.1.12 meets the 4 controls and fails exactly the 6 target cases); H6a 12/12, H6 16/16, H5a 22/22, H3a 20/20; minimal pairs 0 changed rows |
 | 2. 716 historical predictions | holds: 0 observations and 0 metric groups changed (`corpus:report -- --baseline origin/develop`) |
-| 3. Fresh set | holds: 557 findings removed, all I2.3 "Reference R-n has no definition" in features whose specification has no `R-n` token; none added; 11 status changes, all `partial` → `missing` (I2.3 3, C1.3 4, C2.3 4) |
+| 3. Fresh set | holds: 557 findings removed, all I2.3 "Reference R-n has no definition" in features whose specification has no `R-n` token; none added; 11 status changes in 4 features, all `partial` → `missing` (I2.3 3, C1.3 4, C2.3 4) |
 | 4. Adjudication | holds: 0 of 100 removed findings agreed positive (threshold 2) |
 | 5. Evidence | holds: no evidence is added; removed traceability edges and findings only |
 
