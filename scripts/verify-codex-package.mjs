@@ -41,6 +41,9 @@ try {
   const setup = execFileSync(process.execPath, [join(install, 'setup-workspace.mjs'), worktree], { cwd: scratch, env, encoding: 'utf8' });
   assert.ok(setup.includes('args = [' + JSON.stringify(join(runtime, 'server.mjs')) + ']'));
   assert.ok(setup.includes('SPECTORQUE_ROOT = ' + JSON.stringify(root)));
+  assert.match(setup, /add --feature <feature-id>/);
+  const scoped = execFileSync(process.execPath, [join(install, 'setup-workspace.mjs'), worktree, 'specs/demo'], { cwd: scratch, env, encoding: 'utf8' });
+  assert.match(scoped, /'--feature' 'specs\/demo'|--feature specs\/demo|'--feature' "specs\/demo"/);
   const stamp = JSON.stringify({ digest, version: manifest.version, node: process.version, platform: process.platform + '/' + process.arch });
   console.log(stamp);
   await checkMcp();

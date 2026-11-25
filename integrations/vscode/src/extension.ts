@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import { execFile, spawn } from 'node:child_process';
 import { join } from 'node:path';
+import { fitsReadLimit } from '../../../src/core/artifacts.js';
+import { LABELS, workbenchLine, workbenchUrl } from '../../../src/core/presentation.js';
+import { scopeItems } from './scope-items.js';
 
 let active: { root: string; feature: string | null; panel: vscode.WebviewPanel } | undefined;
 interface FeatureList { total: number; features: { id: string; layout: boolean }[] }
-const LIMIT = 500;
 
 /** Lists the work tree's features through the shared index, without reading document content. */
 function listFeatures(cli: string, root: string, changed: boolean): Promise<FeatureList> {
@@ -17,23 +19,20 @@ type Pick = vscode.QuickPickItem & { value: string };
 /** Asks for a scope: all documents when they fit, one feature, or a feature changed on this branch. */
 async function chooseFeature(context: vscode.ExtensionContext, cli: string, root: string): Promise<string | null | undefined> {
   const index = await listFeatures(cli, root, false);
-  if (index.features.length < 2 && index.total <= LIMIT) return null;
+  if (index.features.length < 2 && fitsReadLimit(index)) return null;
   const remembered = context.workspaceState.get<string | null>('spectorque.feature:' + root);
-  const items: Pick[] = [
-    ...(index.total <= LIMIT ? [{ label: 'All documents', value: '' }] : []),
-    { label: "Only this branch's changes", description: 'Features changed since the default branch', value: ':changed' },
-    { label: 'Features', kind: vscode.QuickPickItemKind.Separator, value: '' },
-    ...index.features.map(f => ({ label: f.id, description: f.layout ? undefined : 'Other documents', value: f.id, picked: f.id === remembered })),
-  ];
-  let picked = await vscode.window.showQuickPick(items, { title: 'SpecTorque · choose a scope', placeHolder: 'Filter ' + index.features.length + ' features', matchOnDescription: true });
-  if (picked?.value === ':changed') {
+  // The shared choices, remembered scope first, with a separator wherever the category changes.
+  const items: Pick[] = scopeItems(index, remembered).flatMap(({ category, ...item }, at, all) =>
+    at > 0 && all[at - 1].category !== category ? [{ label: category, kind: vscode.QuickPickItemKind.Separator, value: '' }, item] : [item]);
+  let picked = await vscode.window.showQuickPick(items, { title: 'SpecTorque · ' + LABELS.selectScope, placeHolder: 'Filter ' + index.features.length + ' features', matchOnDescription: true });
+  if (picked?.value === 'changed') {
     const changed = await listFeatures(cli, root, true);
     if (!changed.features.length) { void vscode.window.showInformationMessage('No feature changed on this branch.'); return undefined; }
-    picked = changed.features.length === 1 ? { label: changed.features[0].id, value: changed.features[0].id }
-      : await vscode.window.showQuickPick(changed.features.map(f => ({ label: f.id, value: f.id })), { title: 'SpecTorque · features changed on this branch' });
+    picked = changed.features.length === 1 ? { label: changed.features[0].id, value: 'f:' + changed.features[0].id }
+      : await vscode.window.showQuickPick(changed.features.map(f => ({ label: f.id, value: 'f:' + f.id })), { title: 'SpecTorque · ' + LABELS.changed });
   }
   if (!picked) return undefined;
-  const feature = picked.value || null;
+  const feature = picked.value === 'all' ? null : picked.value.slice(2);
   await context.workspaceState.update('spectorque.feature:' + root, feature);
   return feature;
 }
@@ -62,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (active?.root === root && active.feature === feature) { active.panel.reveal(vscode.ViewColumn.Beside); return; }
     active?.panel.dispose();
     const output = vscode.window.createOutputChannel('SpecTorque');
-    const panel = vscode.window.createWebviewPanel('spectorque', 'SpecTorque', vscode.ViewColumn.Beside, { enableScripts: true, retainContextWhenHidden: true });
+    const panel = vscode.window.createWebviewPanel('spectorque', 'SpecTorque · ' + (feature ?? LABELS.allDocuments), vscode.ViewColumn.Beside, { enableScripts: true, retainContextWhenHidden: true });
     active = { root, feature, panel };
     panel.webview.html = '<p role="status">Starting the local specification workbench…</p>';
     const child = spawn(process.execPath, [cli, 'serve', '--root', root, '--port', '0', ...(feature ? ['--feature', feature] : [])], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, shell: false, windowsHide: true });
@@ -95,9 +94,9 @@ export function activate(context: vscode.ExtensionContext) {
         if (disposed) return;
         const origin = new URL(uri.toString()).origin;
         const src = uri.toString().replaceAll('&', '&amp;').replaceAll('"', '&quot;');
-        // Offer the same loopback workbench outside the editor as a clickable link.
-        void vscode.window.showInformationMessage('SpecTorque workbench: ' + uri.toString(), 'Open in browser').then(choice => {
-          if (choice === 'Open in browser' && !disposed) void vscode.env.openExternal(uri);
+        // Offer the same loopback workbench outside the editor; the browser opens the address shown.
+        void vscode.window.showInformationMessage(workbenchLine(uri.toString(), feature), 'Open in browser').then(choice => {
+          if (choice === 'Open in browser' && !disposed) void vscode.env.openExternal(vscode.Uri.parse(workbenchUrl(uri.toString())));
         });
         panel.webview.html = '<!doctype html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; frame-src ' + origin + '; style-src \'unsafe-inline\'"><style>html,body,iframe{width:100%;height:100%;margin:0;border:0}body{overflow:hidden}</style></head><body><iframe title="SpecTorque workbench" src="' + src + '"></iframe></body></html>';
       }, () => { fail(); stopChild(); });

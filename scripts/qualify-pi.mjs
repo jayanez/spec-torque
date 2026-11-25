@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { appendFileSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { access, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -7,7 +8,7 @@ import { qualifyTerminal } from './qualify-pi-terminal.mjs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { unzipSync } from 'fflate';
-import { analyze, discoverWorkspace, reviewWorkspace, selectFeature, terminalSummary } from '../dist/integration.js';
+import { analyze, discoverWorkspace, findingChoice, reviewWorkspace, selectFeature, summaryLine, terminalSummary, DISCLAIMER } from '../dist/integration.js';
 
 const [cli, option, packagePath, terminalOption, ptyPath, ...extra] = process.argv.slice(2);
 if (!cli || extra.length || (option !== undefined && (!['--installed-package', '--installed-archive'].includes(option) || !packagePath)) ||
@@ -61,11 +62,12 @@ function verifyDiscovery(workspace, agent, trust, installed, artifact) {
 
 // RPC hosts (for example desktop shells) render dialogs through the extension UI
 // protocol. Choose one feature and cancel at evidence selection, so nothing is written.
-async function verifyRpcScope(workspace, agent, load, feature) {
+// With `stale`, the source changes after the analysis: choosing a finding must report it and open no editor.
+async function verifyRpcScope(workspace, agent, load, feature, stale) {
   const child = spawn(process.execPath, [client, ...common, ...load, '--mode', 'rpc'], {
     cwd: workspace, env: isolatedEnv(agent), stdio: ['pipe', 'pipe', 'pipe'],
   });
-  const seen = { scopes: undefined, widget: undefined, evidence: undefined };
+  const seen = { scopes: undefined, widget: undefined, evidence: undefined, notice: undefined };
   let buffer = '';
   let stderr = '';
   child.stderr.on('data', chunk => { stderr += chunk; });
@@ -86,12 +88,19 @@ async function verifyRpcScope(workspace, agent, load, feature) {
         if (event.type === 'agent_start') fail(new Error('No model turn may start'));
         if (event.type !== 'extension_ui_request') continue;
         if (event.method === 'setWidget' && event.widgetKey === 'spectorque') seen.widget = event.widgetLines;
+        if (stale && event.method === 'editor') fail(new Error('A stale source must not open the editor'));
+        if (stale && event.method === 'notify') { seen.notice = event.message; clearTimeout(timer); resolveDone(); }
         if (event.method !== 'select') continue;
-        if (event.title === 'SpecTorque · select scope') {
+        if (event.title === 'SpecTorque · Select scope') {
           seen.scopes = event.options;
-          child.stdin.write(JSON.stringify({ type: 'extension_ui_response', id: event.id, value: 'Feature · ' + feature }) + '\n');
-        } else if (event.title === 'SpecTorque · select evidence') {
+          child.stdin.write(JSON.stringify({ type: 'extension_ui_response', id: event.id, value: feature }) + '\n');
+        } else if (event.title === 'SpecTorque · Select finding') {
           seen.evidence = event.options;
+          if (stale) {
+            appendFileSync(stale, '\nExternal edit after the analysis.\n');
+            child.stdin.write(JSON.stringify({ type: 'extension_ui_response', id: event.id, value: event.options[0] }) + '\n');
+            continue;
+          }
           child.stdin.write(JSON.stringify({ type: 'extension_ui_response', id: event.id, cancelled: true }) + '\n');
           clearTimeout(timer);
           resolveDone();
@@ -183,12 +192,20 @@ try {
       await cp(resolve('fixtures/en-complete/specs/booking'), other, { recursive: true });
       const scoped = await analyze(selectFeature(await discoverWorkspace(workspace), 'specs/booking'));
       const seen = await verifyRpcScope(workspace, agent, load, 'specs/booking');
-      assert.deepEqual(seen.scopes, ['All documents', 'Feature · specs/booking', 'Feature · specs/other', 'Changed on this branch']);
-      assert.equal(seen.widget?.[0], terminalSummary(scoped)[0] + ' · Scope: specs/booking');
-      assert.deepEqual(seen.evidence, scoped.findings.map((f, i) => `${i + 1}. ${f.message} · ${f.evidence[0].path}:${f.evidence[0].line}`));
+      // The shared scope labels and order, the scope on its own line, the summary and the closing note.
+      assert.deepEqual(seen.scopes, ['All documents', 'Changed on this branch', 'specs/booking', 'specs/other']);
+      assert.deepEqual(seen.widget?.slice(0, 3), [terminalSummary(scoped)[0], 'Scope: specs/booking', summaryLine(scoped)]);
+      assert.equal(seen.widget?.at(-1), DISCLAIMER);
+      assert.deepEqual(seen.evidence, scoped.findings.map((f, i) => `${findingChoice(scoped, i)} · ${f.message}`));
       assert.deepEqual(await readFile(source), before);
+      // Proposals are bound to the assessed source: a later edit is reported before any editor opens.
+      const target = join(workspace, scoped.findings[0].evidence[0].path);
+      const original = await readFile(target);
+      const staleRun = await verifyRpcScope(workspace, agent, load, 'specs/booking', target);
+      assert.match(String(staleRun.notice), /Source changed since this assessment/);
+      await writeFile(target, original);
       await rm(other, { recursive: true });
-      console.log(`${language}/rpc: feature scope offered and applied, source unchanged`);
+      console.log(`${language}/rpc: feature scope offered and applied, stale source reported before proposing, source unchanged`);
     }
     if (artifact) {
       if (pty) await qualifyTerminal(pty, {

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { appendFile, cp, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
-import { analyze, discoverWorkspace, selectFeature, terminalSummary } from '../dist/integration.js';
+import { analyze, dimensionsLine, discoverWorkspace, findingChoice, selectFeature, summaryLine, terminalSummary, DISCLAIMER } from '../dist/integration.js';
 
 export async function qualifyTerminal(pty, { client, args, env, workspace, language }) {
   const source = join(workspace, 'specs/booking/spec.md');
@@ -47,35 +47,34 @@ export async function qualifyTerminal(pty, { client, args, env, workspace, langu
     const offset = output.length;
     columns = columns === 160 ? 161 : 160;
     terminal.resize(columns, 45);
-    const [title, ...summary] = terminalSummary(report).slice(0, 10);
-    await waitFor(`${title} · Scope: ${scope}`, offset);
-    for (const line of summary.filter(Boolean)) await waitFor(line, offset);
+    // Title, scope, summary and dimensions, then the closing note.
+    for (const line of [terminalSummary(report)[0], 'Scope: ' + scope, summaryLine(report), dimensionsLine(report), DISCLAIMER]) await waitFor(line, offset);
     return offset;
   }
 
   async function openScopePicker() {
-    const offset = await send('/spectorque\r', 'select scope');
-    for (const marker of ['→ All documents', `Feature · ${booking}`, `Feature · ${other}`]) {
+    const offset = await send('/spectorque\r', 'Select scope');
+    for (const marker of ['→ All documents', 'Changed on this branch', booking, other]) {
       await waitFor(marker, offset);
     }
   }
 
   async function chooseScope(feature, report) {
-    if (feature !== null) await send('\x1b[B', `→ Feature · ${booking}`);
-    if (feature === other) await send('\x1b[B', `→ Feature · ${other}`);
-    await send('\r', 'select evidence');
+    // Shared order: All documents, Changed on this branch, then the features.
+    if (feature !== null) { await send('\x1b[B', '→ Changed on this branch'); await send('\x1b[B', `→ ${booking}`); }
+    if (feature === other) await send('\x1b[B', `→ ${other}`);
+    await send('\r', 'Select finding');
     const offset = await expectWidget(report, feature ?? 'All documents');
     for (const [index, finding] of report.findings.entries()) {
-      const { path, line } = finding.evidence[0];
-      await waitFor(`${index + 1}. ${finding.message} · ${path}:${line}`, offset);
+      await waitFor(`${findingChoice(report, index)} · ${finding.message}`, offset);
     }
   }
 
   async function propose(report) {
     await openScopePicker();
     await chooseScope(booking, report);
-    await send('\x1b[B', '→ 2.'); // Move past the shared instructions finding.
-    const editor = await send('\r', 'specs/booking/spec.md:5');
+    await send('\x1b[B', '→ Finding 2 of'); // Move past the shared instructions finding.
+    const editor = await send('\r', 'Proposed replacement for line 5');
     await waitFor(originalLine, editor);
     const diff = await send('\u0015' + replacement + '\r', 'Apply reviewed change?');
     for (const marker of ['Before:', originalLine, 'After:', replacement]) await waitFor(marker, diff);
@@ -83,7 +82,7 @@ export async function qualifyTerminal(pty, { client, args, env, workspace, langu
 
   try {
     await waitFor('spec-author, spec-refine, spec-review');
-    await send('/spectorque\r', 'select evidence');
+    await send('/spectorque\r', 'Select finding');
     await expectWidget(await analyze(await discoverWorkspace(workspace)), 'All documents');
     terminal.write('\u0003');
 

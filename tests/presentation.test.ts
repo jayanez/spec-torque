@@ -20,6 +20,8 @@ test('findingCard labels the position, practice, severity, location, evidence an
   assert.deepEqual(findingCard(a, 1), [`Finding 2 of ${a.findings.length} · ${f.practiceId} · ${f.severity}`, `${e.path}:${e.line}`, f.message, `Evidence: «${e.text}»`, `Fix: ${f.suggestion}`]);
   assert.equal(findingChoice(a, 1), `Finding 2 of ${a.findings.length} · ${f.practiceId} · ${f.severity} · ${e.path}:${e.line}`);
   assert.deepEqual(findingCard(a, a.findings.length), []);
+  const other = { path: 'specs/001-a/plan.md', line: 9, text: 'Second citation.' };
+  assert.deepEqual(findingCard(a, 1, other).slice(1, 4), ['specs/001-a/plan.md:9', f.message, 'Evidence: «Second citation.»']);
   const withoutEvidence = { findings: [{ ...f, evidence: [] }] };
   assert.deepEqual(findingCard(withoutEvidence, 0), [`Finding 1 of 1 · ${f.practiceId} · ${f.severity}`, f.message, `Fix: ${f.suggestion}`]);
 });
@@ -59,4 +61,16 @@ test('scope choices keep a current folder or based branch scope selectable', () 
   // A based branch scope keeps the default one selectable too.
   assert.deepEqual(scopeChoices(index, { kind: 'changed', base: 'develop' }).filter(c => c.category === 'Scope').map(c => c.title),
     ['All documents', 'Changed on this branch', 'Changed on this branch (vs develop)']);
+});
+
+test('VS Code lists the remembered scope first, marked current, with the shared labels', async () => {
+  const { scopeItems } = await import('../integrations/vscode/src/scope-items.js');
+  const listing = { total: 12, features: [{ id: 'specs/001-a', layout: true }, { id: 'specs/066-b', layout: true }, { id: 'docs/notes', layout: false }] };
+  assert.deepEqual(scopeItems(listing, undefined).map(i => [i.label, i.description]), [['All documents', undefined], ['Changed on this branch', 'Features changed since the default branch'], ['specs/001-a', undefined], ['specs/066-b', undefined], ['Other · docs/notes', undefined]]);
+  const remembered = scopeItems(listing, 'specs/066-b');
+  assert.deepEqual([remembered[0].label, remembered[0].value, remembered[0].description], ['specs/066-b', 'f:specs/066-b', 'current']);
+  assert.equal(remembered.filter(i => i.value === 'f:specs/066-b').length, 1);
+  assert.deepEqual(scopeItems(listing, null)[0], { label: 'All documents', value: 'all', category: 'Scope', description: 'current' });
+  // Above the read limit there is no All documents entry, so a remembered "all" marks nothing.
+  assert.equal(scopeItems({ ...listing, total: 900 }, null).some(i => i.description === 'current'), false);
 });
