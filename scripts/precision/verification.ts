@@ -2,7 +2,8 @@
  * H6 replay (#88): verification criteria (E3.1), validation methods (E3.2) and Spec Kit
  * quickstart.md as a feature artifact. Compares two committed engine revisions.
  *
- *   synthetic: fixtures/precision/h6-pairs.json, expected E3.1/E3.2 status per case.
+ *   synthetic: fixtures/precision/h6-pairs.json, expected practice status per case (E3.1/E3.2 for
+ *              H6); a case may also fix its findings, artifact roles and decision count (H6a, H7).
  *   scan:      every Spec Kit feature of each root. Each arm discovers with the work-tree rule
  *              (basename only) and classifies with its own rules, so a discovery change is part
  *              of the comparison.
@@ -26,9 +27,10 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 const status = z.enum(['supported', 'partial', 'missing', 'unknown', 'not_applicable']);
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
-  expected: z.strictObject({ 'E3.1': status, 'E3.2': status }), findings: z.array(z.string()).optional(), note: z.string(),
+  expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(),
+  roles: z.record(z.string(), z.enum(['spec', 'plan', 'tasks', 'instructions', 'context'])).optional(),
+  decisions: z.number().int().nonnegative().optional(), note: z.string(),
 })) });
-const ENDPOINTS = ['E3.1', 'E3.2'] as const;
 
 async function assess(engine: Engine, files: Map<string, string> | Record<string, string>, feature?: string) {
   const entries = files instanceof Map ? [...files] : Object.entries(files);
@@ -39,7 +41,7 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
   const findings: Record<string, number> = {};
   for (const f of report.findings) findings[f.practiceId] = (findings[f.practiceId] ?? 0) + 1;
   return {
-    paths: set.artifacts.map(a => `${a.path}:${a.role}`).sort(),
+    paths: set.artifacts.map(a => `${a.path}:${a.role}`).sort(), roles: Object.fromEntries(set.artifacts.map(a => [a.path, a.role])),
     status: Object.fromEntries(report.practices.map(p => [p.id, p.status])),
     evidence: Object.fromEntries(report.practices.map(p => [p.id, p.evidence])),
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
@@ -59,13 +61,18 @@ if (mode === 'synthetic') {
     const files = Object.fromEntries(Object.entries(entry.files).map(([path, lines]) => [path, lines.join('\n') + '\n']));
     const feature = Object.keys(files).map(p => arms.baseline.classifyPath(p).featureId).find(id => id.includes('specs/'));
     const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
-    const pick = (r: typeof b) => Object.fromEntries(ENDPOINTS.map(id => [id, r?.status[id]]));
+    const pick = (r: typeof b) => Object.fromEntries(Object.keys(entry.expected).map(id => [id, r?.status[id]]));
     const baseline = pick(b); const candidate = pick(c);
-    // H6a: a case may also fix the complete finding list (practice|path|line).
+    // H6a: a case may also fix the complete finding list (practice|path|line). H7: and roles and decisions.
+    const rolesOf = (r: typeof b) => entry.roles && Object.fromEntries(Object.keys(entry.roles).map(path => [path, r?.roles[path]]));
     const meets = (r: typeof b, statuses: Record<string, unknown>) => JSON.stringify(statuses) === JSON.stringify(entry.expected) &&
-      (!entry.findings || JSON.stringify(r?.findingKeys) === JSON.stringify([...entry.findings].sort()));
+      (!entry.findings || JSON.stringify(r?.findingKeys) === JSON.stringify([...entry.findings].sort())) &&
+      (!entry.roles || JSON.stringify(rolesOf(r)) === JSON.stringify(entry.roles)) &&
+      (entry.decisions === undefined || r?.decisions === entry.decisions);
     rows.push({ id: entry.id, construct: entry.construct, language: entry.language, expected: entry.expected, expectedFindings: entry.findings, baseline, candidate,
       baselineFindings: entry.findings ? b?.findingKeys : undefined, candidateFindings: entry.findings ? c?.findingKeys : undefined,
+      baselineRoles: rolesOf(b), candidateRoles: rolesOf(c),
+      baselineDecisions: entry.decisions === undefined ? undefined : b?.decisions, candidateDecisions: entry.decisions === undefined ? undefined : c?.decisions,
       baselineMeets: meets(b, baseline), candidateMeets: meets(c, candidate) });
   }
   const summary = { cases: rows.length, baselineMeets: rows.filter(r => r.baselineMeets).length, candidateMeets: rows.filter(r => r.candidateMeets).length,
@@ -100,10 +107,13 @@ if (mode === 'synthetic') {
         if (c.dimensions[id] !== null && b.dimensions[id] !== null && c.dimensions[id]! < b.dimensions[id]!) totals.dimensionsDown++;
       }
       totals.decisionsAdded += c.decisions - b.decisions;
-      if (added.length || changes.length || Object.keys(findingDelta).length) {
+      // H7: role changes and the exact findings each arm reports.
+      const roleChanges = Object.keys(c.roles).filter(path => b.roles[path] && b.roles[path] !== c.roles[path]).map(path => ({ path, from: b.roles[path], to: c.roles[path] }));
+      const removedFindings = b.findingKeys.filter(k => !c.findingKeys.includes(k)); const addedFindings = c.findingKeys.filter(k => !b.findingKeys.includes(k));
+      if (added.length || changes.length || Object.keys(findingDelta).length || c.decisions !== b.decisions) {
         totals.changedFeatures++;
-        detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta,
-          evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
+        detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, removedFindings, addedFindings,
+          decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
       }
     }
   }
