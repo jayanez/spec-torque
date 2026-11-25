@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -21,7 +21,11 @@ export type Engine = Awaited<ReturnType<typeof loadEngine>>;
 /** Extract the committed engine sources of one revision and import them. */
 export async function archiveEngine(revision: string, directory: string): Promise<Engine> {
   await mkdir(directory);
-  const snapshot = execFileSync('git', ['archive', revision, 'package.json', 'src/core', 'src/node'], { cwd: repository });
-  execFileSync('tar', ['-xf', '-', '-C', directory], { input: snapshot });
+  // Extract from a file, not stdin: bsdtar (macOS) stops reading at the end-of-archive marker,
+  // so piping git archive's trailing padding into it can fail with EPIPE.
+  const snapshot = join(directory, '.snapshot.tar');
+  execFileSync('git', ['archive', '-o', snapshot, revision, 'package.json', 'src/core', 'src/node'], { cwd: repository });
+  execFileSync('tar', ['-xf', snapshot, '-C', directory]);
+  await rm(snapshot);
   return loadEngine(directory);
 }
