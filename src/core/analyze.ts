@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.10';
+export const ENGINE_VERSION = '0.1.11';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -15,8 +15,8 @@ const monthEnumerationMay = new RegExp(
 const hasNormativeModal = (text: string) => modal.test(
   text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );
-/** H5 (#78): a list item or paragraph with its hard-wrapped continuation lines. */
-interface Unit { hasId: boolean }
+/** H5a (#78): a list item or paragraph with its hard-wrapped continuation lines; `defined` when its first line has a defining ID. */
+interface Unit { defined: boolean }
 interface Line extends Evidence { artifact: Artifact; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
 // Lines that start a block (or are a fence run), and lines that cannot be continued.
 const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<|```|~~~)/;
@@ -25,7 +25,7 @@ const thematicBreak = /^\s*(?:[-*_=][ \t]*){3,}$/;
 function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   let continuable = false;
-  let unit: Unit = { hasId: false };
+  let unit: Unit = { defined: false };
   return artifact.content.split(/\r?\n/).map((text, index) => {
     const fenceRun = /^\s*(?:```|~~~)/.test(text);
     if (fenceRun) fenced = !fenced;
@@ -34,8 +34,7 @@ function linesOf(artifact: Artifact): Line[] {
     const textLine = !fenced && !fenceRun && text.trim() !== '' && !thematicBreak.test(text);
     // An unindented line led by a defining ID starts its own unit (one requirement per line).
     const continuation = continuable && textLine && !blockStart.test(text) && !(/^\S/.test(text) && definedId(text));
-    if (!continuation) unit = { hasId: false };
-    if (requirementIdIn(text)) unit.hasId = true;
+    if (!continuation) unit = { defined: Boolean(definedId(text)) };
     continuable = textLine && !closedBlock.test(text);
     return { path: artifact.path, line: index + 1, text, artifact, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text), continuation, unit };
   });
@@ -59,8 +58,8 @@ function inheritedLines(lines: Line[]): Set<Line> {
   return inherited;
 }
 const requirementIdIn = (text: string) => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(text);
-/** A line's own ID, or (H5) an ID elsewhere in the item or paragraph it belongs to. */
-const identifiedOnLine = (line: Line) => requirementIdIn(line.text) || line.unit.hasId;
+/** A line's own ID, or (H5a) a defining ID on the first line of the item or paragraph it belongs to. */
+const identifiedOnLine = (line: Line) => requirementIdIn(line.text) || line.unit.defined;
 /** Defining positions per feature-qualified ID, among admitted spec lines and spec headings. */
 function definitionsOf(lines: Line[]): Map<string, Line[]> {
   const definitions = new Map<string, Line[]>();
