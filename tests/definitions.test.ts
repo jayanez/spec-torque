@@ -49,3 +49,26 @@ test('H5a: an ID cited later in an item or paragraph does not identify its other
   assert.deepEqual(await findings(['# Demo', '', '### Never', '', '- `retry` MUST NOT reset a graph that waits for input',
     '  (FR-009), because that would dispatch the task again.'], ['# Plan']), ['I1.2:5:Requirement has no stable identifier.']);
 });
+
+const T = 'specs/001-demo/tasks.md';
+async function references(plan: string[], spec = ['# Demo', '', '- **REQ-001:** The system MUST ask for consent.'], feature = 'specs/001-demo') {
+  const set = { name: 'demo', artifacts: [classifyArtifact(`${feature}/spec.md`, spec.join('\n') + '\n'), classifyArtifact(`${feature}/tasks.md`, plan.join('\n') + '\n')] };
+  const assessment = await analyze(set);
+  return { findings: assessment.findings.filter(f => f.practiceId === 'I2.3').map(f => `${f.evidence[0].line}:${f.message}`), edges: assessment.traceability.map(e => `${e.to}:${e.resolved}`) };
+}
+
+test('H9: a reference qualified by another specification is not resolved locally', async () => {
+  assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-028 REQ-004, SPEC-031/REQ-002 and VPC-REQ-01.'])).findings, []);
+  assert.deepEqual((await references(['# Tasks', '', 'Reuses REQ-004.'])).findings, ['3:Reference REQ-004 has no definition in the supplied specs.']);
+  assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-28 REQ-004.'], undefined, 'specs/028-demo')).findings, ['3:Reference REQ-004 has no definition in the supplied specs.']);
+  assert.deepEqual((await references(['# Tasks', '', 'Wires VPC-REQ-02.'], ['# Demo', '', '- **VPC-REQ-01:** The consumer MUST revalidate.'])).findings,
+    ['3:Reference REQ-02 has no definition in the supplied specs.']);
+  assert.deepEqual((await references(['# Tasks', '', 'Implements REQ-001-REQ-003.'])).findings, ['3:Reference REQ-003 has no definition in the supplied specs.']);
+});
+
+test('H9: a reference marked not adopted is left out, and its edge stays unresolved', async () => {
+  const marked = await references(['# Tasks', '', 'The proposed (not adopted) REQ-007 text replaces REQ-009; REQ-008 (no adoptado) stays out.']);
+  assert.deepEqual(marked.findings, ['3:Reference REQ-009 has no definition in the supplied specs.']);
+  assert.deepEqual(marked.edges, ['REQ-007:false', 'REQ-009:false', 'REQ-008:false']);
+  assert.deepEqual((await references(['# Tasks', '', 'The REQ-007 text is a proposal, not installed.'])).findings, ['3:Reference REQ-007 has no definition in the supplied specs.']);
+});

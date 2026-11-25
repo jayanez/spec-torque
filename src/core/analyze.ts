@@ -1,7 +1,7 @@
 import { contentHash, isValidationGuide } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.12';
+export const ENGINE_VERSION = '0.1.13';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -73,6 +73,25 @@ function definitionsOf(lines: Line[]): Map<string, Line[]> {
   }
   return definitions;
 }
+// H9 (#84): a reference that its own line places outside the feature is not resolved locally.
+// A hyphen-joined namespace (`VPC-REQ-01`) or `SPEC-<n>` directly before the ID qualifies it; a prefix
+// that ends in an ID is a range (`FR-001-FR-003`), not a namespace.
+const namespacePrefix = /(?<![\p{L}\p{N}_-])([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*)-$/u;
+const specQualifier = /(?<![\p{L}\p{N}_-])SPEC-(\d+)(?:['’]s)?[ \t]*(?:[/:#§][ \t]*)?$/iu;
+const rangeStart = /(?:FR|NFR|REQ|R)-\d+$/i;
+const namespaceOf = (before: string) => {
+  const namespace = namespacePrefix.exec(before)?.[1];
+  return namespace && !rangeStart.test(namespace) ? namespace : undefined;
+};
+const qualifierOf = (before: string) => {
+  const spec = specQualifier.exec(before)?.[1];
+  return namespaceOf(before) ?? (spec === undefined ? undefined : `SPEC-${spec}`);
+};
+const featureNumber = (featureId: string) => /(?:^|\/)(\d+)-[^/]*$/.exec(featureId)?.[1];
+const notAdopted = '(?:not[ -]adopted|no[ \\t]+adoptad[oa]s?)';
+const proposed = '(?:proposed|propuest[oa]s?)';
+const notAdoptedBefore = new RegExp(`(?<![\\p{L}\\p{N}_])${notAdopted}\\)?[ \\t]+$`, 'iu');
+const notAdoptedAfter = new RegExp(`^(?:/\\d+)*[ \\t]*(?:${proposed}[ \\t]*)?\\((?:${proposed}[ \\t]*,?[ \\t]*)?${notAdopted}\\)`, 'iu');
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
 const boundedQuantity = /(?:within|at most|at least|less than|more than|maximum|minimum|dentro de|como máximo|como mínimo|menos de|más de)\s+\d|\d+(?:[.,]\d+)?\s*(?:%|(?:ms|seconds?|segundos?|minutes?|minutos?|MB|GB)(?![\p{L}\p{N}\p{M}_]))/iu;
@@ -169,12 +188,28 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   for (const line of requirements.filter(l => l.artifact.role === 'spec')) {
     for (const raw of line.text.match(requirementId) ?? []) resolvable.add(line.artifact.featureId + ':' + raw.toUpperCase());
   }
+  // H9: namespaces that the feature's own spec lines join to an ID.
+  const ownNamespaces = new Set<string>();
+  for (const line of lines.filter(l => l.artifact.role === 'spec' && (l.requirement || l.heading))) {
+    for (const match of line.text.matchAll(requirementId)) {
+      const namespace = namespaceOf(line.text.slice(0, match.index));
+      if (namespace) ownNamespaces.add(line.artifact.featureId + ':' + namespace);
+    }
+  }
+  const external = (featureId: string, before: string) => {
+    const qualifier = qualifierOf(before);
+    if (!qualifier || ownNamespaces.has(featureId + ':' + qualifier)) return false;
+    const spec = /^SPEC-(\d+)$/.exec(qualifier)?.[1]; const own = featureNumber(featureId);
+    return !(spec !== undefined && own !== undefined && Number(spec) === Number(own));
+  };
   const traceability: Assessment['traceability'] = [];
   for (const line of lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role))) {
-    for (const raw of line.text.match(requirementId) ?? []) {
-      const id = raw.toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
+    for (const match of line.text.matchAll(requirementId)) {
+      const id = match[0].toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
-      if (!resolved && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
+      const before = line.text.slice(0, match.index), after = line.text.slice(match.index + match[0].length);
+      const outside = external(line.artifact.featureId, before) || notAdoptedBefore.test(before) || notAdoptedAfter.test(after);
+      if (!resolved && !outside && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
