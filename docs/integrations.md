@@ -1,10 +1,12 @@
 # Integrations
 
+Released packages install from each host's own marketplace or package manager; the table in the [README](../README.md#install) lists one command per host, and [releases](releases.md) covers offline assets and versioning. The rest of this page describes each host's behavior and how to build and qualify it from a source checkout.
+
 Build the source checkout with `npm ci --ignore-scripts && npm run build && npm run package:integrations`. Generated host runtimes bundle their dependencies; they do not require a provider or copy your credentials. Start the common workbench with `node dist/cli.js serve --root /absolute/project`. It opens on that work tree: `serve --feature <id>` loads that feature, otherwise the whole work tree loads when it fits one read, and a larger tree waits for a feature choice without reading any document. **Reload local workspace** reads the current choice again. The **Local workspace feature** picker filters as you type. The side panels collapse and resize, and remember that in the browser. **Artifact set** narrows a loaded set in memory and appears only when that set holds more than one feature. Every host (the workbench, the Claude Code pane, Codex, OpenCode, Pi and VS Code) shows the same title with the product version, scope labels (**All documents**, **Changed on this branch**, a feature ID, `Other · <id>` for groups without a known layout or for templates), summary (`15/30 · 13 findings · 0 open decisions · engine 0.1.9`), finding card (`Finding 1 of 13 · I1.2 · warning`, the location, the evidence and the fix) and closing note, built from `src/core/presentation.ts`.
 
 ## MCP and skills
 
-Use this server configuration in a host's supported local MCP configuration:
+Use this server configuration in a host's supported local MCP configuration. From npm, replace the command with `npx` and the arguments with `["-y", "spectorque@<version>", "mcp"]`; from a checkout:
 
 ```json
 {"mcpServers":{"spectorque":{"command":"node","args":["/absolute/spectorque/dist/mcp.js"],"env":{"SPECTORQUE_ROOT":"/absolute/project"}}}}
@@ -18,7 +20,16 @@ The three portable skills in `skills/` cover authoring, review and refinement. I
 
 ## Claude Code
 
-Run `npm run package:claude`; it rebuilds the engine and host runtimes first (`npm run build` and `npm run package:integrations`), so the ZIP never carries a stale runtime. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.2.9.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. The pane lists features from the work tree index before reading anything. `/spectorque <feature | folder | --changed [base]>` opens a scope directly. Otherwise a filtered selector offers one feature, the branch's changes, and **All documents** only when the work tree fits one read. A session started in a subfolder opens on that folder, and the last scope is remembered per work tree. Companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. The pane reads top to bottom: title, scope (filter and **Select scope**, which always lists the scope in use), summary and dimensions, the finding card with **Previous**/**Next** (dimmed at either end), **Proposed replacement for line N** and **Review change**, the reviewed difference with **Apply reviewed change** and **Reject proposal**, then **Refresh analysis** and the workbench button in one row. **Open common workbench** starts the loopback workbench for the session's work tree and shows the address as a clickable link, the same one it copies, with "Address copied to the clipboard · Opens on <feature>" dimmed below it; the workbench loads that feature by itself; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
+Install from this repository's marketplace, in a terminal or in the Desktop Code tab:
+
+```sh
+claude plugin marketplace add jayanez/spec-torque
+claude plugin install spectorque@spectorque
+```
+
+Add `--scope project` to both commands to share the install through the project's `.claude/settings.json`. Update with `claude plugin marketplace update spectorque`; remove with `claude plugin uninstall spectorque@spectorque` and `claude plugin marketplace remove spectorque`. The catalog installs the `spectorque-claude` npm package at the version it pins. In Claude Desktop, the first message of a new Code-tab session goes to the model; type `/spectorque` after that.
+
+From a checkout: Run `npm run package:claude`; it rebuilds the engine and host runtimes first (`npm run build` and `npm run package:integrations`), so the ZIP never carries a stale runtime. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-<version>.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. The pane lists features from the work tree index before reading anything. `/spectorque <feature | folder | --changed [base]>` opens a scope directly. Otherwise a filtered selector offers one feature, the branch's changes, and **All documents** only when the work tree fits one read. A session started in a subfolder opens on that folder, and the last scope is remembered per work tree. Companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. The pane reads top to bottom: title, scope (filter and **Select scope**, which always lists the scope in use), summary and dimensions, the finding card with **Previous**/**Next** (dimmed at either end), **Proposed replacement for line N** and **Review change**, the reviewed difference with **Apply reviewed change** and **Reject proposal**, then **Refresh analysis** and the workbench button in one row. **Open common workbench** starts the loopback workbench for the session's work tree and shows the address as a clickable link, the same one it copies, with "Address copied to the clipboard · Opens on <feature>" dimmed below it; the workbench loads that feature by itself; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
 
 Validate with `claude plugin validate integrations/claude` and run the bundled native harness with `claude plugin test integrations/claude`. A harness result and a real interactive/client walkthrough are recorded separately.
 
@@ -26,7 +37,9 @@ Official references: [Mods](https://code.claude.com/docs/en/plugins/mods/create)
 
 ## Codex Desktop
 
-Build the viewer ZIP with `npm run check`, `npm run package:integrations` and `npm run package:codex`. Verify the package with `npm run verify:codex-package`. The ZIP bundles the project MCP runtime, the inline resource, the skills and the loopback workbench. Follow the [package guide](../integrations/codex/README.md) for local marketplace installation, binding a trusted worktree, upgrade and removal.
+Install from this repository's marketplace with `codex plugin marketplace add jayanez/spec-torque` and `codex plugin add spectorque@spectorque` (or from `/plugins` inside Codex), then [bind a trusted worktree](../integrations/codex/README.md#install-and-bind-a-worktree). The catalog installs the `spectorque-codex` npm package.
+
+From a checkout: Build the viewer ZIP with `npm run check`, `npm run package:integrations` and `npm run package:codex`. Verify the package with `npm run verify:codex-package`. The ZIP bundles the project MCP runtime, the inline resource, the skills and the loopback workbench. Follow the [package guide](../integrations/codex/README.md) for local marketplace installation, binding a trusted worktree, upgrade and removal.
 
 Use the inline viewer for scope, evidence and the exact before/after. It shows the summary and dimensions, then a labelled finding card with **Previous**/**Next**, and its scope selector offers **Changed on this branch** and always lists the current feature. `open_spectorque` accepts an optional `feature`, or `changed` with an optional `base`. In a worktree too large for one read, the viewer lists the features and waits for a choice, and long lists can be filtered. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. The tested opening route invokes `open_spectorque` in a local Codex chat. See [Desktop qualification](codex-desktop-probe.md) for observed builds and limits.
 
@@ -34,11 +47,21 @@ The independent project-MCP control `npm run prepare:codex -- en` or `-- es` gen
 
 ## VS Code workbench
 
-Install the packaged VSIX or load `integrations/vscode` through the extension development host. Run **SpecTorque: Open Specification Workbench** from the project. With several features, the **Select scope** QuickPick offers All documents (when the tree fits one read), **Changed on this branch** and each feature, lists the remembered scope first marked *current*, and opens the workbench on it. The panel title names the scope, and the notification shows the same `Workbench: http://localhost:PORT/ — opens on <feature>` line as the other hosts. The extension launches and disposes a workspace-scoped loopback server. The shared editor workstream is tracked in [#5](https://github.com/jayanez/spec-torque/issues/5).
+Install **SpecTorque** (`jayanez.spectorque`) from the VS Code Marketplace and choose *Switch to Pre-Release* while 0.3.x is a prerelease, or run `code --install-extension jayanez.spectorque --pre-release`. Cursor, Windsurf and VSCodium install the same extension from [Open VSX](https://open-vsx.org/extension/jayanez/spectorque); those editors are not yet qualified.
+
+From a checkout: Install the packaged VSIX or load `integrations/vscode` through the extension development host. Run **SpecTorque: Open Specification Workbench** from the project. With several features, the **Select scope** QuickPick offers All documents (when the tree fits one read), **Changed on this branch** and each feature, lists the remembered scope first marked *current*, and opens the workbench on it. The panel title names the scope, and the notification shows the same `Workbench: http://localhost:PORT/ — opens on <feature>` line as the other hosts. The extension launches and disposes a workspace-scoped loopback server. The shared editor workstream is tracked in [#5](https://github.com/jayanez/spec-torque/issues/5).
 
 ## OpenCode
 
-Run `npm run build`, `npm run package:integrations` and `npm run package:opencode`
+SpecTorque is a terminal-only OpenCode plugin, so it goes in the CLI settings rather than `opencode.json`. Add the npm package to `plugins` in `~/.config/opencode/cli.json` (or `$XDG_CONFIG_HOME/opencode/cli.json`):
+
+```json
+{"plugins":["opencode-spectorque@<version>"]}
+```
+
+Restart OpenCode. Remove the entry and restart to uninstall.
+
+From a checkout: Run `npm run build`, `npm run package:integrations` and `npm run package:opencode`
 to create the host ZIP. Extract it and add its absolute directory to `plugins`
 in your CLI profile: `{"plugins":["/absolute/spectorque-opencode"]}`. OpenCode
 2.1.4 reads the single CLI settings file at
@@ -61,7 +84,13 @@ observed TUI surface. See [OpenCode qualification](host-common-qualification.md#
 
 ## Pi
 
-Load `integrations/pi/index.ts` with Pi's extension option, or install the generated `integrations/pi` package through Pi's package mechanism. `/spectorque [feature | folder | --changed [base]]` supplies a score/evidence widget and interactive finding selection, editor and explicit confirmation. Without an argument, the scope picker lists the shared features and the branch's changes. Headless invocation returns the report without starting a model turn; on a work tree larger than one read it needs a scope argument. Skills are included.
+Install the npm package with `pi install npm:pi-spectorque@<version>` (add `--local` for one project) and run `/spectorque`. Remove it with `pi remove npm:pi-spectorque`. The package also appears in the [Pi package gallery](https://pi.dev/packages).
+
+From a checkout: Load `integrations/pi/index.ts` with Pi's extension option, or install the generated `integrations/pi` package through Pi's package mechanism. `/spectorque [feature | folder | --changed [base]]` supplies a score/evidence widget and interactive finding selection, editor and explicit confirmation. Without an argument, the scope picker lists the shared features and the branch's changes. Headless invocation returns the report without starting a model turn; on a work tree larger than one read it needs a scope argument. Skills are included.
+
+## ThinkRail
+
+ThinkRail runs Pi natively and installs Pi packages from npm, git or a local folder; `pi-spectorque` is listed in its extensions catalog from npm. Trust the project, then run `/spectorque` and the three skills. In ThinkRail's RPC mode the scope picker offers **All documents** and each feature. Observed behavior and limits: [ThinkRail/Pi qualification](host-common-qualification.md#thinkrail-desktop-with-pi-package).
 
 ## Other hosts
 
@@ -93,7 +122,7 @@ API behavior reference: [Pi extension modes](https://github.com/earendil-works/p
 Generate the package using the build commands above and `npm run package:pi`, then run:
 
 ```sh
-npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js --installed-archive artifacts/spectorque-pi-0.2.0.zip
+npm run qualify:pi -- /absolute/path/to/pi/dist/bundle/cli.js --installed-archive artifacts/spectorque-pi-<version>.zip
 ```
 
 The check extracts the exact archive outside the checkout and registers it

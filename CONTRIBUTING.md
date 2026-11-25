@@ -8,4 +8,6 @@ Development qualification pins Node 22 through `.nvmrc` and verifies the actual 
 
 Canonical documentation is English; Spanish guides and original EN/ES examples are welcome. Preserve upstream licensing. Use the public issue tracker as the task source of truth; reversible choices belong in the issue or PR, without a separate ADR gate.
 
+Product, engine and rubric versions follow the [versioning policy](docs/releases.md#versioning-and-releases): change the root version and run `npm run version:sync`; bump `ENGINE_VERSION` for any rule change that can alter findings. `npm run docs:capture` regenerates documentation screenshots.
+
 Before merging, obtain an independent review of correctness, security, integration contracts and scientific claims. Release evidence must identify platform and client version.

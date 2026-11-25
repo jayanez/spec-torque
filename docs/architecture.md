@@ -9,7 +9,8 @@ flowchart LR
   Report --> CLI
   Report --> MCP[Read-only MCP]
   Report --> Web[React workbench]
-  Report --> Hosts[Claude / VS Code / OpenCode / Pi]
+  Report --> Present[Shared presentation helpers]
+  Present --> Hosts[Claude Code / Codex / OpenCode / Pi and ThinkRail / VS Code]
   Web --> Proposal[Reviewed patch proposal]
   Hosts --> Proposal
   Model[Optional host or explicit provider] --> Proposal
@@ -17,7 +18,11 @@ flowchart LR
   Guard --> Files[Explicit local write]
 ```
 
-`src/core` runs in Node and the browser without host services. `src/node` owns bounded filesystem/network access, loopback sessions and optional providers. `src/integration.ts` exposes shared functions to adapters. The CLI and MCP share these boundaries.
+`src/core` runs in Node and the browser without host services. `src/node` owns bounded filesystem/network access, the work-tree index, loopback sessions and optional providers. `src/integration.ts` exposes shared functions and types to adapters, and `src/core/presentation.ts` gives every host the same title, summary, dimensions, finding card, scope vocabulary and disclaimer (`tests/parity.test.ts` checks the hosts agree). The CLI and MCP share these boundaries. Each host package bundles these modules into its own runtime; see [distribution](#distribution).
+
+## Engine pipeline
+
+Discovery builds a path-only index, then reads the selected scope. Classification assigns roles from layout hints: spec, plan, tasks, instruction file, or context (`quickstart.md` counts only as validation evidence; Spec Kit `checklists/` are review context and never requirements or open decisions). Normative recognition finds whole EN/ES obligation, recommendation and permission words. A requirement ID defines a requirement only in a defining position, and a hard-wrapped continuation belongs to its item. References resolve in the selected feature's namespace; plan-local labels and IDs qualified by another specification are not undefined references. Line and document rules then evaluate the 40 practices, findings carry exact evidence, and scoring follows the policy below. Each rule change that can alter results bumps `ENGINE_VERSION` and is recorded with its replay in [precision decisions](precision-decisions.md).
 
 ## Public contracts
 
@@ -53,6 +58,10 @@ Discovery analyzes the work tree you are in, on its checked-out branch, as it is
 | Narrow | `feature`, `paths` or `changed` (features with changes since the merge-base with the remote default branch or an explicit base, including uncommitted edits). They are available on the CLI, in MCP and in host adapters. Only one applies at a time. |
 
 The index and `features` output state the mode (`git` or `walk`) and the root. `ArtifactSet` and `Assessment` are unchanged. A review across more features than the limit aggregates one feature at a time; the limit is not raised.
+
+## Distribution
+
+`scripts/package-integrations.mjs` bundles the engine into each host folder. Those folders are npm packages (`spectorque-claude`, `spectorque-codex`, `opencode-spectorque`, `pi-spectorque`) beside the root `spectorque` CLI; the Claude and Codex catalogs at the repository root install them from npm, and the VSIX goes to the VS Code Marketplace and Open VSX. All share the root product version. See [releases](releases.md#versioning-and-releases).
 
 ## Reversible implementation choices
 

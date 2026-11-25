@@ -1,6 +1,6 @@
 # Compatibility and observed qualification
 
-The [published preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0) is 0.1.0. The table records observed host behavior, primarily from the November 18 and 19 qualification. Model turns for MCP/skill use and Desktop opening are documented in the host runbooks.
+The current release is the [0.3.0 prerelease](releases.md); earlier previews are [0.2.0](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0) and [0.1.0](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0). Each row records observed host behavior for the version it names, primarily from the November 18 to 20 qualification; a marketplace listing is not a qualification. Rows for 0.3.0 are added as the installed packages are observed. Model turns for MCP/skill use and Desktop opening are documented in the host runbooks.
 
 | Surface | Version observed | Observed evidence | Remaining qualification |
 |---|---|---|---|
@@ -21,6 +21,20 @@ The [published preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1
 The [post-merge run for PR #40](https://github.com/jayanez/spec-torque/actions/runs/44684548830) passed installed CLI smoke tests on Ubuntu, macOS and Windows, and installed workbench browser checks on Ubuntu. The PR also ran the installed-terminal matrices for [Claude Code](https://github.com/jayanez/spec-torque/actions/runs/44639162600), [OpenCode](https://github.com/jayanez/spec-torque/actions/runs/44639162540) and [Pi](https://github.com/jayanez/spec-torque/actions/runs/44639162654). These results apply to the commits and artifacts in those runs. Check the exact release artifact before extending the results to another build.
 
 The [pilot runbook](pilot-operations.md) tracks participant and release acceptance. Safari with VoiceOver, the wider VS Code workflow and Windows Desktop variants retain the limits in the table.
+
+## 0.3.0 package checks (local, macOS 27.2 arm64, Node 22.20.0)
+
+Observed on 2026-11-26 against the uncommitted 0.3.0 working tree, before publication. They exercise package shape and catalog parsing, not installation from the public registries, and do not extend the qualification rows above.
+
+| Check | Result |
+|---|---|
+| `npm run pack:hosts` | Five npm tarballs packed and their entry points verified from a clean extraction. The root tarball no longer bundles host integrations. |
+| Claude Code 2.1.311 | `SPECTORQUE_CLAUDE_ISOLATED=1 npm run qualify:claude` on `spectorque-claude-0.3.0.zip`: 21 of 21 cases pass in EN/ES, including install and removal through the committed catalog (source rewritten to the archive) at project scope. In the operator's own profile the removal case fails only because a separately installed SpecTorque plugin still answers `/spectorque`. `claude plugin validate .` and `claude plugin validate --profile directory integrations/claude` pass (the second reports advisory notes on two gating hooks without `.catch`). `claude plugin test integrations/claude`: 12 of 12 pass. The pane rendered 0.3.0 with `--plugin-dir integrations/claude`. |
+| Codex CLI 0.170.0 | With an isolated `CODEX_HOME`, the committed catalog with its source pointed at the extracted `spectorque-codex` tarball installed `spectorque@spectorque` 0.3.0. The unchanged catalog parsed its `npm` source and failed to install only because the package is not yet published. `npm run verify:codex-package` passed. |
+| OpenCode 2.1.4 | `npm run qualify:opencode` on `spectorque-opencode-0.3.0.zip` (darwin-arm64) passes in EN/ES. The extracted `opencode-spectorque` tarball, listed in `cli.json`, opened the native panel in an active session. `opencode plugin add` accepts only registry or git specifiers, so the published package cannot be tried before release. |
+| Pi 1.5.2 | `npm run qualify:pi -- <pi 1.5.2> --installed-archive spectorque-pi-0.3.0.zip --terminal-driver <node-pty>` passes: discovery, trust controls, text and JSON reports, RPC scopes and the EN/ES terminal walkthrough with JSON/ZIP handoff. |
+| Pi 1.6.1 | The same qualifier stops at the headless text report: with no model configured, Pi 1.6.1 writes a "No models available" warning to stderr, which the check requires to be empty. The SpecTorque report itself is unchanged. `pi install` of the extracted `pi-spectorque` tarball (`--local`) loaded the extension and the three skills; `/spectorque` showed the widget and finding picker offline. |
+| VS Code 1.147.0 | The VSIX built by `@vscode/vsce` 4.1.1 installed in an isolated extension host and passed `npm run test:vscode`. |
 
 ## Detected layout hints
 

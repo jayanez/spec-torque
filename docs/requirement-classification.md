@@ -228,7 +228,7 @@ families above and made before this freeze:
 
 DEV rounds used: 1 of 3. Synthetic replay against `d06c023`: 0 regressions. Historical
 controls: the 716 historical predictions are unchanged (0 changed), so no adjudication was
-needed. Round 1 results are in [precision decisions](precision-decisions.md#h3-dev).
+needed. Round 1 results are in [precision decisions](precision-decisions.md#h3-deterministic-line-grammar-on-dev).
 
 ## H4 pre-registration: local-model line classifier (2026-11-22, before any H4 code)
 
