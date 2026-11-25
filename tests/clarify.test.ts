@@ -205,6 +205,21 @@ test('quoted labels cannot override the real modality or supply the selected cue
   }
 });
 
+test('#85: a quoted or code-formatted label after a label noun names an option, even with several words', async () => {
+  for (const [language, source, focus] of [
+    ['en', 'REQ-001: The radar MUST mark the class `easily copied` when two items share a hash.', 'named-option'],
+    ['es', 'REQ-001: El radar DEBE marcar la clase «fácilmente copiable» cuando dos elementos comparten un hash.', 'named-option'],
+    ['en', 'REQ-002: The kiosk MUST use the tier “fast lane” only for standard playlists.', 'named-option'],
+    ['en', 'REQ-003: The radar MUST mark the class easily copied when two items share a hash.', 'unsupported'],
+    ['es', 'REQ-003: El radar DEBE marcar la clase fácilmente copiable cuando dos elementos comparten un hash.', 'unsupported'],
+    ['en', 'REQ-004: The radar MUST mark the `copied` class easily when two items share a hash.', 'unsupported'],
+  ] as const) {
+    const { result } = await check(documents('specs/radar/spec.md', source), language);
+    assert.equal(result.kind, 'abstain', source);
+    assert.equal(result.focus, focus, source);
+  }
+});
+
 test('removal cannot borrow a vague cue from a different action in the same requirement', async () => {
   for (const [language, source] of [
     ['en', 'FR-031: The console MUST remove the expired notice upon confirmation and log as needed.'],

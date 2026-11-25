@@ -137,3 +137,14 @@ test('month enumeration suppression preserves independent modal and identifier e
     '> Operators may stop. The options are Apr, May, Jun.\n\n```md\nOperators may stop.\n```')] });
   assert.equal(example.practices.find(row => row.id === 'E1.4')?.status, 'unknown');
 });
+test('H85: a demonstrative that leads a noun phrase is not a pronoun subject (E1.3)', async () => {
+  const flagged = async (line: string) => (await analyze({ name: 'h85', artifacts: [classifyArtifact('specs/001-demo/spec.md', `# Demo\n\n${line}\n`)] }))
+    .findings.some(f => f.practiceId === 'E1.3');
+  for (const line of ['- REQ-001: This amendment MUST keep the export format.', 'That endpoint MUST return 404.', 'This `export` flag MUST stay off.',
+    '- REQ-001: Esta enmienda DEBE conservar el formato.']) assert.equal(await flagged(line), false, line);
+  for (const line of ['- REQ-001: This MUST keep the export format.', 'That means the endpoint MUST return 404.', 'This, in turn, MUST hold.',
+    "That's why the export MUST include the date.", 'This in turn means the export MUST include the date.', 'This only applies when the export MUST run.',
+    'It MUST include the date.', 'This allowed the export to fail; the service MUST retry.', '- REQ-001: Esto DEBE conservar el formato.']) {
+    assert.equal(await flagged(line), true, line);
+  }
+});
