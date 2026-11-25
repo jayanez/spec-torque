@@ -733,3 +733,17 @@ test('the Source text heading shows a focus outline after an accepted change', a
   await expect(heading).toBeFocused();
   expect(await heading.evaluate(node => getComputedStyle(node).outlineStyle)).toBe('solid');
 });
+
+test('a sample is named in the view language, and its first edit compares with the unedited sample', async ({ page, workspace }) => {
+  await page.goto(workspace.url);
+  await expect(page.locator('.workspace-name strong')).toHaveText('Booking · artifact set');
+  await page.getByRole('button', { name: 'Switch to Spanish', exact: true }).click();
+  await expect(page.locator('.workspace-name strong')).toHaveText('Reservas · conjunto de documentos');
+  await page.getByRole('button', { name: 'Cambiar a inglés', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Source text editor' });
+  await editor.fill((await editor.inputValue()) + '\nFR-099: The system MUST be fast.\n');
+  await expect(page.getByText(/^Previous assessment:/)).toBeVisible();
+  await page.getByRole('button', { name: 'History', exact: true }).click();
+  // Only the edit is listed: the unedited sample is a baseline, not the user's work.
+  await expect(page.locator('.history-row')).toHaveCount(1);
+});

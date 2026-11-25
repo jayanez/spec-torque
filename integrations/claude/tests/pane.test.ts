@@ -212,7 +212,7 @@ test('common workbench opens for the session workspace, copies its address and s
   });
   await $.command.run({ command: 'spectorque', args: '' });
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
-  expect(await ui.find({ type: 'Text', text: 'Opening copies the workbench address to the clipboard.' })).toBeDefined();
+  expect(await ui.find({ type: 'Text', text: 'Opening the workbench also copies its address to the clipboard.' })).toBeDefined();
   await ui.press({ key: 'workbench' });
   expect(spawned).toHaveLength(1);
   expect(spawned[0].argv.slice(2)).toEqual(['serve', '--root', '/sample', '--port', '0']);
@@ -330,6 +330,19 @@ test('the workbench line names the feature the workbench opens on', async ($, on
   expect((await ui.find({ type: 'Link' }))?.props.href).toBe('http://localhost:4321/');
   expect(await ui.find({ type: 'Text', text: 'Address copied to the clipboard · Opens on specs/payments' })).toBeDefined();
   expect(await ui.find({ type: 'Text', text: /copies the workbench address/ })).toBeUndefined();
+  await ui.press({ key: 'workbench' });
+  await ui.unmount();
+});
+
+test('the workbench line says so when the address could not be copied', async ($, on) => {
+  stubHost(on, emptyReport);
+  on('ui.copy', () => { throw new Error('clipboard unavailable'); });
+  on('process.spawn', async function* () { yield READY; await new Promise(() => {}); });
+  await $.command.run({ command: 'spectorque', args: '' });
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' });
+  await ui.press({ key: 'workbench' });
+  expect((await ui.find({ type: 'Link' }))?.props.href).toBe('http://localhost:4321/');
+  expect(await ui.find({ type: 'Text', text: 'Could not copy the address; use the link' })).toBeDefined();
   await ui.press({ key: 'workbench' });
   await ui.unmount();
 });

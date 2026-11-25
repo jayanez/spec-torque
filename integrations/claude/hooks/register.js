@@ -230,13 +230,13 @@ export function register(on) {
       } }),
     ] }));
     // Mods Links and Buttons have no tooltip, so the secondary details are dimmed lines next to them.
-    if (!workbench) children.push(Text({ dimColor: true, children: ['Opening copies the workbench address to the clipboard.'] }));
+    if (!workbench) children.push(Text({ dimColor: true, children: ['Opening the workbench also copies its address to the clipboard.'] }));
     if (workbench?.url) {
       // Desktop and VS Code make a Link clickable only for https: or http://localhost; the loopback server accepts both hosts.
       // Without a label the address is the link text, drawn once on every surface (a terminal adds the URL after a label).
       children.push(Box({ flexDirection: 'row', columnGap: 1, children: [Text({ children: ['Workbench:'] }), Link({ key: 'workbench-link', href: workbenchUrl(workbench.url) })] }));
       // Its own line: beside the link it would wrap into narrow columns on the terminal.
-      const details = [...(workbench.copied ? ['Address copied to the clipboard'] : []), ...(workbench.feature ? ['Opens on ' + workbench.feature] : [])];
+      const details = [workbench.copied ? 'Address copied to the clipboard' : 'Could not copy the address; use the link', ...(workbench.feature ? ['Opens on ' + workbench.feature] : [])];
       if (details.length) children.push(Text({ dimColor: true, children: [details.join(' · ')] }));
     }
     if (workbenchNote) children.push(Text({ children: [workbenchNote] }));

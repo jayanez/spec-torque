@@ -10,3 +10,7 @@ export function sampleSet(strong = false, spanish = false): ArtifactSet {
     classifyArtifact('specs/booking/tasks.md', '# Implementation tasks\n\n[Specification](spec.md) · [Plan](plan.md)\n\n- [ ] T-001: Implement and verify FR-001.\n- [ ] T-002: Implement and verify FR-002; depends on T-001.\n- [ ] T-003: Implement and verify NFR-001.\n\n## Definition of done\nEach acceptance scenario has recorded verification evidence.\n\n## Verification method\nManual check: test invalid dates, duplicate requests and calendar failure.\n'),
   ] };
 }
+
+const names: Record<string, string> = { 'Booking · artifact set': 'Reservas · conjunto de documentos', 'Booking · first draft': 'Reservas · borrador' };
+/** A sample's name in the view's language; other names are returned unchanged. */
+export const sampleName = (name: string, spanish: boolean) => spanish ? names[name] ?? name : Object.entries(names).find(([, es]) => es === name)?.[0] ?? name;
