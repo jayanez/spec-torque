@@ -68,10 +68,10 @@ export function SourcePanel({ set, selected, language, local, pending, panels, o
     <div className="panel-header"><h2 className="panel-title">{es ? 'Documentos' : 'Artifacts'}</h2><PanelToggle side="left" panels={panels} es={es} controls="artifacts-panel-body"/></div>
     {/* Only the content is disabled while an operation is pending; the panel can still collapse. */}
     <fieldset disabled={pending} className="panel-body mutation-controls" id="artifacts-panel-body" hidden={collapsed}><p className="muted">{loadedFeatures.length === 1 && loadedFeatures[0].id !== '(root)' ? loadedFeatures[0].id : es ? 'Selecciona un conjunto por funcionalidad.' : 'Review one feature set at a time.'}</p>
-    <div className="source-actions"><button onClick={() => input.current?.click()}>{es ? 'Importar archivos' : 'Import files'}</button><button onClick={() => setPaste(!paste)}>{es ? 'Pegar texto' : 'Paste text'}</button></div>
+    <div className="source-actions"><button onClick={() => input.current?.click()}><ActionIcon name="import"/>{es ? 'Importar archivos' : 'Import files'}</button><button aria-expanded={paste} onClick={() => setPaste(!paste)}><ActionIcon name="paste"/>{es ? 'Pegar texto' : 'Paste text'}</button>
+    {local && <button className="workspace-button" onClick={() => void loadLocal(localScope)}><ActionIcon name="reload"/>{es ? 'Recargar proyecto local' : 'Reload local workspace'}</button>}</div>
     <input ref={input} type="file" accept=".md" multiple hidden onChange={e => { void files(e.target.files); e.target.value = ''; }}/>
     {paste && <div className="paste"><label className="field"><span>{es ? 'Texto de la especificación' : 'Specification text'}</span><textarea value={text} rows={5} onChange={e => { setText(e.target.value); onPasteDraftChange(Boolean(e.target.value)); }}/></label><button disabled={!text.trim()} onClick={() => { if (onLoad({ name: es ? 'Texto importado' : 'Pasted specification', artifacts: [classifyArtifact('spec.md', text)] }, 'draft')) { setText(''); onPasteDraftChange(false); setPaste(false); } }}>{es ? 'Analizar texto' : 'Analyze text'}</button></div>}
-    {local && <button className="workspace-button" onClick={() => void loadLocal(localScope)}>{es ? 'Recargar proyecto local' : 'Reload local workspace'}</button>}
     {picker && <FeatureCombobox label={es ? 'Funcionalidad del proyecto local' : 'Local workspace feature'} placeholder={es ? 'Busca una funcionalidad' : 'Search features'}
       empty={es ? 'Ninguna funcionalidad coincide.' : 'No feature matches.'} value={localScope === null ? WHOLE_TREE : localScope ?? ''}
       options={[...(fits ? [{ value: WHOLE_TREE, label: es ? 'Todos los documentos' : 'All documents' }] : []), ...localInfo.features.map(f => ({ value: f.id, label: f.layout ? f.id : (es ? 'Otros · ' : 'Other · ') + f.id }))]}
@@ -85,4 +85,18 @@ export function SourcePanel({ set, selected, language, local, pending, panels, o
     <p className="privacy-note">◉ {es ? 'Análisis local. Sin telemetría.' : 'Local analysis. No telemetry.'}</p></fieldset>
     <PanelResizer side="left" panels={panels} es={es} panel={() => aside.current}/>
   </aside>;
+}
+
+const ICON_PATHS = {
+  // Tray with an arrow coming in: bring files from disk.
+  import: 'M8 2v8m0 0L5 7m3 3 3-3M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2',
+  // Clipboard: paste text.
+  paste: 'M5.5 2.5h5v2h-5zM5.5 3.5h-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1M6 8h4M6 10.5h3',
+  // Circular arrow: read the local workspace again.
+  reload: 'M13 8a5 5 0 1 1-1.46-3.54M13 2.5v3h-3',
+};
+
+/** Decorative icon for a source action; the button text stays the accessible name. */
+function ActionIcon({ name }: { name: keyof typeof ICON_PATHS }) {
+  return <svg className="action-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d={ICON_PATHS[name]} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 }
