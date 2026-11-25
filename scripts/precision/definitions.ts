@@ -5,8 +5,9 @@
  *   synthetic: fixtures/precision/h3-pairs.json, expected findings per case.
  *   scan:      every Spec Kit feature of each root, analyzed whole (definitions cross lines).
  *
- * H9 (#84) reuses it with its own twins. `otherChanges` counts features whose assessment differs
- * outside the I1.2/I2.3 endpoint findings (practices, evidence, other findings, traceability).
+ * H9 (#84) reuses it with its own twins. `otherChanges` counts features whose assessment differs in
+ * anything but the I1.2/I2.3 findings themselves: practice statuses and evidence (including I1.2,
+ * I2.2 and I2.3), dimensions, decisions, traceability and the other findings.
  */
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

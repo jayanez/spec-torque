@@ -50,7 +50,6 @@ test('H5a: an ID cited later in an item or paragraph does not identify its other
     '  (FR-009), because that would dispatch the task again.'], ['# Plan']), ['I1.2:5:Requirement has no stable identifier.']);
 });
 
-const T = 'specs/001-demo/tasks.md';
 async function references(plan: string[], spec = ['# Demo', '', '- **REQ-001:** The system MUST ask for consent.'], feature = 'specs/001-demo') {
   const set = { name: 'demo', artifacts: [classifyArtifact(`${feature}/spec.md`, spec.join('\n') + '\n'), classifyArtifact(`${feature}/tasks.md`, plan.join('\n') + '\n')] };
   const assessment = await analyze(set);

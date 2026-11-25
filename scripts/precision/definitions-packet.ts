@@ -8,13 +8,14 @@
  * H5 (#78) reuses the builder with a wider context and a missing-identifier proposition that also
  * considers the list item or paragraph the line belongs to. H9 (#84) uses an unresolved-reference
  * proposition that asks whether the ID is meant as this feature's requirement; its key records the
- * rule (`not-adopted` when a non-adoption marker is attached to the subject ID, as in the engine,
- * otherwise `qualified`), and its occurrences skip namespaced forms such as `VP-REQ-01`.
+ * rule (`not-adopted` when the engine's non-adoption marker is attached to the subject ID, otherwise
+ * `qualified`), and its occurrences skip namespaced forms such as `VP-REQ-01`.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { around as idContext, markedNotAdopted, namespaceOf } from '../../src/core/references.js';
 import { rootSchema } from './sources.js';
 
 const { values } = parseArgs({ options: {
@@ -23,6 +24,7 @@ const { values } = parseArgs({ options: {
   context: { type: 'string', default: '3' }, propositions: { type: 'string', default: 'h3a' },
 } });
 if (!['h3a', 'h5', 'h9'].includes(values.propositions!)) throw new Error('--propositions must be h3a, h5 or h9.');
+const h9 = values.propositions === 'h9';
 const around = Number(values.context);
 if (!values.detail || !values.roots || !values.out) throw new Error('Use: definitions-packet.ts --detail <h3-scan.json> --roots <roots.json> --out <dir>');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
@@ -48,13 +50,12 @@ const proposition = (message: string) => message.startsWith('Duplicate')
     ? values.propositions === 'h5'
       ? 'This line states a requirement that has no stable identifier: neither the line, nor the list item or paragraph it belongs to (including its wrapped lines), nor an enclosing requirement heading identifies it.'
       : 'This line states a requirement that has no stable identifier of its own and is not under an enclosing requirement heading that identifies it.'
-    : values.propositions === 'h9'
+    : h9
       ? 'The requirement ID cited on this line is meant as a requirement of this feature, and the feature\'s specification documents do not define it.'
       : 'The requirement ID cited on this line has no definition anywhere in the feature\'s specification documents.';
-// H9 rule 2 as in the engine: a non-adoption marker directly before the ID or in a parenthesis after it.
-const marker = '(?:not[ -]adopted|no[ \\t]+adoptad[oa]s?)', proposed = '(?:proposed|propuest[oa]s?)';
-const attachedMarker = (text: string, id: string) => id !== '' && new RegExp(
-  `${marker}\\)?[ \\t]+${id}\\b|\\b${id}(?:/\\d+)*[ \\t]*(?:${proposed}[ \\t]*)?\\((?:${proposed}[ \\t]*,?[ \\t]*)?${marker}\\)`, 'iu').test(text);
+/** Matches of the bare ID on a line; for H9, namespaced forms such as `VP-REQ-01` are not the ID. */
+const matchesOf = (pattern: RegExp, text: string) => [...text.matchAll(pattern)]
+  .filter(match => !h9 || !namespaceOf(idContext(text, match.index, match[0].length).before));
 const specDocument = (path: string) => /\.md$/i.test(path) && /spec|requirement|prd|proposal/i.test(path.split('/').pop()!);
 
 const items = []; const key = [];
@@ -64,10 +65,11 @@ for (const change of draw(chosen, chosen.length)) {
   const lines = git(change.root, 'show', `${change.sha}:${path}`).split(/\r?\n/);
   const id = message.match(/(?:FR|NFR|REQ|R)-\d+/i)?.[0];
   const occurrences: string[] = [];
-  if (id) {
+  const pattern = id && new RegExp(`\\b${id}\\b(?!\\.\\d)`, 'gi');
+  if (pattern) {
     const files = git(change.root, 'ls-tree', '-r', '--name-only', change.sha).split('\n').filter(f => f.startsWith(change.feature + '/') && specDocument(f));
     for (const file of files) git(change.root, 'show', `${change.sha}:${file}`).split(/\r?\n/).forEach((text, index) => {
-      if (occurrences.length < 8 && new RegExp(`${values.propositions === 'h9' ? '(?<![A-Z0-9]-)' : ''}\\b${id}\\b(?!\\.\\d)`, 'i').test(text)) occurrences.push(`${file}:${index + 1}: ${text.trim().slice(0, 240)}`);
+      if (occurrences.length < 8 && matchesOf(pattern, text).length) occurrences.push(`${file}:${index + 1}: ${text.trim().slice(0, 240)}`);
     });
   }
   const itemId: string = 'D' + String(items.length + 1).padStart(3, '0');
@@ -77,7 +79,9 @@ for (const change of draw(chosen, chosen.length)) {
     context: lines.slice(Math.max(0, line - 1 - around), line + around).map((text, index) => `${Math.max(1, line - around) + index}${Math.max(1, line - around) + index === line ? ' >' : '  '} ${text}`),
     occurrences,
   });
-  const rule = values.propositions === 'h9' ? { rule: attachedMarker(lines[line - 1] ?? '', id ?? '') ? 'not-adopted' : 'qualified' } : {};
+  // The rule that left the finding out, read with the engine's own marker test.
+  const target = lines[line - 1] ?? '';
+  const rule = h9 ? { rule: pattern && matchesOf(pattern, target).some(match => markedNotAdopted(idContext(target, match.index, match[0].length))) ? 'not-adopted' : 'qualified' } : {};
   key.push({ id: itemId, direction: change.direction, practice, message, root: change.root, feature: change.feature, ...rule });
 }
 await mkdir(values.out, { recursive: true, mode: 0o700 });
