@@ -36,7 +36,7 @@ export type Clarification = ClarificationContext & (
 type FactKind = 'bound' | 'start' | 'end' | 'trigger' | 'owner';
 interface Fact { kind: FactKind; value: string; evidence: Evidence }
 
-const namedLabel = /\b(?:profile|preset|mode|option|class|category|label|tag|status|state|type|tier|perfil|modo|opción|clase|categoría|etiqueta|estado|tipo|nivel)(?:\s+(?:named|called|llamad[oa]))?\s+(`[^`\n]+`|"[^"\n]+"|“[^”\n]+”|«[^»\n]+»|‘[^’\n]+’|'[^'\n]+')/dgu;
+const namedLabel = /\b(?:profile|preset|mode|option|class|category|label|tag|status|state|type|tier|perfil|modo|opción|clase|categoría|etiqueta|estado|tipo|nivel)(?:\s+(?:named|called|llamad[oa]))?\s+(`[^`\n]+`|"[^"”\n]+["”]|“[^”\n]+”|«[^»\n]+»|‘[^’\n]+’|'[^'’\n]+['’])/dgu;
 const definition = /^\s*(?:[-*+]\s+)?(?:\*\*)?((?:FR|NFR|REQ|R)-\d+)\b(?:\*\*)?\s*:?\s*/i;
 const duration = /^(\d+(?:[.,]\d+)?)\s*(ms|milliseconds?|milisegundos?|s|seconds?|segundos?|minutes?|minutos?)(?![\p{L}\p{N}])/iu;
 const inlineBound = /^(?:within|in|en menos de|dentro de|en)\s+/iu;

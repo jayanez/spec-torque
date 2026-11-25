@@ -84,7 +84,7 @@ const unboundedWording = new RegExp(vagueTerms.source, 'iu');
 // pronoun: punctuation, a contraction, a modal or auxiliary, an adverb, a preposition or conjunction,
 // or a verb form. The verb and adverb suffixes err towards keeping the finding.
 const subjectLead = /^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:(it|esto|eso|ello)|this|that)\b/i;
-const pronounNext = /^(?:\s*(?:$|[.,;:!?)—–-])|['’](?:s|ll|d)\b|\s+(?:must|shall|should|may|might|can|could|will|would|is|was|are|were|be|been|being|has|had|have|does|did|do|also|only|never|always|then|now|still|not|alone|itself|and|or|but|in|on|at|for|with|by|of|to|from|as|if|when|because|so|made|led|meant|became|took|gave|kept|\w+ly|\w*[^\Wsui]s|\w+ed)\b)/i;
+const pronounNext = /^(?:\s*(?:$|[.,;:!?)—–-])|['’](?:s|ll|d)\b|\s+(?:must|shall|should|may|might|can|cannot|could|will|won|would|is|was|are|were|be|been|being|has|had|have|does|did|do|also|only|never|always|then|now|still|not|alone|itself|and|or|but|in|on|at|for|with|by|of|to|from|as|if|when|because|so|made|led|meant|became|took|gave|kept|\w+ly|\w*[^\Wsui]s|\w+ed)\b)/i;
 function pronounSubject(text: string): boolean {
   const lead = subjectLead.exec(text);
   return Boolean(lead && (lead[1] || pronounNext.test(text.slice(lead[0].length))));

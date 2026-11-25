@@ -213,6 +213,8 @@ test('#85: a quoted or code-formatted label after a label noun names an option, 
     ['en', 'REQ-003: The radar MUST mark the class easily copied when two items share a hash.', 'unsupported'],
     ['es', 'REQ-003: El radar DEBE marcar la clase fácilmente copiable cuando dos elementos comparten un hash.', 'unsupported'],
     ['en', 'REQ-004: The radar MUST mark the `copied` class easily when two items share a hash.', 'unsupported'],
+    ['en', 'FR-033: The console MUST remove the label “Remove as needed” from historical views.', 'named-option'],
+    ['en', 'REQ-005: The kiosk MUST use the profile "fast” only for standard playlists.', 'named-option'],
   ] as const) {
     const { result } = await check(documents('specs/radar/spec.md', source), language);
     assert.equal(result.kind, 'abstain', source);

@@ -144,7 +144,7 @@ test('H85: a demonstrative that leads a noun phrase is not a pronoun subject (E1
     '- REQ-001: Esta enmienda DEBE conservar el formato.']) assert.equal(await flagged(line), false, line);
   for (const line of ['- REQ-001: This MUST keep the export format.', 'That means the endpoint MUST return 404.', 'This, in turn, MUST hold.',
     "That's why the export MUST include the date.", 'This in turn means the export MUST include the date.', 'This only applies when the export MUST run.',
-    'It MUST include the date.', 'This allowed the export to fail; the service MUST retry.', '- REQ-001: Esto DEBE conservar el formato.']) {
+    'It MUST include the date.', 'This allowed the export to fail; the service MUST retry.', 'That cannot happen; the export MUST retry.', "That won't happen; the export MUST retry.", '- REQ-001: Esto DEBE conservar el formato.']) {
     assert.equal(await flagged(line), true, line);
   }
 });

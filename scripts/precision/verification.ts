@@ -102,7 +102,7 @@ if (mode === 'synthetic') {
         if (c.dimensions[id] !== null && b.dimensions[id] !== null && c.dimensions[id]! < b.dimensions[id]!) totals.dimensionsDown++;
       }
       totals.decisionsAdded += c.decisions - b.decisions;
-      const keys = (r: typeof b) => new Set(r!.findingLines.map(f => f.key));
+      const keys = (r: NonNullable<typeof b>) => new Set(r.findingLines.map(f => f.key));
       const [bKeys, cKeys] = [keys(b), keys(c)];
       const findingsRemoved = b.findingLines.filter(f => !cKeys.has(f.key));
       const findingsAdded = c.findingLines.filter(f => !bKeys.has(f.key));
