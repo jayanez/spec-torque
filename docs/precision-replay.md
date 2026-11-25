@@ -550,6 +550,13 @@ any file content:
 The list is committed in `fixtures/precision/h6-sources.json` before the
 candidate commit.
 
+### Amendment H6 (2026-11-25, after adjudication; owner decision)
+
+H5 failed its adjudication, so H6 no longer builds on it. H6 is rebased onto
+`develop`. The comparator becomes 0.1.9 (`c3f79b0`), the candidate engine becomes
+0.1.10, and the H5 twins drop out of gate 1. The policy, twins, sources and gates are
+unchanged, and every measurement was repeated against the new comparator.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

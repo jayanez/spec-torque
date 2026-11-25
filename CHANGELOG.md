@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Engine 0.1.10 (#88, H6): E3.1 counts acceptance scenarios (`acceptance scenarios`, `escenarios de aceptación`) and one-line Given/When/Then scenarios; E3.2 counts validation-plan table rows that map an identifier to a test file; Spec Kit `specs/NNN-*/quickstart.md` is discovered as a feature context artifact in local work trees, so its test commands count for E3.2. Statuses only move up; the corpus comparison shows no prediction change. Known limits: line-local rules now also read quickstart text, a spec-quality checklist line that names acceptance scenarios counts for E3.1, and runners such as `python3 -m unittest` are still not recognized. See docs/precision-decisions.md.
 - UI/UX refinement, PR 2 of 2 (host adapters), on the shared presentation helpers; scoring is unchanged.
   - Codex Desktop: title with the product version, summary and dimensions after the score, a labelled finding card with Previous/Next, **Changed on this branch** in the scope selector with the current feature in its sorted position, the shared disclaimer, and **Review change**/**Reject proposal** in the preview. `setup-workspace.mjs <worktree> [feature]` prints the `serve` command with `--feature`, and the review data text reflects that the workbench loads on its own.
   - OpenCode: one title with the version, **Select scope**/**Select finding**, the finding card in Inspect (for the evidence item selected), a read-only workbench alert with the shared line, the workbench restarts when the feature changes, the shared read limit, and the disclaimer.

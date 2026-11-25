@@ -751,3 +751,70 @@ the other's labels.
 **Decision.** Propose H3a (engine 0.1.9) for merge. The known limits are recorded
 in the H3a entry above. The owner decides at review.
 
+### H6: acceptance scenarios, validation tables and Spec Kit quickstart — **holds provisionally; E3.2 unconfirmed; proposed for merge pending adjudication**
+
+Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
+- Pre-registered at `20d9a85`.
+- The sources (5 repositories: `"SC-001: Given"` in `spec.md` filled 1 of 4,
+  `"python3 -m pytest"` in `quickstart.md` filled 4), 16 EN/ES twins and the replay
+  (`scripts/precision/verification.ts`) were frozen at `ec1fcca`.
+- Candidate: `2cda71c`, engine 0.1.10. Comparator: 0.1.9 (`develop`, `c3f79b0`).
+- **Rebase (owner decision, 2026-11-25, after both adjudications).** H6 was first
+  built on H5 (engine 0.1.11, comparator 0.1.10 at `13cfd0d`). H5 failed its
+  adjudication, so H6 was rebased onto `develop` unchanged except for the engine
+  version. Every measurement below was repeated against 0.1.9 and is identical to
+  the run against H5: the twins, the H3a twins, the minimal pairs, the 716
+  predictions, the fresh-set totals with the same changed features and E3.1
+  evidence lines, and the pilot totals. The H6 rules do not interact with H5's.
+
+The replay discovers with the work-tree rule (basename only), as local analysis
+does. GitHub import already matches every Markdown file under `specs/`, so it
+already read `quickstart.md`.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (16 EN/ES), H3a twins, minimal pairs | holds: 16 of 16 (0.1.9 meets 8, failing exactly the 8 target cases); H3a 20 of 20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical in all 36 cases |
+| 3. Fresh set | holds provisionally: nothing goes down; every new E3.1 and E3.4 evidence line is genuine; **no E3.2 change occurs, so the E3.2 rules are not confirmed on fresh data** |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** 197 Spec Kit features in 5 roots; every change falls in one root
+(132 features), and 129 `quickstart.md` files are added as context artifacts.
+- Status: E3.1 `missing` → `partial` in 13 features, E3.4 in 2; no status and no
+  dimension score goes down; 8 dimension scores go up.
+- E3.1: all 13 first evidence lines are Spec Kit `**Acceptance Scenarios**:`
+  blocks with numbered Given/When/Then scenarios. E3.4: both are a
+  `## Definition of done` section of a `quickstart.md`.
+- E3.2: no change. The features that gained a quickstart already had E3.2 from
+  other documents, and no validation table row matched.
+- Added findings, all on `quickstart.md` lines: 15 E2.1, 5 E1.3 and 1 E1.2. They
+  are the line-local rules running on procedure text with a modal word
+  (`Both must return … and **must not** make any POST`, `This single assertion
+  *is* FR-039.`), the same kind they produce on any other context document. Most
+  are not useful findings.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 57 `quickstart.md` files are added. E3.1 goes `missing` → `partial` in 59
+features and E3.2 in 16; nothing goes down; 37 dimension scores go up. Added
+findings: 5 E2.1 and fewer than 5 E1.3. After the candidate, E3.1 is `partial` in
+68 features and `missing` in 15; E3.2 is `partial` in 18 and `missing` in 65,
+including 47 that have a quickstart.
+
+**Unpredicted result.** #88 assumed that the pilot quickstarts run `python3 -m
+pytest`. A token count shows 1 of 57 does; 24 run `python3 -m unittest` and 43 run
+`python3 scripts/…`. Neither is in the E3.2 vocabulary, which H6 did not change, so
+the quickstart change moves E3.2 in far fewer pilot features than #88 expected. The
+vocabulary was not widened after the fact.
+
+**Known limits.**
+- Indexing `quickstart.md` lets line-local rules (E1.2, E1.3, E2.1) report on its
+  procedure text.
+- The identifier cell of the validation-table rule is case-insensitive, so a cell
+  such as `| utf-8 |` counts as an identifier when the row also names a test file.
+- A one-line Given/When/Then counts for E3.1 whatever its role in the text.
+
+**Decision.** Propose H6 (engine 0.1.10) for merge after independent adjudication
+of the new E3 evidence; the owner fixes the threshold before labeling. The owner
+also decides whether to pre-register an H6a for further runner vocabulary
+(`python3 -m unittest`, script runners), with a fresh set chosen for it.
+
