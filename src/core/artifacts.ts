@@ -46,6 +46,9 @@ export function classifyArtifact(path: string, content: string): Artifact {
   return { path: p, content, role, framework, featureId, archived };
 }
 
+/** H6a (#88): the Spec Kit quickstart is validation-method evidence only, never requirements text. */
+export const isValidationGuide = (path: string) => specKitQuickstart.test(path.replaceAll('\\', '/'));
+
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const normalized = path.replaceAll('\\', '/');
   const legacyPath = basenameOnly ? normalized.slice(normalized.lastIndexOf('/') + 1) : normalized;
