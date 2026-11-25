@@ -59,6 +59,8 @@ test('H7a: a Spec Kit checklist is review context, never requirements text or a 
   // Citations are not definitions, and modal items are not requirement lines.
   assert.deepEqual((await run('- [x] REQ-001 has a task and a validation procedure.')).findings, []);
   assert.deepEqual((await run('- [ ] Support MUST review the confirmation email.')).findings, []);
+  // Line rules (here E2.1) do not run on checklist lines.
+  assert.deepEqual((await run('- [ ] Support MUST review the email and MUST sign it off.')).findings, []);
   // The template item is not an open decision, but still states that none remain (E1.1).
   const none = await run('- [x] No [NEEDS CLARIFICATION] markers remain');
   assert.deepEqual(none.decisions, []);
