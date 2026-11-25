@@ -98,3 +98,30 @@ output, the key, this conversation, implementation diffs or each other's labels.
 - Added findings are reported. They are already recorded as a known limit and do
   not gate the decision.
 
+
+## H5: wrapped continuations (#78)
+
+H5 removes I1.2 findings and adds none. The owner fixed the threshold on 2026-11-25,
+before any labeling.
+
+**Packet.** It is built from the H5 fresh-set scan:
+
+```sh
+node --import tsx scripts/precision/definitions-packet.ts --detail <h5 scan>/h3-scan.json --roots <roots.json> --out .spec-torque/precision/h5-adjudication --context 6 --propositions h5
+```
+
+It holds all 38 removed findings (no sampling), shuffled with seed 42039, with six
+lines of context on each side so that a wrapped item's first line is visible. Each
+item otherwise has the H3a fields. `key.json` is not opened by reviewers.
+
+**Propositions.** As in H3a, except for the missing identifier:
+
+| Finding | Proposition |
+|---|---|
+| Duplicate identifier | This line states a second, separate requirement under an ID that the same feature already uses for a different requirement. |
+| Missing identifier | This line states a requirement that has no stable identifier: neither the line, nor the list item or paragraph it belongs to (including its wrapped lines), nor an enclosing requirement heading identifies it. |
+
+**Reviewers.** Two independent agent sessions, as in H3a, with the same limits.
+
+**Threshold.** At most 2 of the 38 removed findings may be agreed `positive`.
+Disputed items count against the threshold until the owner resolves them.
