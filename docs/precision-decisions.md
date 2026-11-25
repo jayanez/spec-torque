@@ -1241,7 +1241,9 @@ positive.
 **Pilot repository (development data, 86 features, work tree, counts only; arms B
 and C identical except E1.1/P2.5).**
 - 36 checklists are reclassified.
-- Findings go from 483 to 482: one duplicate is removed, and none is added.
+- Findings go from 483 to 482 against 0.1.12, and from 470 to 469 against `develop` at engine
+  0.1.14 (after H8 and H85): one duplicate is removed, and none is added. The status and score
+  changes below are identical in both runs.
 - Decisions are unchanged (2).
 - Down: E1.5 14, P2.1 and C1.1 5 each, and E2.4, I1.2 and I2.2 fewer than 5 each.
   Up: E1.4, fewer than 5.
