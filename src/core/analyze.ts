@@ -1,7 +1,7 @@
-import { contentHash } from './artifacts.js';
+import { contentHash, isValidationGuide } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.11';
+export const ENGINE_VERSION = '0.1.12';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -23,6 +23,7 @@ const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<
 const closedBlock = /^\s*(?:#{1,6}(?:[ \t]|$)|\||>|<|```|~~~)/;
 const thematicBreak = /^\s*(?:[-*_=][ \t]*){3,}$/;
 function linesOf(artifact: Artifact): Line[] {
+  const guide = isValidationGuide(artifact.path);
   let fenced = false;
   let continuable = false;
   let unit: Unit = { defined: false };
@@ -30,7 +31,7 @@ function linesOf(artifact: Artifact): Line[] {
     const fenceRun = /^\s*(?:```|~~~)/.test(text);
     if (fenceRun) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
+    const requirement = !guide && !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
     const textLine = !fenced && !fenceRun && text.trim() !== '' && !thematicBreak.test(text);
     // An unindented line led by a defining ID starts its own unit (one requirement per line).
     const continuation = continuable && textLine && !blockStart.test(text) && !(/^\S/.test(text) && definedId(text));
@@ -135,7 +136,8 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     const missingRoles = def.roles.filter(role => !roles.has(role));
     const roleRequired = def.roles.length === 1 || ['I2.3', 'I2.4', 'I3.2', 'C1.2', 'C1.3', 'C2.3'].includes(def.id);
     if ((roleRequired && missingRoles.length) || !active.length) return { ...base, status: 'unknown', evidence: [], reason: `Not assessed: supply ${missingRoles.join(', ') || 'source'} artifacts.` };
-    const relevant = lines.filter(l => def.roles.includes(l.artifact.role));
+    // H6a (#88): quickstart lines count only as validation-method evidence (E3.2).
+    const relevant = lines.filter(l => def.roles.includes(l.artifact.role) && (def.id === 'E3.2' || !isValidationGuide(l.path)));
     const special = evaluateSpecial(def.id, relevant, requirements);
     const hits = special?.hits ?? relevant.filter((l, i) => {
       if (!def.pattern?.test(l.text) || l.text.trim().length < 4) return false;
@@ -199,6 +201,6 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     schemaVersion: '1.0', engineVersion: ENGINE_VERSION, rubricVersion: RUBRIC_VERSION, id, createdAt: new Date().toISOString(), name: set.name,
     artifacts, practices, findings, dimensions,
     summary: { score: dimensions.every(d => d.score !== null) ? dimensions.reduce((n, d) => n + (d.score ?? 0), 0) : null, maximum: 30, assessedDimensions: dimensions.filter(d => d.score !== null).length, supported: practices.filter(p => p.status === 'supported').length, partial: practices.filter(p => p.status === 'partial').length, missing: practices.filter(p => p.status === 'missing').length, unknown: practices.filter(p => p.status === 'unknown').length, notApplicable: practices.filter(p => p.status === 'not_applicable').length },
-    decisions: lines.filter(l => /NEEDS CLARIFICATION|PENDIENTE DE ACLARAR/i.test(l.text)).map(evidenceOf), traceability,
+    decisions: lines.filter(l => !isValidationGuide(l.path) && /NEEDS CLARIFICATION|PENDIENTE DE ACLARAR/i.test(l.text)).map(evidenceOf), traceability,
   };
 }

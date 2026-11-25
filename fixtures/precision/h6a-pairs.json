@@ -1,0 +1,318 @@
+{
+  "version": 1,
+  "description": "H6a synthetic twins (#88): runner vocabulary and quickstart scope. Constructed before the H6a candidate from the frozen policy; not independent labels.",
+  "cases": [
+    {
+      "id": "quickstart-unittest-en",
+      "construct": "runner",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Quickstart",
+          "",
+          "```sh",
+          "python3 -m unittest discover -s tests",
+          "```"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "findings": [],
+      "note": "python3 -m unittest is a test runner."
+    },
+    {
+      "id": "quickstart-script-en",
+      "construct": "runner",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Quickstart",
+          "",
+          "```sh",
+          "python3 scripts/seed_demo.py",
+          "```"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [],
+      "note": "Twin: a script path alone is not a validation method."
+    },
+    {
+      "id": "plan-go-test-en",
+      "construct": "runner",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Run `go test ./...` before each release."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "findings": [],
+      "note": "go test is a test runner in any role."
+    },
+    {
+      "id": "plan-go-build-en",
+      "construct": "runner",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Run `go build ./...` before each release."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [],
+      "note": "Twin: go build checks nothing."
+    },
+    {
+      "id": "quickstart-two-musts-en",
+      "construct": "quickstart-scope",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Quickstart",
+          "",
+          "The operator must start the recorder and must confirm that the episode folder exists."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [],
+      "note": "Quickstart lines are not requirements text, so E2.1 does not run on them."
+    },
+    {
+      "id": "plan-two-musts-en",
+      "construct": "quickstart-scope",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "The operator must start the recorder and must confirm that the episode folder exists."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [
+        "E2.1|specs/001-demo/plan.md|3"
+      ],
+      "note": "Twin: the same line in a plan is still checked."
+    },
+    {
+      "id": "quickstart-unittest-es",
+      "construct": "runner",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Inicio rápido",
+          "",
+          "```sh",
+          "python3 -m unittest discover -s tests",
+          "```"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "findings": [],
+      "note": "python3 -m unittest is a test runner."
+    },
+    {
+      "id": "quickstart-script-es",
+      "construct": "runner",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Inicio rápido",
+          "",
+          "```sh",
+          "python3 scripts/seed_demo.py",
+          "```"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [],
+      "note": "Twin: a script path alone is not a validation method."
+    },
+    {
+      "id": "plan-go-test-es",
+      "construct": "runner",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Ejecuta `go test ./...` antes de cada versión."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "findings": [],
+      "note": "go test is a test runner in any role."
+    },
+    {
+      "id": "plan-go-build-es",
+      "construct": "runner",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Ejecuta `go build ./...` antes de cada versión."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [],
+      "note": "Twin: go build checks nothing."
+    },
+    {
+      "id": "quickstart-two-musts-es",
+      "construct": "quickstart-scope",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Inicio rápido",
+          "",
+          "El operador debe arrancar el grabador y debe confirmar que existe la carpeta de episodios."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [],
+      "note": "Quickstart lines are not requirements text, so E2.1 does not run on them."
+    },
+    {
+      "id": "plan-two-musts-es",
+      "construct": "quickstart-scope",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "El operador debe arrancar el grabador y debe confirmar que existe la carpeta de episodios."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "findings": [
+        "E2.1|specs/001-demo/plan.md|3"
+      ],
+      "note": "Twin: the same line in a plan is still checked."
+    }
+  ]
+}

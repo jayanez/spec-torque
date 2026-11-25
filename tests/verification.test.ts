@@ -29,3 +29,21 @@ test('H6: the Spec Kit quickstart is a feature artifact in work-tree discovery',
   assert.equal(classifyArtifact('specs/001-demo/quickstart.md', '').role, 'context');
   assert.equal(isSpecCandidate('docs/quickstart.md', true), false);
 });
+
+test('H6a: quickstart lines are validation evidence only, not requirements text', async () => {
+  const Q = 'specs/001-demo/quickstart.md';
+  const set = (path: string, line: string) => ({ name: 'demo', artifacts: [classifyArtifact(S, spec('## Requirements').join('\n') + '\n'), classifyArtifact(path, ['# Guide', '', line].join('\n') + '\n')] });
+  const twoMusts = 'The operator must start the recorder and must confirm that the episode folder exists.';
+  assert.deepEqual((await analyze(set(Q, twoMusts))).findings.map(f => f.practiceId), []);
+  assert.deepEqual((await analyze(set('specs/001-demo/plan.md', twoMusts))).findings.map(f => f.practiceId), ['E2.1']);
+  const done = (await analyze(set(Q, '## Definition of done'))).practices.find(p => p.id === 'E3.4')?.status;
+  assert.equal(done, 'missing');
+});
+
+test('H6a: unittest, go test and other runners are validation methods; scripts and builds are not', async () => {
+  const plan = (line: string) => ({ [S]: spec('## Requirements'), 'specs/001-demo/plan.md': ['# Plan', '', line] });
+  for (const line of ['python3 -m unittest discover -s tests', 'Run `go test ./...`.', 'node --test', 'make check', './gradlew test']) {
+    assert.equal((await status(plan(line)))['E3.2'], 'partial', line);
+  }
+  for (const line of ['python3 scripts/seed_demo.py', 'Run `go build ./...`.']) assert.equal((await status(plan(line)))['E3.2'], 'missing', line);
+});

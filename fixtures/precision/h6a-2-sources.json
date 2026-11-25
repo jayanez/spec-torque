@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-25",
+  "purpose": "Second H6a fresh set (Spec Kit quickstarts with test runners, #88). Frozen before any file content was read.",
+  "rule": "GitHub code search for \"python3 -m unittest\" path:specs and \"go test\" path:specs in files named quickstart.md, search order, up to 4 repositories per query; same eligibility and exclusions as H6a, plus the H6a sources.",
+  "unfilled": {},
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/finolabs/vietnamizer",
+      "commit": "e03d5427f2315762a99f176416254a533838bf93",
+      "license": "MIT",
+      "query": "\"python3 -m unittest\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/theguitarvity/spec-master",
+      "commit": "7c349f422d2eb2afe9376eab195dde8cf1209e82",
+      "license": "MIT",
+      "query": "\"python3 -m unittest\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/bolens/homelab",
+      "commit": "484830f7a39019ffa617f50171629220b68985eb",
+      "license": "MIT",
+      "query": "\"python3 -m unittest\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/elsa-workflows/elsa-foundation",
+      "commit": "a379f54e00f8ac4ac0858fae4c5df9550d5598f3",
+      "license": "MIT",
+      "query": "\"python3 -m unittest\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/spidernet-io/spiderpool",
+      "commit": "64276029b3b752e67164174ce108f010417797d1",
+      "license": "Apache-2.0",
+      "query": "\"go test\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/inference-sim/inference-sim",
+      "commit": "c5d31065ac8ca1687dd94edb1cec9ba5c0fa27e6",
+      "license": "Apache-2.0",
+      "query": "\"go test\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Decade-qiu/Go2NetSpectra",
+      "commit": "9652017f1288d8141b0ae56d229e7f001b26720c",
+      "license": "Apache-2.0",
+      "query": "\"go test\" path:specs filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Cox-Automotive/alks-go",
+      "commit": "66bd3637c19836cecb923e9de2602dc470f9d688",
+      "license": "MIT",
+      "query": "\"go test\" path:specs filename:quickstart.md"
+    }
+  ]
+}
