@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-25",
+  "purpose": "Second H7 fresh set (non-template Spec Kit checklists, amendment H7-2, #79); confirmation set for H7a. Frozen before any file content was read and after arm B was fixed.",
+  "rule": "GitHub code search for filename:requirements.md path:specs NOT \"Specification Quality Checklist\", then \"out of scope\" filename:requirements.md path:specs to fill, search order, counting only specs/<NNN-name>/checklists/requirements.md results, up to 4 repositories; public, non-fork, not archived, MIT or Apache-2.0; every earlier source repository and owner (including H7) and the pilot repository owner excluded; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "filename:requirements.md path:specs NOT \"Specification Quality Checklist\"": "0 of 4: no specs/<NNN>/checklists/requirements.md result in the first 100",
+    "\"out of scope\" filename:requirements.md path:specs": "1 of 4: 3 checklist results in the first 100, 1 eligible"
+  },
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Sawaiz-zip/spec-guard",
+      "commit": "bde1cd687dac9d10b626fab120bb50fcf68adf1f",
+      "license": "MIT",
+      "query": "\"out of scope\" filename:requirements.md path:specs"
+    }
+  ]
+}
