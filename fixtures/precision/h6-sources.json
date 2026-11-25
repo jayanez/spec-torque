@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-25",
+  "purpose": "Fresh H6 confirmation set (verification vocabulary and Spec Kit quickstart, #88). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"SC-001: Given\" in files named spec.md and \"python3 -m pytest\" in files named quickstart.md, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, #52, H3, H3a and H5, and the pilot repository owner, excluded; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "\"SC-001: Given\" filename:spec.md": "1 of 4: no further eligible repository in the first 100 results"
+  },
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/lossyrob/phased-agent-workflow",
+      "commit": "465a5c9743f66722634cb0fb057b1580169a0661",
+      "license": "MIT",
+      "query": "\"SC-001: Given\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/HKUDS/CLI-Anything",
+      "commit": "34f519533bc175d2fe287ab8316b0dd99bb9cc43",
+      "license": "Apache-2.0",
+      "query": "\"python3 -m pytest\" filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/automateyournetwork/netclaw",
+      "commit": "8d641c6c5cd920c630a5b276c38e7637b0039b6c",
+      "license": "Apache-2.0",
+      "query": "\"python3 -m pytest\" filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/pantoniou/libfyaml",
+      "commit": "096a91a6c7199ace63756c1a2c7e44b7f0c52432",
+      "license": "MIT",
+      "query": "\"python3 -m pytest\" filename:quickstart.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/lanyasheng/openclaw-multiagent-framework",
+      "commit": "7ba6627f3dbc5a7fec3b777f77969cff1800efc1",
+      "license": "MIT",
+      "query": "\"python3 -m pytest\" filename:quickstart.md"
+    }
+  ]
+}

@@ -623,6 +623,105 @@ any file content:
 The list is committed in `fixtures/precision/h5a-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H6 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88). The #8 pilot
+repository is development data for H6. E3.1 and E3.2 report `missing` in 30 of its
+32 open features, although the specs carry verification criteria and validation
+methods. Both practices are detected by vocabulary, and the vocabulary misses three
+common forms:
+- acceptance scenarios, including numbered Given/When/Then scenarios
+  (`SC-001: Given …, when …, then …`), for E3.1;
+- validation-plan tables that map a scenario or requirement to a planned test file,
+  for E3.2;
+- commands in the Spec Kit `quickstart.md`, which is not indexed as a feature
+  artifact, for E3.2.
+
+**Policy.** Comparator 0.1.10 (H5). Three changes, nothing else:
+1. **E3.1** (spec role, unchanged) also counts a line that contains
+   `acceptance scenario(s)` / `escenario(s) de aceptación`, or a Given/When/Then
+   scenario on one line: `Given`/`Dado`/`Dada`, then `when`/`cuando`, then
+   `then`/`entonces`, in that order and case-insensitive. The heading rule is
+   unchanged: a heading counts only when it is followed by content.
+2. **E3.2** (all roles, unchanged) also counts a table row (`|` first) that has an
+   identifier cell (`| SC-001 |`, `| REQ-001 |`, optionally bold or code) and a
+   test-file reference: a path under `test/`, `tests/` or `__tests__/`, or a file
+   named `test_*.py`, `*_test.*`, `*_spec.*`, `*.test.*`, `*.spec.*` or
+   `*Test(s).cs|java|kt|swift`.
+3. **Discovery.** A Spec Kit `specs/<NNN-name>/quickstart.md` is a feature artifact
+   with role `context`, as `data-model.md` already is. Every rule reads it as it
+   reads any other context document.
+
+**Endpoints.** E3.1 and E3.2 status per feature, with the new evidence lines; all
+other practice status changes, dimension scores, finding counts by practice and
+artifact sets, by language.
+
+**Comparator.** 0.1.10 (H5, `13cfd0d`).
+
+**Predictions.**
+- The 716 historical predictions and the 36 corpus artifact sets do not change. The
+  corpus has no `quickstart.md` and no E3 units.
+- The minimal pairs, the H3a twins and the H5 twins do not change.
+- On natural sources, E3.1 and E3.2 only move from `missing` to `partial`. Features
+  with a `quickstart.md` gain one context artifact. Other practices that read
+  context documents (E1.1, E2.3, E3.3, E3.4, P1.1, P1.4, P2.5, I1.1, I1.3, I2.1,
+  I3.1) can only move from `missing` to `partial`. Findings can be added on
+  `quickstart.md` lines with a modal word (E1.2, E1.3, E2.1, opposite obligations),
+  and open decisions can be added. No status and no dimension score goes down.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - an `acceptance scenarios` heading over content, against a heading without
+     verification words;
+   - a numbered Given/When/Then scenario, against a Given line with no when/then;
+   - a validation table row that names a test file, against one that names a
+     source file;
+   - a feature `quickstart.md` with a test command, against one without.
+
+   The candidate meets every twin. The minimal pairs, H3a twins and H5 twins are
+   unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report -- --baseline
+   <H5>`).
+3. On a fresh public set:
+   - no practice status and no dimension score goes down;
+   - a provisional review of every feature whose E3.1 or E3.2 status changes, or
+     100 drawn with seed 42039, finds that the first new evidence line is a real
+     verification criterion (E3.1) or validation method (E3.2);
+   - every other change is counted and listed by practice. Added findings on
+     `quickstart.md` lines are reviewed (up to 100, seed 42039) to establish whether
+     they are of a kind the rules already produce on other context documents.
+4. No evidence becomes invalid.
+
+Independent adjudication of the new E3 evidence is still required before merge; the
+owner fixes its threshold before labeling.
+
+**Stop rule.** If a gate fails, the failing change (1, 2 or 3) is reverted and
+recorded. The owner decides between a narrowed H6a and stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"SC-001: Given"` in files named `spec.md` and
+  `"python3 -m pytest"` in files named `quickstart.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a and H5, and the
+  pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h6-sources.json` before the
+candidate commit.
+
+### Amendment H6 (2026-11-25, after adjudication; owner decision)
+
+H5 failed its adjudication, so H6 no longer builds on it. H6 is rebased onto
+`develop`. The comparator becomes 0.1.9 (`c3f79b0`), the candidate engine becomes
+0.1.10, and the H5 twins drop out of gate 1. The policy, twins, sources and gates are
+unchanged, and every measurement was repeated against the new comparator.
+
+H5a then merged first as engine 0.1.10, so H6 ships as engine 0.1.11 (product
+0.2.4), measured again against `develop` with H5a.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
