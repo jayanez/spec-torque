@@ -52,7 +52,7 @@ its own increment.
 
 Order agreed after #68: #78 and #88 first, then #79, #80, #85, #84 and #94, each
 through the #39 replay (pre-registered hypothesis, synthetic twins, paired replay,
-adjudication). H5 (#78, engine 0.1.10) joins hard-wrapped continuations to their
-item or paragraph for identification and definitions only; it is proposed for
-merge pending independent adjudication. H6 (#88) follows on top of it.
-
+adjudication). H6 (#88, engine 0.1.10) adds acceptance-scenario and validation-table
+vocabulary and discovers the Spec Kit `quickstart.md`. H5 (#78) failed adjudication
+on units identified only by a cited ID; the narrowed H5a (engine 0.1.11) passed and
+is proposed for merge. Runner vocabulary (H6a) follows.

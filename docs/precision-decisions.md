@@ -807,7 +807,7 @@ packet builder (`scripts/precision/definitions-packet.ts`) applies unchanged to
 the H5 scan.
 
 
-### H5 adjudication — **fails the threshold; owner decision pending**
+### H5 adjudication — **fails the threshold; continued as H5a (owner decision)**
 
 The owner fixed the threshold on 2026-11-25 (`8131ae9`), before labeling: at most 2
 of the 38 removed findings may be agreed true problems. Two independent agent
@@ -834,6 +834,56 @@ Cohen's kappa 0.55.
 **Failing construction.** Unit identification by a cited ID. All 7 positive or
 disputed items fall in it, and none of the 31 agreed negatives depends on it.
 
-**Decision.** Pending owner choice under the H5 stop rule: a narrowed H5a (a unit
+**Decision.** The owner chose a narrowed H5a (a unit
 counts as identified only when its first line has a defining ID, so citations no
 longer identify wrapped lines), or stopping.
+
+### H5a: only a unit's defining first line identifies its continuations — **holds; proposed for merge**
+
+- Pre-registered at `4eb3108`, after the H5 adjudication failed.
+- The sources (4 repositories, `"**NFR-001**"` query; `"- **REQ-001**"` had no
+  eligible repository) and 22 EN/ES twins were frozen at `816fcf7`.
+- Candidate: `81ed209`, engine 0.1.11 (0.1.10 is H6). Comparators: 0.1.9 (`c3f79b0`)
+  and H5 (`9336e2b`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (22 EN/ES), H3a twins, minimal pairs | holds: 22 of 22 (0.1.9 meets 14, H5 meets 18, failing exactly the 4 cited-ID twins); H3a 20 of 20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. H5 development set | holds: all 7 adjudicated positive or disputed findings are kept. Relative to H5, 12 findings come back: those 7 and 5 the H5 reviewers agreed were false (notes and open questions that cite an ID) |
+| 4. Fresh set and adjudication | holds: 0 findings added; 0 of 27 removed findings agreed true problems (threshold 2) |
+| 5. Evidence | holds |
+
+**H5 development set against 0.1.9.** 167 features: 26 findings removed (24
+continuations of items led by a defining ID, and 2 duplicates), none added.
+
+**Fresh set.** 109 Spec Kit features in 4 roots. 27 I1.2 missing-identifier
+findings are removed, and none is added.
+
+**Adjudication.** The threshold (at most 2 of 27 agreed positive) was confirmed
+by the owner before labeling (`106c986`). The two H5 reviewer sessions labeled the
+packet separately; having labeled the H5 packet before is a limit.
+
+| Removed (27) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 26 | 0 | 0 | 1 |
+
+Cohen's kappa 1.00. Both reviewers marked one item `unknown`, because the wrapped
+item's first line lay outside the six-line context. In the pinned source that line
+is `- **FR-018**: Any authenticated user MUST …`, seven lines above. It is not a
+true problem, and the threshold holds either way.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 34 of 304 I1.2/I2.3 findings are removed: 29 missing identifiers and 5
+duplicates. None is added, and 5 features change I1.2/I2.2 status. H5 removed 40;
+the 6 it no longer removes are units identified only by a cited ID.
+
+**Known limits.**
+- An unindented line led by an ID still starts its own requirement, so a wrapped
+  paragraph line such as `REQ-001 episodes already written.` still counts as a
+  duplicate.
+- A wrapped item that cites its governing ID only in a trace tag is still reported
+  as lacking an identifier. That is deliberate: such items were disputed.
+- Other line-local rules (E1.2, E1.3, E2.1) still read one physical line.
+
+**Decision.** Propose H5a (engine 0.1.11) for merge.

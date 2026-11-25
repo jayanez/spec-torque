@@ -135,7 +135,7 @@ threshold on 2026-11-25, after the deterministic gates and before any labeling.
 repositories, 109 features): all 27 removed findings, six lines of context, seed
 42039 and the H5 propositions.
 
-**Reviewers.** Two new independent agent sessions, as in H5.
+**Reviewers.** The two H5 reviewer sessions, still independent of each other and of the engine output. They had labeled the H5 packet before, which is a limit.
 
 **Threshold.** At most 2 of the 27 removed findings may be agreed `positive`.
 Disputed items count against the threshold until the owner resolves them.
