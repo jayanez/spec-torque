@@ -6,6 +6,9 @@ import { execFileSync } from 'node:child_process';
 import { z } from 'zod';
 import type { Engine } from './engines.js';
 
+/** A practice status, as `Status` in src/core/types.ts. */
+export const statusSchema = z.enum(['supported', 'partial', 'missing', 'unknown', 'not_applicable']);
+
 export const rootSchema = z.array(z.strictObject({
   id: z.string().regex(/^[A-Za-z0-9_.-]+$/u),
   /** Repository identity used for independence; clones of one upstream share it. */

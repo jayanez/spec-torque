@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { archiveEngine, commit, repository, type Engine } from './engines.js';
-import { rootSchema, snapshot } from './sources.js';
+import { rootSchema, snapshot, statusSchema } from './sources.js';
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: {
   baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' },
@@ -24,16 +24,17 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 }
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
-  expected: z.array(z.string()), status: z.record(z.string(), z.string()).optional(), note: z.string(),
+  expected: z.array(z.string()), status: z.record(z.string(), statusSchema).optional(), note: z.string(),
 })) });
 const ENDPOINTS = new Set(['I1.2', 'I2.3']);
+/** Statuses compared by the replay: identification (I1.2, I2.2) and, since H8, references (I2.3, C1.3, C2.3). */
+const STATUS_IDS = ['I1.2', 'I2.2', 'I2.3', 'C1.3', 'C2.3'];
 const keyOf = (f: { practiceId: string; message: string; evidence: { path: string; line: number }[] }) => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`;
 async function endpointFindings(engine: Engine, files: Record<string, string>) {
   const set = { name: 'h3', artifacts: Object.entries(files).map(([path, content]) => engine.classifyArtifact(path, content)) };
   const assessment = await engine.analyze(set);
   const practice = (id: string) => assessment.practices.find(p => p.id === id)?.status;
-  const status: Record<string, string | undefined> = Object.fromEntries(['I1.2', 'I2.2', 'I2.3', 'C1.3', 'C2.3'].map(id => [id, practice(id)]));
-  return { findings: assessment.findings.filter(f => ENDPOINTS.has(f.practiceId)).map(keyOf).sort(), status };
+  return { findings: assessment.findings.filter(f => ENDPOINTS.has(f.practiceId)).map(keyOf).sort(), status: Object.fromEntries(STATUS_IDS.map(id => [id, practice(id)])) };
 }
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h3-'));
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
@@ -42,6 +43,8 @@ const identity = { revisions, engines: { baseline: arms.baseline.ENGINE_VERSION,
 
 if (mode === 'synthetic') {
   const fixture = fixtureSchema.parse(JSON.parse(await readFile(join(repository, values.fixture!), 'utf8')));
+  const unknownPin = fixture.cases.flatMap(c => Object.keys(c.status ?? {})).find(id => !STATUS_IDS.includes(id));
+  if (unknownPin) throw new Error(`A twin pins ${unknownPin}, which the replay does not compare.`);
   const rows = [];
   for (const entry of fixture.cases) {
     const files = Object.fromEntries(Object.entries(entry.files).map(([path, lines]) => [path, lines.join('\n') + '\n']));

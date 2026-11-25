@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { analyze, classifyArtifact } from '../src/core.js';
 
-const S = 'specs/001-demo/spec.md', P = 'specs/001-demo/plan.md';
+const S = 'specs/001-demo/spec.md', P = 'specs/001-demo/plan.md', T = 'specs/001-demo/tasks.md';
+const setOf = (files: Record<string, string[]>) => ({ name: 'demo', artifacts: Object.entries(files).map(([path, lines]) => classifyArtifact(path, lines.join('\n') + '\n')) });
 async function findings(spec: string[], plan = ['# Plan', '', 'Implements REQ-001.']) {
-  const set = { name: 'demo', artifacts: [classifyArtifact(S, spec.join('\n') + '\n'), classifyArtifact(P, plan.join('\n') + '\n')] };
-  return (await analyze(set)).findings.filter(f => ['I1.2', 'I2.3'].includes(f.practiceId)).map(f => `${f.practiceId}:${f.evidence[0].line}:${f.message}`);
+  return (await analyze(setOf({ [S]: spec, [P]: plan }))).findings.filter(f => ['I1.2', 'I2.3'].includes(f.practiceId)).map(f => `${f.practiceId}:${f.evidence[0].line}:${f.message}`);
 }
 
 test('H3a: heading definitions resolve references and identify their body lines', async () => {
@@ -57,11 +57,10 @@ test('H8: plan-local R-n labels are references only when the specification uses 
   assert.deepEqual(await findings(fr, ['# Plan', '', 'Covers FR-009; R-1 is a local check.']), ['I2.3:3:Reference FR-009 has no definition in the supplied specs.']);
   assert.deepEqual(await findings(['# Demo', '', '- **R-1:** The system MUST record every outcome.'], ['# Plan', '', 'Covers R-1; R-3 adds an audit trail.']),
     ['I2.3:3:Reference R-3 has no definition in the supplied specs.']);
-  const set = { name: 'demo', artifacts: [classifyArtifact(S, fr.join('\n') + '\n'), classifyArtifact(P, local.join('\n') + '\n'), classifyArtifact('specs/001-demo/tasks.md', '# Tasks\n\n- [ ] T001 Build it.\n')] };
-  const assessment = await analyze(set);
+  const assessment = await analyze(setOf({ [S]: fr, [P]: local, [T]: ['# Tasks', '', '- [ ] T001 Build it.'] }));
   assert.equal(assessment.practices.find(p => p.id === 'I2.3')?.status, 'missing');
   assert.deepEqual(assessment.traceability, []);
-  const tasksOnly = { name: 'demo', artifacts: [classifyArtifact(S, fr.join('\n') + '\n'), classifyArtifact('specs/001-demo/tasks.md', '# Tasks\n\n- [ ] T001 Steps: R-1 write the recorder; R-2 add the selector.\n')] };
+  const tasksOnly = setOf({ [S]: fr, [T]: ['# Tasks', '', '- [ ] T001 Steps: R-1 write the recorder; R-2 add the selector.'] });
   const statuses = (await analyze(tasksOnly)).practices.filter(p => ['C1.3', 'C2.3'].includes(p.id)).map(p => p.status);
   assert.deepEqual(statuses, ['missing', 'missing']);
 });
