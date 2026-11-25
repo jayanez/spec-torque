@@ -26,6 +26,7 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 }
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
+  // H85: any practice may be an endpoint. H7: a case may also fix roles and the decision count.
   expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(),
   roles: z.record(z.string(), z.enum(['spec', 'plan', 'tasks', 'instructions', 'context'])).optional(),
   decisions: z.number().int().nonnegative().optional(), note: z.string(),
@@ -46,8 +47,11 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
     findings, decisions: report.decisions.length, decisionLines: report.decisions,
     findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
+    // H85: structured findings with their line text, for removed/added finding lists.
+    findingLines: report.findings.map(f => ({ practiceId: f.practiceId, path: f.evidence[0]?.path ?? '', line: f.evidence[0]?.line ?? 0, message: f.message, text: f.evidence[0]?.text ?? '' })),
   };
 }
+const findingKey = (f: { practiceId: string; path: string; line: number; message: string }) => `${f.practiceId}|${f.path}|${f.line}|${f.message}`;
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h6-'));
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
 const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'b')), candidate: await archiveEngine(revisions.candidate, join(temp, 'c')) };
@@ -107,14 +111,17 @@ if (mode === 'synthetic') {
         if (c.dimensions[id] !== null && b.dimensions[id] !== null && c.dimensions[id]! < b.dimensions[id]!) totals.dimensionsDown++;
       }
       totals.decisionsAdded += c.decisions - b.decisions;
-      // H7: role changes and the exact findings each arm reports.
+      const [bKeys, cKeys] = [b, c].map(r => new Set(r.findingLines.map(findingKey)));
+      const findingsRemoved = b.findingLines.filter(f => !cKeys.has(findingKey(f)));
+      const findingsAdded = c.findingLines.filter(f => !bKeys.has(findingKey(f)));
+      // H7: role changes, the exact finding locations each arm reports and the removed decision lines.
       const roleChanges = Object.keys(c.roles).filter(path => b.roles[path] && b.roles[path] !== c.roles[path]).map(path => ({ path, from: b.roles[path], to: c.roles[path] }));
       const before = new Set(b.findingKeys); const after = new Set(c.findingKeys);
       const removedFindings = b.findingKeys.filter(k => !after.has(k)); const addedFindings = c.findingKeys.filter(k => !before.has(k));
       const kept = new Set(c.decisionLines.map(l => `${l.path}:${l.line}`));
-      if (added.length || roleChanges.length || changes.length || Object.keys(findingDelta).length || c.decisions !== b.decisions) {
+      if (added.length || roleChanges.length || changes.length || Object.keys(findingDelta).length || findingsRemoved.length || findingsAdded.length || c.decisions !== b.decisions) {
         totals.changedFeatures++;
-        detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, removedFindings, addedFindings,
+        detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, findingsRemoved, findingsAdded, removedFindings, addedFindings,
           decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])),
           baselineEvidence: Object.fromEntries(changes.map(ch => [ch.id, b.evidence[ch.id]])),
           removedDecisions: b.decisionLines.filter(l => !kept.has(`${l.path}:${l.line}`)) });

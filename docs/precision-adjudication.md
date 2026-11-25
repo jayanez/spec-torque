@@ -203,6 +203,34 @@ a risk, a research item, a step).
 **Threshold.** At most 2 of the 100 removed findings may be agreed `positive`.
 Disputed items count against the threshold until the owner resolves them.
 
+## H85: demonstrative subjects (#85)
+
+H85 removes E1.3 findings and adds none. The owner fixed the threshold on 2026-11-25,
+after the deterministic gates and before any labeling.
+
+**Packet.** It is built from the H85 fresh-set scan:
+
+```sh
+node --import tsx scripts/precision/subject-packet.ts --detail <h85 scan>/h6-scan.json --roots <roots.json> --out .spec-torque/precision/h85-adjudication
+```
+
+It holds every removed E1.3 finding, deduplicated by line text: 29 distinct lines
+from 51 findings. Items are shuffled with seed 42039, and each has four lines of
+context on each side. `key.json` holds the engine output and is not opened by
+reviewers.
+
+**Proposition.** "The subject of this line is a bare pronoun: the reader must look
+outside the line to know what the requirement is about." Labels are `positive` (the
+finding was right), `negative` and `unknown`, each with a one-line reason grounded
+in the supplied text.
+
+**Reviewers.** Two independent agent sessions, as in H3a, with the same limits. They
+do not see engine output, the key, this protocol's predictions, implementation
+diffs or each other's labels.
+
+**Threshold.** At most 2 of the 29 items may be agreed `positive`. Disputed items
+count against the threshold until the owner resolves them.
+
 ## H7: Spec Kit checklists (#79)
 
 H7 reclassifies `specs/<NNN-name>/checklists/*.md` as review context. Amendment H7-2
