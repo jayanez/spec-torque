@@ -933,6 +933,106 @@ replaced, with the same eligibility rules and exclusions:
 Only results whose path is `specs/<NNN-name>/checklists/requirements.md` count
 toward a repository's selection.
 
+### Amendment H7-2 (2026-11-25, after gates 1–3, before any packet or label; owner approved)
+
+The owner asked for an adversarial review of the H7 test after the first fresh set
+(217 features: E1.1 and P2.5 drop in 87, 30 dimension scores go down, 123 decisions
+and 92 findings are removed). An independent reviewer session checked the replan in
+two rounds. The owner approved this amendment as a whole on 2026-11-25, including
+the replacement of the gate 4 they had set.
+
+**Why the frozen gate 4 is not enough.**
+- It adjudicates whether a checklist is a specification. That is almost always
+  false by construction, and it leaves every score-moving deletion unadjudicated.
+- The two changes are confounded. Spec-only practices (E1.5, P2.1, C1.1, P2.2,
+  P2.3, I3.3, E3.1) lose checklist evidence from change 1 alone. All-role practices
+  (E1.1, P2.5, E2.3, P1.1) and decisions lose it only through change 2.
+- About 80 features owe their E1.1/P2.5 change to one template line,
+  `- [x] No [NEEDS CLARIFICATION] markers remain`. Its 0.1.12 hit is a pattern
+  accident: E1.1 matches the marker name, not a "none remain" reading. 0.1.12 also
+  counts the same line as an open decision. This is a detector issue outside H7,
+  because the same line in `spec.md` behaves the same way; it is recorded, not fixed.
+- Checked and unchecked items differ: `- [ ]` does not state that none remain.
+- Predictions were weak: ratio practices "either way", and P2.1, C1.1 and I3.2 were
+  not listed. The 2 duplicate relocations counted as additions only because findings
+  were identified by path and line.
+
+**Arms.** Both are measured against 0.1.12. Arm A (classification only) is reported
+as counts and does not enter the decision.
+- **C**: H7 as frozen (`b1bfdf8`).
+- **B (H7a)**: change 1, and checklist lines are never admitted as requirements and
+  never counted as decisions. They still count for the practices that read context
+  documents. Arm B is fixed here, before fresh set 2 is selected.
+
+**Gate 4 (replaces the document-level gate).** The packet is built from arm C on both
+fresh sets. Features are capped at 15 per repository (seed 42039). Items are
+deduplicated by trimmed line text, shuffled with seed 42039 and shown with four lines
+of context. Lost-evidence items also show the feature's own `spec.md` evidence for
+the same practice, or "none". Two blind reviewer sessions label them as in H6a-2.
+
+Named items, labeled by both reviewers, with outcomes fixed now:
+- **N1**: the checked template line. Its variants are listed in advance:
+  - EN `No [NEEDS CLARIFICATION] markers remain`, with `[x]` or `[X]` and with or
+    without a trailing note;
+  - ES `No quedan marcadores [NEEDS CLARIFICATION]`;
+  - ZH `无 [NEEDS CLARIFICATION]`, only as the checklist item itself.
+
+  Proposition: "This line explicitly states, for this feature, that no clarification
+  remains open." Agreed `positive` means stratum 1b fails. Agreed `negative` means
+  arm C stands for this line. Disputed or `unknown` goes to the owner before anything
+  else.
+- **N2**: the same item unchecked (`- [ ]`). Proposition: "This line records a
+  decision about this feature that is still open." It gates stratum 2.
+
+Sampled strata (lines other than N1 and N2):
+- **1a**: lost evidence, spec-only practices (change 1).
+- **1b**: lost evidence, all-role practices (change 2).
+- **2**: removed decisions.
+- **3**: a sanity stratum of up to 10 removed findings and up to 10 reclassified
+  files (the original document proposition).
+
+An agreed `positive` is an error: genuine evidence, a real open decision or a real
+finding lost. Disputed and `unknown` items count against.
+
+**Threshold rule (owner).**
+
+| Distinct items in a stratum | Errors allowed |
+|---|---|
+| 30 or more (30 drawn) | at most 2 |
+| 15 to 29 | at most 1 |
+| fewer than 15 | 0 |
+
+**Decision rule.**
+- 1a fails: change 1 itself loses genuine evidence. Stop; the owner decides.
+- Stratum 2 or 3 fails: stop; the owner decides.
+- 1b or N1 fails and the rest pass: propose H7a (arm B). Fresh set 2 is its
+  confirmation set, which is acceptable because arm B is frozen before selection.
+  Gates 1–3 are rerun for arm B, and anything it gains against 0.1.12 is adjudicated
+  under the same rule.
+- Everything passes: propose H7 (arm C).
+
+One reviewer pair's judgment on N1 decides about 80 features. Both reviewers are
+sessions of the same model family (#65). The decision record states both limits.
+
+**Predictions.**
+- Arm B leaves all-role practices unchanged. It can only gain where a ratio practice's
+  denominator loses checklist lines (E1.2, E1.4, E2.1, I1.2, I2.2), in features whose
+  checklist held admitted lines.
+- Arm B still counts unchecked `- [ ]` marker lines for E1.1/P2.5, through the same
+  pattern accident. Features that rest only on such lines are counted and recorded as
+  an H7a limit.
+- Duplicate identity is (practice, feature, ID), so relocations are not additions.
+
+**Fresh set 2 (non-template checklists).**
+- GitHub code search for `filename:requirements.md path:specs NOT "Specification
+  Quality Checklist"`, counting only `specs/<NNN-name>/checklists/requirements.md`
+  results, up to 4 repositories.
+- If fewer than 4 eligible repositories are found, `"out of scope"
+  filename:requirements.md path:specs` fills the rest.
+- Eligibility and exclusions as before, plus the H7 sources.
+- Below 30 changed features, gate 4 is reported as underpowered.
+- Committed in `fixtures/precision/h7-2-sources.json` before any scan.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
