@@ -1042,3 +1042,63 @@ Ginkgo test files. One reviewer read it as an implementation task, the other as 
 test reference. Counted against the threshold, it still passes: 1 ≤ 2.
 
 **Decision.** Propose H6a (engine 0.1.12, version 0.2.5) for merge.
+
+### H9: qualified and non-adopted references in I2.3 — **holds; rule 2 unconfirmed on fresh data; proposed for merge**
+
+Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
+- Pre-registered at `e2313f5`, as one hypothesis with two separately gated rules:
+  references qualified by another specification (rule 1) and references marked not
+  adopted (rule 2).
+- The 24 EN/ES twins and the 10 fresh sources were frozen at `5cd81e7`.
+- Candidate: `bf908cf`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12 (`develop`,
+  `3a888f0`).
+- The adjudication threshold was fixed at `656e023`, before any packet was built.
+- Amendment H9-2 (owner decision) and its 16 sources were frozen at `c6dabd1`,
+  before any scan.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (24 EN/ES), H3a, H5a, H6 and H6a twins, minimal pairs | holds: 24 of 24 (0.1.12 meets 12, failing exactly the 12 target cases); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier fresh sets (H3a, H5a, H6, H6a, H6a-2; 33 roots, 984 features) | holds: nothing changes |
+| 4. Fresh sets and adjudication | holds for rule 1 with low power: 1 finding removed, 0 agreed positive (threshold 2). Rule 2 removes nothing and is **unconfirmed** |
+| 5. Evidence | holds: no evidence, status, other finding or traceability edge changes anywhere |
+
+**Fresh sets.** The first set holds 2567 Spec Kit features in 10 roots. H9 removes
+1 I2.3 finding there and adds none: a plan line that "inherits spec-005's FR-023"
+from feature 006 (rule 1). The second set (H9-2) holds 191 features in 16 roots,
+and nothing changes. Code search splits `SPEC-0` into separate tokens, so neither
+query selected the qualified construction, and `not adopted` occurs in the
+fresh repositories but never attached to a requirement ID.
+
+**Adjudication.** The owner fixed the threshold before any packet was built: at
+most 2 agreed positive per rule, disputed items counting against it. The packet
+holds the single removed finding. Two blind agent sessions labeled it separately,
+both `negative`: the line attributes the ID to another specification. With one item
+this is a weak confirmation, and both reviewers are sessions of the same model
+family (#65).
+
+**Pilot repository (development data, the 32 open features, counts only).** Of 42
+I2.3 unresolved-reference findings, 23 are removed, exactly the hyphen-qualified
+ones the pre-registration predicted, and none is added. No status, evidence, other
+finding or traceability edge changes. The other 19 stay: 10 plan-local `R-n` labels
+(#80), 7 IDs whose line calls them a proposal without the words "not adopted", and
+2 IDs with another specification named elsewhere on the line.
+
+**Known limits.**
+- Only the forms of the pre-registration qualify an ID: a qualifier linked
+  (`[SPEC-028](…) REQ-004`) or placed after the ID (`REQ-004 of SPEC-028`), or a
+  second ID after a qualified one (`SPEC-028 REQ-004 and REQ-005`), still resolves
+  locally.
+- A hyphen-joined prefix counts as a namespace whatever it means, so a task-ID
+  prefix such as `T001-FR-001` makes the reference external.
+- Whether the other specification exists or defines the ID is not checked; the
+  workspace index (#68) is not consulted.
+- Only "not adopted" / "no adoptado" attached to the ID is a marker. "A proposal",
+  "draft", "rejected" and "superseded" are not.
+- Traceability does not distinguish an external reference; its edge stays
+  `resolved: false`.
+
+**Decision.** Propose H9 for merge. Rule 1 holds within the threshold on low fresh
+power and on the pilot. Rule 2 has no fresh-data change; the owner decides whether it
+ships with the twins as its only evidence.
