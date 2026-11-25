@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Engine 0.1.10 (#78, H5): a hard-wrapped continuation line belongs to the list item or paragraph it continues. It is identified by any requirement ID in that item or paragraph, and it is never a second definition, so wrapped requirements no longer get "Requirement has no stable identifier" or a duplicate when the continuation starts with an ID. An unindented line led by an ID still starts its own requirement. Admission, reference resolution and other rules are unchanged; the corpus comparison shows no prediction change. See docs/precision-decisions.md.
 - UI/UX refinement, PR 2 of 2 (host adapters), on the shared presentation helpers; scoring is unchanged.
   - Codex Desktop: title with the product version, summary and dimensions after the score, a labelled finding card with Previous/Next, **Changed on this branch** in the scope selector with the current feature in its sorted position, the shared disclaimer, and **Review change**/**Reject proposal** in the preview. `setup-workspace.mjs <worktree> [feature]` prints the `serve` command with `--feature`, and the review data text reflects that the workbench loads on its own.
   - OpenCode: one title with the version, **Select scope**/**Select finding**, the finding card in Inspect (for the evidence item selected), a read-only workbench alert with the shared line, the workbench restarts when the feature changes, the shared read limit, and the disclaimer.

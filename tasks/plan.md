@@ -48,3 +48,11 @@ then #79, #80 and #85, each through the #39 replay process. A cross-host UI/UX
 refinement (workbench auto-load, one scope control, a shared finding card) follows as
 its own increment.
 
+## Pilot precision follow-ups
+
+Order agreed after #68: #78 and #88 first, then #79, #80, #85, #84 and #94, each
+through the #39 replay (pre-registered hypothesis, synthetic twins, paired replay,
+adjudication). H5 (#78, engine 0.1.10) joins hard-wrapped continuations to their
+item or paragraph for identification and definitions only; it is proposed for
+merge pending independent adjudication. H6 (#88) follows on top of it.
+

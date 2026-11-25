@@ -751,3 +751,58 @@ the other's labels.
 **Decision.** Propose H3a (engine 0.1.9) for merge. The known limits are recorded
 in the H3a entry above. The owner decides at review.
 
+### H5: hard-wrapped continuations join their item or paragraph — **holds; proposed for merge pending adjudication**
+
+Tracking: [#78](https://github.com/jayanez/spec-torque/issues/78).
+- Pre-registered at `62afcea`.
+- The sources (8 repositories, `"- **FR-001"` and `"- REQ-001"` queries) and 16
+  EN/ES twins were frozen at `7a4eb6e`.
+- Candidate: `9336e2b`, engine 0.1.10. Comparator: 0.1.9 (`c3f79b0`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (16 EN/ES), H3a twins and existing minimal pairs | holds: 16 of 16 (0.1.9 meets 10, failing exactly the 6 target cases); H3a twins 20 of 20; no admission, E1.4 or E1.2 change in the minimal pairs |
+| 2. 716 historical predictions | holds: 0 changed, as predicted; artifact sets and unknown practices identical in all 36 cases |
+| 3. Fresh set review | holds provisionally: 0 added; 37 of 38 removed findings are not true problems, 1 uncertain |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** 167 Spec Kit features in 8 roots; changes in 13 features of 2 roots.
+The candidate removes 38 I1.2 findings (36 missing identifiers, 2 duplicates) and
+adds none. I2.3 findings do not change. One feature changes I1.2/I2.2 status.
+
+**Gate 3, provisional review of all 38 removed findings** (this session, not
+independent labels):
+- 24 are wrapped continuation lines of a list item or paragraph that defines an ID
+  (`- **FR-003**: … MUST be bounded, and` / `  the bound MUST be configurable …`),
+  including one Spanish item.
+- 2 duplicates are continuation lines that start by citing an ID
+  (`  FR-015 holds in eight of ten discovery paths.`).
+- 10 are wrapped lines of notes, open questions, clarifications or "Never" lists that
+  cite the governing ID (`(FR-009)`, `(NFR-001)`), and 1 is a design note that "mechanically satisfies
+  FR-006". They restate or explain a requirement; none states a new one.
+- 1 is uncertain: a two-line paragraph whose first line states a rule
+  (`The LLM response must be a valid SKILL.md.`) and whose second line cites
+  `(see FR-006)`. A single-line version is identified under 0.1.9 too, because any
+  ID on a line counts.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 40 of 304 I1.2/I2.3 findings are removed: 35 missing identifiers and 5
+duplicates. None is added, and 5 features change I1.2/I2.2 status. The remaining
+I1.2 missing-identifier findings are, by structure: 93 continuation lines of items
+or paragraphs that carry no ID anywhere, 76 lines after a blank line, 36 list items
+of their own and 6 table rows. 11 duplicates remain, none on an indented line.
+
+**Known limits.**
+- An ID cited anywhere in an item or paragraph identifies all its lines, as a
+  mid-line mention already identifies its own line in 0.1.9.
+- An unindented line that starts with an ID is still a definition, so a wrapped
+  paragraph line such as `REQ-001 episodes already written.` without indentation
+  still counts as a duplicate. This keeps one-requirement-per-line paragraphs.
+- Other line-local rules are unchanged: a continuation that starts with a pronoun
+  (`  that …`) can still get E1.3, and E1.2/E2.1 still read one physical line.
+
+**Decision.** Propose H5 (engine 0.1.10) for merge after independent adjudication
+of the removed findings. The owner fixes the threshold before labeling; the H3a
+packet builder (`scripts/precision/definitions-packet.ts`) applies unchanged to
+the H5 scan.
+
