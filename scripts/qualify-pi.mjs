@@ -183,7 +183,7 @@ try {
       await cp(resolve('fixtures/en-complete/specs/booking'), other, { recursive: true });
       const scoped = await analyze(selectFeature(await discoverWorkspace(workspace), 'specs/booking'));
       const seen = await verifyRpcScope(workspace, agent, load, 'specs/booking');
-      assert.deepEqual(seen.scopes, ['All documents', 'Feature · specs/booking', 'Feature · specs/other']);
+      assert.deepEqual(seen.scopes, ['All documents', 'Feature · specs/booking', 'Feature · specs/other', 'Changed on this branch']);
       assert.equal(seen.widget?.[0], terminalSummary(scoped)[0] + ' · Scope: specs/booking');
       assert.deepEqual(seen.evidence, scoped.findings.map((f, i) => `${i + 1}. ${f.message} · ${f.evidence[0].path}:${f.evidence[0].line}`));
       assert.deepEqual(await readFile(source), before);

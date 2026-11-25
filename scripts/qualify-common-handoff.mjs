@@ -48,7 +48,19 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(url);
   await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
-  if (feature !== null) await page.getByLabel('Artifact set').selectOption(feature);
+  // With several features the workbench offers a feature picker that loads only that feature;
+  // otherwise the feature is chosen in the loaded artifact set.
+  const artifactSet = page.getByLabel('Artifact set');
+  const localFeature = page.getByLabel('Local workspace feature');
+  if (feature !== null) {
+    await artifactSet.or(localFeature).first().waitFor();
+    if (await localFeature.count()) {
+      if (await localFeature.inputValue() !== feature) {
+        await Promise.all([page.waitForResponse(response => response.url().includes('/api/workspace?feature=')), localFeature.selectOption(feature)]);
+      }
+      await page.getByTitle(feature + '/spec.md').first().waitFor();
+    } else await artifactSet.selectOption(feature);
+  }
   await page.getByRole('button', { name: 'Decisions', exact: true }).click();
   await page.getByRole('button').filter({ hasText: `${decision.path}:${decision.line}` }).click();
   const editor = page.getByRole('textbox', { name: 'Source text editor' });

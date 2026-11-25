@@ -5,12 +5,23 @@ interface AssessmentView {
   root: string;
   feature: string | null;
   features: string[];
-  assessment: Assessment;
+  /** Documents in the worktree index; above the read limit, All documents is not offered. */
+  total: number;
+  /** Whether the feature list is narrowed to features changed on the branch. */
+  changed: boolean;
+  assessment: Assessment | null;
 }
+type LoadedView = AssessmentView & { assessment: Assessment };
+const LIMIT = 500;
+const SHOWN = 12;
 
 const main = document.querySelector<HTMLElement>('main')!;
 const scope = document.querySelector<HTMLSelectElement>('#scope')!;
 const scopeLabel = document.querySelector<HTMLLabelElement>('#scope-label')!;
+const filterLabel = document.querySelector<HTMLLabelElement>('#filter-label')!;
+const filter = document.querySelector<HTMLInputElement>('#scope-filter')!;
+let current: AssessmentView | undefined;
+let changedMode = false;
 const refresh = document.querySelector<HTMLButtonElement>('#refresh')!;
 const status = document.querySelector<HTMLParagraphElement>('#status')!;
 const report = document.querySelector<HTMLDivElement>('#report')!;
@@ -67,7 +78,7 @@ function source(evidence: Evidence) {
   return block;
 }
 
-function refinement(view: AssessmentView, finding: Finding) {
+function refinement(view: LoadedView, finding: Finding) {
   const section = element('details');
   const caption = element('summary', label('Preview a change', 'Previsualizar un cambio'));
   const first = finding.evidence[0];
@@ -141,7 +152,7 @@ function refinement(view: AssessmentView, finding: Finding) {
   return section;
 }
 
-function exportControls(view: AssessmentView) {
+function exportControls(view: LoadedView) {
   const section = element('details');
   const packet = element('textarea');
   packet.readOnly = true;
@@ -172,15 +183,39 @@ function exportControls(view: AssessmentView) {
   return section;
 }
 
+function drawScope(view: AssessmentView) {
+  const needle = filter.value.trim().toLowerCase();
+  const matches = view.features.filter(id => id.toLowerCase().includes(needle));
+  const shown = matches.slice(0, SHOWN);
+  if (feature !== null && !shown.includes(feature)) shown.unshift(feature);
+  const all = !view.changed && view.total <= LIMIT;
+  scope.replaceChildren(
+    ...(all ? [new Option(label('All documents', 'Todos los documentos'), '')] : feature === null ? [new Option(label('Choose a feature…', 'Elige una funcionalidad…'), '')] : []),
+    ...shown.map(id => new Option(id, id)));
+  scope.value = feature ?? '';
+  scopeLabel.hidden = view.features.length < 2 && feature === null && view.assessment !== null;
+  filterLabel.hidden = view.features.length <= SHOWN;
+  filter.placeholder = label('Filter ' + view.features.length + ' features', 'Filtrar ' + view.features.length + ' funcionalidades');
+}
+
 function draw(view: AssessmentView) {
   if (feature !== view.feature) selectedFinding = undefined;
   feature = view.feature;
-  scope.replaceChildren(new Option(label('All documents', 'Todos los documentos'), ''),
-    ...view.features.map(id => new Option(id, id)));
-  scope.value = feature ?? '';
-  scopeLabel.hidden = view.features.length < 2 && feature === null;
+  current = view;
+  changedMode = view.changed;
+  drawScope(view);
 
-  const result = view.assessment;
+  if (!view.assessment) {
+    report.replaceChildren(element('p', view.changed
+      ? (view.features.length
+        ? label(view.features.length + ' features changed on this branch. Choose one.', view.features.length + ' funcionalidades cambiadas en esta rama. Elige una.')
+        : label('No feature changed on this branch.', 'Ninguna funcionalidad cambió en esta rama.'))
+      : label('This worktree has ' + view.total + ' documents, more than ' + LIMIT + ' assessed at once. Choose a feature.',
+        'Este worktree tiene ' + view.total + ' documentos, más de ' + LIMIT + ' a la vez. Elige una funcionalidad.')));
+    return;
+  }
+  const loaded = view as LoadedView;
+  const result = loaded.assessment;
   const score = result.summary.score;
   const scoreText = score === null ? label('Incomplete', 'Incompleta') : score + '/' + result.summary.maximum;
   const summary = element('p', [
@@ -205,7 +240,7 @@ function draw(view: AssessmentView) {
       evidence.replaceChildren();
       if (finding) {
         evidence.append(...finding.evidence.map(source), element('p', finding.suggestion));
-        if (finding.evidence[0]) evidence.append(refinement(view, finding));
+        if (finding.evidence[0]) evidence.append(refinement(loaded, finding));
       }
     }
     choices.addEventListener('change', showFinding);
@@ -223,7 +258,7 @@ function draw(view: AssessmentView) {
   for (const decision of result.decisions) decisions.append(source(decision));
 
   const overview = element('details');
-  const root = element('p', view.root);
+  const root = element('p', loaded.root);
   root.className = 'path';
   const dimensions = element('ul');
   for (const dim of result.dimensions) {
@@ -231,7 +266,7 @@ function draw(view: AssessmentView) {
   }
   overview.append(element('summary', label('Assessment details', 'Detalles de la evaluación')),
     dimensions, element('p', label('Revision ', 'Revisión ') + result.id), root);
-  report.append(decisions, overview, exportControls(view));
+  report.append(decisions, overview, exportControls(loaded));
 }
 
 function observeSize() {
@@ -247,22 +282,22 @@ function observeSize() {
   }).observe(main);
 }
 
-async function load(selected: string | null) {
+async function load(selected: string | null, initial = false) {
   scope.disabled = true;
   refresh.disabled = true;
   report.replaceChildren();
   status.classList.remove('screen-reader-only');
   status.textContent = label('Assessing local documents…', 'Analizando documentos locales…');
   try {
-    const result = await request('tools/call', { name: 'assess_worktree', arguments: { feature: selected } }) as {
+    const result = await request('tools/call', { name: 'assess_worktree', arguments: initial ? { feature: null, initial: true } : { feature: selected, changed: changedMode } }) as {
       isError?: boolean;
       _meta?: { assessmentView?: AssessmentView };
     };
     const view = result?._meta?.assessmentView;
-    if (result?.isError || !view || typeof view.root !== 'string' || !Array.isArray(view.features) || typeof view.assessment?.id !== 'string') throw new Error('Invalid assessment response');
+    if (result?.isError || !view || typeof view.root !== 'string' || !Array.isArray(view.features) || typeof view.total !== 'number' || (view.assessment !== null && typeof view.assessment?.id !== 'string')) throw new Error('Invalid assessment response');
     draw(view);
     status.classList.add('screen-reader-only');
-    status.textContent = label('Assessment loaded.', 'Evaluación cargada.');
+    status.textContent = view.assessment ? label('Assessment loaded.', 'Evaluación cargada.') : label('Choose a feature to assess.', 'Elige una funcionalidad para analizar.');
   } catch {
     scope.value = feature ?? '';
     status.textContent = label('Could not load the assessment. Select a scope or refresh.', 'No se pudo cargar la evaluación. Selecciona un alcance o actualiza.');
@@ -274,6 +309,7 @@ async function load(selected: string | null) {
 
 scope.addEventListener('change', () => void load(scope.value || null));
 refresh.addEventListener('click', () => void load(scope.value || null));
+filter.addEventListener('input', () => { if (current) drawScope(current); });
 
 async function initialize() {
   status.textContent = label('Connecting to Codex…', 'Conectando con Codex…');
@@ -291,7 +327,8 @@ async function initialize() {
     refresh.textContent = label('Refresh', 'Actualizar');
     send({ method: 'ui/notifications/initialized', params: {} });
     observeSize();
-    await load(null);
+    filter.setAttribute('aria-label', label('Filter features', 'Filtrar funcionalidades'));
+    await load(null, true);
   } catch {
     status.textContent = label('Connection failed. Reopen the viewer to retry.', 'Falló la conexión. Vuelve a abrir el visor.');
   }

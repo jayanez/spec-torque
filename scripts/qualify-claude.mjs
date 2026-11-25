@@ -192,12 +192,15 @@ try {
     await session(language + '-walkthrough', workspace, ['--plugin-dir', zip], async ui => {
       await openPane(ui);
       const all = await expected(workspace, null);
-      await ui.see('Scope: All documents');
-      await ui.see('[ specs/payments ]');
+      await ui.see('Scope: All documents · 2 features');
+      await ui.see('Change scope');
       await ui.see(counts(all));
       record(language + ': pane loads from ZIP with scope picker', { findings: all.findings.length });
 
-      await ui.press(scope);
+      // Narrow through the command argument, the route every host shares.
+      await ui.key('\x1b', 800);
+      await ui.key('/spectorque ' + scope, 800);
+      await ui.key('\r', 1500);
       const scoped = await expected(workspace, scope);
       await ui.see('Scope: ' + scope);
       await ui.see(counts(scoped));
@@ -252,7 +255,7 @@ try {
       await ui.press('Open common workbench');
       const view = await ui.see(/Common workbench \(address copied\): http:\/\/127\.0\.0\.1:\d+/);
       const url = /http:\/\/127\.0\.0\.1:\d+/.exec(view)[0];
-      await ui.see('select: ' + scope);
+      await ui.see('it opens on ' + scope);
       const { stdout } = await run(process.execPath, ['--import', 'tsx', 'scripts/qualify-common-handoff.mjs', workspace, '--url', url, '--feature', scope], { timeout: 180_000 });
       const handoff = JSON.parse(stdout.slice(stdout.indexOf('{')));
       assert.equal(handoff.jsonExport && handoff.zipExport, true);

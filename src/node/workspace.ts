@@ -1,10 +1,10 @@
-import { readdir, readFile, realpath, stat, mkdir, writeFile, rename, unlink, open } from 'node:fs/promises';
+import { readFile, realpath, stat, mkdir, writeFile, rename, unlink, open } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, dirname, basename, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { classifyArtifact, isSpecCandidate, contentHash } from '../core/artifacts.js';
+import { classifyArtifact, contentHash, inFeatureScope, inPathScope } from '../core/artifacts.js';
+import { changedFeatures, indexWorkspace, type WorkspaceIndex } from './scope.js';
 import { applyProposal } from '../core/refine.js';
 import type { Artifact, ArtifactSet, PatchProposal } from '../core/types.js';
-const excluded = new Set(['.git', 'node_modules', 'dist', 'web-dist', 'coverage', '.venv', 'vendor', '.spec-torque', '.spectorque']);
 function lexicalPath(root: string, path: string): string {
   if (!path || isAbsolute(path) || path.includes('\0')) throw new Error('Invalid relative artifact path.');
   const target = resolve(root, path);
@@ -20,30 +20,60 @@ export async function resolveArtifactPath(root: string, path: string): Promise<s
   if (!/\.md$/i.test(target)) throw new Error('Only Markdown artifacts may be edited.');
   return target;
 }
-export async function discoverWorkspace(root: string): Promise<ArtifactSet> {
-  const canonicalRoot = await realpath(root);
-  const artifacts: Artifact[] = [];
-  let visited = 0;
-  async function walk(directory: string, depth: number): Promise<void> {
-    if (depth > 12) throw new Error('Directory depth exceeds 12; choose a smaller workspace.');
-    const entries = (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name));
-    for (const entry of entries) {
-      if (++visited > 25_000) throw new Error('Workspace is too large; select a feature folder.');
-      if (entry.isSymbolicLink() || excluded.has(entry.name) || entry.name.startsWith('.env')) continue;
-      const full = join(directory, entry.name);
-      if (entry.isDirectory()) await walk(full, depth + 1);
-      else if (entry.isFile()) {
-        const path = relative(canonicalRoot, full).replaceAll('\\', '/');
-        if (!isSpecCandidate(path, true)) continue;
-        if ((await stat(full)).size > 1_000_000) throw new Error(`Artifact exceeds 1 MB: ${entry.name}`);
-        if (artifacts.length >= 500) throw new Error('More than 500 artifacts; select a feature folder.');
-        artifacts.push(classifyArtifact(path, await readFile(full, 'utf8')));
-      }
-    }
-  }
-  await walk(canonicalRoot, 0);
-  return { name: basename(canonicalRoot), artifacts };
+export interface DiscoveryScope {
+  /** One feature ID (its artifacts plus ancestor instructions). */
+  feature?: string | null;
+  /** Several feature IDs, read together. */
+  features?: string[];
+  /** Root-relative folder or file prefixes (plus ancestor instructions). */
+  paths?: string[];
 }
+const MAX_ARTIFACTS = 500;
+
+/** Reads the selected scope of a workspace. Discovery of the boundary itself never reads content. */
+export async function discoverWorkspace(root: string, scope: DiscoveryScope = {}, index?: WorkspaceIndex): Promise<ArtifactSet> {
+  const workspace = index ?? await indexWorkspace(root);
+  const { feature = null, features, paths } = scope;
+  const selected = workspace.entries.filter(entry =>
+    (feature === null || inFeatureScope(entry, feature)) &&
+    (!features || features.some(id => inFeatureScope(entry, id))) &&
+    (!paths || inPathScope(entry, paths)));
+  if (selected.length > MAX_ARTIFACTS) {
+    throw new Error(`More than ${MAX_ARTIFACTS} artifacts in this scope (${selected.length}, ${workspace.features.length} features). Select a feature with --feature, or narrow with --path or --changed.`);
+  }
+  const artifacts: Artifact[] = [];
+  for (const entry of selected) {
+    const full = join(workspace.root, entry.path);
+    if ((await stat(full)).size > 1_000_000) throw new Error(`Artifact exceeds 1 MB: ${basename(entry.path)}`);
+    artifacts.push(classifyArtifact(entry.path, await readFile(full, 'utf8')));
+  }
+  return { name: workspace.name, artifacts };
+}
+export interface ScopeRequest { feature?: string | null; paths?: string[]; changed?: boolean; base?: string }
+
+/**
+ * Turns invocation modifiers into a read. Modifiers only narrow: one of feature, paths or changed;
+ * otherwise the index focus (a subfolder cwd) or the whole boundary.
+ */
+export async function readScope(index: WorkspaceIndex, request: ScopeRequest = {}): Promise<ArtifactSet> {
+  const feature = request.feature ?? null;
+  const paths = request.paths?.length ? request.paths : undefined;
+  if ([feature !== null, Boolean(paths), Boolean(request.changed)].filter(Boolean).length > 1) throw new Error('Use only one of feature, paths or changed.');
+  if (request.base !== undefined && !request.changed) throw new Error('A base revision requires changed.');
+  if (paths?.some(p => isAbsolute(p) || p.replaceAll('\\', '/').split('/').includes('..'))) throw new Error('Paths must be relative to the workspace.');
+  if (feature !== null) {
+    if (!index.entries.some(a => a.featureId === feature && a.role !== 'instructions')) throw new Error(`Unknown feature: ${feature}`);
+    return discoverWorkspace(index.root, { feature }, index);
+  }
+  if (paths) return discoverWorkspace(index.root, { paths }, index);
+  if (request.changed) {
+    const features = await changedFeatures(index, request.base);
+    if (!features.length) throw new Error('No feature changed on this branch.');
+    return discoverWorkspace(index.root, { features }, index);
+  }
+  return discoverWorkspace(index.root, index.focus ? { paths: [index.focus] } : {}, index);
+}
+
 export async function readWorkspaceArtifactBytes(root: string, path: string): Promise<Buffer> {
   const target = await resolveArtifactPath(root, path);
   if ((await stat(target)).size > 1_000_000) throw new Error('Artifact exceeds 1 MB.');

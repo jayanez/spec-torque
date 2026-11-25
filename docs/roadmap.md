@@ -10,6 +10,7 @@ Target release year: **2026**. Dates are planning checkpoints. Move a checkpoint
 | Nov 27–30 | Clean installation, end-to-end qualification and corrections. |
 | **Dec 1** | Operational V1: create/import → analyze → review an improvement → export through four agents and the common panel. |
 | **Dec 4** | Four integrated visual views connected to the shared motor and exercised in real clients. |
+| Nov 24–30 | Work-tree-scoped discovery and granular scope across all hosts ([#68](https://github.com/jayanez/spec-torque/issues/68)): engine, CLI, MCP and workbench first (#69–#71), then Claude Code, Codex, OpenCode, Pi and VS Code with a cross-host parity test (#72–#77). Found during the pilot on a large repository. |
 | Dec 1–10 | Pilot feedback, installation fixes, accessibility, original bilingual examples and reproducible demo. |
 | **Dec 11 target** | Review pilot evidence and decide whether to publish a stabilized version with the demonstration materials. |
 

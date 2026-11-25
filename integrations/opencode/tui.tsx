@@ -1,23 +1,33 @@
 /** @jsxImportSource @opentui/solid */
 import { Plugin } from '@opencode/plugin/tui';
 import { createEffect, createMemo, createRoot, createSignal, For, Show } from 'solid-js';
+import { spawn } from 'node:child_process';
 import type { ArtifactSet, Assessment, Evidence, Finding } from '../../src/core/types.js';
 import {
-  analyze, applyWorkspaceProposal, contentHash, createProposal, discoverWorkspace, openWorkbench,
-  readWorkspaceArtifact, selectFeature, terminalSummary,
+  analyze, applyWorkspaceProposal, choiceScope, contentHash, createProposal, defaultScope, hostIndex, openWorkbench,
+  parseScopeArgs, readScope, readWorkspaceArtifact, scopeChoices, scopeLabel, scopeRequest, scopeValue, terminalSummary,
+  type HostScope, type WorkspaceIndex,
 } from './runtime/integration.js';
 
 type Target = { sessionID?: string; directory?: string };
 type Snapshot = {
   root: string;
-  scope: string | null;
-  scopes: string[];
+  scope: HostScope;
+  index: WorkspaceIndex;
   source: ArtifactSet;
   report: Assessment;
 };
 const panelName = 'spectorque.review';
-const allDocuments = 'All documents';
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
+
+// Terminals link plain http://localhost URLs; the loopback server accepts both host names.
+const browserUrl = (url: string) => url.replace('http://127.0.0.1:', 'http://localhost:') + '/';
+function openInBrowser(url: string) {
+  const [command, ...args] = process.platform === 'darwin' ? ['open', url] : process.platform === 'win32' ? ['explorer.exe', url] : ['xdg-open', url];
+  const child = spawn(command, args, { detached: true, stdio: 'ignore', windowsHide: true });
+  child.on('error', () => {});
+  child.unref();
+}
 
 function sourceLine(snapshot: Snapshot, evidence: Evidence) {
   return snapshot.source.artifacts.find(artifact => artifact.path === evidence.path)
@@ -29,8 +39,10 @@ export default Plugin.define({
   setup(context) {
     const [snapshot, setSnapshot] = createSignal<Snapshot>();
     const [status, setStatus] = createSignal('Run /spectorque to analyze the workspace.');
+    const [workbenchUrl, setWorkbenchUrl] = createSignal<string>();
     let generation = 0;
-    let scope: string | null = null;
+    let scope: HostScope | undefined;
+    let index: WorkspaceIndex | undefined;
     let disposed = false;
     let workbench: { root: string; opened: Awaited<ReturnType<typeof openWorkbench>> } | undefined;
 
@@ -38,6 +50,7 @@ export default Plugin.define({
       if (!workbench) return;
       workbench.opened.server.close();
       workbench = undefined;
+      setWorkbenchUrl(undefined);
     }
 
     function readTarget(): Target {
@@ -57,7 +70,8 @@ export default Plugin.define({
         // Track the route even before a workbench is opened.
         target();
         generation++;
-        scope = null;
+        scope = undefined;
+        index = undefined;
         setSnapshot(undefined);
         setStatus('Run /spectorque to analyze the workspace.');
       });
@@ -83,21 +97,38 @@ export default Plugin.define({
       return location.directory;
     }
 
-    async function refresh(location: Target, request: number, requestedScope: string | null) {
+    // The shared index lists features without reading content; only the chosen scope is read.
+    async function refresh(location: Target, request: number, requested?: HostScope): Promise<Snapshot | undefined> {
       setSnapshot(undefined);
       setStatus('Analyzing workspace…');
-      const root = await rootFor(location);
-      const workspace: ArtifactSet = await discoverWorkspace(root);
-      const scopes = [...new Set(workspace.artifacts.filter(a => !a.archived && a.role !== 'instructions').map(a => a.featureId))];
-      const selected = requestedScope !== null && scopes.includes(requestedScope) ? requestedScope : null;
-      const source: ArtifactSet = selectFeature(workspace, selected);
+      const directory = await rootFor(location);
+      const next = await hostIndex(directory);
+      if (!current(location, request)) return;
+      index = next;
+      let chosen = requested ?? scope ?? defaultScope(next);
+      if (chosen?.kind === 'feature' && !next.features.some(f => f.id === chosen!.id)) chosen = defaultScope(next);
+      if (chosen?.kind === 'all' && next.entries.length > 500) chosen = undefined;
+      if (!chosen) {
+        chosen = await pickScope(next);
+        if (!chosen || !current(location, request)) { setStatus('Choose a feature: run /spectorque <feature | folder | --changed>.'); return; }
+      }
+      const source: ArtifactSet = await readScope(next, scopeRequest(chosen));
       const report: Assessment = await analyze(source);
       if (!current(location, request)) return;
-      const result = { root, scope: selected, scopes, source, report };
-      scope = selected;
+      const result = { root: next.root, scope: chosen, index: next, source, report };
+      scope = chosen;
       setStatus('');
       setSnapshot(result);
       return result;
+    }
+
+    function pickScope(workspace: WorkspaceIndex) {
+      return context.ui.dialog.select<string>({
+        title: 'SpecTorque · select scope (' + workspace.features.length + ' features)',
+        current: scopeValue(scope),
+        options: scopeChoices(workspace),
+        search: (query, options) => options.filter(option => option.title.toLowerCase().includes(query.toLowerCase())),
+      }).then(value => value === undefined ? undefined : choiceScope(value));
     }
 
     async function act(action: (location: Target, request: number) => Promise<void>) {
@@ -128,23 +159,20 @@ export default Plugin.define({
       });
     }
 
-    const open = () => act(async (location, request) => {
+    const open = (input?: string) => act(async (location, request) => {
       const panel = context.ui.panel.open(panelName);
-      const view = await refresh(location, request, scope);
+      const requested = input?.trim() ? parseScopeArgs(input, index ?? await hostIndex(await rootFor(location))) : undefined;
+      const view = await refresh(location, request, requested);
       if (!view || panel) return;
       await context.ui.dialog.alert({ title: 'SpecTorque', message: terminalSummary(view.report).join('\n') });
     });
 
     const changeScope = () => act(async (location, request) => {
-      const view = snapshot();
-      if (!view || view.scopes.length < 2) return;
-      const choice = await context.ui.dialog.select({
-        title: 'SpecTorque · select scope',
-        current: view.scope ?? '',
-        options: [{ title: allDocuments, value: '' }, ...view.scopes.map(value => ({ title: value, value }))],
-      });
+      const workspace = snapshot()?.index ?? index;
+      if (!workspace) return;
+      const choice = await pickScope(workspace);
       if (choice === undefined || !current(location, request)) return;
-      await refresh(location, request, choice || null);
+      await refresh(location, request, choice);
     });
 
     const inspect = () => act(async (location, request) => {
@@ -159,7 +187,7 @@ export default Plugin.define({
     });
 
     const review = () => act(async (location, request) => {
-      const view = snapshot() ?? await refresh(location, request, scope);
+      const view = snapshot() ?? await refresh(location, request);
       if (!view) return;
       const selected = await pickEvidence(view);
       if (!selected || !current(location, request)) return;
@@ -183,7 +211,7 @@ export default Plugin.define({
         message: 'Before:\n' + proposal.original + '\n\nAfter:\n' + proposal.replacement,
       });
       if (!accepted || !current(location, request)) return;
-      const root = await rootFor(location);
+      const root = (await hostIndex(await rootFor(location))).root;
       if (!current(location, request)) return;
       if (root !== view.root) throw new Error('OpenCode workspace changed. Run /spectorque to analyze again.');
       await applyWorkspaceProposal(view.root, proposal);
@@ -193,39 +221,41 @@ export default Plugin.define({
     const handoff = () => act(async (location, request) => {
       const view = snapshot();
       if (!view) return;
-      const root = await rootFor(location);
+      const root = (await hostIndex(await rootFor(location))).root;
       if (!current(location, request)) return;
       if (root !== view.root) throw new Error('OpenCode workspace changed. Run /spectorque to analyze again.');
       if (workbench?.root !== root || !workbench.opened.server.listening) {
         closeWorkbench();
-        const opened: Awaited<ReturnType<typeof openWorkbench>> = await openWorkbench(root);
+        const opened: Awaited<ReturnType<typeof openWorkbench>> = await openWorkbench(root, view.scope.kind === 'feature' ? view.scope.id : null);
         if (!current(location, request)) {
           opened.server.close();
           return;
         }
         workbench = { root, opened };
+        setWorkbenchUrl(browserUrl(opened.url));
       }
       await context.ui.dialog.prompt({
         title: 'SpecTorque · common workbench',
-        description: 'Copy this local URL into your browser. Load the workspace and select: ' + (view.scope ?? allDocuments),
-        value: workbench.opened.url,
+        description: 'Press o in the panel to open it in your browser, or copy this local URL' + (view.scope.kind === 'feature' ? '; it opens on ' + view.scope.id : '') + '.',
+        value: browserUrl(workbench.opened.url),
       });
     });
 
     function ReviewPanel() {
       context.keymap.layer(() => ({
         commands: [
-          { id: 'spectorque.scope', title: 'Select scope', bind: 's', enabled: () => (snapshot()?.scopes.length ?? 0) > 1, run: changeScope },
+          { id: 'spectorque.scope', title: 'Select scope', bind: 's', enabled: () => (snapshot()?.index.features.length ?? 0) > 1, run: changeScope },
           { id: 'spectorque.evidence', title: 'Inspect evidence', bind: 'e', enabled: () => Boolean(snapshot()), run: inspect },
           { id: 'spectorque.panel.review', title: 'Review change', bind: 'r', enabled: () => Boolean(snapshot()), run: review },
           { id: 'spectorque.workbench', title: 'Open common workbench', bind: 'w', enabled: () => Boolean(snapshot()), run: handoff },
+          { id: 'spectorque.browser', title: 'Open workbench in browser', bind: 'o', enabled: () => Boolean(workbenchUrl()), run: () => { const url = workbenchUrl(); if (url) openInBrowser(url); } },
           { id: 'spectorque.close', title: 'Close SpecTorque', bind: 'q', run: () => context.ui.panel.close() },
         ],
       }));
       return <box flexDirection="column" padding={1}>
         <text>SpecTorque · specification review</text>
         <Show when={snapshot()} keyed fallback={<text>{status()}</text>}>{view => <>
-          <text>Scope: {view.scope ?? allDocuments}</text>
+          <text>Scope: {scopeLabel(view.scope)} · {view.index.features.length} features · {view.index.mode}</text>
           <text>Revision: {view.report.id}</text>
           <text>Unknown practices: {view.report.summary.unknown}</text>
           <For each={terminalSummary(view.report)}>{line => <text>{line}</text>}</For>
@@ -233,8 +263,9 @@ export default Plugin.define({
           <For each={view.report.decisions}>{evidence =>
             <text>{evidence.path}:{evidence.line} {evidence.text}</text>
           }</For>
-          <Show when={view.scopes.length > 1}><text>s Select scope</text></Show>
+          <Show when={view.index.features.length > 1}><text>s Select scope</text></Show>
           <text>e Inspect evidence · r Review change · w Common workbench</text>
+          <Show when={workbenchUrl()}>{url => <text>Workbench: {url()} · o Open in browser</text>}</Show>
         </>}</Show>
         <text>q Close panel</text>
       </box>;
@@ -242,7 +273,9 @@ export default Plugin.define({
 
     context.ui.slot({ append: 'session.panel', render: panel => <Show when={panel.name === panelName}><ReviewPanel /></Show> });
     context.keymap.layer(() => ({ mode: 'global', commands: [
-      { id: 'spectorque.open', title: 'Open SpecTorque', palette: true, slash: { name: 'spectorque' }, run: open },
+      { id: 'spectorque.open', title: 'Open SpecTorque', palette: true, slash: { name: 'spectorque' }, run: () => open() },
+      // A separate command keeps /spectorque runnable with Enter; arguments narrow the scope.
+      { id: 'spectorque.scope', title: 'Open SpecTorque on a scope', palette: true, slash: { name: 'spectorque-scope', arguments: true }, run: (input?: string) => open(input) },
       { id: 'spectorque.review', title: 'Review SpecTorque evidence', palette: true, slash: { name: 'spectorque-review' }, run: review },
     ] }));
     return () => { disposed = true; stopWatching(); closeWorkbench(); };

@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { analyze } from '../core/analyze.js';
 import { buildArtifacts } from '../core/builder.js';
 import { createProposal, applyProposal } from '../core/refine.js';
+import { indexWorkspace } from './scope.js';
 import { discoverWorkspace, applyWorkspaceProposal, readWorkspaceArtifact, writeNewArtifacts, replaceWorkspaceContent } from './workspace.js';
 import { contentHash } from '../core/artifacts.js';
 import { importGitHub } from './github.js';
@@ -29,7 +30,7 @@ async function body(req: IncomingMessage): Promise<unknown> {
   for await (const chunk of req) { size += chunk.length; if (size > 6_000_000) throw new RequestTooLarge('Request exceeds 6 MB.'); chunks.push(Buffer.from(chunk)); }
   return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
 }
-export async function startServer(root: string, requestedPort = 4317) {
+export async function startServer(root: string, requestedPort = 4317, preselected: string | null = null) {
   const token = randomBytes(32).toString('hex');
   const builtWeb = new URL('../web-dist/', import.meta.url);
   const webRoot = resolve(fileURLToPath(existsSync(new URL('index.html', builtWeb)) ? builtWeb : new URL('../../web-dist/', import.meta.url)));
@@ -50,7 +51,16 @@ export async function startServer(root: string, requestedPort = 4317) {
       if (url.pathname === '/api/session' && req.method === 'GET') { send(200, { token, version: PRODUCT_VERSION }); return; }
       if (url.pathname.startsWith('/api/')) {
         if (req.headers['x-spectorque-token'] !== token) { send(403, { error: 'Open the workbench to establish a local session.' }); return; }
-        if (req.method === 'GET' && url.pathname === '/api/workspace') { send(200, await discoverWorkspace(root)); return; }
+        if (req.method === 'GET' && url.pathname === '/api/features') {
+          const index = await indexWorkspace(root);
+          send(200, { mode: index.mode, total: index.entries.length, features: index.features, preselected: preselected !== null && index.features.some(f => f.id === preselected) ? preselected : null }); return;
+        }
+        if (req.method === 'GET' && url.pathname === '/api/workspace') {
+          const feature = url.searchParams.get('feature');
+          const index = await indexWorkspace(root);
+          if (feature !== null && !index.entries.some(a => a.featureId === feature && a.role !== 'instructions')) { send(400, { error: 'The selected feature is unavailable. Refresh the workspace.' }); return; }
+          send(200, await discoverWorkspace(root, feature === null ? {} : { feature }, index)); return;
+        }
         if (req.method !== 'POST') { send(405, { error: 'Method not allowed.' }); return; }
         const input = await body(req);
         if (url.pathname === '/api/analyze') { send(200, await analyze(parseSet(input))); return; }
