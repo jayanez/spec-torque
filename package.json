@@ -1,9 +1,24 @@
 {
   "name": "spectorque",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "Create, inspect and refine agent-ready specifications with traceable evidence.",
   "type": "module",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/jayanez/spec-torque#readme",
+  "bugs": {
+    "url": "https://github.com/jayanez/spec-torque/issues"
+  },
+  "keywords": [
+    "spectorque",
+    "specification",
+    "spec-driven-development",
+    "requirements",
+    "epic",
+    "spec-kit",
+    "mcp",
+    "cli",
+    "coding-agents"
+  ],
   "engines": {
     "node": ">=22.20.0"
   },
@@ -18,7 +33,6 @@
     "dist",
     "web-dist",
     "skills",
-    "integrations",
     "README.md",
     "LICENSE",
     "NOTICE",
@@ -60,7 +74,10 @@
     "prepare:codex-desktop-probe": "npm run verify:node && node scripts/prepare-codex-desktop-probe.mjs",
     "qualify:codex-desktop-probe": "npm run verify:node && node scripts/qualify-codex-desktop-probe.mjs",
     "pilot:demo": "node scripts/pilot-demo.mjs",
-    "package:pilot": "node scripts/package-pilot.mjs"
+    "package:pilot": "node scripts/package-pilot.mjs",
+    "version:sync": "node scripts/sync-versions.mjs",
+    "pack:hosts": "node scripts/pack-hosts.mjs",
+    "docs:capture": "node --import tsx scripts/capture-docs.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
@@ -91,5 +108,9 @@
   "author": {
     "name": "jayanez",
     "url": "https://github.com/jayanez"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

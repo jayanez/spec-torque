@@ -19,4 +19,5 @@ export { applyWorkspaceProposal, discoverWorkspace, readScope, readWorkspaceArti
 export * from './node/host-scope.js';
 export * from './core/presentation.js';
 export { PRODUCT_VERSION } from './version.js';
+export type { ArtifactSet, Assessment, Evidence, Finding } from './core/types.js';
 export { changedFeatures, indexWorkspace, resolveImplicitRoot, type WorkspaceIndex } from './node/scope.js';

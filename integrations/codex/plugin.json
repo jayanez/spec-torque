@@ -1,7 +1,37 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "spectorque",
-  "version": "0.2.9",
-  "description": "Review agent-ready specifications in Codex Desktop with a local scoped SpecTorque workbench.",
-  "license": "Apache-2.0"
+  "version": "0.3.0",
+  "description": "Review agent-ready specifications in Codex with a local scoped SpecTorque viewer and workbench.",
+  "author": {
+    "name": "jayanez",
+    "url": "https://github.com/jayanez"
+  },
+  "homepage": "https://github.com/jayanez/spec-torque#readme",
+  "repository": "https://github.com/jayanez/spec-torque",
+  "license": "Apache-2.0",
+  "keywords": [
+    "specification",
+    "spec-driven-development",
+    "requirements",
+    "review",
+    "mcp",
+    "skills"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "SpecTorque",
+        "shortDescription": "Review agent-ready specs",
+        "longDescription": "Scores specifications, plans and tasks against 40 EPIC practices with exact source evidence, then proposes reviewed line refinements. Runs locally; no model call for analysis.",
+        "developerName": "jayanez",
+        "category": "Developer Tools",
+        "websiteURL": "https://github.com/jayanez/spec-torque",
+        "privacyPolicyURL": "https://github.com/jayanez/spec-torque/blob/develop/docs/privacy.md",
+        "brandColor": "#173f4f",
+        "logo": "./assets/icon.png",
+        "composerIcon": "./assets/icon.png"
+      }
+    }
+  }
 }

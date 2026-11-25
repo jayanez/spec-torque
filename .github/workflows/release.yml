@@ -1,0 +1,144 @@
+name: release
+# Builds every distributable from one commit and publishes it.
+# A pushed tag v<version> publishes to the prerelease channel. A manual run defaults
+# to a dry run; publishing to `latest` needs a manual run with channel=latest.
+# See docs/releases.md#versioning-and-releases and docs/publishing.md.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'npm dist-tag and editor channel'
+        type: choice
+        options: [next, latest]
+        default: next
+      dry_run:
+        description: 'Build and validate without publishing'
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  CHANNEL: ${{ inputs.channel || 'next' }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+  VSCE: '@vscode/vsce@4.1.1'
+  OVSX: 'ovsx@1.4.0'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - id: version
+        name: Check that the tag matches the product version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json $version" >&2; exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm run package:integrations
+      - run: npm run pack:hosts
+      - name: Host archives and VSIX
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in claude codex opencode pi; do node "scripts/package-$host.mjs"; done
+          npm run verify:codex-package
+          if [[ "$CHANNEL" == next ]]; then node scripts/package-vscode.mjs --pre-release; else node scripts/package-vscode.mjs; fi
+      - name: Collect release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          cp artifacts/npm/*.tgz artifacts/*.zip artifacts/*.vsix release/
+          (cd release && sha256sum -- * > SHA256SUMS && cat SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.version.outputs.version }}
+          path: release/
+          if-no-files-found: error
+
+  npm:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing and provenance
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@11 # trusted publishing needs npm 11.5 or later
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: release
+      - name: Publish the CLI and host packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          flags=(--access public --provenance --tag "$CHANNEL")
+          [[ "$DRY_RUN" == true ]] && flags+=(--dry-run)
+          for tgz in release/*.tgz; do npm publish "$tgz" "${flags[@]}"; done
+
+  editors:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: release
+      - name: Publish to the VS Code Marketplace and Open VSX
+        shell: bash
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          set -euo pipefail
+          vsix="$(ls release/*.vsix)"
+          pre=(); [[ "$CHANNEL" == next ]] && pre=(--pre-release)
+          if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish $vsix ${pre[*]}"; exit 0; fi
+          npx --yes "$VSCE" publish --packagePath "$vsix" "${pre[@]}"
+          npx --yes "$OVSX" publish "$vsix" "${pre[@]}"
+
+  github:
+    needs: [build, npm, editors]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: release
+      - name: Create the GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ "$DRY_RUN" == true || "$GITHUB_REF_TYPE" != tag ]]; then ls -l release; echo "Dry run or untagged: no GitHub release."; exit 0; fi
+          pre=(); [[ "$CHANNEL" == next ]] && pre=(--prerelease)
+          gh release create "v$VERSION" release/* --repo "$GITHUB_REPOSITORY" --title "SpecTorque $VERSION" --notes "See CHANGELOG.md for $VERSION. Install instructions: README.md#install." --verify-tag "${pre[@]}"

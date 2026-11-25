@@ -2,12 +2,11 @@
 import { Plugin } from '@opencode/plugin/tui';
 import { createEffect, createMemo, createRoot, createSignal, For, Show } from 'solid-js';
 import { spawn } from 'node:child_process';
-import type { ArtifactSet, Assessment, Evidence, Finding } from '../../src/core/types.js';
 import {
   analyze, applyWorkspaceProposal, choiceScope, contentHash, createProposal, defaultScope, fitsReadLimit, hostIndex, openWorkbench,
   parseScopeArgs, readScope, readWorkspaceArtifact, scopeChoices, scopeLabel, scopeRequest, scopeValue, terminalSummary,
   DISCLAIMER, LABELS, PRODUCT_VERSION, findingCard, replacementLabel, titleLine, workbenchLine, workbenchUrl,
-  type HostScope, type WorkspaceIndex,
+  type ArtifactSet, type Assessment, type Evidence, type Finding, type HostScope, type WorkspaceIndex,
 } from './runtime/integration.js';
 
 type Target = { sessionID?: string; directory?: string };

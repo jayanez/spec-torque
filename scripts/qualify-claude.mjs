@@ -400,7 +400,11 @@ try {
     await writeFile(path, content);
   }
   await mkdir(join(market, '.claude-plugin'));
-  await writeFile(join(market, '.claude-plugin/marketplace.json'), JSON.stringify({ name: 'spectorque-qualification', owner: { name: 'SpecTorque qualification' }, plugins: [{ name: 'spectorque', source: './spectorque', description: 'SpecTorque qualification copy' }] }, null, 2));
+  // The committed catalog, with its npm source swapped for the archive under test and a scratch name.
+  const catalog = JSON.parse(await readFile('.claude-plugin/marketplace.json', 'utf8'));
+  catalog.name = 'spectorque-qualification';
+  catalog.plugins = catalog.plugins.map(plugin => ({ ...plugin, source: './spectorque' }));
+  await writeFile(join(market, '.claude-plugin/marketplace.json'), JSON.stringify(catalog, null, 2));
   const claude = (args, options = {}) => run(executable, args, { cwd: project, env, timeout: 120_000, ...options });
   // Always unregister the qualification copy, even when a later step fails.
   const removeInstall = async () => {

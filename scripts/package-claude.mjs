@@ -8,6 +8,6 @@ const { archive, sha256 } = await packageArchive({
   version: manifest.version,
   files: ['.claude-plugin/plugin.json', '.mcp.json', 'hooks/hooks.json', 'hooks/register.js', 'hooks/text.js',
     'README.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'],
-  directories: ['dist', 'web-dist', 'skills'],
+  directories: ['assets', 'dist', 'web-dist', 'skills'],
 });
 console.log(archive + '\nSHA-256 ' + sha256);
