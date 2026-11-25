@@ -818,3 +818,31 @@ of the new E3 evidence; the owner fixes the threshold before labeling. The owner
 also decides whether to pre-register an H6a for further runner vocabulary
 (`python3 -m unittest`, script runners), with a fresh set chosen for it.
 
+
+### H6 adjudication — **holds; proposed for merge with known limits**
+
+The owner fixed the threshold on 2026-11-25 (`e81fcec`), before labeling: at most 1
+of the 15 new evidence lines may be agreed not genuine or remain unknown. Two
+independent agent sessions labeled the packet separately. They saw no engine
+output, key, provisional review or each other's labels. The packet was built
+before the rebase; its evidence lines are identical against 0.1.9.
+
+| New evidence (15) | Agreed positive | Agreed negative | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 14 | 1 | 0 | 0 |
+
+Cohen's kappa 1.00.
+
+- Apart from one, the 13 E3.1 lines and 2 E3.4 lines are Spec Kit acceptance
+  scenario blocks and quickstart "Definition of done" sections.
+- The agreed negative is a spec-quality checklist item
+  (`- [x] Requirements and acceptance scenarios are testable.`) in a
+  `checklists/requirements.md` classified as spec. It names acceptance scenarios
+  without stating one. This is added to the H6 known limits.
+
+**Limits of this adjudication.** Both reviewers are sessions of the same model
+family (#65). E3.2 had no new evidence on the fresh set, so the validation-table and
+quickstart rules are not adjudicated on fresh data.
+
+**Decision.** Propose H6 (engine 0.1.10) for merge, within the threshold. H6a
+(runner vocabulary such as `python3 -m unittest`) follows, as decided.
