@@ -1067,7 +1067,7 @@ items (the pre-H85-2 removals) may be agreed `positive` or remain disputed. Two 
 sessions labeled every item `negative`: 0 agreed positives and 0 disputes. Raw
 agreement was 29/29. Kappa is undefined because every label was the same. 11 of the 29
 lines are wrapped continuation lines whose first word is not the sentence's subject.
-After Amendment H85-2 the 28 remaining removed lines are a subset of these items.
+After Amendments H85-2 and H85-3 the 28 remaining removed lines are a subset of these items. H85-3 (`-n't` contractions) changed nothing on the fresh set or the pilot.
 
 **Pilot repository (development data, 32 open features, work tree, counts only).**
 E1.3 drops from 6 to 4. The 2 removed findings are the predicted "This *noun*" lines,
