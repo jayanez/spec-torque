@@ -255,8 +255,9 @@ try {
 
       await ui.press('Open common workbench');
       // One line: the copied address is the link's, and the workbench opens on the pane's feature.
-      const view = await ui.see(/Workbench: http:\/\/localhost:\d+\/ — opens on specs\/booking \(address copied\)/);
+      const view = await ui.see(/Workbench: http:\/\/localhost:\d+\/[\s\S]{0,400}?Address copied to the clipboard · Opens on specs\/booking/);
       const url = /http:\/\/localhost:\d+/.exec(view)[0];
+      ui.frames.push(ui.text()); // Evidence: the pane with the workbench line.
       const { stdout } = await run(process.execPath, ['--import', 'tsx', 'scripts/qualify-common-handoff.mjs', workspace, '--url', url, '--feature', scope], { timeout: 180_000 });
       const handoff = JSON.parse(stdout.slice(stdout.indexOf('{')));
       assert.equal(handoff.jsonExport && handoff.zipExport, true);

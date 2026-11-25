@@ -3,6 +3,10 @@
  * with context, written as packet.json (for reviewers) and key.json (direction, never shown to them).
  *
  *   definitions-packet.ts --detail <h3-scan.json> --roots <roots.json> --out <dir> [--sample 100] [--seed 42039]
+ *                         [--context 3] [--propositions h3a|h5]
+ *
+ * H5 (#78) reuses the builder with a wider context and a missing-identifier proposition that also
+ * considers the list item or paragraph the line belongs to.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -13,7 +17,10 @@ import { rootSchema } from './sources.js';
 const { values } = parseArgs({ options: {
   detail: { type: 'string' }, roots: { type: 'string' }, out: { type: 'string' },
   sample: { type: 'string', default: '100' }, seed: { type: 'string', default: '42039' },
+  context: { type: 'string', default: '3' }, propositions: { type: 'string', default: 'h3a' },
 } });
+if (!['h3a', 'h5'].includes(values.propositions!)) throw new Error('--propositions must be h3a or h5.');
+const around = Number(values.context);
 if (!values.detail || !values.roots || !values.out) throw new Error('Use: definitions-packet.ts --detail <h3-scan.json> --roots <roots.json> --out <dir>');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
@@ -35,7 +42,9 @@ const git = (root: string, ...args: string[]) => execFileSync('git', ['-C', root
 const proposition = (message: string) => message.startsWith('Duplicate')
   ? 'This line states a second, separate requirement under an ID that the same feature already uses for a different requirement.'
   : message.startsWith('Requirement has no stable identifier')
-    ? 'This line states a requirement that has no stable identifier of its own and is not under an enclosing requirement heading that identifies it.'
+    ? values.propositions === 'h5'
+      ? 'This line states a requirement that has no stable identifier: neither the line, nor the list item or paragraph it belongs to (including its wrapped lines), nor an enclosing requirement heading identifies it.'
+      : 'This line states a requirement that has no stable identifier of its own and is not under an enclosing requirement heading that identifies it.'
     : 'The requirement ID cited on this line has no definition anywhere in the feature\'s specification documents.';
 const specDocument = (path: string) => /\.md$/i.test(path) && /spec|requirement|prd|proposal/i.test(path.split('/').pop()!);
 
@@ -56,12 +65,12 @@ for (const change of draw(chosen, chosen.length)) {
   items.push({
     id: itemId, repository: roots.find(r => r.id === change.root)!.repository, revision: change.sha, path, line,
     proposition: proposition(message), subjectId: id ?? null,
-    context: lines.slice(Math.max(0, line - 4), line + 3).map((text, index) => `${Math.max(1, line - 3) + index}${Math.max(1, line - 3) + index === line ? ' >' : '  '} ${text}`),
+    context: lines.slice(Math.max(0, line - 1 - around), line + around).map((text, index) => `${Math.max(1, line - around) + index}${Math.max(1, line - around) + index === line ? ' >' : '  '} ${text}`),
     occurrences,
   });
   key.push({ id: itemId, direction: change.direction, practice, message, root: change.root, feature: change.feature });
 }
 await mkdir(values.out, { recursive: true, mode: 0o700 });
-await writeFile(join(values.out, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: 'docs/precision-adjudication.md#h3a-requirement-definitions-83', items }, null, 2) + '\n');
+await writeFile(join(values.out, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: values.propositions === 'h5' ? 'docs/precision-adjudication.md#h5-wrapped-continuations-78' : 'docs/precision-adjudication.md#h3a-requirement-definitions-83', items }, null, 2) + '\n');
 await writeFile(join(values.out, 'key.json'), JSON.stringify(key, null, 2) + '\n', { mode: 0o600 });
 console.log(JSON.stringify({ items: items.length, removed: key.filter(k => k.direction === 'removed').length, added: key.filter(k => k.direction === 'added').length, out: values.out }));

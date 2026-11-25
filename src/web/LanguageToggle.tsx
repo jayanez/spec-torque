@@ -1,9 +1,8 @@
 /**
- * Names the other language in that language. Each part of the accessible name carries its own
- * language, so screen readers voice "Español" in Spanish and the hint in the page language.
+ * Names the other language in the current view's language ("Spanish" in English, "Inglés" in
+ * Spanish). The button carries that language itself, so label and accessible name stay consistent on
+ * pages that do not set the document language.
  */
 export function LanguageToggle({ es, onToggle, className }: { es: boolean; onToggle: () => void; className?: string }) {
-  return <button type="button" className={className} onClick={onToggle}>
-    <span lang={es ? 'en' : 'es'}>{es ? 'English' : 'Español'}</span><span className="sr-only">{es ? ' · Cambiar a inglés' : ' · Switch to Spanish'}</span>
-  </button>;
+  return <button type="button" className={className} lang={es ? 'es' : 'en'} aria-label={es ? 'Cambiar a inglés' : 'Switch to Spanish'} onClick={onToggle}>{es ? 'Inglés' : 'Spanish'}</button>;
 }

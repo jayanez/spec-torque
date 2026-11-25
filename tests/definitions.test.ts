@@ -23,3 +23,29 @@ test('H3a: mentions, traceability rows and dotted sub-IDs are not second definit
   assert.deepEqual(await findings(['# Demo', '', '- REQ-001: The system MUST ask for consent.', '- REQ-001: The system MUST export JSON.']),
     ['I1.2:4:Duplicate requirement identifier REQ-001.']);
 });
+
+test('H5: hard-wrapped continuations belong to the item or paragraph they continue', async () => {
+  assert.deepEqual(await findings(['# Demo', '', '- **REQ-001 Consent.** The system MUST ask for consent before it records',
+    '  an episode, and it MUST stop recording when consent is withdrawn.']), []);
+  assert.deepEqual(await findings(['# Demo', '', 'REQ-001: The system MUST ask for consent before it records',
+    'an episode, and it MUST stop recording when consent is withdrawn.']), []);
+  assert.deepEqual(await findings(['# Demo', '', '- The system MUST ask for consent before it records',
+    '  an episode, and it MUST stop recording when consent is withdrawn.'], ['# Plan']), [
+    'I1.2:3:Requirement has no stable identifier.', 'I1.2:4:Requirement has no stable identifier.']);
+  assert.deepEqual(await findings(['# Demo', '', '| REQ-001 | The system MUST ask for consent |', 'The system MUST stop recording.']),
+    ['I1.2:4:Requirement has no stable identifier.']);
+});
+
+test('H5: a continuation that starts with an ID is not a second definition', async () => {
+  assert.deepEqual(await findings(['# Demo', '', '- **REQ-001:** The system MUST record an episode.',
+    '- **REQ-002:** The recorder MUST stop when consent is withdrawn and MUST keep', '  REQ-001 episodes already written.']), []);
+  assert.deepEqual(await findings(['# Demo', '', 'REQ-001 The system MUST record an episode.', 'REQ-002 The recorder MUST stop.',
+    'REQ-001 The system MUST keep episodes.']), ['I1.2:5:Duplicate requirement identifier REQ-001.']);
+});
+
+test('H5a: an ID cited later in an item or paragraph does not identify its other lines', async () => {
+  assert.deepEqual(await findings(['# Demo', '', 'The LLM response must be a valid manifest. If parsing fails, the',
+    'import is treated as a failure (see FR-006).'], ['# Plan']), ['I1.2:3:Requirement has no stable identifier.']);
+  assert.deepEqual(await findings(['# Demo', '', '### Never', '', '- `retry` MUST NOT reset a graph that waits for input',
+    '  (FR-009), because that would dispatch the task again.'], ['# Plan']), ['I1.2:5:Requirement has no stable identifier.']);
+});

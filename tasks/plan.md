@@ -52,7 +52,8 @@ its own increment.
 
 Order agreed after #68: #78 and #88 first, then #79, #80, #85, #84 and #94, each
 through the #39 replay (pre-registered hypothesis, synthetic twins, paired replay,
-adjudication). H6 (#88, engine 0.1.10) adds acceptance-scenario and validation-table
-vocabulary and discovers the Spec Kit `quickstart.md`; it passed adjudication, with
-E3.2 unconfirmed on the fresh set. Runner vocabulary (H6a) follows. H5 (#78) failed
-adjudication on units identified only by a cited ID and continues as a narrowed H5a.
+adjudication). H5 (#78) failed adjudication on units identified only by a cited
+ID; the narrowed H5a (engine 0.1.10) passed and is integrated through #96. H6 (#88,
+engine 0.1.11, product 0.2.4) adds acceptance-scenario and validation-table
+vocabulary and discovers the Spec Kit `quickstart.md`. Runner vocabulary (H6a)
+follows.

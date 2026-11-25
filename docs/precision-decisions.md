@@ -751,6 +751,146 @@ the other's labels.
 **Decision.** Propose H3a (engine 0.1.9) for merge. The known limits are recorded
 in the H3a entry above. The owner decides at review.
 
+### H5: hard-wrapped continuations join their item or paragraph — **holds; proposed for merge pending adjudication**
+
+Tracking: [#78](https://github.com/jayanez/spec-torque/issues/78).
+- Pre-registered at `62afcea`.
+- The sources (8 repositories, `"- **FR-001"` and `"- REQ-001"` queries) and 16
+  EN/ES twins were frozen at `7a4eb6e`.
+- Candidate: `9336e2b`, engine 0.1.10. Comparator: 0.1.9 (`c3f79b0`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (16 EN/ES), H3a twins and existing minimal pairs | holds: 16 of 16 (0.1.9 meets 10, failing exactly the 6 target cases); H3a twins 20 of 20; no admission, E1.4 or E1.2 change in the minimal pairs |
+| 2. 716 historical predictions | holds: 0 changed, as predicted; artifact sets and unknown practices identical in all 36 cases |
+| 3. Fresh set review | holds provisionally: 0 added; 37 of 38 removed findings are not true problems, 1 uncertain |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** 167 Spec Kit features in 8 roots; changes in 13 features of 2 roots.
+The candidate removes 38 I1.2 findings (36 missing identifiers, 2 duplicates) and
+adds none. I2.3 findings do not change. One feature changes I1.2/I2.2 status.
+
+**Gate 3, provisional review of all 38 removed findings** (this session, not
+independent labels):
+- 24 are wrapped continuation lines of a list item or paragraph that defines an ID
+  (`- **FR-003**: … MUST be bounded, and` / `  the bound MUST be configurable …`),
+  including one Spanish item.
+- 2 duplicates are continuation lines that start by citing an ID
+  (`  FR-015 holds in eight of ten discovery paths.`).
+- 10 are wrapped lines of notes, open questions, clarifications or "Never" lists that
+  cite the governing ID (`(FR-009)`, `(NFR-001)`), and 1 is a design note that "mechanically satisfies
+  FR-006". They restate or explain a requirement; none states a new one.
+- 1 is uncertain: a two-line paragraph whose first line states a rule
+  (`The LLM response must be a valid SKILL.md.`) and whose second line cites
+  `(see FR-006)`. A single-line version is identified under 0.1.9 too, because any
+  ID on a line counts.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 40 of 304 I1.2/I2.3 findings are removed: 35 missing identifiers and 5
+duplicates. None is added, and 5 features change I1.2/I2.2 status. The remaining
+I1.2 missing-identifier findings are, by structure: 93 continuation lines of items
+or paragraphs that carry no ID anywhere, 76 lines after a blank line, 36 list items
+of their own and 6 table rows. 11 duplicates remain, none on an indented line.
+
+**Known limits.**
+- An ID cited anywhere in an item or paragraph identifies all its lines, as a
+  mid-line mention already identifies its own line in 0.1.9.
+- An unindented line that starts with an ID is still a definition, so a wrapped
+  paragraph line such as `REQ-001 episodes already written.` without indentation
+  still counts as a duplicate. This keeps one-requirement-per-line paragraphs.
+- Other line-local rules are unchanged: a continuation that starts with a pronoun
+  (`  that …`) can still get E1.3, and E1.2/E2.1 still read one physical line.
+
+**Decision.** Propose H5 (engine 0.1.10) for merge after independent adjudication
+of the removed findings. The owner fixes the threshold before labeling; the H3a
+packet builder (`scripts/precision/definitions-packet.ts`) applies unchanged to
+the H5 scan.
+
+
+### H5 adjudication — **fails the threshold; continued as H5a (owner decision)**
+
+The owner fixed the threshold on 2026-11-25 (`8131ae9`), before labeling: at most 2
+of the 38 removed findings may be agreed true problems. Two independent agent
+sessions labeled the full packet separately, without engine output, the key, the
+provisional review or each other's labels.
+
+| Removed (38) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 31 | 3 | 4 | 0 |
+
+Cohen's kappa 0.55.
+
+- **Agreed positive (3), over the threshold.** Each is a prose paragraph or item
+  that states its own rule, where the only ID in the unit is a citation:
+  `The LLM response must be a valid SKILL.md. … (see FR-006)`; a design paragraph
+  that "satisfies FR-006"; a conditional rule beside `(NFR-001)`. H5 counts the
+  unit as identified because any ID in it counts.
+- **Disputed (4).** Items of "Never" lists or notes that end with a trace tag
+  (`(FR-009)`, `(FR-014)`, `(FR-020)`, "per FR-005"). One reviewer read the tag as
+  the item's identifier; the other read it as a cross-reference.
+- The 31 agreed negatives are continuations of items or paragraphs led by a
+  defining ID, and the 2 duplicates.
+
+**Failing construction.** Unit identification by a cited ID. All 7 positive or
+disputed items fall in it, and none of the 31 agreed negatives depends on it.
+
+**Decision.** The owner chose a narrowed H5a (a unit
+counts as identified only when its first line has a defining ID, so citations no
+longer identify wrapped lines), pre-registered as H5a below.
+
+### H5a: only a unit's defining first line identifies its continuations — **holds; proposed for merge**
+
+- Pre-registered at `4eb3108`, after the H5 adjudication failed.
+- The sources (4 repositories, `"**NFR-001**"` query; `"- **REQ-001**"` had no
+  eligible repository) and 22 EN/ES twins were frozen at `816fcf7`.
+- Candidate: `81ed209`, engine 0.1.11 (0.1.10 is H6). Comparators: 0.1.9 (`c3f79b0`)
+  and H5 (`9336e2b`).
+- **Version at merge.** H5a lands before H6, so it ships as engine 0.1.10 (merged with
+  `develop` after #95, product 0.2.3). The rules are those of `81ed209`; only the
+  version string changes.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (22 EN/ES), H3a twins, minimal pairs | holds: 22 of 22 (0.1.9 meets 14, H5 meets 18, failing exactly the 4 cited-ID twins); H3a 20 of 20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. H5 development set | holds: all 7 adjudicated positive or disputed findings are kept. Relative to H5, 12 findings come back: those 7 and 5 the H5 reviewers agreed were false (notes and open questions that cite an ID) |
+| 4. Fresh set and adjudication | holds: 0 findings added; 0 of 27 removed findings agreed true problems (threshold 2) |
+| 5. Evidence | holds |
+
+**H5 development set against 0.1.9.** 167 features: 26 findings removed (24
+continuations of items led by a defining ID, and 2 duplicates), none added.
+
+**Fresh set.** 109 Spec Kit features in 4 roots. 27 I1.2 missing-identifier
+findings are removed, and none is added.
+
+**Adjudication.** The threshold (at most 2 of 27 agreed positive) was confirmed
+by the owner before labeling (`106c986`). The two H5 reviewer sessions labeled the
+packet separately; having labeled the H5 packet before is a limit.
+
+| Removed (27) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 26 | 0 | 0 | 1 |
+
+Cohen's kappa 1.00. Both reviewers marked one item `unknown`, because the wrapped
+item's first line lay outside the six-line context. In the pinned source that line
+is `- **FR-018**: Any authenticated user MUST …`, seven lines above. It is not a
+true problem, and the threshold holds either way.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 34 of 304 I1.2/I2.3 findings are removed: 29 missing identifiers and 5
+duplicates. None is added, and 5 features change I1.2/I2.2 status. H5 removed 40;
+the 6 it no longer removes are units identified only by a cited ID.
+
+**Known limits.**
+- An unindented line led by an ID still starts its own requirement, so a wrapped
+  paragraph line such as `REQ-001 episodes already written.` still counts as a
+  duplicate.
+- A wrapped item that cites its governing ID only in a trace tag is still reported
+  as lacking an identifier. That is deliberate: such items were disputed.
+- Other line-local rules (E1.2, E1.3, E2.1) still read one physical line.
+
+**Decision.** Propose H5a (engine 0.1.10 at merge) for merge.
+
 ### H6: acceptance scenarios, validation tables and Spec Kit quickstart — **holds provisionally; E3.2 unconfirmed; proposed for merge pending adjudication**
 
 Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
@@ -759,6 +899,9 @@ Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
   `"python3 -m pytest"` in `quickstart.md` filled 4), 16 EN/ES twins and the replay
   (`scripts/precision/verification.ts`) were frozen at `ec1fcca`.
 - Candidate: `2cda71c`, engine 0.1.10. Comparator: 0.1.9 (`develop`, `c3f79b0`).
+- **Version at merge.** H5a merged first as engine 0.1.10 (#96), so H6 ships as
+  engine 0.1.11 with product 0.2.4. It was measured again against `develop` with
+  H5a; see the H6 adjudication entry.
 - **Rebase (owner decision, 2026-11-25, after both adjudications).** H6 was first
   built on H5 (engine 0.1.11, comparator 0.1.10 at `13cfd0d`). H5 failed its
   adjudication, so H6 was rebased onto `develop` unchanged except for the engine
@@ -844,5 +987,5 @@ Cohen's kappa 1.00.
 family (#65). E3.2 had no new evidence on the fresh set, so the validation-table and
 quickstart rules are not adjudicated on fresh data.
 
-**Decision.** Propose H6 (engine 0.1.10) for merge, within the threshold. H6a
+**Decision.** Propose H6 (engine 0.1.11 at merge) for merge, within the threshold. H6a
 (runner vocabulary such as `python3 -m unittest`) follows, as decided.
