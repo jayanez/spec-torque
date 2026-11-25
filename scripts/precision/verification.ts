@@ -25,9 +25,9 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 }
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
-  expected: z.strictObject({ 'E3.1': status, 'E3.2': status }), findings: z.array(z.string()).optional(), note: z.string(),
+  // H85: any practice may be an endpoint (H6 and H6a cases name E3.1 and E3.2).
+  expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(), note: z.string(),
 })) });
-const ENDPOINTS = ['E3.1', 'E3.2'] as const;
 
 async function assess(engine: Engine, files: Map<string, string> | Record<string, string>, feature?: string) {
   const entries = files instanceof Map ? [...files] : Object.entries(files);
@@ -44,8 +44,11 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
     findings, decisions: report.decisions.length,
     findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
+    // H85: structured findings with their line text, for removed/added finding lists.
+    findingLines: report.findings.map(f => ({ practiceId: f.practiceId, path: f.evidence[0]?.path ?? '', line: f.evidence[0]?.line ?? 0, message: f.message, text: f.evidence[0]?.text ?? '' })),
   };
 }
+const findingKey = (f: { practiceId: string; path: string; line: number; message: string }) => `${f.practiceId}|${f.path}|${f.line}|${f.message}`;
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h6-'));
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
 const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'b')), candidate: await archiveEngine(revisions.candidate, join(temp, 'c')) };
@@ -58,7 +61,7 @@ if (mode === 'synthetic') {
     const files = Object.fromEntries(Object.entries(entry.files).map(([path, lines]) => [path, lines.join('\n') + '\n']));
     const feature = Object.keys(files).map(p => arms.baseline.classifyPath(p).featureId).find(id => id.includes('specs/'));
     const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
-    const pick = (r: typeof b) => Object.fromEntries(ENDPOINTS.map(id => [id, r?.status[id]]));
+    const pick = (r: typeof b) => Object.fromEntries(Object.keys(entry.expected).map(id => [id, r?.status[id]]));
     const baseline = pick(b); const candidate = pick(c);
     // H6a: a case may also fix the complete finding list (practice|path|line).
     const meets = (r: typeof b, statuses: Record<string, unknown>) => JSON.stringify(statuses) === JSON.stringify(entry.expected) &&
@@ -99,9 +102,12 @@ if (mode === 'synthetic') {
         if (c.dimensions[id] !== null && b.dimensions[id] !== null && c.dimensions[id]! < b.dimensions[id]!) totals.dimensionsDown++;
       }
       totals.decisionsAdded += c.decisions - b.decisions;
-      if (added.length || changes.length || Object.keys(findingDelta).length) {
+      const [bKeys, cKeys] = [b, c].map(r => new Set(r.findingLines.map(findingKey)));
+      const findingsRemoved = b.findingLines.filter(f => !cKeys.has(findingKey(f)));
+      const findingsAdded = c.findingLines.filter(f => !bKeys.has(findingKey(f)));
+      if (added.length || changes.length || Object.keys(findingDelta).length || findingsRemoved.length || findingsAdded.length) {
         totals.changedFeatures++;
-        detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta,
+        detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta, findingsRemoved, findingsAdded,
           evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
       }
     }

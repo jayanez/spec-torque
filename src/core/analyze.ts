@@ -1,7 +1,7 @@
 import { contentHash, isValidationGuide } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.13';
+export const ENGINE_VERSION = '0.1.14';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -89,6 +89,23 @@ const minimumDuration = /(?<![\p{L}\p{N}\p{M}_])al menos\s+\d+(?:[.,]\d+)?\s+(?:
 const boundedRate = /[≤≥]\s*\d+(?:[.,]\d+)?\s+(?:entr(?:y|ies)|tickets?|requests?|turnos?|lecturas?|solicitudes?)\s+(?:per|por)\s+(?:second|minute|hour|segundo|minuto|hora)(?![\p{L}\p{N}\p{M}_])/iu;
 const observableDenial = /(?<![\p{L}\p{N}\p{M}_])(?:(?:MUST|SHALL|SHOULD)\s+(?:reject|deny)|DEBE(?:N|RÁN?|RÍAN?)?\s+(?:rechazar|denegar))(?![\p{L}\p{N}\p{M}_])/iu;
 const unboundedWording = new RegExp(vagueTerms.source, 'iu');
+// H85 (#85): `this`/`that` lead a noun phrase ("This amendment MUST") unless the next token marks a
+// pronoun: punctuation, a contraction, a modal or auxiliary, an adverb, a preposition or conjunction,
+// or a verb form. The verb and adverb suffixes err towards keeping the finding.
+const subjectLead = /^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:(it|esto|eso|ello)|this|that)\b/i;
+const pronounCues = [
+  'must|shall|should|may|might|can|cannot|could|will|won|would', // modals (H85, H85-2)
+  'is|was|are|were|be|been|being|has|had|have|does|did|do', // auxiliaries
+  'also|only|never|always|then|now|still|not|alone|itself|\\w+ly', // adverbs
+  'and|or|but|in|on|at|for|with|by|of|to|from|as|if|when|because|so', // prepositions and conjunctions (H85-1)
+  'made|led|meant|became|took|gave|kept|\\w*[^\\Wsui]s|\\w+ed', // verb forms
+].join('|');
+// Punctuation or no next word, a contraction ('s, 'll, 'd, H85-1; -n't, H85-3), or a listed word.
+const pronounNext = new RegExp(String.raw`^(?:\s*(?:$|[.,;:!?)—–-])|['’](?:s|ll|d)\b|\s+\w+n['’]t\b|\s+(?:${pronounCues})\b)`, 'i');
+function pronounSubject(text: string): boolean {
+  const lead = subjectLead.exec(text);
+  return Boolean(lead && (lead[1] || pronounNext.test(text.slice(lead[0].length))));
+}
 
 function hasObservableCue(text: string): boolean {
   const clause = text.normalize('NFC').replace(requirementId, '');
@@ -168,7 +185,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const inherited = inheritedLines(lines);
   for (const line of requirements) {
     for (const match of line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, '').matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
-    if (/^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:it|this|that|esto|eso|ello)\b/i.test(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
+    if (pronounSubject(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
     if (!identifiedOnLine(line) && !inherited.has(line) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
     if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }

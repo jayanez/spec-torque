@@ -1101,3 +1101,52 @@ score changes.
   I2.3/C1.3/C2.3 scope.
 
 **Decision.** Propose H8 (engine 0.1.13, version 0.2.6) for merge.
+
+### H85: demonstrative determiners are not pronoun subjects (E1.3) — **holds; proposed for merge**
+
+Tracking: [#85](https://github.com/jayanez/spec-torque/issues/85).
+- Pre-registered at `f47a90c`. One hypothesis: the owner decided that E1.2 gets no
+  detection change, because suppressing quoted labels would remove the frozen
+  rehearsal case FR-091. The sources (8 repositories, `"This feature MUST"` and
+  `"This endpoint MUST"` in `specs/**/spec.md`) and 11 EN/ES twins were frozen at
+  `7f6b1ae`. Amendment H85-1 (contractions, prepositions; 2 more twins) at `8b1af54`,
+  before the candidate.
+- Candidate `7609678`, engine 0.1.13, version 0.2.6. Comparator 0.1.12 (`develop`,
+  `3a888f0`). H8 (#80) then merged first as engine 0.1.13, so H85 ships as engine
+  0.1.14, version 0.2.7, and every measurement below was repeated against `develop`
+  with H8 (`0738464`). The clarifier change is `ac40313`.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (13 EN/ES), H3a, H5a, H6, H6a and H8 twins, minimal pairs | holds: 13 of 13 (the comparator meets 10, failing exactly the 3 determiner targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12, H8 10/10; minimal pairs: 0 rows changed, 0 regressions |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Fresh set | holds: 387 Spec Kit features in 8 roots; 28 E1.3 findings removed (28 distinct lines, 4 repositories), all on lines that start with `this` or `that`; nothing added; no status, dimension, open decision or artifact set changes. The #39 replay over all 399 features agrees: E1.3 only, 42 unique removals, 0 admission or E1.2/E1.4 decision changes. Before Amendment H85-2: 51 findings, 29 distinct lines, 5 repositories |
+| 4. Evidence | holds: 0 invalid |
+
+**Adjudication.** The owner fixed the threshold before labeling: at most 2 of the 29
+items (the pre-H85-2 removals) may be agreed `positive` or remain disputed. Two independent blind agent
+sessions labeled every item `negative`: 0 agreed positives and 0 disputes. Raw
+agreement was 29/29. Kappa is undefined because every label was the same. 11 of the 29
+lines are wrapped continuation lines whose first word is not the sentence's subject.
+After Amendments H85-2 and H85-3 the 28 remaining removed lines are a subset of these items. H85-3 (`-n't` contractions) changed nothing on the fresh set or the pilot.
+
+**Pilot repository (development data, 32 open features, work tree, counts only).**
+E1.3 drops from 6 to 4. The 2 removed findings are the predicted "This *noun*" lines,
+none is added, and no status or dimension changes. The E1.2 finding stays, because
+its label is unquoted.
+
+**Clarifier (outside the gates).** `tests/rehearsal.test.ts` renders the frozen
+arms unchanged. New EN/ES tests cover:
+- a multi-word quoted or code-formatted label after a label noun gets `named-option`;
+- the unquoted form stays `unsupported`.
+
+**Known limits.**
+- Nouns that end in `-ly`, `-ed` or `-s` ("This reply", "This seed", "This alias")
+  are read as pronoun cues, so those lines keep their 0.1.12 finding.
+- Wrapped continuation lines that start with `it` or `that` + verb are still
+  flagged. They are a separate class: the first word of a continuation is not the
+  requirement's subject.
+- An unquoted domain label ("easily copied items") is still an E1.2 finding.
+  Quoting it after a label noun makes the clarifier abstain, but the finding remains.
+
+**Decision.** Propose H85 (engine 0.1.14, version 0.2.7) for merge.

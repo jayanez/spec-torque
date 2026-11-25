@@ -896,6 +896,162 @@ any file content:
 The list is committed in `fixtures/precision/h8-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H85 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#85](https://github.com/jayanez/spec-torque/issues/85). Four precision
+tracks run in parallel, so this hypothesis is named after its issue. The #8 pilot
+repository is development data for H85. On its 32 open features, engine 0.1.12
+reports 6 E1.3 findings and 1 E1.2 finding. Two of the E1.3 findings start with a
+demonstrative followed by a noun ("This *noun* …"), which is a noun phrase, not a
+pronoun.
+
+**One hypothesis, not two.** Issue #85 names two practices, but only E1.3 gets a
+detection change. The owner decided (2026-11-25, in this track) how E1.2 is handled:
+- E1.2 detection and scores do not change. An unquoted label ("easily copied items")
+  cannot be told apart from a quality claim by a deterministic rule.
+- Suppressing a vague word inside a code span or quotation would remove the frozen
+  rehearsal case `FR-091 … the profile \`fast\` …`. The engine flags that case by
+  design, and the clarifier abstains on it as a named option (#49, #57).
+- Instead, the clarifier's named-option abstention is widened, as described below.
+  This changes no practice status, finding or score, so it is outside the gates
+  below. It is covered by tests, and `tests/rehearsal.test.ts` must stay unchanged
+  and green.
+
+**Policy (E1.3).** One change, nothing else. E1.3 still flags an admitted
+requirement line whose subject comes first, after an optional list marker and ID.
+The subject is `it`, `esto`, `eso` or `ello` (unchanged), or `this` / `that` used as
+a pronoun. `this` / `that` is a pronoun when the word after it meets any of these:
+1. There is no next word, or the next character is punctuation (`.`, `,`, `;`, `:`,
+   `!`, `?`, `)`, a dash).
+2. It is a modal or auxiliary: `must`, `shall`, `should`, `may`, `might`, `can`,
+   `could`, `will`, `would`, `is`, `was`, `are`, `were`, `be`, `been`, `being`,
+   `has`, `had`, `have`, `does`, `did`, `do`.
+3. It is an adverb: it ends in `-ly`, or it is `also`, `only`, `never`, `always`,
+   `then`, `now`, `still`, `not`, `alone` or `itself`.
+4. It is a verb form: it ends in `-s` but not in `-ss`, `-us` or `-is`, or it ends in
+   `-ed`, or it is `made`, `led`, `meant`, `became`, `took`, `gave` or `kept`.
+
+Otherwise `this` / `that` is the determiner of a noun phrase ("This amendment MUST …"),
+and E1.3 does not flag the line. Rules 3 and 4 err towards keeping a finding: an
+adjective in `-ed` ("This shared cache") or a noun in `-s` ("This alias") still
+counts as a pronoun, as in 0.1.12. Spanish is unchanged: `esto`, `eso` and `ello`
+are pronouns only, and the determiners `este`, `esta`, `ese` and `esa` were never
+flagged.
+
+**Policy (clarifier, outside the gates).** The clarifier already abstains with
+`named-option` when the cue is the whole content of a quotation or code span that
+follows `profile`, `preset`, `mode`, `option`, `perfil`, `modo` or `opción`, with an
+optional `named` / `called` / `llamado` / `llamada`. Two changes:
+- The label nouns also include `class`, `category`, `label`, `tag`, `status`,
+  `state`, `type`, `tier`, `clase`, `categoría`, `etiqueta`, `estado`, `tipo` and
+  `nivel`.
+- The cue may be one word of a multi-word label in the same span
+  (``the class `easily copied` ``).
+
+The existing cases keep their outcome.
+
+**Comparator.** 0.1.12 (`develop` at `3a888f0`). Candidate engine 0.1.13, product
+0.2.6. If another track merges first, the candidate takes the next patch versions
+and every measurement is repeated against the new `develop`.
+
+**Endpoints.** E1.3 findings by language, with the removed and added lines. Also
+every other finding by practice, every practice status, dimension scores, open
+decisions and artifact sets.
+
+**Predictions.**
+- The 716 historical predictions do not change. The corpus rules (E1.2, E1.4, I1.2,
+  I2.3) do not include E1.3. The minimal pairs and the H3a, H5a, H6 and H6a twins do
+  not change.
+- On natural sources, E1.3 findings are only removed, and none is added. Every
+  removed finding is on an English line that starts with `this` or `that`. No other
+  finding, practice status, dimension score, open decision or artifact set changes.
+  E1.3 status is pattern-based (glossary, enumerations) and does not depend on
+  findings.
+- On the pilot, the 2 "This *noun*" findings are removed and the other 4 E1.3
+  findings stay. Those 4 are a pronoun subject (`It …`), `This is …`, and two
+  wrapped continuation lines that start with `that` or `it`. Continuation lines are
+  a separate class and are not addressed here.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - `This amendment MUST …` (no E1.3), against `This MUST …` (E1.3);
+   - `That endpoint MUST …` (no E1.3), against `That means the endpoint MUST …`
+     (E1.3);
+   - `This new export MUST …` (no E1.3), against `This only applies …, and the
+     service MUST …` (E1.3);
+   - `It MUST …` as a control (E1.3 in both engines);
+   - Spanish controls, unchanged in both engines: `Esta enmienda DEBE …` and
+     `Ese servicio DEBE …` (no E1.3), against `Esto DEBE …` and
+     `Eso significa que el servicio DEBE …` (E1.3).
+
+   The candidate meets every twin. The minimal pairs and the H3a, H5a, H6 and H6a
+   twins are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report --
+   --baseline origin/develop`).
+3. On a fresh public set:
+   - only E1.3 findings change, they are only removed, and every removed finding is
+     on a line that starts with `this` or `that`;
+   - the removed findings, all of them or 100 drawn with seed 42039 (deduplicated by
+     line text), are adjudicated blind by two agent sessions. The owner fixes the
+     threshold before labeling.
+4. No evidence becomes invalid.
+
+**Adjudication proposition.** "The subject of this line is a bare pronoun: the
+reader must look outside the line to know what the requirement is about." Labels
+are `positive` (the finding was right), `negative` and `unknown`. Removed findings
+that are agreed `positive`, or that remain disputed, count against the threshold.
+
+**Stop rule.** If a gate fails, H85 stops and is reverted. The owner decides between
+a narrowed H85a and stopping. The clarifier change is kept or reverted on its own
+tests.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"This feature MUST"` and `"This endpoint MUST"`,
+  limited to Markdown files named `spec.md` under `specs/`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a, H6 and
+  H6a, and the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h85-sources.json` before the candidate
+commit.
+
+### Amendment H85-1 (2026-11-25, before the candidate and any measurement)
+
+While writing the candidate, two pronoun forms were found that the frozen rules
+would read as determiners. Both are added as pronoun cues. Each one only keeps
+findings that 0.1.12 already reports:
+- **Contractions.** `this` / `that` directly followed by `'s`, `'ll` or `'d`
+  (straight or curly apostrophe): "That's why …".
+- **Prepositions and conjunctions.** A determiner is never followed directly by one,
+  so a next word from this list makes `this` / `that` a pronoun: `and`, `or`, `but`,
+  `in`, `on`, `at`, `for`, `with`, `by`, `of`, `to`, `from`, `as`, `if`, `when`,
+  `because`, `so`. Example: "This in turn means …".
+
+Two EN twins are added to gate 1, both expected to keep their E1.3 finding:
+`That's why the export MUST …` and `This in turn means the export MUST …`. Nothing
+else changes.
+
+### Amendment H85-2 (2026-11-25, after adjudication; code review)
+
+The pre-merge review found that `cannot` and `won't` were missing from rule 2, so
+"That cannot happen …" read as a determiner. Both are added as pronoun cues
+(`cannot`, and `won` before `'t`). The change only keeps findings that 0.1.12
+reports. On the fresh set it restores 1 of the 29 adjudicated lines (23 findings,
+all from one inherited instruction file). The 28 removed lines that remain are a
+subset of the adjudicated items, so the adjudication result carries over.
+
+### Amendment H85-3 (2026-11-25, after adjudication; code review)
+
+A second review found that negative contractions of the listed auxiliaries
+("This isn't …", "That doesn't …", "This shouldn't …") matched no rule and read as
+determiners. A next word that ends in `n't` (straight or curly apostrophe) is now a
+pronoun cue. Like H85-2, this only keeps findings that 0.1.12 reports. The fresh set
+and the pilot were measured again; see the decision record.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
