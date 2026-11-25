@@ -26,7 +26,7 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 const status = z.enum(['supported', 'partial', 'missing', 'unknown', 'not_applicable']);
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
-  expected: z.strictObject({ 'E3.1': status, 'E3.2': status }), note: z.string(),
+  expected: z.strictObject({ 'E3.1': status, 'E3.2': status }), findings: z.array(z.string()).optional(), note: z.string(),
 })) });
 const ENDPOINTS = ['E3.1', 'E3.2'] as const;
 
@@ -44,6 +44,7 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
     evidence: Object.fromEntries(report.practices.map(p => [p.id, p.evidence])),
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
     findings, decisions: report.decisions.length,
+    findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
   };
 }
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h6-'));
@@ -60,8 +61,12 @@ if (mode === 'synthetic') {
     const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
     const pick = (r: typeof b) => Object.fromEntries(ENDPOINTS.map(id => [id, r?.status[id]]));
     const baseline = pick(b); const candidate = pick(c);
-    rows.push({ id: entry.id, construct: entry.construct, language: entry.language, expected: entry.expected, baseline, candidate,
-      baselineMeets: JSON.stringify(baseline) === JSON.stringify(entry.expected), candidateMeets: JSON.stringify(candidate) === JSON.stringify(entry.expected) });
+    // H6a: a case may also fix the complete finding list (practice|path|line).
+    const meets = (r: typeof b, statuses: Record<string, unknown>) => JSON.stringify(statuses) === JSON.stringify(entry.expected) &&
+      (!entry.findings || JSON.stringify(r?.findingKeys) === JSON.stringify([...entry.findings].sort()));
+    rows.push({ id: entry.id, construct: entry.construct, language: entry.language, expected: entry.expected, expectedFindings: entry.findings, baseline, candidate,
+      baselineFindings: entry.findings ? b?.findingKeys : undefined, candidateFindings: entry.findings ? c?.findingKeys : undefined,
+      baselineMeets: meets(b, baseline), candidateMeets: meets(c, candidate) });
   }
   const summary = { cases: rows.length, baselineMeets: rows.filter(r => r.baselineMeets).length, candidateMeets: rows.filter(r => r.candidateMeets).length,
     regressions: rows.filter(r => r.baselineMeets && !r.candidateMeets).map(r => r.id), unmet: rows.filter(r => !r.candidateMeets).map(r => r.id) };
