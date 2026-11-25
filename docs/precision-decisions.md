@@ -1114,6 +1114,9 @@ Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
 - The adjudication threshold was fixed at `656e023`, before any packet was built.
 - Amendment H9-2 (owner decision) and its 16 sources were frozen at `c6dabd1`,
   before any scan.
+- **Version at merge.** H8 (#80) merged first as engine 0.1.13 (#100), so H9 ships as
+  engine 0.1.14 with product 0.2.7. After `develop` was merged in, every measurement
+  was repeated against H8 (`0738464`); see the entry's last paragraph.
 
 | Gate | Result |
 |---|---|
@@ -1161,6 +1164,13 @@ finding or traceability edge changes. The other 19 stay: 10 plan-local `R-n` lab
   by the bare ID, as in 0.1.12: `resolved: false` usually, but `true` when the
   feature happens to define the same bare ID (`SPEC-028 REQ-001` in a feature with
   its own REQ-001), which then also counts that local requirement as referenced.
+
+**After H8 (#80).** H8 and H9 read the same plan and tasks references, so H9 now
+iterates H8's reference matches. Against `develop` with H8 (`0738464`), every
+measurement above is unchanged: twins, minimal pairs, the 716 predictions, the dev
+and fresh sets. On the pilot, H8 removes the 10 `R-n` findings and H9 the same 23,
+none is added, and I2.3 unresolved references go from 42 (0.1.12) to 32 (H8) to 9.
+That is the pre-registered subtraction, so no deviation is recorded.
 
 **Decision.** Propose H9 for merge. Rule 1 holds within the threshold on low fresh
 power and on the pilot. Rule 2 has no fresh-data change; the owner decides whether it
