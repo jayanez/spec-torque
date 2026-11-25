@@ -64,3 +64,12 @@ test('H8: plan-local R-n labels are references only when the specification uses 
   const statuses = (await analyze(tasksOnly)).practices.filter(p => ['C1.3', 'C2.3'].includes(p.id)).map(p => p.status);
   assert.deepEqual(statuses, ['missing', 'missing']);
 });
+
+test('H8: the R- family is decided per feature', async () => {
+  const set = setOf({
+    'specs/001-a/spec.md': ['# A', '', '- **R-1:** The system MUST record every outcome.'], 'specs/001-a/plan.md': ['# Plan', '', 'Covers R-1; R-3 adds an audit trail.'],
+    'specs/002-b/spec.md': ['# B', '', '- **FR-001:** The system MUST export a report.'], 'specs/002-b/plan.md': ['# Plan', '', 'Checks: R-1 the report opens; R-2 it is signed.'],
+  });
+  assert.deepEqual((await analyze(set)).findings.filter(f => f.practiceId === 'I2.3').map(f => `${f.evidence[0].path}:${f.message}`),
+    ['specs/001-a/plan.md:Reference R-3 has no definition in the supplied specs.']);
+});

@@ -1096,5 +1096,8 @@ score changes.
   HTML comments. That keeps findings rather than hiding them.
 - A plan that cites an undefined `R-n` requirement while the specification uses only
   `FR-` IDs is no longer reported. The fresh-set adjudication found no such case.
+- The P1.3 catalog pattern (`[A-Z]{1,8}-\d+` near a dependency word) still reads a
+  plan-local `R-n` as dependency-traceability evidence. P1.3 is outside the frozen
+  I2.3/C1.3/C2.3 scope.
 
 **Decision.** Propose H8 (engine 0.1.13, version 0.2.6) for merge.
