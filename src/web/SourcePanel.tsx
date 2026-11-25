@@ -6,7 +6,7 @@ import { api } from './api.js';
 import { sampleSet } from './samples.js';
 export function SourcePanel({ set, selected, language, local, onLoad, onSelect, onError, onPasteDraftChange }: { set: ArtifactSet; selected: string; language: Language; local: boolean; onLoad: (set: ArtifactSet, kind?: 'file' | 'workspace' | 'draft') => boolean; onPasteDraftChange: (dirty: boolean) => void; onSelect: (path: string) => void; onError: (text: string) => void }) {
   const es = language === 'es'; const input = useRef<HTMLInputElement>(null);
-  const [repo, setRepo] = useState(''); const [localFeatures, setLocalFeatures] = useState<FeatureSummary[]>(); const [localFeature, setLocalFeature] = useState(''); const [busy, setBusy] = useState(false); const [paste, setPaste] = useState(false); const [text, setText] = useState('');
+  const [repo, setRepo] = useState(''); const [localFeatures, setLocalFeatures] = useState<FeatureSummary[]>(); const [localFeature, setLocalFeature] = useState(''); const localRequest = useRef(0); const [busy, setBusy] = useState(false); const [paste, setPaste] = useState(false); const [text, setText] = useState('');
   async function files(list: FileList | null) {
     if (!list?.length) return;
     // FileList is live: the input is reset while File.text() is still pending.
@@ -24,16 +24,21 @@ export function SourcePanel({ set, selected, language, local, onLoad, onSelect, 
   }
   // Large workspaces load one feature at a time; the index itself never reads document content.
   async function loadLocal(feature?: string) {
+    // Only the latest local load may replace the artifacts; an earlier, slower one is dropped.
+    const request = ++localRequest.current;
     try {
       if (feature === undefined) {
         const info = await api<{ total: number; features: FeatureSummary[]; preselected: string | null }>('features');
+        if (request !== localRequest.current) return;
         setLocalFeatures(info.features.length > 1 ? info.features : undefined);
         if (info.preselected) feature = info.preselected;
         else if (info.total > 500) { setLocalFeature(''); return; }
       }
       if (feature) setLocalFeature(feature);
-      onLoad(await api<ArtifactSet>(feature ? 'workspace?feature=' + encodeURIComponent(feature) : 'workspace'), 'workspace');
-    } catch (e) { onError((e as Error).message); }
+      const loaded = await api<ArtifactSet>(feature ? 'workspace?feature=' + encodeURIComponent(feature) : 'workspace');
+      if (request !== localRequest.current) return;
+      onLoad(loaded, 'workspace');
+    } catch (e) { if (request === localRequest.current) onError((e as Error).message); }
   }
   async function remote() { setBusy(true); try { onLoad(await api<ArtifactSet>('github', { source: repo })); } catch (e) { onError((e as Error).message); } finally { setBusy(false); } }
   return <aside className="source-panel"><h2>{es ? 'Documentos' : 'Artifacts'}</h2><p className="muted">{es ? 'Selecciona un conjunto por funcionalidad.' : 'Review one feature set at a time.'}</p>

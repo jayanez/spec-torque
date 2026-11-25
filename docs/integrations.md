@@ -18,7 +18,7 @@ The three portable skills in `skills/` cover authoring, review and refinement. I
 
 ## Claude Code
 
-Run `npm run package:integrations` and then `npm run package:claude`. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.2.0.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. When the workspace has several features, the pane offers **All documents** or one feature, like OpenCode; companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. **Open common workbench** starts the loopback workbench for the session workspace, copies its address and names the scope to select; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
+Run `npm run package:integrations` and then `npm run package:claude`. The script writes a deterministic `artifacts/spectorque-claude-<version>.zip` (sorted entries, fixed timestamps, no tests) and prints its SHA-256. Load it for one session with `claude --plugin-dir /absolute/artifacts/spectorque-claude-0.2.1.zip` in your project, or load the generated folder with `claude --plugin-dir /absolute/spectorque/integrations/claude`. `claude plugin validate` reads directories, not archives: validate an extracted copy. The pane runs `node` from `PATH`; use Node 22.20+ there. The pane lists features from the work tree index before reading anything. `/spectorque <feature | folder | --changed [base]>` opens a scope directly. Otherwise a filtered selector offers one feature, the branch's changes, and **All documents** only when the work tree fits one read. A session started in a subfolder opens on that folder, and the last scope is remembered per work tree. Companion completeness needs a single selected feature. A proposal is refused when the source no longer matches the assessed hash. **Open common workbench** starts the loopback workbench for the session's work tree, copies its address, shows it as a clickable `http://localhost` link and opens it on the selected feature; it stops when you close it, close the pane or end the session. Pressing it while the server is starting cancels that startup. To verify the browser exports against that running server, run `npm run qualify:handoff -- /absolute/workspace --url <address>`. `npm run qualify:claude` drives the whole installed-ZIP walkthrough in a real terminal client; see [host qualification](host-common-qualification.md#claude-code-installed-package). Run `/spectorque` for the native Mod pane. It uses the current public Mods API (`hooks/hooks.json` modules, command registration and Pane rendering), not shell event hooks. The plugin also includes MCP and skills. Older clients without Mods should use MCP and the common workbench.
 
 Validate with `claude plugin validate integrations/claude` and run the bundled native harness with `claude plugin test integrations/claude`. A harness result and a real interactive/client walkthrough are recorded separately.
 
@@ -28,13 +28,13 @@ Official references: [Mods](https://code.claude.com/docs/en/plugins/mods/create)
 
 Build the viewer ZIP with `npm run check`, `npm run package:integrations` and `npm run package:codex`. Verify the package with `npm run verify:codex-package`. The ZIP bundles the project MCP runtime, the inline resource, the skills and the loopback workbench. Follow the [package guide](../integrations/codex/README.md) for local marketplace installation, binding a trusted worktree, upgrade and removal.
 
-Use the inline viewer for scope, evidence and the exact before/after. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. The tested opening route invokes `open_spectorque` in a local Codex chat. See [Desktop qualification](codex-desktop-probe.md) for observed builds and limits.
+Use the inline viewer for scope, evidence and the exact before/after. `open_spectorque` accepts an optional `feature`, or `changed` with an optional `base`. In a worktree too large for one read, the viewer lists the features and waits for a choice, and long lists can be filtered. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. The tested opening route invokes `open_spectorque` in a local Codex chat. See [Desktop qualification](codex-desktop-probe.md) for observed builds and limits.
 
 The independent project-MCP control `npm run prepare:codex -- en` or `-- es` generates a disposable workspace and three local skills. See [qualification](qualification.md) for the app-server run.
 
 ## VS Code workbench
 
-Install the packaged VSIX or load `integrations/vscode` through the extension development host. Run **SpecTorque: Open Specification Workbench** from the project. The extension launches and disposes a workspace-scoped loopback server. The shared editor workstream is tracked in [#5](https://github.com/jayanez/spec-torque/issues/5).
+Install the packaged VSIX or load `integrations/vscode` through the extension development host. Run **SpecTorque: Open Specification Workbench** from the project. With several features, a QuickPick offers one feature or only the branch's changes, remembers the choice per workspace and opens the workbench on it. The extension launches and disposes a workspace-scoped loopback server. The shared editor workstream is tracked in [#5](https://github.com/jayanez/spec-torque/issues/5).
 
 ## OpenCode
 
@@ -48,8 +48,8 @@ The ZIP exports `./tui` and includes the bundled runtime and workbench assets.
 It contains no auto-discovered OpenCode skills.
 
 `/spectorque` opens the native panel for a local, existing session and a summary
-dialog from home. Focus the panel and press **s** for scope, **e** for the exact
-source line, **r** for reviewed changes, **w** for the local workbench URL and
+dialog from home; `/spectorque-scope <feature | folder | --changed [base]>` opens it on a scope. When no scope is set, a searchable dialog lists the work tree's features, with known layouts first. Focus the panel and press **s** for scope, **e** for the exact
+source line, **r** for reviewed changes, **w** for the local workbench URL, **o** to open it in your browser and
 **q** to close it. `/spectorque-review` remains available from the command
 palette and prompt. The workbench uses the session's local workspace. In the
 browser, load the workspace and select the same feature as the panel.
@@ -61,7 +61,7 @@ observed TUI surface. See [OpenCode qualification](host-common-qualification.md#
 
 ## Pi
 
-Load `integrations/pi/index.ts` with Pi's extension option, or install the generated `integrations/pi` package through Pi's package mechanism. `/spectorque` supplies a score/evidence widget and interactive finding selection, editor and explicit confirmation. Headless invocation returns the report without starting a model turn. Skills are included.
+Load `integrations/pi/index.ts` with Pi's extension option, or install the generated `integrations/pi` package through Pi's package mechanism. `/spectorque [feature | folder | --changed [base]]` supplies a score/evidence widget and interactive finding selection, editor and explicit confirmation. Without an argument, the scope picker lists the shared features and the branch's changes. Headless invocation returns the report without starting a model turn; on a work tree larger than one read it needs a scope argument. Skills are included.
 
 ## Other hosts
 

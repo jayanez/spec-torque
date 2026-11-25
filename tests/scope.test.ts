@@ -149,3 +149,23 @@ test('changed narrows to features touched on the branch, including uncommitted e
     await assert.rejects(readScope(index, { feature: 'missing' }), /Unknown feature: missing/);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
+
+test('the Codex binding offers features without an unscoped read on large worktrees and narrows to changed features', async () => {
+  const { bindWorkspace } = await import('../src/node/scoped-review.js');
+  const root = await repository(2);
+  try {
+    for (let i = 0; i < 520; i++) await put(root, `specs/003-big/notes/${i}-spec.md`, spec(String(i)));
+    await git(root, 'add', '-A'); await git(root, 'commit', '-qm', 'big');
+    const binding = await bindWorkspace(root);
+    const unscoped = await binding.assess(null);
+    assert.equal(unscoped.assessment, null);
+    assert.ok(unscoped.total > 500);
+    assert.deepEqual(unscoped.features, ['specs/001-feature', 'specs/002-feature', 'specs/003-big']);
+    assert.ok((await binding.assess('specs/001-feature')).assessment.findings);
+    await git(root, 'switch', '-qc', 'work');
+    await put(root, 'specs/002-feature/plan.md', '# Plan\nChanged FR-001.\n');
+    const changed = await binding.assess(null, { changed: true, base: 'main' });
+    assert.equal(changed.feature, 'specs/002-feature');
+    assert.ok(changed.assessment);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});

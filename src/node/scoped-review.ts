@@ -4,15 +4,19 @@ import { isDeepStrictEqual } from 'node:util';
 import { analyze } from '../core/analyze.js';
 import { createProposal } from '../core/refine.js';
 import { discoverWorkspace, readWorkspaceArtifactBytes } from './workspace.js';
-import { indexWorkspace } from './scope.js';
+import { changedFeatures, indexWorkspace } from './scope.js';
 import { zipArtifactBytes } from '../web/archive.js';
-import type { PatchProposal } from '../core/types.js';
+import type { Assessment, PatchProposal } from '../core/types.js';
+
+interface AssessOptions { changed?: boolean; base?: string }
+interface AssessmentView<T> { root: string; feature: string | null; features: string[]; total: number; assessment: T }
 
 interface ReviewInput { feature: string | null; revision: string; findingId: string; replacement: string }
 interface ScopedExport { root: string; feature: string | null; revision: string; createdAt: string }
 interface ScopedReview { root: string; feature: string | null; revision: string; findingId: string; proposal: PatchProposal }
 
 export class StaleAssessmentError extends Error {}
+const MAX_UNSCOPED = 500;
 
 export async function bindWorkspace(configuredRoot: string | undefined) {
   if (!configuredRoot || !isAbsolute(configuredRoot)) throw new Error('Configure the trusted worktree with an absolute root.');
@@ -27,6 +31,25 @@ export async function bindWorkspace(configuredRoot: string | undefined) {
     return { scope, assessment: await analyze(scope), features };
   }
 
+  /**
+   * Assesses one feature, or the whole worktree when it fits the read limit. With `changed`,
+   * the feature list narrows to features touched on the branch. A worktree too large for an
+   * unscoped read returns its features without an assessment, so a viewer can ask for one.
+   */
+  async function assess(feature: string, options?: AssessOptions): Promise<AssessmentView<Assessment>>;
+  async function assess(feature: string | null, options?: AssessOptions): Promise<AssessmentView<Assessment | null>>;
+  async function assess(feature: string | null, options: AssessOptions = {}): Promise<AssessmentView<Assessment | null>> {
+    const index = await indexWorkspace(root);
+    let features = index.features.map(item => item.id);
+    if (options.changed) {
+      features = await changedFeatures(index, options.base);
+      if (feature === null && features.length === 1) feature = features[0];
+    }
+    if (feature === null && (options.changed || index.entries.length > MAX_UNSCOPED)) return { root, feature, features, total: index.entries.length, assessment: null };
+    const { assessment } = await load(feature);
+    return { root, feature, features, total: index.entries.length, assessment };
+  }
+
   async function propose(input: ReviewInput) {
     const { scope, assessment } = await load(input.feature);
     if (assessment.id !== input.revision) throw new StaleAssessmentError('The assessment is stale. Refresh and select the finding again.');
@@ -38,10 +61,7 @@ export async function bindWorkspace(configuredRoot: string | undefined) {
   }
 
   return {
-    async assess(feature: string | null) {
-      const { assessment, features } = await load(feature);
-      return { root, feature, features, assessment };
-    },
+    assess,
     async exportScope(selection: ScopedExport, format: 'json' | 'zip') {
       if (selection.root !== root) throw new Error('The export belongs to another worktree.');
       const { scope, assessment } = await load(selection.feature);

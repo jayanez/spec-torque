@@ -406,7 +406,7 @@ for (const es of [false, true]) {
     expect(await readFile(file)).toEqual(Buffer.from(content.replace(original, () => replacement)));
     expect(await readFile(sibling)).toEqual(Buffer.from(siblingContent));
 
-    const updated = await binding.assess(view.feature);
+    const updated = await binding.assess(view.feature!);
     expect(updated.assessment.id).not.toBe(view.assessment.id);
     expect(updated.assessment.decisions.some(item => item.path === 'specs/booking/spec.md' && item.line === 3)).toBe(true);
     await page.goto(workspace.url + '/?export=1');
