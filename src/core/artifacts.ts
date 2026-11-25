@@ -100,5 +100,7 @@ export function listFeatures(artifacts: Pick<PathClassification, 'role' | 'frame
   const byId = new Map<string, FeatureSummary>();
   for (const a of artifacts) if (!a.archived && a.role === 'spec' && !byId.has(a.featureId)) byId.set(a.featureId, { id: a.featureId, framework: a.framework, layout: a.framework !== 'generic' && !templateFolder.test(a.featureId), artifacts: 0 });
   for (const a of artifacts) { const f = byId.get(a.featureId); if (f && a.role !== 'instructions') f.artifacts++; }
-  return [...byId.values()].sort((a, b) => Number(b.layout) - Number(a.layout) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  // Templates come after every other group, so they never sit between features.
+  const template = (f: FeatureSummary) => Number(templateFolder.test(f.id));
+  return [...byId.values()].sort((a, b) => Number(b.layout) - Number(a.layout) || template(a) - template(b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }

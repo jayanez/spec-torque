@@ -651,3 +651,48 @@ test('the local feature picker filters by keyboard and loads the chosen feature'
   await page.keyboard.press('Escape');
   await expect(picker).toHaveValue('specs/066-item');
 });
+
+test('a Spec Kit feature opens on spec.md, not its requirements checklist, and the sample stays out of history', async ({ page, workspace }) => {
+  await writeFeature(workspace.root, 'specs/066-shadow', 'FR-066: The shadow system MUST be fast.\n');
+  await mkdir(join(workspace.root, 'specs/066-shadow/checklists'), { recursive: true });
+  await writeFile(join(workspace.root, 'specs/066-shadow/checklists/requirements.md'), '# Requirements checklist\n\n- [ ] CHK001 Requirements are testable.\n');
+  await served(workspace.root, 'specs/066-shadow', async url => {
+    await page.goto(url);
+    await expect(page.getByTitle('specs/066-shadow/spec.md')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-066: The shadow system MUST be fast.\n');
+    await page.getByRole('button', { name: 'History', exact: true }).click();
+    await expect(page.locator('.history-row')).toHaveCount(1);
+    await expect(page.locator('.history-row')).not.toContainText('Booking');
+  });
+});
+
+test('the Spanish view translates the header, dimensions, practices, roles and counts', async ({ page, workspace }) => {
+  await writeFile(join(workspace.root, 'AGENTS.md'), '# Agents\n\nFollow the specs.\n');
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  await page.goto(workspace.url);
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The first system MUST be fast.\n');
+  await page.getByRole('button', { name: 'Switch to Spanish', exact: true }).click();
+  await expect(page).toHaveTitle('SpecTorque — Banco de trabajo de especificaciones');
+  for (const text of ['Banco de trabajo de especificaciones', 'Proyecto local conectado', 'Sin ambigüedad', 'Planificación de la implementación', 'especificación · spec-kit', 'instrucciones · generic']) {
+    await expect(page.getByText(text, { exact: true }).first()).toBeAttached();
+  }
+  await expect(page.locator('.detail-panel .panel-header .pill')).toHaveText('Proyecto');
+  for (const text of ['Unambiguity', 'Specification workbench', 'Local workspace connected']) await expect(page.getByText(text, { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '40 prácticas', exact: true }).click();
+  await expect(page.getByText('Requisitos cuantificados y medibles').first()).toBeVisible();
+  await expect(page.getByText(/^(supported|partial|missing)$/)).toHaveCount(0);
+  await page.getByRole('button', { name: 'Evolución', exact: true }).click();
+  await expect(page.locator('.history-row').first()).toContainText(/\d+ hallazgos?/);
+  await expect(page.locator('.history-row').first()).not.toContainText('1 hallazgos');
+  await page.getByRole('button', { name: 'Conectar agentes', exact: true }).click();
+  await expect(page.getByText('MCP + panel de VS Code', { exact: true })).toBeVisible();
+});
+
+test('the language toggle keeps light-on-dark text on hover', async ({ page, workspace }) => {
+  await page.goto(workspace.url);
+  const toggle = page.getByRole('button', { name: 'Switch to Spanish', exact: true });
+  await toggle.hover();
+  const { color, background } = await toggle.evaluate(node => { const style = getComputedStyle(node); return { color: style.color, background: style.backgroundColor }; });
+  expect(color).toBe('rgb(255, 255, 255)');
+  expect(background).not.toMatch(/^rgb\(2[0-9]{2}, 2[0-9]{2}, 2[0-9]{2}\)$/);
+});

@@ -49,3 +49,5 @@
 @media(max-width:1250px){.detail-panel .panel-resizer{display:none}.detail-panel.collapsed{display:block}}
 @media(max-width:760px){.panel-resizer{display:none}.detail-panel>.panel-body{display:block}.source-panel.collapsed,.detail-panel.collapsed{padding:12px 16px}.collapsed .panel-header{flex-direction:row}.collapsed .panel-title{writing-mode:horizontal-tb;transform:none}.workspace-name{margin-left:0}.workspace-name strong{max-width:60vw}}
 .panel-body[hidden]{display:none!important}
+/* The language toggle sits on the dark header: keep its hover and focus states light-on-dark (WCAG AA). */
+.topbar .language:hover,.topbar .language:focus-visible{background:rgba(255,255,255,.16);color:white;border-color:#c9dce5}
