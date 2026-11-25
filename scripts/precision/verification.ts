@@ -26,9 +26,9 @@ if (!['synthetic', 'scan'].includes(mode ?? '') || !values.baseline || (mode ===
 const status = z.enum(['supported', 'partial', 'missing', 'unknown', 'not_applicable']);
 const fixtureSchema = z.strictObject({ version: z.literal(1), description: z.string(), cases: z.array(z.strictObject({
   id: z.string(), construct: z.string(), language: z.enum(['en', 'es']), files: z.record(z.string(), z.array(z.string())),
-  expected: z.strictObject({ 'E3.1': status, 'E3.2': status }), findings: z.array(z.string()).optional(), note: z.string(),
+  // H85: any practice may be an endpoint (H6 and H6a cases name E3.1 and E3.2).
+  expected: z.record(z.string().regex(/^[A-Z]\d\.\d$/u), status), findings: z.array(z.string()).optional(), note: z.string(),
 })) });
-const ENDPOINTS = ['E3.1', 'E3.2'] as const;
 
 async function assess(engine: Engine, files: Map<string, string> | Record<string, string>, feature?: string) {
   const entries = files instanceof Map ? [...files] : Object.entries(files);
@@ -45,6 +45,8 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
     findings, decisions: report.decisions.length,
     findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
+    // H85: finding identity with its line text, for removed/added finding lists.
+    findingLines: report.findings.map(f => ({ key: `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`, text: f.evidence[0]?.text ?? '' })),
   };
 }
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h6-'));
@@ -59,7 +61,7 @@ if (mode === 'synthetic') {
     const files = Object.fromEntries(Object.entries(entry.files).map(([path, lines]) => [path, lines.join('\n') + '\n']));
     const feature = Object.keys(files).map(p => arms.baseline.classifyPath(p).featureId).find(id => id.includes('specs/'));
     const [b, c] = await Promise.all([assess(arms.baseline, files, feature), assess(arms.candidate, files, feature)]);
-    const pick = (r: typeof b) => Object.fromEntries(ENDPOINTS.map(id => [id, r?.status[id]]));
+    const pick = (r: typeof b) => Object.fromEntries(Object.keys(entry.expected).map(id => [id, r?.status[id]]));
     const baseline = pick(b); const candidate = pick(c);
     // H6a: a case may also fix the complete finding list (practice|path|line).
     const meets = (r: typeof b, statuses: Record<string, unknown>) => JSON.stringify(statuses) === JSON.stringify(entry.expected) &&
@@ -100,9 +102,13 @@ if (mode === 'synthetic') {
         if (c.dimensions[id] !== null && b.dimensions[id] !== null && c.dimensions[id]! < b.dimensions[id]!) totals.dimensionsDown++;
       }
       totals.decisionsAdded += c.decisions - b.decisions;
-      if (added.length || changes.length || Object.keys(findingDelta).length) {
+      const keys = (r: typeof b) => new Set(r!.findingLines.map(f => f.key));
+      const [bKeys, cKeys] = [keys(b), keys(c)];
+      const findingsRemoved = b.findingLines.filter(f => !cKeys.has(f.key));
+      const findingsAdded = c.findingLines.filter(f => !bKeys.has(f.key));
+      if (added.length || changes.length || Object.keys(findingDelta).length || findingsRemoved.length || findingsAdded.length) {
         totals.changedFeatures++;
-        detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta,
+        detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta, findingsRemoved, findingsAdded,
           evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
       }
     }
