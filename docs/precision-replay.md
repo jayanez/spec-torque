@@ -555,6 +555,74 @@ any file content:
 The list is committed in `fixtures/precision/h5-sources.json` before the
 candidate commit.
 
+## Pre-registered hypothesis H5a (frozen before sources are chosen or the candidate is built)
+
+**Why.** H5 failed its adjudication. 3 of its 38 removed findings were agreed true
+problems, against a threshold of 2, and 4 more were disputed. All 7 have the same
+construction: an item or paragraph that states its own rule, where the only ID in
+the unit is a citation (`(see FR-006)`, `(FR-009)`, "per FR-005"). Under H5, any ID
+in the unit identifies all its lines. H5's sources, twins and packet are now
+development data.
+
+**Policy.** H5 with one narrowing:
+1. Units and continuations are defined as in H5.
+2. **Identification:** an admitted spec line counts as identified when the
+   **first line of its unit** has an ID in a defining position (the H3a rule), in
+   addition to the 0.1.9 rules (its own ID anywhere on the line, or an enclosing
+   defining heading). An ID cited later in the unit no longer identifies the
+   unit's other lines.
+3. **Definitions:** a continuation line is never a defining position, as in H5.
+
+Nothing else changes.
+
+**Comparators.** 0.1.9 (`develop`, `c3f79b0`) and H5 (`9336e2b`). Engine 0.1.11,
+because 0.1.10 is H6.
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs, the H3a twins and the H5
+  twins do not change.
+- On the H5 fresh set, H5a keeps all 7 adjudicated positive or disputed findings.
+  Relative to H5, it adds back only findings whose unit does not start with a
+  defining ID. Relative to 0.1.9, it removes a subset of H5's removals and adds
+  none.
+
+**Gate (all must hold to proceed).**
+1. The H5 twins plus new EN/ES twins, all committed before the candidate, are met.
+   The new twins:
+   - a two-line paragraph that states a rule and cites an ID on its second line
+     (the finding stays);
+   - a wrapped "Never"-list item that ends with a trace tag `(FR-009)` (the
+     finding stays);
+   - a wrapped item led by a defining ID, as a control (no finding).
+
+   The minimal pairs and the H3a twins are unchanged.
+2. The 716 historical predictions are unchanged.
+3. On the H5 development set, all 7 adjudicated positive or disputed findings are
+   kept, and every finding H5a adds back relative to H5 is listed.
+4. On a fresh public set:
+   - H5a adds no finding relative to 0.1.9;
+   - its removed findings, all of them or 100 drawn with seed 42039, are
+     adjudicated as in H5. At most 2 may be agreed true problems, and disputed
+     items count against that until the owner resolves them. This is the H5
+     threshold carried over; the owner confirms it before labeling.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H5a stops and there is no H5b. The owner decides
+between stopping #78 and a different approach.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"**NFR-001**"` and `"- **REQ-001**"`, limited
+  to Markdown files named `spec.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5 and H6, and
+  the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h5a-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
