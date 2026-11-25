@@ -1065,7 +1065,7 @@ Tracking: [#85](https://github.com/jayanez/spec-torque/issues/85).
 **Adjudication.** The owner fixed the threshold before labeling: at most 2 of the 29
 items may be agreed `positive` or remain disputed. Two independent blind agent
 sessions labeled every item `negative`: 0 agreed positives and 0 disputes. Raw
-agreement was 29/29. Kappa is undefined because every label was the same. 14 of the 29
+agreement was 29/29. Kappa is undefined because every label was the same. 11 of the 29
 lines are wrapped continuation lines whose first word is not the sentence's subject.
 
 **Pilot repository (development data, 32 open features, work tree, counts only).**
