@@ -186,8 +186,11 @@ node --import tsx scripts/precision/definitions-packet.ts --detail <h8 scan>/h3-
 ```
 
 It holds 100 of the 557 removed findings, drawn and shuffled with seed 42039, with
-six lines of context on each side. Each item otherwise has the H3a fields. Its
-`occurrences` list is empty by construction. `key.json` is not opened by reviewers.
+six lines of context on each side. Each item otherwise has the H3a fields, except
+that `occurrences` lists lines with the same label in any Markdown document of the
+feature (at most 8, the target line excluded), because a specification document has
+none by construction and the label is usually defined in a sibling document.
+`key.json` is not opened by reviewers.
 
 **Proposition.** *The `R-n` label named in `subjectId`, on this line, cites a
 requirement of the feature's specification, so its missing definition is a true

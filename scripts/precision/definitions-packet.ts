@@ -59,8 +59,11 @@ for (const change of draw(chosen, chosen.length)) {
   const id = message.match(/(?:FR|NFR|REQ|R)-\d+/i)?.[0];
   const occurrences: string[] = [];
   if (id) {
-    const files = git(change.root, 'ls-tree', '-r', '--name-only', change.sha).split('\n').filter(f => f.startsWith(change.feature + '/') && specDocument(f));
+    // H8: an R-n label is usually defined in a sibling document (research, plan), so search every Markdown file of the feature.
+    const searched = (f: string) => values.propositions === 'h8' ? /\.md$/i.test(f) : specDocument(f);
+    const files = git(change.root, 'ls-tree', '-r', '--name-only', change.sha).split('\n').filter(f => f.startsWith(change.feature + '/') && searched(f));
     for (const file of files) git(change.root, 'show', `${change.sha}:${file}`).split(/\r?\n/).forEach((text, index) => {
+      if (file === path && index + 1 === line) return;
       if (occurrences.length < 8 && new RegExp(`\\b${id}\\b(?!\\.\\d)`, 'i').test(text)) occurrences.push(`${file}:${index + 1}: ${text.trim().slice(0, 240)}`);
     });
   }
