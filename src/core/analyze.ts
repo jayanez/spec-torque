@@ -18,14 +18,14 @@ const hasNormativeModal = (text: string) => modal.test(
 /** H5a (#78): a list item or paragraph with its hard-wrapped continuation lines; `defined` when its first line has a defining ID. */
 interface Unit { defined: boolean }
 /** What a line may count for: requirements text, validation methods only (H6a quickstart) or nothing (H7 checklist). */
-type Scope = 'all' | 'validation' | 'none';
+type Scope = 'all' | 'validation' | 'context';
 interface Line extends Evidence { artifact: Artifact; scope: Scope; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
 // Lines that start a block (or are a fence run), and lines that cannot be continued.
 const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<|```|~~~)/;
 const closedBlock = /^\s*(?:#{1,6}(?:[ \t]|$)|\||>|<|```|~~~)/;
 const thematicBreak = /^\s*(?:[-*_=][ \t]*){3,}$/;
 function linesOf(artifact: Artifact): Line[] {
-  const scope: Scope = isReviewChecklist(artifact.path) ? 'none' : isValidationGuide(artifact.path) ? 'validation' : 'all';
+  const scope: Scope = isReviewChecklist(artifact.path) ? 'context' : isValidationGuide(artifact.path) ? 'validation' : 'all';
   let fenced = false;
   let continuable = false;
   let unit: Unit = { defined: false };
@@ -139,7 +139,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     const roleRequired = def.roles.length === 1 || ['I2.3', 'I2.4', 'I3.2', 'C1.2', 'C1.3', 'C2.3'].includes(def.id);
     if ((roleRequired && missingRoles.length) || !active.length) return { ...base, status: 'unknown', evidence: [], reason: `Not assessed: supply ${missingRoles.join(', ') || 'source'} artifacts.` };
     // H6a (#88): quickstart lines count only as validation-method evidence (E3.2); H7 (#79): checklist lines count for nothing.
-    const relevant = lines.filter(l => def.roles.includes(l.artifact.role) && (l.scope === 'all' || (l.scope === 'validation' && def.id === 'E3.2')));
+    const relevant = lines.filter(l => def.roles.includes(l.artifact.role) && (l.scope !== 'validation' || def.id === 'E3.2'));
     const special = evaluateSpecial(def.id, relevant, requirements);
     const hits = special?.hits ?? relevant.filter((l, i) => {
       if (!def.pattern?.test(l.text) || l.text.trim().length < 4) return false;
