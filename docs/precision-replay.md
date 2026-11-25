@@ -722,6 +722,86 @@ unchanged, and every measurement was repeated against the new comparator.
 H5a then merged first as engine 0.1.10, so H6 ships as engine 0.1.11 (product
 0.2.4), measured again against `develop` with H5a.
 
+## Pre-registered hypothesis H6a (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88). Owner decision
+after H6 (2026-11-25). The #8 pilot repository is development data for H6a. On its
+32 open features, engine 0.1.11 against 0.1.9:
+- E3.2 moves to `partial` in 8 features, and 22 stay `missing`. A token count over
+  the pilot quickstarts finds `python3 -m pytest` in 1 of 57 files and
+  `python3 -m unittest` in 24.
+- 3 E2.1 findings are added, all on `quickstart.md` lines (setup or verification
+  instructions with two "must" clauses). They are the H6 known limit: once indexed,
+  the quickstart is read by every rule, like any context document.
+
+**Owner expectation.** `quickstart.md` is evidence of validation methods only. It
+is not requirements text.
+
+**Policy.** Two changes, nothing else:
+1. **Quickstart scope.** The lines of a Spec Kit `specs/<NNN-name>/quickstart.md`
+   are read only by E3.2. They are never admitted as requirements, so the line
+   rules (E1.2, E1.3, E2.1, opposite obligations) do not run on them. They do not
+   count for any other practice (E1.1, E2.3, E3.3, E3.4, P1.1, P1.4, P2.5, I1.1,
+   I1.3, I2.1, I3.1, C1.2) or for open decisions. The artifact is still discovered
+   and hashed, as in H6.
+2. **Runner vocabulary.** E3.2 also counts these test runners:
+   - `python -m unittest` / `python3 -m unittest`;
+   - `go test`, `node --test`, `bun test`, `deno test`;
+   - `make test` / `make check`;
+   - `mvn test`, `gradle test` / `./gradlew test`.
+
+   Generic script runs (`python3 scripts/…`) are not included, because a script
+   path alone does not show that it checks anything.
+
+**Comparator.** 0.1.11 (`develop` at `56d4fea`). Engine 0.1.12, product 0.2.5.
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs and the H3a, H5a and H6 twins
+  do not change. The corpus has no `quickstart.md`, and no corpus document uses the
+  new runners on a unit line.
+- On natural sources, every finding on a `quickstart.md` line is removed, and no
+  other finding changes. Practices other than E3.2 can only move from `partial` to
+  `missing`, and only where a quickstart line was their sole evidence. That
+  includes the 2 E3.4 gains on the H6 fresh set. E3.2 can only move from `missing`
+  to `partial`.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - a quickstart with `python3 -m unittest`, against one with `python3 scripts/…`;
+   - a plan with `go test ./...` or `node --test`, against one with `go build`;
+   - a quickstart with two "must" clauses on one line (no E2.1 finding), against the
+     same line in a plan (the finding stays).
+
+   The candidate meets every twin. The minimal pairs and the H3a, H5a and H6 twins
+   are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report -- --baseline
+   develop`).
+3. On the H6 fresh set:
+   - every removed finding is on a `quickstart.md` line, and none is added;
+   - every status change is a predicted direction, and each is listed.
+4. On a fresh public set chosen for the runners, nothing goes down outside the
+   predictions. The first new E3.2 evidence line of every raised feature (or 100
+   drawn with seed 42039) is adjudicated as in H6 (E3.2 proposition). The owner
+   fixes the threshold before labeling.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, the failing change (1 or 2) is reverted and
+recorded. The owner decides between a narrowed H6b and stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"python3 -m unittest"` and `"go test ./..."`,
+  limited to Markdown files named `quickstart.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a and H6,
+  and the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h6a-sources.json` before the
+candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
