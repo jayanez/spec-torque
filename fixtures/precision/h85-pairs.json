@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "description": "H85 synthetic twins (#85): demonstrative determiners and pronoun subjects for E1.3. Constructed before the H85 candidate from the frozen policy; not independent labels.",
+  "cases": [
+    {
+      "id": "determiner-amendment-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: This amendment MUST keep the export format."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [],
+      "note": "This + noun is a noun phrase subject (#85)."
+    },
+    {
+      "id": "pronoun-this-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: This MUST keep the export format."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Twin: bare this before a modal is a pronoun."
+    },
+    {
+      "id": "determiner-endpoint-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-002: That endpoint MUST return 404 for an unknown order."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [],
+      "note": "That + noun is a noun phrase subject."
+    },
+    {
+      "id": "pronoun-that-means-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-002: That means the endpoint MUST return 404 for an unknown order."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Twin: that before a verb in -s is a pronoun."
+    },
+    {
+      "id": "determiner-adjective-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-003: This new export MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [],
+      "note": "This + adjective + noun is a noun phrase subject."
+    },
+    {
+      "id": "pronoun-adverb-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-003: This only applies to signed files; the export MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Twin: this before an adverb is a pronoun."
+    },
+    {
+      "id": "pronoun-it-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-004: It MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Control: it is always a pronoun."
+    },
+    {
+      "id": "determiner-esta-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: Esta enmienda DEBE conservar el formato de exportación."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [],
+      "note": "Control: Spanish determiners were never flagged."
+    },
+    {
+      "id": "pronoun-esto-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: Esto DEBE conservar el formato de exportación."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Control: esto is a pronoun."
+    },
+    {
+      "id": "determiner-ese-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-002: Ese servicio DEBE responder con 404 ante un pedido desconocido."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [],
+      "note": "Control: Spanish determiners were never flagged."
+    },
+    {
+      "id": "pronoun-eso-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-002: Eso significa que el servicio DEBE responder con 404 ante un pedido desconocido."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Control: eso is a pronoun."
+    },
+    {
+      "id": "pronoun-contraction-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-005: That's why the export MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Amendment H85-1: that + 's is a pronoun."
+    },
+    {
+      "id": "pronoun-preposition-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-005: This in turn means the export MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Amendment H85-1: this + preposition is a pronoun."
+    }
+  ]
+}

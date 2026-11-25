@@ -59,5 +59,9 @@ vocabulary and discovers the Spec Kit `quickstart.md`. H6a (#88, engine 0.1.12,
 product 0.2.5) reads the quickstart only as validation-method evidence and adds
 test-runner vocabulary. H8 (#80, engine 0.1.13, product 0.2.6) treats a bare `R-n`
 on a plan or tasks line as a local label unless the specification uses the `R-`
-family. H9 (#84, engine 0.1.14, product 0.2.7) leaves out of I2.3 the references a
-line qualifies by another specification; its "not adopted" rule was reverted.
+family. H85 (#85, engine 0.1.14, product 0.2.7) stops reading a
+demonstrative that leads a noun phrase as an E1.3 pronoun subject; E1.2 detection is
+unchanged and the clarifier treats a quoted label after a label noun as a named
+option. H9 (#84, engine 0.1.15, product 0.2.8) leaves out of I2.3 the
+references a line qualifies by another specification; its "not adopted" rule was
+reverted.
