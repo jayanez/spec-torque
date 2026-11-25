@@ -41,7 +41,7 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
   const findings: Record<string, number> = {};
   for (const f of report.findings) findings[f.practiceId] = (findings[f.practiceId] ?? 0) + 1;
   return {
-    paths: set.artifacts.map(a => `${a.path}:${a.role}`).sort(), roles: Object.fromEntries(set.artifacts.map(a => [a.path, a.role])),
+    roles: Object.fromEntries(set.artifacts.map(a => [a.path, a.role])),
     status: Object.fromEntries(report.practices.map(p => [p.id, p.status])),
     evidence: Object.fromEntries(report.practices.map(p => [p.id, p.evidence])),
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
@@ -110,13 +110,15 @@ if (mode === 'synthetic') {
       totals.decisionsAdded += c.decisions - b.decisions;
       // H7: role changes and the exact findings each arm reports.
       const roleChanges = Object.keys(c.roles).filter(path => b.roles[path] && b.roles[path] !== c.roles[path]).map(path => ({ path, from: b.roles[path], to: c.roles[path] }));
-      const removedFindings = b.findingKeys.filter(k => !c.findingKeys.includes(k)); const addedFindings = c.findingKeys.filter(k => !b.findingKeys.includes(k));
+      const before = new Set(b.findingKeys); const after = new Set(c.findingKeys);
+      const removedFindings = b.findingKeys.filter(k => !after.has(k)); const addedFindings = c.findingKeys.filter(k => !before.has(k));
+      const kept = new Set(c.decisionLines.map(l => `${l.path}:${l.line}`));
       if (added.length || changes.length || Object.keys(findingDelta).length || c.decisions !== b.decisions) {
         totals.changedFeatures++;
         detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, removedFindings, addedFindings,
           decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])),
           baselineEvidence: Object.fromEntries(changes.map(ch => [ch.id, b.evidence[ch.id]])),
-          removedDecisions: b.decisionLines.filter(l => !c.decisionLines.some(k => k.path === l.path && k.line === l.line)) });
+          removedDecisions: b.decisionLines.filter(l => !kept.has(`${l.path}:${l.line}`)) });
       }
     }
   }

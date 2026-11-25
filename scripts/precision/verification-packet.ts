@@ -15,6 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { isReviewChecklist } from '../../src/core/artifacts.js';
 import { PRACTICES } from '../../src/core/catalog.js';
 import { rootSchema } from './sources.js';
 
@@ -42,6 +43,20 @@ const PROPOSITIONS: Record<string, string> = {
 };
 const around = Number(values.context);
 const git = (root: string, ...args: string[]) => execFileSync('git', ['-C', roots.find(r => r.id === root)!.path, ...args], { encoding: 'utf8', maxBuffer: 1 << 28 });
+const sources = new Map<string, string[]>();
+/** Lines of a committed file, read once per packet. */
+const source = (root: string, sha: string, path: string) => {
+  const k = `${root}:${sha}:${path}`;
+  if (!sources.has(k)) sources.set(k, git(root, 'show', `${sha}:${path}`).split(/\r?\n/));
+  return sources.get(k)!;
+};
+const rank: Record<string, number> = { missing: 0, partial: 1, supported: 2 };
+const order = (c: { from: string; to: string }) => Math.sign((rank[c.to] ?? -1) - (rank[c.from] ?? -1));
+const append = <K, V>(map: Map<K, V[]>, key: K, value: V) => { const list = map.get(key); if (list) list.push(value); else map.set(key, [value]); };
+const writePacket = async (guide: string, items: unknown[], key: unknown) => {
+  await writeFile(join(values.out!, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide, items }, null, 2) + '\n');
+  await writeFile(join(values.out!, 'key.json'), JSON.stringify(key, null, 2) + '\n', { mode: 0o600 });
+};
 const contextOf = (lines: string[], line: number) => lines.slice(Math.max(0, line - 1 - around), line + around)
   .map((text, index) => `${Math.max(1, line - around) + index}${Math.max(1, line - around) + index === line ? ' >' : '  '} ${text}`);
 await mkdir(values.out, { recursive: true, mode: 0o700 });
@@ -56,7 +71,7 @@ async function h6Packet() {
   const items: unknown[] = []; const key: { id: string; practice: string; root: string; feature: string }[] = [];
   for (const change of shuffle(changes)) {
     const { path, line } = change.evidence!;
-    const lines = git(change.root, 'show', `${change.sha}:${path}`).split(/\r?\n/);
+    const lines = source(change.root, change.sha, path);
     const id: string = 'V' + String(items.length + 1).padStart(3, '0');
     items.push({
       id, repository: roots.find(r => r.id === change.root)!.repository, revision: change.sha, path, line,
@@ -65,20 +80,18 @@ async function h6Packet() {
     });
     key.push({ id, practice: change.practice, root: change.root, feature: change.feature });
   }
-  await writeFile(join(values.out!, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: 'docs/precision-adjudication.md#h6-verification-evidence-88', items }, null, 2) + '\n');
-  await writeFile(join(values.out!, 'key.json'), JSON.stringify(key, null, 2) + '\n', { mode: 0o600 });
+  await writePacket('docs/precision-adjudication.md#h6-verification-evidence-88', items, key);
   console.log(JSON.stringify({ items: items.length, byPractice: Object.fromEntries(Object.keys(PROPOSITIONS).map(p => [p, key.filter(k => k.practice === p).length])), out: values.out }));
 }
 
 /** At most 15 features per repository, drawn with the seed (amendment H7-2). */
 function capped(details: Detail[]) {
   const byRoot = new Map<string, Detail[]>();
-  for (const d of details) byRoot.set(d.root, [...(byRoot.get(d.root) ?? []), d]);
+  for (const d of details) append(byRoot, d.root, d);
   return [...byRoot.keys()].sort().flatMap(root => shuffle([...byRoot.get(root)!].sort((a, b) => a.feature < b.feature ? -1 : 1)).slice(0, 15));
 }
 
 async function h7Packet() {
-  const checklist = (path: string) => /(?:^|\/)specs\/\d{3}-[^/]+\/checklists\/[^/]+\.md$/i.test(path);
   // Named items, variants listed in advance (amendment H7-2).
   const named = (text: string) => {
     const m = /^\s*[-*]\s*\[([ xX])\]\s*(?:No \[NEEDS CLARIFICATION\] markers remain|No quedan marcadores \[NEEDS CLARIFICATION\]|无 \[NEEDS CLARIFICATION\])/u.exec(text);
@@ -86,13 +99,9 @@ async function h7Packet() {
   };
   const role = (practice: string) => PRACTICES.find(p => p.id === practice)!.roles.includes('context') ? '1b' : '1a';
   const actor = /user|visitor|actor|customer|usuario|visitante|cliente/i;
+  // A rough requirement-line test for picking the actor line. It differs from the gains packet's `admitted`
+  // on purpose: both packets were labeled as built, and changing either would change their candidates.
   const modalOrId = /\b(?:FR|NFR|REQ)-\d+\b|(?<![\p{L}\p{N}_])(?:MUST|SHALL|SHOULD|MAY|DEBE\w*|PUEDE\w*)(?![\p{L}\p{N}_])/iu;
-  const sources = new Map<string, string[]>();
-  const source = (root: string, sha: string, path: string) => {
-    const k = `${root}:${sha}:${path}`;
-    if (!sources.has(k)) sources.set(k, git(root, 'show', `${sha}:${path}`).split(/\r?\n/));
-    return sources.get(k)!;
-  };
   // Cap: at most 15 changed features per repository, drawn with the seed.
   const features = capped(scan.detail.filter(d => d.roleChanges?.length));
 
@@ -101,18 +110,16 @@ async function h7Packet() {
   const push = (c: Omit<Candidate, 'named'>) => candidates.push({ ...c, named: named(c.text) });
   for (const d of features) {
     for (const change of d.changes) {
-      const rank = { missing: 0, partial: 1, supported: 2 } as Record<string, number>;
-      if ((rank[change.to] ?? -1) >= (rank[change.from] ?? -1)) continue;
+      if (order(change) >= 0) continue;
+      let lost: Evidence[] = [];
       // P2.1/C1.1 cite requirement lines as evidence; what is lost is the actor line that met their context condition.
-      const actorRule = ['P2.1', 'C1.1'].includes(change.id);
-      const lost = actorRule ? [] : (d.baselineEvidence?.[change.id] ?? []).filter(e => checklist(e.path));
-      if (actorRule) {
+      if (['P2.1', 'C1.1'].includes(change.id)) {
         for (const path of (d.roleChanges ?? []).map(r => r.path)) {
           const lines = source(d.root, d.sha, path);
           const index = lines.findIndex(t => t.trim() && !/^\s*#/.test(t) && actor.test(t) && !modalOrId.test(t));
-          if (index >= 0) { lost.push({ path, line: index + 1, text: lines[index] }); break; }
+          if (index >= 0) { lost = [{ path, line: index + 1, text: lines[index] }]; break; }
         }
-      }
+      } else lost = (d.baselineEvidence?.[change.id] ?? []).filter(e => isReviewChecklist(e.path));
       for (const e of lost) push({ stratum: role(change.id), practice: change.id, root: d.root, sha: d.sha, feature: d.feature, path: e.path, line: e.line, text: e.text });
     }
     for (const e of d.removedDecisions ?? []) push({ stratum: '2', practice: 'decision', root: d.root, sha: d.sha, feature: d.feature, path: e.path, line: e.line, text: e.text });
@@ -127,19 +134,23 @@ async function h7Packet() {
   const groups = new Map<string, Candidate[]>();
   for (const c of candidates) {
     const stratum = c.named === 'N1' && c.practice !== 'decision' ? 'N1' : c.named === 'N2' && c.practice === 'decision' ? 'N2' : c.named && c.stratum !== '3f' && c.stratum !== '3d' ? 'named-other' : c.stratum;
-    const k = [stratum, stratum === 'N1' || stratum === 'N2' || stratum === '2' ? '' : c.practice, c.text.trim()].join('\u0000');
-    groups.set(k, [...(groups.get(k) ?? []), { ...c, stratum }]);
+    // N1 groups its E1.1 and P2.5 occurrences together; every other stratum keys on its practice.
+    const k = [stratum, stratum === 'N1' ? '' : c.practice, c.text.trim()].join('\u0000');
+    append(groups, k, { ...c, stratum });
   }
   const distinct = [...groups.values()];
   const caps: Record<string, number> = { N1: Infinity, N2: Infinity, '1a': 30, '1b': 30, '2': 30, '3f': 10, '3d': 10 };
   const selected: Candidate[][] = []; const counts: Record<string, { distinct: number; drawn: number; features: number }> = {};
   // Named variants in the other role (N1 as a decision, N2 as lost evidence) are outside every stratum by design.
-  counts['named-other'] = { distinct: distinct.filter(g => g[0].stratum === 'named-other').length, drawn: 0, features: new Set(distinct.filter(g => g[0].stratum === 'named-other').flat().map(c => c.root + c.feature)).size };
+  const byStratum = new Map<string, Candidate[][]>();
+  for (const g of distinct) append(byStratum, g[0].stratum, g);
+  const tally = (pool: Candidate[][], drawn: number) => ({ distinct: pool.length, drawn, features: new Set(pool.flat().map(c => c.root + c.feature)).size });
+  counts['named-other'] = tally(byStratum.get('named-other') ?? [], 0);
   for (const stratum of Object.keys(caps)) {
-    const pool = distinct.filter(g => g[0].stratum === stratum);
+    const pool = byStratum.get(stratum) ?? [];
     const drawn = shuffle(pool).slice(0, caps[stratum]);
     selected.push(...drawn);
-    counts[stratum] = { distinct: pool.length, drawn: drawn.length, features: new Set(pool.flat().map(c => c.root + c.feature)).size };
+    counts[stratum] = tally(pool, drawn.length);
   }
   const practiceProposition: Record<string, string> = {
     'E1.1': 'This line records an unresolved decision about this feature as a specific question, or explicitly states that none remains open.',
@@ -157,7 +168,7 @@ async function h7Packet() {
     'E3.1': 'This line states, or directly introduces, an observable verification criterion for this feature.',
   };
   const proposition = (c: Candidate) => c.stratum === 'N1' ? 'This line explicitly states, for this feature, that no clarification remains open.'
-    : c.stratum === 'N2' || c.practice === 'decision' ? 'This line records a decision about this feature that is still open.'
+    : c.practice === 'decision' ? 'This line records a decision about this feature that is still open.'
     : c.stratum === '3d' ? 'This document states the feature\'s requirements, rather than reviewing them or citing them.'
     : c.practice === 'I1.2' ? 'This line states a requirement of this feature: either one that lacks a stable identifier, or a second, separate requirement under an ID that the feature already uses.'
     : c.practice === 'E2.1' ? 'This line states two or more independent obligations of this feature that could fail separately.'
@@ -174,27 +185,25 @@ async function h7Packet() {
     });
     key.push({ id, stratum: c.stratum, practice: c.practice, features: group.length, occurrences: group.map(g => `${g.root}:${g.feature}:${g.path}:${g.line}`) });
   }
-  await writeFile(join(values.out!, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: 'docs/precision-adjudication.md#h7-spec-kit-checklists-79', items }, null, 2) + '\n');
-  await writeFile(join(values.out!, 'key.json'), JSON.stringify({ counts, items: key }, null, 2) + '\n', { mode: 0o600 });
+  await writePacket('docs/precision-adjudication.md#h7-spec-kit-checklists-79', items, { counts, items: key });
   console.log(JSON.stringify({ items: items.length, counts, out: values.out }));
 }
 
 async function gainsPacket() {
-  const rank = { missing: 0, partial: 1, supported: 2 } as Record<string, number>;
   // Approximates the engine's admission rule (no calendar-May or scenario-line exception): an ID or a modal word
   // outside headings, quotes and fences.
   const admitted = /\b(?:FR|NFR|REQ)-\d+\b|(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
-  const gaining = scan.detail.filter(d => d.changes.some(c => (rank[c.to] ?? -1) > (rank[c.from] ?? -1)));
+  const gaining = scan.detail.filter(d => d.changes.some(c => order(c) > 0));
   // The cap draws only when some repository exceeds it, so a packet under the cap keeps its seeded order.
-  const perRoot = new Map<string, number>(); for (const d of gaining) perRoot.set(d.root, (perRoot.get(d.root) ?? 0) + 1);
-  const raised = [...perRoot.values()].some(n => n > 15) ? capped(gaining) : gaining;
+  const perRoot = new Map<string, Detail[]>(); for (const d of gaining) append(perRoot, d.root, d);
+  const raised = [...perRoot.values()].some(list => list.length > 15) ? capped(gaining) : gaining;
   const byText = new Map<string, { d: Detail; path: string; line: number; text: string }[]>();
   for (const d of raised) for (const { path } of d.roleChanges ?? []) {
     let fenced = false;
-    git(d.root, 'show', `${d.sha}:${path}`).split(/\r?\n/).forEach((text, index) => {
+    source(d.root, d.sha, path).forEach((text, index) => {
       if (/^\s*(?:```|~~~)/.test(text)) { fenced = !fenced; return; }
       if (fenced || /^\s*(?:#|>)/.test(text) || !admitted.test(text)) return;
-      byText.set(text.trim(), [...(byText.get(text.trim()) ?? []), { d, path, line: index + 1, text }]);
+      append(byText, text.trim(), { d, path, line: index + 1, text });
     });
   }
   const pool = [...byText.values()];
@@ -205,10 +214,9 @@ async function gainsPacket() {
     const id = 'G' + String(items.length + 1).padStart(3, '0');
     items.push({ id, repository: roots.find(r => r.id === d.root)!.repository, revision: d.sha, path, line,
       proposition: 'This line states a requirement that this feature imposes (rather than reviewing, citing or reporting on one).',
-      context: contextOf(git(d.root, 'show', `${d.sha}:${path}`).split(/\r?\n/), line) });
+      context: contextOf(source(d.root, d.sha, path), line) });
     key.push({ id, features: new Set(group.map(g => g.d.root + g.d.feature)).size, occurrences: group.map(g => `${g.d.root}:${g.d.feature}:${g.path}:${g.line}`) });
   }
-  await writeFile(join(values.out!, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: 'docs/precision-adjudication.md#h7-spec-kit-checklists-79', items }, null, 2) + '\n');
-  await writeFile(join(values.out!, 'key.json'), JSON.stringify({ distinct: pool.length, features: raised.length, items: key }, null, 2) + '\n', { mode: 0o600 });
+  await writePacket('docs/precision-adjudication.md#h7-spec-kit-checklists-79', items, { distinct: pool.length, features: raised.length, items: key });
   console.log(JSON.stringify({ items: items.length, distinct: pool.length, features: raised.length, out: values.out }));
 }

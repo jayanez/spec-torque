@@ -1,4 +1,4 @@
-import { contentHash, isReviewChecklist, isValidationGuide } from './artifacts.js';
+import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
 export const ENGINE_VERSION = '0.1.13';
@@ -17,15 +17,13 @@ const hasNormativeModal = (text: string) => modal.test(
 );
 /** H5a (#78): a list item or paragraph with its hard-wrapped continuation lines; `defined` when its first line has a defining ID. */
 interface Unit { defined: boolean }
-/** What a line may count for: requirements text, validation methods only (H6a quickstart) or context evidence only (H7a checklist). */
-type Scope = 'all' | 'validation' | 'context';
-interface Line extends Evidence { artifact: Artifact; scope: Scope; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
+interface Line extends Evidence { artifact: Artifact; scope: LineScope; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
 // Lines that start a block (or are a fence run), and lines that cannot be continued.
 const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<|```|~~~)/;
 const closedBlock = /^\s*(?:#{1,6}(?:[ \t]|$)|\||>|<|```|~~~)/;
 const thematicBreak = /^\s*(?:[-*_=][ \t]*){3,}$/;
 function linesOf(artifact: Artifact): Line[] {
-  const scope: Scope = isReviewChecklist(artifact.path) ? 'context' : isValidationGuide(artifact.path) ? 'validation' : 'all';
+  const scope = lineScope(artifact.path);
   let fenced = false;
   let continuable = false;
   let unit: Unit = { defined: false };

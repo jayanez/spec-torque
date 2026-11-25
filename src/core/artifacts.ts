@@ -56,6 +56,9 @@ export const isValidationGuide = (path: string) => specKitQuickstart.test(path.r
  * text or open decisions. Path-only, like the quickstart rule: any `specs/<NNN-name>/checklists/` folder.
  */
 export const isReviewChecklist = (path: string) => specKitChecklist.test(path.replaceAll('\\', '/'));
+/** What a document's lines may count for: requirements text, validation methods only, or context evidence only. */
+export type LineScope = 'all' | 'validation' | 'context';
+export const lineScope = (path: string): LineScope => isReviewChecklist(path) ? 'context' : isValidationGuide(path) ? 'validation' : 'all';
 
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const normalized = path.replaceAll('\\', '/');
