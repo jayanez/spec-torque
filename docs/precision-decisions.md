@@ -989,3 +989,42 @@ quickstart rules are not adjudicated on fresh data.
 
 **Decision.** Propose H6 (engine 0.1.11 at merge) for merge, within the threshold. H6a
 (runner vocabulary such as `python3 -m unittest`) follows, as decided.
+
+### H6a: quickstart as validation evidence only, plus test runners — **holds; adjudication pending owner threshold**
+
+Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
+- Pre-registered at `97da6ce` (owner decision after H6).
+- The sources (8 repositories, `"python3 -m unittest"` and `"go test ./..."` in
+  `quickstart.md`) and 12 EN/ES twins were frozen at `61b379f`.
+- Candidate: `7d56551`, engine 0.1.12, version 0.2.5. Comparator: 0.1.11 (`develop`,
+  `56d4fea`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (12 EN/ES), H6, H5a and H3a twins, minimal pairs | holds: 12 of 12 (0.1.11 meets 6, failing exactly the 6 target cases); H6 16/16, H5a 22/22, H3a 20/20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. H6 fresh set | holds: 21 findings removed, all on `quickstart.md` lines and exactly those H6 had added (15 E2.1, 5 E1.3, 1 E1.2); none added; E3.4 returns to `missing` in the 2 features where a quickstart "Definition of done" was its only evidence, as predicted |
+| 4. H6a fresh set | nothing goes down; 3 quickstart E2.1 findings removed; E3.2 rises in 4 features. **Low power: only 5 Spec Kit features in the 8 roots, and all 4 gains come from one line** |
+| 5. Evidence | holds |
+
+**Fresh set.** Most repositories that a quickstart search finds are not Spec Kit
+projects, so the 8 roots hold only 5 Spec Kit features. The 4 E3.2 gains share one
+line, which every feature inherits from the root `CLAUDE.md`: `Run cross-validation
+tests with: go test -tags compare_mergo ./pkg/merge/... -run CompareMergo -v`. It is
+a real test command. No gain on the fresh set comes from a quickstart.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** E3.2 goes `missing` → `partial` in 32 features, and nothing goes down.
+The 6 findings on quickstart lines (5 E2.1, fewer than 5 E1.3) are removed, and
+none is added. After the candidate, E3.2 is `partial` in 50 features and
+`missing` in 33 (16 of those have a quickstart).
+
+**Known limits.**
+- Generic script runs (`python3 scripts/…`) do not count, by design.
+- The runner vocabulary is substring-based, like the existing `pytest` and
+  `npm test` terms.
+- The runner terms reach every document role, not only the quickstart.
+
+**Decision.** Pending. The packet has 4 items with 1 distinct line. The owner
+fixes the threshold, or decides that this line does not need adjudication, before
+any labeling.

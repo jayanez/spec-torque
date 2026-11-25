@@ -55,5 +55,6 @@ through the #39 replay (pre-registered hypothesis, synthetic twins, paired repla
 adjudication). H5 (#78) failed adjudication on units identified only by a cited
 ID; the narrowed H5a (engine 0.1.10) passed and is integrated through #96. H6 (#88,
 engine 0.1.11, product 0.2.4) adds acceptance-scenario and validation-table
-vocabulary and discovers the Spec Kit `quickstart.md`. Runner vocabulary (H6a)
-follows.
+vocabulary and discovers the Spec Kit `quickstart.md`. H6a (#88, engine 0.1.12,
+product 0.2.5) reads the quickstart only as validation-method evidence and adds
+test-runner vocabulary.
