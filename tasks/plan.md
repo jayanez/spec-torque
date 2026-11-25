@@ -29,3 +29,14 @@ Pi print output and adds an explicit offline EN/ES text/JSON qualification route
 Package/skill discovery and supported-OS acceptance remain pending. Continue the
 real-producer/independent-label corpus in #2 and human acceptance in #3 alongside
 these client corrections.
+
+## Work-tree-scoped discovery (#68)
+
+The #8 pilot on a large Spec Kit repository showed that whole-root discovery fails
+before any scope applies. Deliver it in two increments: first the shared engine, CLI,
+MCP and workbench (#69–#71), then every host adapter, the skills and a cross-host
+parity test (#72–#77). Discovery criteria are recorded in
+[architecture](../docs/architecture.md#discovery-criteria). Detector precision
+follow-ups from the same pilot (#78–#80, the #52 comment) follow the #39 replay
+process and do not block this work.
+

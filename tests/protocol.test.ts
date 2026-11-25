@@ -34,6 +34,13 @@ test('real MCP stdio handshake, analysis, validation errors and read-only tool s
   assert.ok(!list.result.tools.some((tool: any) => /apply|write/i.test(tool.name)));
   const assessment = await request('tools/call', { name: 'analyze_specs', arguments: {} });
   assert.equal(JSON.parse(assessment.result.content[0].text).practices.length, 40);
+  const index = JSON.parse((await request('tools/call', { name: 'discover_specs', arguments: { index: true } })).result.content[0].text);
+  assert.ok(index.features.some((f: any) => f.id === 'en-draft/specs/booking'));
+  assert.ok(index.artifacts.every((a: any) => !('content' in a)));
+  const scoped = JSON.parse((await request('tools/call', { name: 'analyze_specs', arguments: { feature: 'en-draft/specs/booking' } })).result.content[0].text);
+  assert.ok(scoped.artifacts.every((a: any) => a.featureId === 'en-draft/specs/booking' || a.role === 'instructions'));
+  const conflicting = await request('tools/call', { name: 'analyze_specs', arguments: { feature: 'en-draft/specs/booking', paths: ['en-draft'] } });
+  assert.equal(conflicting.result.isError, true);
   const escaped = await request('tools/call', { name: 'refinement_context', arguments: { path: '../README.md', line: 1 } });
   assert.equal(escaped.result.isError, true);
 });
