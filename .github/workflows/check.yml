@@ -17,7 +17,6 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run check
-      - run: npm run package:integrations
       - run: npm run package:codex
       - run: npm run verify:codex-package
       - run: node scripts/package-vscode.mjs
@@ -45,7 +44,6 @@ jobs:
       - name: Test the installed workbench
         run: |
           set -euo pipefail
-          npm run build
           npm run package:integrations
           mkdir -p artifacts/npm
           archive="$(npm pack --ignore-scripts --pack-destination artifacts/npm --quiet)"

@@ -34,8 +34,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run build
-      - run: npm run package:integrations
       - run: npm run package:pi
       - if: runner.os == 'Linux'
         run: npx --no-install playwright install --with-deps chromium
