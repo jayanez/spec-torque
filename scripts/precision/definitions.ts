@@ -4,6 +4,9 @@
  *
  *   synthetic: fixtures/precision/h3-pairs.json, expected findings per case.
  *   scan:      every Spec Kit feature of each root, analyzed whole (definitions cross lines).
+ *
+ * H9 (#84) reuses it with its own twins. `otherChanges` counts features whose assessment differs
+ * outside the I1.2/I2.3 endpoint findings (practices, evidence, other findings, traceability).
  */
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -31,7 +34,9 @@ async function endpointFindings(engine: Engine, files: Record<string, string>) {
   const set = { name: 'h3', artifacts: Object.entries(files).map(([path, content]) => engine.classifyArtifact(path, content)) };
   const assessment = await engine.analyze(set);
   const practice = (id: string) => assessment.practices.find(p => p.id === id)?.status;
-  return { findings: assessment.findings.filter(f => ENDPOINTS.has(f.practiceId)).map(keyOf).sort(), status: { 'I1.2': practice('I1.2'), 'I2.2': practice('I2.2') } };
+  const { practices, findings, dimensions, decisions, traceability } = assessment;
+  const rest = JSON.stringify({ practices, dimensions, decisions, traceability, findings: findings.filter(f => !ENDPOINTS.has(f.practiceId)).map(keyOf) });
+  return { findings: findings.filter(f => ENDPOINTS.has(f.practiceId)).map(keyOf).sort(), status: { 'I1.2': practice('I1.2'), 'I2.2': practice('I2.2') }, rest };
 }
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h3-'));
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
@@ -55,7 +60,7 @@ if (mode === 'synthetic') {
 } else {
   const roots = rootSchema.parse(JSON.parse(await readFile(values.roots!, 'utf8')));
   await mkdir(values.out!, { recursive: true, mode: 0o700 });
-  const totals = { roots: 0, features: 0, removed: 0, added: 0, unchanged: 0, statusChanges: 0 };
+  const totals = { roots: 0, features: 0, removed: 0, added: 0, unchanged: 0, statusChanges: 0, otherChanges: 0 };
   const detail = [];
   for (const root of roots) {
     const { sha, files } = snapshot(root);
@@ -70,7 +75,8 @@ if (mode === 'synthetic') {
       const removed = b.findings.filter(k => !c.findings.includes(k)); const added = c.findings.filter(k => !b.findings.includes(k));
       totals.features++; totals.removed += removed.length; totals.added += added.length; totals.unchanged += b.findings.filter(k => c.findings.includes(k)).length;
       if (JSON.stringify(b.status) !== JSON.stringify(c.status)) totals.statusChanges++;
-      if (removed.length || added.length) detail.push({ root: root.id, repository: root.repository, sha, feature, removed, added, status: { baseline: b.status, candidate: c.status } });
+      const other = b.rest !== c.rest; if (other) totals.otherChanges++;
+      if (removed.length || added.length || other) detail.push({ root: root.id, repository: root.repository, sha, feature, removed, added, status: { baseline: b.status, candidate: c.status }, otherChange: other });
     }
   }
   await writeFile(join(values.out!, 'h3-scan.json'), JSON.stringify({ kind: 'h3-scan', ...identity, totals, detail }, null, 2) + '\n', { mode: 0o600 });
