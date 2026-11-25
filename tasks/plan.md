@@ -40,3 +40,11 @@ parity test (#72–#77). Discovery criteria are recorded in
 follow-ups from the same pilot (#78–#80, the #52 comment) follow the #39 replay
 process and do not block this work.
 
+Delivered: #81 (engine, CLI, MCP, workbench) and #82 (host adapters, skills,
+parity test) closed #68–#77. H3a (#83, engine 0.1.9) is integrated through #86. Next
+precision candidates from the pilot, by impact: #88 (E3.1/E3.2 vocabulary, 30 of 32
+features) and #78 (wrapped continuations, the largest remaining false-positive class),
+then #79, #80 and #85, each through the #39 replay process. A cross-host UI/UX
+refinement (workbench auto-load, one scope control, a shared finding card) follows as
+its own increment.
+
