@@ -112,7 +112,7 @@ if (mode === 'synthetic') {
       const before = new Set(b.findingKeys); const after = new Set(c.findingKeys);
       const removedFindings = b.findingKeys.filter(k => !after.has(k)); const addedFindings = c.findingKeys.filter(k => !before.has(k));
       const kept = new Set(c.decisionLines.map(l => `${l.path}:${l.line}`));
-      if (added.length || changes.length || Object.keys(findingDelta).length || c.decisions !== b.decisions) {
+      if (added.length || roleChanges.length || changes.length || Object.keys(findingDelta).length || c.decisions !== b.decisions) {
         totals.changedFeatures++;
         detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, removedFindings, addedFindings,
           decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])),
