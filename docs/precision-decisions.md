@@ -1151,6 +1151,119 @@ arms unchanged. New EN/ES tests cover:
 
 **Decision.** Propose H85 (engine 0.1.14, version 0.2.7) for merge.
 
+### H7: Spec Kit checklists as review context, not requirements text — **fails the redesigned gate 4; continued as H7a (decision rule)**
+
+Tracking: [#79](https://github.com/jayanez/spec-torque/issues/79).
+- Pre-registered at `1379afe`, with amendment H7-1 (search queries) at `0b2ccb8`.
+- The sources (8 repositories) and 20 EN/ES twins were frozen at `6d17479`.
+- Candidate: `b1bfdf8`, engine 0.1.13. Comparator: 0.1.12 (`develop`, `3a888f0`).
+- After gates 1–3, the owner asked for an adversarial review of the test. Amendment
+  H7-2 (`14df705`, owner-approved) replaced the document-level gate with
+  adjudication of the changes that move scores. It also fixed arm B (H7a) and the
+  decision rule before any packet was built.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (20 + 4 N1/N2 EN/ES), H6a, H6, H5a and H3a twins, minimal pairs | holds: 24 of 24 (0.1.12 meets 10, failing exactly the target cases); earlier sets and minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Fresh set 1 | holds in direction: every change is in a feature with a reclassified checklist; P2.1, C1.1 and I3.2 move although the pre-registration did not list them |
+| 4. Adjudication (H7-2) | **fails**: N1 and stratum 1b are agreed genuine evidence |
+
+**Fresh set 1.** 217 Spec Kit features in 8 roots. 118 change, and each has a
+reclassified checklist (119 files, all `spec` → `context`):
+- findings removed: 56 I1.2 duplicates whose other "definition" was a checklist
+  citation, 29 I1.2 missing identifiers on checklist lines and 7 E2.1, with none added;
+- 2 real in-spec duplicates are now evidenced at their true second definition (relocations);
+- 123 decisions in 103 features are no longer counted;
+- E1.1 and P2.5 go down in 87 features, and 30 dimension scores go down. Almost all of
+  these features owe the change to the template item
+  `- [x] No [NEEDS CLARIFICATION] markers remain`.
+
+**Adjudication.** Two blind agent sessions labeled 76 items (Cohen's kappa 0.94). The
+packet was capped at 15 features per repository.
+
+| Stratum | Distinct | Labeled | Agreed positive (error) | Disputed | Allowed | Result |
+|---|---|---|---|---|---|---|
+| N1 (checked template item; 52 features) | 2 | 2 | 2 (genuine "none remain") | 0 | — | goes to H7a |
+| 1a spec-only lost evidence | 7 | 7 | 0 | 0 | 0 | holds |
+| 1b all-role lost evidence | 39 | 30 | 24 | 2 | 2 | **fails** |
+| 2 removed decisions | 17 | 17 | 1 | 0 | 1 | holds |
+| 3 sanity (findings, documents) | 107 | 20 | 1 | 0 | 1 | holds |
+
+- The 1b errors are checklist notes that state that no clarification remains or that
+  the open questions were resolved.
+- The decision error is an assumption that the checklist explicitly defers to planning.
+- The finding error is a genuine two-obligation line in a checklist note.
+- N2 (unchecked item) has no occurrence. N1 is also a removed decision in 57 features. By design, that role is outside stratum 2; its agreed N1 label ("none remain") means it is not an open decision.
+
+**Decision.** By the pre-registered rule, H7 stops for "counts for nothing" and H7a
+(arm B) is proposed.
+
+### H7a: checklist lines count as context, never requirements or decisions — **holds with one owner-accepted exception; proposed for merge**
+
+- Arm B was fixed by amendment H7-2 before fresh set 2 was selected. Its 24 EN/ES
+  twins were frozen at `c92757f`, before arm B was built.
+- Candidate: `2f84bc0`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12.
+- **Version at merge.** H8 (#80, engine 0.1.13, #100) and H85 (#85, engine 0.1.14, #101) merged
+  first, so H7a ships as engine 0.1.15 with product 0.2.8. `develop` was merged into the branch
+  twice without a rebase, and the twins, minimal pairs, corpus report, fresh set 1 and pilot were
+  rerun on the merged tree.
+- Fresh set 2 (`351cf96`): the non-template query found no eligible repository and the
+  fallback found 1. That gives 10 features, 7 of them changed, so gate 4 is
+  underpowered on this set.
+
+| Gate | Result |
+|---|---|
+| 1. H7a twins, H7 twins, earlier sets, minimal pairs | holds: H7a 24 of 24; H7 20 of 24, missing exactly the 4 N1/N2 arm-C cases; earlier sets and minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh sets | holds: all-role practices are unchanged as predicted; the removed findings and decisions are those of H7 |
+| 4. Gains adjudication | **fails, owner-accepted**: 7 of 20 agreed positive, threshold 1 |
+
+**Fresh set 1.** Same findings and decisions as H7.
+- Down: P2.1 8, C1.1 8, and P2.2, I3.3, I3.2 and P2.3 1 each, all spec-only
+  practices losing checklist evidence (stratum 1a: 0 of 7 genuine).
+- Up: E1.4 6, I1.2 3, I2.2 3 and E2.1 1.
+- Dimensions: 4 up, 8 down (H7: 30 down).
+
+**Fresh set 2.** 9 decisions are no longer counted; P2.1 and C1.1 go down in 1
+feature, and E1.4 goes up in 1.
+
+**Gains adjudication.** It covers the checklist lines that 0.1.12 admitted as
+requirements in the 10 features where arm B raises a ratio practice. Two new blind
+agent sessions labeled 20 distinct lines and agreed on all of them: 13 negative and 7
+positive.
+- All 7 positives are lines of one checklist (`specs/046-046-bug-bash`), which restates
+  FR-001…FR-007 with paraphrased content as unchecked items.
+- In that feature, H7a removes 7 duplicates and raises I1.2/I2.2 to `supported`.
+- The other 9 features have no error.
+- The owner accepted this as a known limit on 2026-11-25, overriding the threshold.
+
+**Pilot repository (development data, 86 features, work tree, counts only; arms B
+and C identical except E1.1/P2.5).**
+- 36 checklists are reclassified.
+- Findings go from 483 to 482 against 0.1.12, and from 470 to 469 against `develop` at engine
+  0.1.14 (after H8 and H85): one duplicate is removed, and none is added. The status and score
+  changes below are identical in both runs.
+- Decisions are unchanged (2).
+- Down: E1.5 14, P2.1 and C1.1 5 each, and E2.4, I1.2 and I2.2 fewer than 5 each.
+  Up: E1.4, fewer than 5.
+- Scores: 14 dimension scores and 11 totals go down, and 1 dimension score goes up.
+- The E1.5 drops are spec-only evidence that the pilot's checklists carried. They are
+  not adjudicated, because the pilot is restricted development data.
+
+**Known limits.**
+- A checklist that restates the specification's requirements with their content no
+  longer produces duplicates (the owner-accepted gains exception).
+- Unchecked `- [ ]` marker items still count for E1.1/P2.5, because the pattern matches
+  the marker name. There were no occurrences on the fresh sets.
+- Outside H7, the E1.1/P2.5 pattern and the decision rule both match negated mentions
+  of `[NEEDS CLARIFICATION]` in any document, including `spec.md`.
+- Checklists whose basename is not discovered (`ux.md`, `security.md`) are unchanged.
+- Fresh set 2 is underpowered. All four reviewers are sessions of the same model family
+  (#65), and one reviewer pair's judgment on N1 decides about 80 features.
+
+**Decision.** Propose H7a (engine 0.1.15, version 0.2.8 at merge) for merge, closing #79.
+
 ### H9: qualified and non-adopted references in I2.3 — **rule 1 holds and is proposed for merge; rule 2 reverted (owner decision)**
 
 Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
@@ -1166,10 +1279,10 @@ Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
 - Rule 2 was reverted at `d58628e` (owner decision), after two independent reviews;
   see "Rule 2 reverted" below. The gates below cover the full candidate; the rule 2
   rows are kept as measured.
-- **Version at merge.** H8 (#80) and H85 (#85) merged first as engines 0.1.13
-  (#100) and 0.1.14 (#101), so H9 ships as engine 0.1.15 with product 0.2.8. After
-  each was merged in, every measurement was repeated against `develop`; see "After
-  H8 and H85" below.
+- **Version at merge.** H8 (#80), H85 (#85) and H7a (#79) merged first as engines
+  0.1.13 (#100), 0.1.14 (#101) and 0.1.15 (#103), so H9 ships as engine 0.1.16 with
+  product 0.2.9. After each was merged in, every measurement was repeated against
+  `develop`; see "After H8, H85 and H7a" below.
 
 | Gate | Result |
 |---|---|
@@ -1252,7 +1365,7 @@ meets 8, failing exactly the 6 rule 1 targets), and every other measurement is
 unchanged, because rule 2 never acted on the corpus, the dev and fresh sets or the
 pilot.
 
-**Decision.** Propose H9 rule 1 (engine 0.1.15, product 0.2.8) for merge. It holds
+**Decision.** Propose H9 rule 1 (engine 0.1.16, product 0.2.9) for merge. It holds
 within the threshold on low fresh power and on the pilot. Rule 2 stops; it is
 reconsidered only if a fresh, pre-registered set shows the construction in natural
 plan or tasks text.

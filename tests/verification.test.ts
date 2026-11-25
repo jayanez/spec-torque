@@ -47,3 +47,24 @@ test('H6a: unittest, go test and other runners are validation methods; scripts a
   }
   for (const line of ['python3 scripts/seed_demo.py', 'Run `go build ./...`.']) assert.equal((await status(plan(line)))['E3.2'], 'missing', line);
 });
+
+test('H7a: a Spec Kit checklist is review context, never requirements text or a decision', async () => {
+  const C = 'specs/001-demo/checklists/requirements.md';
+  const checklist = (line: string) => classifyArtifact(C, ['# Specification Quality Checklist', '', line].join('\n') + '\n');
+  const specOnly = classifyArtifact(S, ['# Demo', '', '- REQ-001: The system MUST record an episode.'].join('\n') + '\n');
+  assert.equal(checklist('').role, 'context');
+  assert.equal(classifyArtifact('specs/001-demo/checklists/design.md', '').role, 'context');
+  assert.equal(classifyArtifact('specs/001-demo/design.md', '').role, 'plan');
+  const run = async (line: string) => analyze({ name: 'demo', artifacts: [checklist(line), specOnly] });
+  // Citations are not definitions, and modal items are not requirement lines.
+  assert.deepEqual((await run('- [x] REQ-001 has a task and a validation procedure.')).findings, []);
+  assert.deepEqual((await run('- [ ] Support MUST review the confirmation email.')).findings, []);
+  // Line rules (here E2.1) do not run on checklist lines.
+  assert.deepEqual((await run('- [ ] Support MUST review the email and MUST sign it off.')).findings, []);
+  // The template item is not an open decision, but still states that none remain (E1.1).
+  const none = await run('- [x] No [NEEDS CLARIFICATION] markers remain');
+  assert.deepEqual(none.decisions, []);
+  assert.equal(none.practices.find(p => p.id === 'E1.1')?.status, 'partial');
+  // Spec-only practices do not read the checklist.
+  assert.equal((await run('- [x] Requirements and acceptance scenarios are testable.')).practices.find(p => p.id === 'E3.1')?.status, 'missing');
+});

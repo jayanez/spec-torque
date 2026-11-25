@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "spectorque",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Review agent-ready specifications in Codex Desktop with a local scoped SpecTorque workbench.",
   "license": "Apache-2.0"
 }
