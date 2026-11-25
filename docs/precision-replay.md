@@ -802,6 +802,20 @@ any file content:
 The list is committed in `fixtures/precision/h6a-sources.json` before the
 candidate commit.
 
+### Amendment H6a-2 (2026-11-25, after the first fresh set; owner decision)
+
+The first fresh set held only 5 Spec Kit features, and all 4 of its E3.2 gains came
+from one line, so it is too weak to test the runner rule. A second fresh set is
+added, and gate 4 applies to it:
+- GitHub code search, once each for `"python3 -m unittest" path:specs` and
+  `"go test" path:specs`, limited to Markdown files named `quickstart.md`, with the
+  same eligibility rules and exclusions (now including the H6a sources);
+- committed in `fixtures/precision/h6a-2-sources.json` before any scan.
+
+Adjudication: up to 30 of the first new E3.2 evidence lines (seed 42039), deduplicated
+by line text and labeled blind by two agent sessions. **Threshold (owner, fixed
+before selection):** at most 2 agreed not genuine or unknown.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
