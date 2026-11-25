@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "description": "H8 synthetic twins (#80): plan-local and tasks-local R-n labels against specifications that use the R- family. Constructed before the H8 candidate from the frozen policy; not independent labels.",
+  "cases": [
+    {
+      "id": "plan-local-labels-en",
+      "construct": "plan-local",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001:** The system MUST record every outcome.",
+          "- **FR-002:** The selector MUST be deterministic."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "**T001:** R-1 every outcome maps to exactly one label; R-2 the selector is deterministic."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Build the recorder."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I2.3": "missing"
+      },
+      "note": "The specification uses only FR- IDs, so R-1 and R-2 are labels local to the plan: no finding, and the line is not reference evidence."
+    },
+    {
+      "id": "spec-uses-r-family-en",
+      "construct": "r-family",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **R-1:** The system MUST record every outcome.",
+          "- **R-2:** The selector MUST be deterministic."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "**T001:** covers R-1 and R-2; R-3 adds an audit trail."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Build the recorder."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference R-3 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "Twin: the specification defines R-1 and R-2, so the family is in use and the undefined R-3 stays a finding."
+    },
+    {
+      "id": "tasks-local-steps-en",
+      "construct": "tasks-local",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001:** The system MUST record every outcome.",
+          "- **FR-002:** The selector MUST be deterministic."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Build the recorder first."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement FR-001. Steps: R-1 write the recorder; R-2 add the selector."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "R-1 and R-2 number steps inside a task; the line still traces FR-001, so it stays reference evidence."
+    },
+    {
+      "id": "tasks-undefined-fr-en",
+      "construct": "tasks-local",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001:** The system MUST record every outcome.",
+          "- **FR-002:** The selector MUST be deterministic."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Build the recorder first."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement FR-009. Steps: R-1 write the recorder; R-2 add the selector."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference FR-009 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "Twin: the undefined FR-009 stays a finding; only the local R-n step labels are dropped."
+    },
+    {
+      "id": "spec-table-mention-en",
+      "construct": "r-family",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001:** The system MUST record every outcome.",
+          "",
+          "| Check | Rule |",
+          "|---|---|",
+          "| R-1 | The system MUST log every outcome. |"
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "**T001:** verifies R-1 and R-2."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Build the recorder."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference R-2 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "The specification mentions R-1 in a table row, so the family is in use: R-1 resolves as in 0.1.12 and R-2 stays a finding."
+    },
+    {
+      "id": "plan-local-labels-es",
+      "construct": "plan-local",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **FR-001:** El sistema DEBE registrar cada resultado.",
+          "- **FR-002:** El selector DEBE ser determinista."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "**T001:** R-1 cada resultado corresponde a una sola etiqueta; R-2 el selector es determinista."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Construir el registrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I2.3": "missing"
+      },
+      "note": "The specification uses only FR- IDs, so R-1 and R-2 are labels local to the plan: no finding, and the line is not reference evidence."
+    },
+    {
+      "id": "spec-uses-r-family-es",
+      "construct": "r-family",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **R-1:** El sistema DEBE registrar cada resultado.",
+          "- **R-2:** El selector DEBE ser determinista."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "**T001:** cubre R-1 y R-2; R-3 añade una traza de auditoría."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Construir el registrador."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference R-3 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "Twin: the specification defines R-1 and R-2, so the family is in use and the undefined R-3 stays a finding."
+    },
+    {
+      "id": "tasks-local-steps-es",
+      "construct": "tasks-local",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **FR-001:** El sistema DEBE registrar cada resultado.",
+          "- **FR-002:** El selector DEBE ser determinista."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Construir primero el registrador."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar FR-001. Pasos: R-1 escribir el registrador; R-2 añadir el selector."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "R-1 and R-2 number steps inside a task; the line still traces FR-001, so it stays reference evidence."
+    },
+    {
+      "id": "tasks-undefined-fr-es",
+      "construct": "tasks-local",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **FR-001:** El sistema DEBE registrar cada resultado.",
+          "- **FR-002:** El selector DEBE ser determinista."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Construir primero el registrador."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar FR-009. Pasos: R-1 escribir el registrador; R-2 añadir el selector."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference FR-009 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "Twin: the undefined FR-009 stays a finding; only the local R-n step labels are dropped."
+    },
+    {
+      "id": "spec-table-mention-es",
+      "construct": "r-family",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **FR-001:** El sistema DEBE registrar cada resultado.",
+          "",
+          "| Comprobación | Regla |",
+          "|---|---|",
+          "| R-1 | El sistema DEBE registrar cada resultado. |"
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "**T001:** verifica R-1 y R-2."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Construir el registrador."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference R-2 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I2.3": "partial"
+      },
+      "note": "The specification mentions R-1 in a table row, so the family is in use: R-1 resolves as in 0.1.12 and R-2 stays a finding."
+    }
+  ]
+}
