@@ -57,7 +57,7 @@ async function references(plan: string[], spec = ['# Demo', '', '- **REQ-001:** 
 }
 
 test('H9: a reference qualified by another specification is not resolved locally', async () => {
-  assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-028 REQ-004, SPEC-031/REQ-002 and VPC-REQ-01.'])).findings, []);
+  assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-028 REQ-004, SPEC-031/REQ-002, SPEC-032\'s REQ-003 and VPC-REQ-01.'])).findings, []);
   assert.deepEqual((await references(['# Tasks', '', 'Reuses REQ-004.'])).findings, ['3:Reference REQ-004 has no definition in the supplied specs.']);
   assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-28 REQ-004.'], undefined, 'specs/028-demo')).findings, ['3:Reference REQ-004 has no definition in the supplied specs.']);
   assert.deepEqual((await references(['# Tasks', '', 'Wires VPC-REQ-02.'], ['# Demo', '', '- **VPC-REQ-01:** The consumer MUST revalidate.'])).findings,
@@ -71,5 +71,6 @@ test('H9: a reference marked not adopted is left out, and its edge stays unresol
   const marked = await references(['# Tasks', '', 'The proposed (not adopted) REQ-007 text replaces REQ-009; REQ-008 (no adoptado) stays out.']);
   assert.deepEqual(marked.findings, ['3:Reference REQ-009 has no definition in the supplied specs.']);
   assert.deepEqual(marked.edges, ['REQ-007:false', 'REQ-009:false', 'REQ-008:false']);
+  assert.deepEqual((await references(['# Tasks', '', 'The REQ-007/008 (proposed, not adopted) text is not installed.'])).findings, []);
   assert.deepEqual((await references(['# Tasks', '', 'The REQ-007 text is a proposal, not installed.'])).findings, ['3:Reference REQ-007 has no definition in the supplied specs.']);
 });
