@@ -1042,3 +1042,59 @@ Ginkgo test files. One reviewer read it as an implementation task, the other as 
 test reference. Counted against the threshold, it still passes: 1 ≤ 2.
 
 **Decision.** Propose H6a (engine 0.1.12, version 0.2.5) for merge.
+
+### H8: plan-local `R-n` labels are not requirement references — **holds; proposed for merge**
+
+Tracking: [#80](https://github.com/jayanez/spec-torque/issues/80).
+- Pre-registered at `ce11cce`.
+- The sources (8 repositories: `"R-001" path:specs` in `plan.md` and `"R-1" path:specs`
+  in `tasks.md`) and 10 EN/ES twins were frozen at `067cc80`.
+- Candidate: `1a1f4a5`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12 (`develop`,
+  `3a888f0`).
+- The H3 replay script now also compares the I2.3, C1.3 and C2.3 statuses and lists
+  status-only changes in its detail file. A rerun of an earlier scan can therefore
+  report more status changes than the recorded totals; its findings are unchanged.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (10 EN/ES), H6a, H6, H5a and H3a twins, minimal pairs | holds: 10 of 10 (0.1.12 meets the 4 controls and fails exactly the 6 target cases); H6a 12/12, H6 16/16, H5a 22/22, H3a 20/20; minimal pairs 0 changed rows |
+| 2. 716 historical predictions | holds: 0 observations and 0 metric groups changed (`corpus:report -- --baseline origin/develop`) |
+| 3. Fresh set | holds: 557 findings removed, all I2.3 "Reference R-n has no definition" in features whose specification has no `R-n` token; none added; 11 status changes, all `partial` → `missing` (I2.3 3, C1.3 4, C2.3 4) |
+| 4. Adjudication | holds: 0 of 100 removed findings agreed positive (threshold 2) |
+| 5. Evidence | holds: no evidence is added; removed traceability edges and findings only |
+
+**Fresh set.** 557 Spec Kit features in 8 roots. The 557 removed findings come from
+6 repositories, 53 features and 476 distinct lines, on `plan.md`, `tasks.md` and
+other plan- or tasks-role documents. Two repositories had none.
+
+**Adjudication.** The owner fixed the threshold before the packet was drawn
+(`1633d19`): at most 2 of 100 agreed positive, disputed items counted against it.
+The packet (`45319b9`) holds 100 of the 557 removed findings (seed 42039), with six
+lines of context and the label's occurrences across the feature's Markdown
+documents. Two new blind agent sessions labeled it separately.
+
+| Removed (100) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 100 | 0 | 0 | 0 |
+
+Raw agreement is 100/100; Cohen's kappa is undefined because neither reviewer used a
+second label. The reviewers read the labels as research decisions (`R-1:` headings
+in `research.md` or the plan's Phase 0), the plan's own risk and test tables, and
+numbered steps. One reviewer gave templated reasons (14 distinct for 100 items);
+both reviewers are agent sessions of one model family, which is a limit.
+
+**Pilot repository (development data, 86 open features, work tree, counts only).**
+10 I2.3 findings are removed, all `R-n` labels in one feature's plan and tasks, and
+none is added. 10 traceability edges are removed. No practice status or dimension
+score changes.
+
+**Known limits.**
+- The family test is feature-wide, not per label. A specification that numbers its
+  risks or research items `R-1` makes every plan-local `R-n` label a reference
+  again, so those labels stay reported.
+- Any `R-n` token on a specification line counts, including fenced examples and
+  HTML comments. That keeps findings rather than hiding them.
+- A plan that cites an undefined `R-n` requirement while the specification uses only
+  `FR-` IDs is no longer reported. The fresh-set adjudication found no such case.
+
+**Decision.** Propose H8 (engine 0.1.13, version 0.2.6) for merge.
