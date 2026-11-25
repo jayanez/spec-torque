@@ -57,6 +57,7 @@ ID; the narrowed H5a (engine 0.1.10) passed and is integrated through #96. H6 (#
 engine 0.1.11, product 0.2.4) adds acceptance-scenario and validation-table
 vocabulary and discovers the Spec Kit `quickstart.md`. H6a (#88, engine 0.1.12,
 product 0.2.5) reads the quickstart only as validation-method evidence and adds
-test-runner vocabulary. H9 (#84, engine 0.1.13, product 0.2.6 before merge) leaves
-out of I2.3 the references a line qualifies by another specification or marks not
-adopted.
+test-runner vocabulary. H8 (#80, engine 0.1.13, product 0.2.6) treats a bare `R-n`
+on a plan or tasks line as a local label unless the specification uses the `R-`
+family. H9 (#84, engine 0.1.14, product 0.2.7) leaves out of I2.3 the references a
+line qualifies by another specification or marks not adopted.

@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { analyze, classifyArtifact } from '../src/core.js';
 
-const S = 'specs/001-demo/spec.md', P = 'specs/001-demo/plan.md';
+const S = 'specs/001-demo/spec.md', P = 'specs/001-demo/plan.md', T = 'specs/001-demo/tasks.md';
+const setOf = (files: Record<string, string[]>) => ({ name: 'demo', artifacts: Object.entries(files).map(([path, lines]) => classifyArtifact(path, lines.join('\n') + '\n')) });
 async function findings(spec: string[], plan = ['# Plan', '', 'Implements REQ-001.']) {
-  const set = { name: 'demo', artifacts: [classifyArtifact(S, spec.join('\n') + '\n'), classifyArtifact(P, plan.join('\n') + '\n')] };
-  return (await analyze(set)).findings.filter(f => ['I1.2', 'I2.3'].includes(f.practiceId)).map(f => `${f.practiceId}:${f.evidence[0].line}:${f.message}`);
+  return (await analyze(setOf({ [S]: spec, [P]: plan }))).findings.filter(f => ['I1.2', 'I2.3'].includes(f.practiceId)).map(f => `${f.practiceId}:${f.evidence[0].line}:${f.message}`);
 }
 
 test('H3a: heading definitions resolve references and identify their body lines', async () => {
@@ -73,4 +73,28 @@ test('H9: a reference marked not adopted is left out, and its edge stays unresol
   assert.deepEqual(marked.edges, ['REQ-007:false', 'REQ-009:false', 'REQ-008:false']);
   assert.deepEqual((await references(['# Tasks', '', 'The REQ-007/008 (proposed, not adopted) text is not installed.'])).findings, []);
   assert.deepEqual((await references(['# Tasks', '', 'The REQ-007 text is a proposal, not installed.'])).findings, ['3:Reference REQ-007 has no definition in the supplied specs.']);
+});
+
+test('H8: plan-local R-n labels are references only when the specification uses the R- family', async () => {
+  const fr = ['# Demo', '', '- **FR-001:** The system MUST record every outcome.'];
+  const local = ['# Plan', '', '**T001:** R-1 every outcome maps to one label; R-2 the selector is deterministic.'];
+  assert.deepEqual(await findings(fr, local), []);
+  assert.deepEqual(await findings(fr, ['# Plan', '', 'Covers FR-009; R-1 is a local check.']), ['I2.3:3:Reference FR-009 has no definition in the supplied specs.']);
+  assert.deepEqual(await findings(['# Demo', '', '- **R-1:** The system MUST record every outcome.'], ['# Plan', '', 'Covers R-1; R-3 adds an audit trail.']),
+    ['I2.3:3:Reference R-3 has no definition in the supplied specs.']);
+  const assessment = await analyze(setOf({ [S]: fr, [P]: local, [T]: ['# Tasks', '', '- [ ] T001 Build it.'] }));
+  assert.equal(assessment.practices.find(p => p.id === 'I2.3')?.status, 'missing');
+  assert.deepEqual(assessment.traceability, []);
+  const tasksOnly = setOf({ [S]: fr, [T]: ['# Tasks', '', '- [ ] T001 Steps: R-1 write the recorder; R-2 add the selector.'] });
+  const statuses = (await analyze(tasksOnly)).practices.filter(p => ['C1.3', 'C2.3'].includes(p.id)).map(p => p.status);
+  assert.deepEqual(statuses, ['missing', 'missing']);
+});
+
+test('H8: the R- family is decided per feature', async () => {
+  const set = setOf({
+    'specs/001-a/spec.md': ['# A', '', '- **R-1:** The system MUST record every outcome.'], 'specs/001-a/plan.md': ['# Plan', '', 'Covers R-1; R-3 adds an audit trail.'],
+    'specs/002-b/spec.md': ['# B', '', '- **FR-001:** The system MUST export a report.'], 'specs/002-b/plan.md': ['# Plan', '', 'Checks: R-1 the report opens; R-2 it is signed.'],
+  });
+  assert.deepEqual((await analyze(set)).findings.filter(f => f.practiceId === 'I2.3').map(f => `${f.evidence[0].path}:${f.message}`),
+    ['specs/001-a/plan.md:Reference R-3 has no definition in the supplied specs.']);
 });

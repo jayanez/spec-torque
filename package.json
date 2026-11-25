@@ -1,6 +1,6 @@
 {
   "name": "spectorque",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Create, inspect and refine agent-ready specifications with traceable evidence.",
   "type": "module",
   "license": "Apache-2.0",
