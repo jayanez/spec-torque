@@ -1,6 +1,6 @@
 import { contentHash, isValidationGuide } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
-import { around, isOwnSpec, markedNotAdopted, namespaceOf, qualifierOf } from './references.js';
+import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
 export const ENGINE_VERSION = '0.1.14';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
@@ -184,12 +184,12 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const ownNamespaces = new Set<string>();
   for (const line of lines.filter(l => l.artifact.role === 'spec' && (l.requirement || l.heading))) {
     for (const match of line.text.matchAll(requirementId)) {
-      const namespace = namespaceOf(around(line.text, match.index, match[0].length).before);
+      const namespace = namespaceOf(textBefore(line.text, match.index));
       if (namespace) ownNamespaces.add(line.artifact.featureId + ':' + namespace);
     }
   }
-  const external = (featureId: string, before: string) => {
-    const qualifier = qualifierOf(before);
+  const external = (featureId: string, prefix: string) => {
+    const qualifier = qualifierOf(prefix);
     return qualifier !== undefined && !ownNamespaces.has(featureId + ':' + qualifier) && !isOwnSpec(qualifier, featureId);
   };
   const traceability: Assessment['traceability'] = [];
@@ -197,9 +197,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     for (const match of matches) {
       const id = match[0].toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
-      if (resolved || !roles.has('spec')) continue;
-      const context = around(line.text, match.index, match[0].length);
-      if (!external(line.artifact.featureId, context.before) && !markedNotAdopted(context)) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
+      if (!resolved && roles.has('spec') && !external(line.artifact.featureId, textBefore(line.text, match.index))) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.

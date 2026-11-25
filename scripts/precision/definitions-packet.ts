@@ -8,15 +8,14 @@
  * H5 (#78) reuses the builder with a wider context and a missing-identifier proposition that also
  * considers the list item or paragraph the line belongs to. H8 (#80) asks whether a removed R-n
  * reference cites a requirement of the feature's specification. H9 (#84) asks whether
- * the ID is meant as this feature's requirement; its key records the rule (`not-adopted` when the
- * engine's non-adoption marker is attached to the subject ID, otherwise `qualified`), and its
- * occurrences skip namespaced forms such as `VP-REQ-01`.
+ * the ID is meant as this feature's requirement; its occurrences skip namespaced forms such as
+ * `VP-REQ-01`.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { around as idContext, markedNotAdopted, namespaceOf } from '../../src/core/references.js';
+import { namespaceOf, textBefore } from '../../src/core/references.js';
 import { rootSchema } from './sources.js';
 
 const { values } = parseArgs({ options: {
@@ -61,7 +60,7 @@ const proposition = (message: string) => message.startsWith('Duplicate')
   : message.startsWith('Requirement has no stable identifier') ? mode.missing : mode.reference;
 /** Matches of the bare ID on a line; for H9, namespaced forms such as `VP-REQ-01` are not the ID. */
 const matchesOf = (pattern: RegExp, text: string) => [...text.matchAll(pattern)]
-  .filter(match => !h9 || !namespaceOf(idContext(text, match.index, match[0].length).before));
+  .filter(match => !h9 || !namespaceOf(textBefore(text, match.index)));
 const specDocument = (path: string) => /\.md$/i.test(path) && /spec|requirement|prd|proposal/i.test(path.split('/').pop()!);
 const searched = mode.siblings ? (path: string) => /\.md$/i.test(path) : specDocument;
 
@@ -87,10 +86,7 @@ for (const change of draw(chosen, chosen.length)) {
     context: lines.slice(Math.max(0, line - 1 - around), line + around).map((text, index) => `${Math.max(1, line - around) + index}${Math.max(1, line - around) + index === line ? ' >' : '  '} ${text}`),
     occurrences,
   });
-  // The rule that left the finding out, read with the engine's own marker test.
-  const target = lines[line - 1] ?? '';
-  const rule = h9 ? { rule: pattern && matchesOf(pattern, target).some(match => markedNotAdopted(idContext(target, match.index, match[0].length))) ? 'not-adopted' : 'qualified' } : {};
-  key.push({ id: itemId, direction: change.direction, practice, message, root: change.root, feature: change.feature, ...rule });
+  key.push({ id: itemId, direction: change.direction, practice, message, root: change.root, feature: change.feature });
 }
 await mkdir(values.out, { recursive: true, mode: 0o700 });
 await writeFile(join(values.out, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: mode.guide, items }, null, 2) + '\n');

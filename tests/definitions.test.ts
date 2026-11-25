@@ -67,12 +67,11 @@ test('H9: a reference qualified by another specification is not resolved locally
   assert.deepEqual((await references(['# Tasks', '', 'Reuses SPEC-028-REQ-004.'], undefined, 'specs/028-demo')).findings, ['3:Reference REQ-004 has no definition in the supplied specs.']);
 });
 
-test('H9: a reference marked not adopted is left out, and its edge stays unresolved', async () => {
-  const marked = await references(['# Tasks', '', 'The proposed (not adopted) REQ-007 text replaces REQ-009; REQ-008 (no adoptado) stays out.']);
-  assert.deepEqual(marked.findings, ['3:Reference REQ-009 has no definition in the supplied specs.']);
-  assert.deepEqual(marked.edges, ['REQ-007:false', 'REQ-009:false', 'REQ-008:false']);
-  assert.deepEqual((await references(['# Tasks', '', 'The REQ-007/008 (proposed, not adopted) text is not installed.'])).findings, []);
-  assert.deepEqual((await references(['# Tasks', '', 'The REQ-007 text is a proposal, not installed.'])).findings, ['3:Reference REQ-007 has no definition in the supplied specs.']);
+test('H9: "not adopted" is not a marker; such a reference is checked as before (rule 2 reverted)', async () => {
+  const marked = await references(['# Tasks', '', 'The proposed (not adopted) REQ-007 text replaces REQ-009.']);
+  assert.deepEqual(marked.findings, ['3:Reference REQ-007 has no definition in the supplied specs.', '3:Reference REQ-009 has no definition in the supplied specs.']);
+  assert.deepEqual(marked.edges, ['REQ-007:false', 'REQ-009:false']);
+  assert.deepEqual((await references(['# Tasks', '', 'The proposed PROPOSAL-REQ-007 text is not installed.'])).findings, []);
 });
 
 test('H8: plan-local R-n labels are references only when the specification uses the R- family', async () => {
