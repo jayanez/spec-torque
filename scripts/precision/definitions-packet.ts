@@ -3,10 +3,11 @@
  * with context, written as packet.json (for reviewers) and key.json (direction, never shown to them).
  *
  *   definitions-packet.ts --detail <h3-scan.json> --roots <roots.json> --out <dir> [--sample 100] [--seed 42039]
- *                         [--context 3] [--propositions h3a|h5]
+ *                         [--context 3] [--propositions h3a|h5|h8]
  *
  * H5 (#78) reuses the builder with a wider context and a missing-identifier proposition that also
- * considers the list item or paragraph the line belongs to.
+ * considers the list item or paragraph the line belongs to. H8 (#80) asks whether a removed R-n
+ * reference cites a requirement of the feature's specification.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -19,7 +20,7 @@ const { values } = parseArgs({ options: {
   sample: { type: 'string', default: '100' }, seed: { type: 'string', default: '42039' },
   context: { type: 'string', default: '3' }, propositions: { type: 'string', default: 'h3a' },
 } });
-if (!['h3a', 'h5'].includes(values.propositions!)) throw new Error('--propositions must be h3a or h5.');
+if (!['h3a', 'h5', 'h8'].includes(values.propositions!)) throw new Error('--propositions must be h3a, h5 or h8.');
 const around = Number(values.context);
 if (!values.detail || !values.roots || !values.out) throw new Error('Use: definitions-packet.ts --detail <h3-scan.json> --roots <roots.json> --out <dir>');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
@@ -45,7 +46,9 @@ const proposition = (message: string) => message.startsWith('Duplicate')
     ? values.propositions === 'h5'
       ? 'This line states a requirement that has no stable identifier: neither the line, nor the list item or paragraph it belongs to (including its wrapped lines), nor an enclosing requirement heading identifies it.'
       : 'This line states a requirement that has no stable identifier of its own and is not under an enclosing requirement heading that identifies it.'
-    : 'The requirement ID cited on this line has no definition anywhere in the feature\'s specification documents.';
+    : values.propositions === 'h8'
+      ? 'The R-n label named in subjectId, on this line, cites a requirement of the feature\'s specification, so its missing definition is a true problem.'
+      : 'The requirement ID cited on this line has no definition anywhere in the feature\'s specification documents.';
 const specDocument = (path: string) => /\.md$/i.test(path) && /spec|requirement|prd|proposal/i.test(path.split('/').pop()!);
 
 const items = []; const key = [];
@@ -71,6 +74,6 @@ for (const change of draw(chosen, chosen.length)) {
   key.push({ id: itemId, direction: change.direction, practice, message, root: change.root, feature: change.feature });
 }
 await mkdir(values.out, { recursive: true, mode: 0o700 });
-await writeFile(join(values.out, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: values.propositions === 'h5' ? 'docs/precision-adjudication.md#h5-wrapped-continuations-78' : 'docs/precision-adjudication.md#h3a-requirement-definitions-83', items }, null, 2) + '\n');
+await writeFile(join(values.out, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: { h3a: 'docs/precision-adjudication.md#h3a-requirement-definitions-83', h5: 'docs/precision-adjudication.md#h5-wrapped-continuations-78', h8: 'docs/precision-adjudication.md#h8-plan-local-r-n-labels-80' }[values.propositions!], items }, null, 2) + '\n');
 await writeFile(join(values.out, 'key.json'), JSON.stringify(key, null, 2) + '\n', { mode: 0o600 });
 console.log(JSON.stringify({ items: items.length, removed: key.filter(k => k.direction === 'removed').length, added: key.filter(k => k.direction === 'added').length, out: values.out }));

@@ -171,3 +171,31 @@ Labels are `positive` (the evidence is genuine), `negative` and `unknown`.
 **Threshold.** At most 1 of the 15 items may be agreed `negative` or remain
 `unknown`. Disputed items count against the threshold until the owner resolves
 them.
+
+## H8: plan-local `R-n` labels (#80)
+
+H8 removes I2.3 unresolved-reference findings for `R-n` tokens on plan and tasks
+lines in features whose specification documents never use the `R-` family. It adds
+none. The owner fixed the threshold on 2026-11-25, after the deterministic gates and
+before the packet was drawn.
+
+**Packet.** It is built from the H8 fresh-set scan:
+
+```sh
+node --import tsx scripts/precision/definitions-packet.ts --detail <h8 scan>/h3-scan.json --roots <roots.json> --out .spec-torque/precision/h8-adjudication --context 6 --propositions h8
+```
+
+It holds 100 of the 557 removed findings, drawn and shuffled with seed 42039, with
+six lines of context on each side. Each item otherwise has the H3a fields. Its
+`occurrences` list is empty by construction. `key.json` is not opened by reviewers.
+
+**Proposition.** *The `R-n` label named in `subjectId`, on this line, cites a
+requirement of the feature's specification, so its missing definition is a true
+problem.* `positive` means the label is a requirement reference whose definition is
+missing; `negative` means it is a label local to the document (an acceptance check,
+a risk, a research item, a step).
+
+**Reviewers.** Two independent agent sessions, as in H3a, with the same limits.
+
+**Threshold.** At most 2 of the 100 removed findings may be agreed `positive`.
+Disputed items count against the threshold until the owner resolves them.
