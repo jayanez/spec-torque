@@ -8,6 +8,8 @@
  * instead: the named template items N1/N2, lost evidence (1a spec-only, 1b all-role practices),
  * removed decisions, and a sanity stratum of removed findings and reclassified files. --detail may
  * be repeated (one scan per fresh set); features are capped at 15 per repository.
+ * With --propositions h7a-gains, from arm-B scans: the checklist lines that 0.1.12 admitted as
+ * requirements in features where a ratio practice rises (they leave its denominator).
  */
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -20,7 +22,7 @@ const { values } = parseArgs({ options: {
   detail: { type: 'string', multiple: true }, roots: { type: 'string' }, out: { type: 'string' },
   seed: { type: 'string', default: '42039' }, context: { type: 'string', default: '4' }, propositions: { type: 'string', default: 'h6' },
 } });
-if (!values.detail?.length || !values.roots || !values.out || !['h6', 'h7'].includes(values.propositions!)) throw new Error('Use: verification-packet.ts --detail <h6-scan.json> --roots <roots.json> --out <dir> [--propositions h6|h7]');
+if (!values.detail?.length || !values.roots || !values.out || !['h6', 'h7', 'h7a-gains'].includes(values.propositions!)) throw new Error('Use: verification-packet.ts --detail <h6-scan.json> --roots <roots.json> --out <dir> [--propositions h6|h7|h7a-gains]');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
 type Evidence = { path: string; line: number; text: string };
@@ -44,6 +46,7 @@ const contextOf = (lines: string[], line: number) => lines.slice(Math.max(0, lin
   .map((text, index) => `${Math.max(1, line - around) + index}${Math.max(1, line - around) + index === line ? ' >' : '  '} ${text}`);
 await mkdir(values.out, { recursive: true, mode: 0o700 });
 if (values.propositions === 'h7') await h7Packet();
+else if (values.propositions === 'h7a-gains') await gainsPacket();
 else await h6Packet();
 
 async function h6Packet() {
@@ -167,4 +170,34 @@ async function h7Packet() {
   await writeFile(join(values.out!, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: 'docs/precision-adjudication.md#h7-spec-kit-checklists-79', items }, null, 2) + '\n');
   await writeFile(join(values.out!, 'key.json'), JSON.stringify({ counts, items: key }, null, 2) + '\n', { mode: 0o600 });
   console.log(JSON.stringify({ items: items.length, counts, out: values.out }));
+}
+
+async function gainsPacket() {
+  const rank = { missing: 0, partial: 1, supported: 2 } as Record<string, number>;
+  // The engine's admission rule, without the calendar-May exception: an ID or a modal word outside headings, quotes and fences.
+  const admitted = /\b(?:FR|NFR|REQ)-\d+\b|(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
+  const raised = scan.detail.filter(d => d.changes.some(c => (rank[c.to] ?? -1) > (rank[c.from] ?? -1)));
+  const byText = new Map<string, { d: Detail; path: string; line: number; text: string }[]>();
+  for (const d of raised) for (const { path } of d.roleChanges ?? []) {
+    let fenced = false;
+    git(d.root, 'show', `${d.sha}:${path}`).split(/\r?\n/).forEach((text, index) => {
+      if (/^\s*(?:```|~~~)/.test(text)) { fenced = !fenced; return; }
+      if (fenced || /^\s*(?:#|>)/.test(text) || !admitted.test(text)) return;
+      byText.set(text.trim(), [...(byText.get(text.trim()) ?? []), { d, path, line: index + 1, text }]);
+    });
+  }
+  const pool = [...byText.values()];
+  const drawn = shuffle(pool).slice(0, 30);
+  const items: unknown[] = []; const key: unknown[] = [];
+  for (const group of drawn) {
+    const { d, path, line } = group[0];
+    const id = 'G' + String(items.length + 1).padStart(3, '0');
+    items.push({ id, repository: roots.find(r => r.id === d.root)!.repository, revision: d.sha, path, line,
+      proposition: 'This line states a requirement that this feature imposes (rather than reviewing, citing or reporting on one).',
+      context: contextOf(git(d.root, 'show', `${d.sha}:${path}`).split(/\r?\n/), line) });
+    key.push({ id, features: new Set(group.map(g => g.d.root + g.d.feature)).size, occurrences: group.map(g => `${g.d.root}:${g.d.feature}:${g.path}:${g.line}`) });
+  }
+  await writeFile(join(values.out!, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: 'docs/precision-adjudication.md#h7-spec-kit-checklists-79', items }, null, 2) + '\n');
+  await writeFile(join(values.out!, 'key.json'), JSON.stringify({ distinct: pool.length, features: raised.length, items: key }, null, 2) + '\n', { mode: 0o600 });
+  console.log(JSON.stringify({ items: items.length, distinct: pool.length, features: raised.length, out: values.out }));
 }
