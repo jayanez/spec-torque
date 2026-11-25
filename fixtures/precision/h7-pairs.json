@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "H7 synthetic twins (#79): Spec Kit checklists as review context. Constructed before the H7 candidate from the frozen policy; not independent labels.",
+  "description": "H7 synthetic twins (#79): Spec Kit checklists as review context. Constructed before the H7 candidate from the frozen policy; not independent labels. Cases checklist-none-remain-* added by amendment H7-2, before arm B.",
   "cases": [
     {
       "id": "checklist-cites-id-en",
@@ -403,6 +403,98 @@
         "specs/001-reservas/design.md": "plan"
       },
       "note": "Control: a feature design.md outside checklists/ stays a plan."
+    },
+    {
+      "id": "checklist-none-remain-checked-en",
+      "construct": "clarification",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [x] No [NEEDS CLARIFICATION] markers remain"
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {
+        "E1.1": "missing",
+        "P2.5": "missing"
+      },
+      "decisions": 0,
+      "note": "N1 (H7-2): the checked template item is review text; under H7 it counts for no practice and no decision."
+    },
+    {
+      "id": "checklist-none-remain-unchecked-en",
+      "construct": "clarification",
+      "language": "en",
+      "files": {
+        "specs/001-booking/checklists/requirements.md": [
+          "# Specification Quality Checklist: Booking",
+          "",
+          "- [ ] No [NEEDS CLARIFICATION] markers remain"
+        ],
+        "specs/001-booking/spec.md": [
+          "# Booking",
+          "",
+          "- REQ-001: The system MUST confirm a booking within 2 seconds."
+        ]
+      },
+      "expected": {
+        "E1.1": "missing",
+        "P2.5": "missing"
+      },
+      "decisions": 0,
+      "note": "N2 (H7-2): the unchecked template item; under H7 it counts for no practice and no decision."
+    },
+    {
+      "id": "checklist-none-remain-checked-es",
+      "construct": "clarification",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [x] No quedan marcadores [NEEDS CLARIFICATION]"
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {
+        "E1.1": "missing",
+        "P2.5": "missing"
+      },
+      "decisions": 0,
+      "note": "N1 (H7-2): the checked template item is review text; under H7 it counts for no practice and no decision."
+    },
+    {
+      "id": "checklist-none-remain-unchecked-es",
+      "construct": "clarification",
+      "language": "es",
+      "files": {
+        "specs/001-reservas/checklists/requirements.md": [
+          "# Lista de calidad de la especificación: Reservas",
+          "",
+          "- [ ] No quedan marcadores [NEEDS CLARIFICATION]"
+        ],
+        "specs/001-reservas/spec.md": [
+          "# Reservas",
+          "",
+          "- REQ-001: El sistema DEBE confirmar una reserva en menos de 2 segundos."
+        ]
+      },
+      "expected": {
+        "E1.1": "missing",
+        "P2.5": "missing"
+      },
+      "decisions": 0,
+      "note": "N2 (H7-2): the unchecked template item; under H7 it counts for no practice and no decision."
     }
   ]
 }
