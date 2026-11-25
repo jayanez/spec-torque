@@ -4,8 +4,9 @@ import { createEffect, createMemo, createRoot, createSignal, For, Show } from 's
 import { spawn } from 'node:child_process';
 import type { ArtifactSet, Assessment, Evidence, Finding } from '../../src/core/types.js';
 import {
-  analyze, applyWorkspaceProposal, choiceScope, contentHash, createProposal, defaultScope, hostIndex, openWorkbench,
+  analyze, applyWorkspaceProposal, choiceScope, contentHash, createProposal, defaultScope, fitsReadLimit, hostIndex, openWorkbench,
   parseScopeArgs, readScope, readWorkspaceArtifact, scopeChoices, scopeLabel, scopeRequest, scopeValue, terminalSummary,
+  DISCLAIMER, LABELS, PRODUCT_VERSION, findingCard, replacementLabel, titleLine, workbenchLine, workbenchUrl,
   type HostScope, type WorkspaceIndex,
 } from './runtime/integration.js';
 
@@ -20,8 +21,6 @@ type Snapshot = {
 const panelName = 'spectorque.review';
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
 
-// Terminals link plain http://localhost URLs; the loopback server accepts both host names.
-const browserUrl = (url: string) => url.replace('http://127.0.0.1:', 'http://localhost:') + '/';
 function openInBrowser(url: string) {
   const [command, ...args] = process.platform === 'darwin' ? ['open', url] : process.platform === 'win32' ? ['explorer.exe', url] : ['xdg-open', url];
   const child = spawn(command, args, { detached: true, stdio: 'ignore', windowsHide: true });
@@ -44,7 +43,7 @@ export default Plugin.define({
     let scope: HostScope | undefined;
     let index: WorkspaceIndex | undefined;
     let disposed = false;
-    let workbench: { root: string; opened: Awaited<ReturnType<typeof openWorkbench>> } | undefined;
+    let workbench: { root: string; feature: string | null; opened: Awaited<ReturnType<typeof openWorkbench>> } | undefined;
 
     function closeWorkbench() {
       if (!workbench) return;
@@ -107,7 +106,7 @@ export default Plugin.define({
       index = next;
       let chosen = requested ?? scope ?? defaultScope(next);
       if (chosen?.kind === 'feature' && !next.features.some(f => f.id === chosen!.id)) chosen = defaultScope(next);
-      if (chosen?.kind === 'all' && next.entries.length > 500) chosen = undefined;
+      if (chosen?.kind === 'all' && !fitsReadLimit(next)) chosen = undefined;
       if (!chosen) {
         chosen = await pickScope(next);
         if (!chosen || !current(location, request)) { setStatus('Choose a feature: run /spectorque <feature | folder | --changed>.'); return; }
@@ -124,9 +123,9 @@ export default Plugin.define({
 
     function pickScope(workspace: WorkspaceIndex) {
       return context.ui.dialog.select<string>({
-        title: 'SpecTorque · select scope (' + workspace.features.length + ' features)',
+        title: 'SpecTorque · ' + LABELS.selectScope + ' (' + workspace.features.length + ' features)',
         current: scopeValue(scope),
-        options: scopeChoices(workspace),
+        options: scopeChoices(workspace, scope),
         search: (query, options) => options.filter(option => option.title.toLowerCase().includes(query.toLowerCase())),
       }).then(value => value === undefined ? undefined : choiceScope(value));
     }
@@ -145,15 +144,15 @@ export default Plugin.define({
     }
 
     function pickEvidence(view: Snapshot) {
-      const findings = view.report.findings.flatMap(finding => finding.evidence.map(evidence => ({ finding, evidence })));
+      const findings = view.report.findings.flatMap((finding, at) => finding.evidence.map(evidence => ({ finding, evidence, at })));
       if (!findings.length) {
         return context.ui.dialog.alert({ title: 'SpecTorque', message: 'No rule findings in this scope.' }).then(() => undefined);
       }
-      return context.ui.dialog.select<{ finding: Finding; evidence: Evidence }>({
-        title: 'SpecTorque · select evidence',
+      return context.ui.dialog.select<{ finding: Finding; evidence: Evidence; at: number }>({
+        title: 'SpecTorque · ' + LABELS.selectFinding,
         options: findings.map(value => ({
           title: value.finding.message,
-          description: value.evidence.path + ':' + value.evidence.line,
+          description: findingCard(view.report, value.at)[0] + ' · ' + value.evidence.path + ':' + value.evidence.line,
           value,
         })),
       });
@@ -164,7 +163,7 @@ export default Plugin.define({
       const requested = input?.trim() ? parseScopeArgs(input, index ?? await hostIndex(await rootFor(location))) : undefined;
       const view = await refresh(location, request, requested);
       if (!view || panel) return;
-      await context.ui.dialog.alert({ title: 'SpecTorque', message: terminalSummary(view.report).join('\n') });
+      await context.ui.dialog.alert({ title: 'SpecTorque', message: [...terminalSummary(view.report), '', DISCLAIMER].join('\n') });
     });
 
     const changeScope = () => act(async (location, request) => {
@@ -180,10 +179,12 @@ export default Plugin.define({
       if (!view) return;
       const selected = await pickEvidence(view);
       if (!selected || !current(location, request)) return;
-      const { evidence } = selected;
+      const { evidence, at } = selected;
       const line = sourceLine(view, evidence);
       if (line === undefined) throw new Error('Evidence line is unavailable. Run /spectorque to analyze again.');
-      await context.ui.dialog.alert({ title: evidence.path + ':' + evidence.line, message: line });
+      // Evidence excerpts are bounded; Inspect quotes the whole source line.
+      const [heading, ...card] = findingCard(view.report, at, { ...evidence, text: line });
+      await context.ui.dialog.alert({ title: heading, message: card.join('\n') });
     });
 
     const review = () => act(async (location, request) => {
@@ -201,13 +202,13 @@ export default Plugin.define({
       if (original === undefined) throw new Error('Evidence line is unavailable. Run /spectorque to analyze again.');
       if (!current(location, request)) return;
       const replacement = await context.ui.dialog.prompt({
-        title: evidence.path + ':' + evidence.line, description: finding.suggestion, value: original,
+        title: replacementLabel(evidence.line) + ' · ' + evidence.path, description: finding.suggestion, value: original,
       });
       if (!replacement || replacement === original || !current(location, request)) return;
       const proposal = await createProposal(evidence.path, content, evidence.line, replacement, finding.suggestion);
       if (!current(location, request)) return;
       const accepted = await context.ui.dialog.confirm({
-        title: 'Apply reviewed change?',
+        title: LABELS.applyChange + '?',
         message: 'Before:\n' + proposal.original + '\n\nAfter:\n' + proposal.replacement,
       });
       if (!accepted || !current(location, request)) return;
@@ -224,20 +225,22 @@ export default Plugin.define({
       const root = (await hostIndex(await rootFor(location))).root;
       if (!current(location, request)) return;
       if (root !== view.root) throw new Error('OpenCode workspace changed. Run /spectorque to analyze again.');
-      if (workbench?.root !== root || !workbench.opened.server.listening) {
+      const feature = view.scope.kind === 'feature' ? view.scope.id : null;
+      // The workbench opens on the feature it was started for, so a new feature needs a new server.
+      if (workbench?.root !== root || workbench.feature !== feature || !workbench.opened.server.listening) {
         closeWorkbench();
-        const opened: Awaited<ReturnType<typeof openWorkbench>> = await openWorkbench(root, view.scope.kind === 'feature' ? view.scope.id : null);
+        const opened: Awaited<ReturnType<typeof openWorkbench>> = await openWorkbench(root, feature);
         if (!current(location, request)) {
           opened.server.close();
           return;
         }
-        workbench = { root, opened };
-        setWorkbenchUrl(browserUrl(opened.url));
+        workbench = { root, opened, feature };
+        setWorkbenchUrl(workbenchUrl(opened.url));
       }
-      await context.ui.dialog.prompt({
-        title: 'SpecTorque · common workbench',
-        description: 'Press o in the panel to open it in your browser, or copy this local URL' + (view.scope.kind === 'feature' ? '; it opens on ' + view.scope.id : '') + '.',
-        value: browserUrl(workbench.opened.url),
+      // A read-only alert: the address is shown, not edited. Press o in the panel to open it.
+      await context.ui.dialog.alert({
+        title: 'SpecTorque · Common workbench',
+        message: workbenchLine(workbench.opened.url, workbench.feature) + '\nPress o in the panel to open it in your browser.',
       });
     });
 
@@ -252,22 +255,23 @@ export default Plugin.define({
           { id: 'spectorque.close', title: 'Close SpecTorque', bind: 'q', run: () => context.ui.panel.close() },
         ],
       }));
+      // Title with version, scope, summary and dimensions, findings, then the actions and the closing note.
       return <box flexDirection="column" padding={1}>
-        <text>SpecTorque · specification review</text>
-        <Show when={snapshot()} keyed fallback={<text>{status()}</text>}>{view => <>
+        <Show when={snapshot()} keyed fallback={<><text>{titleLine(PRODUCT_VERSION)}</text><text>{status()}</text></>}>{view => { const [title, ...summary] = terminalSummary(view.report); return <>
+          <text>{title}</text>
           <text>Scope: {scopeLabel(view.scope)} · {view.index.features.length} features · {view.index.mode}</text>
-          <text>Revision: {view.report.id}</text>
-          <text>Unknown practices: {view.report.summary.unknown}</text>
-          <For each={terminalSummary(view.report)}>{line => <text>{line}</text>}</For>
+          <For each={summary}>{line => <text>{line}</text>}</For>
+          <text>Revision: {view.report.id} · Unknown practices: {view.report.summary.unknown}</text>
           <Show when={!view.report.findings.length}><text>No rule findings in this scope.</text></Show>
           <For each={view.report.decisions}>{evidence =>
             <text>{evidence.path}:{evidence.line} {evidence.text}</text>
           }</For>
           <Show when={view.index.features.length > 1}><text>s Select scope</text></Show>
           <text>e Inspect evidence · r Review change · w Common workbench</text>
-          <Show when={workbenchUrl()}>{url => <text>Workbench: {url()} · o Open in browser</text>}</Show>
-        </>}</Show>
+          <Show when={workbenchUrl()}>{url => <text>{workbenchLine(url(), workbench?.feature)} · o Open in browser</text>}</Show>
+        </>; }}</Show>
         <text>q Close panel</text>
+        <text>{DISCLAIMER}</text>
       </box>;
     }
 

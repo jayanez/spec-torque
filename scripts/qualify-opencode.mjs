@@ -185,21 +185,23 @@ async function walkthrough(language) {
       await see('ctrl+p');
       await slash('spectorque', 'Open SpecTorque');
       await see('open decisions');
-      assert.ok(!text().includes('specification review'), 'Home should show the fallback dialog.');
+      assert.ok(!text().includes('q Close panel'), 'Home should show the fallback dialog.');
     });
     let browserUrl;
     await terminal('active', [...homeArgs, '--session', session.id], async ({ see, key, slash, text }) => {
       async function closePanel() {
         await key('q');
-        await see(/^(?![\s\S]*specification review)[\s\S]*ctrl\+p commands/);
+        await see(/^(?![\s\S]*q Close panel)[\s\S]*ctrl\+p commands/);
       }
       await see('SpecTorque native ' + language);
       await slash('spectorque', 'Open SpecTorque');
-      await see('SpecTorque · specification review');
+      await see(/SpecTorque \d+\.\d+\.\d+ · /);
+      await see('q Close panel');
+      await see('Heuristic evidence, not a correctness certificate.');
       await see((await expected(workspace)).id);
       async function selectScope(name) {
         await key('s');
-        await see('select scope');
+        await see('Select scope');
         await key(name === null ? 'All documents' : name);
         await key('\r');
         await see((await expected(workspace, name)).id);
@@ -208,7 +210,7 @@ async function walkthrough(language) {
       await see('No rule findings in this scope.');
       await selectScope(other);
       await key('e');
-      await see('select evidence');
+      await see('Select finding');
       await key('\r');
       await see('specs/other/spec.md:3');
       await see('LONG_EVIDENCE_END.');
@@ -217,9 +219,9 @@ async function walkthrough(language) {
 
       async function propose() {
         await key('r');
-        await see('select evidence');
+        await see('Select finding');
         await key('\r');
-        await see('specs/booking/spec.md:5');
+        await see('Proposed replacement for line 5');
         await see(original);
         await key('\x15');
         await key(replacement);
@@ -228,7 +230,8 @@ async function walkthrough(language) {
         await see('Before:');
         await see('After:');
         await see(original);
-        await see(replacement);
+        // The dialog wraps a long line, and panel text can share those terminal rows.
+        await see(new RegExp(replacement.split(/\s+/).map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]{1,400}?')));
       }
       await propose();
       await key('\x1b[C');
@@ -244,9 +247,9 @@ async function walkthrough(language) {
       await see((await expected(workspace, scope)).id);
       await see('NEEDS CLARIFICATION');
       await key('w');
-      await see('common workbench');
-      // The panel shows a localhost link; the handoff check connects to the same loopback port by address.
-      const frame = await see(/http:\/\/localhost:\d+/);
+      await see('Common workbench');
+      // One workbench line, the same address the panel links, naming the feature it opens on.
+      const frame = await see(/Workbench: http:\/\/localhost:\d+\/ — opens on[\s\S]{1,400}?specs\/[\s\S]{0,400}?booking/);
       browserUrl = frame.match(/http:\/\/localhost:\d+/)[0].replace('localhost', '127.0.0.1');
       const handoff = await run(process.execPath, ['--import', 'tsx', resolve('scripts/qualify-common-handoff.mjs'),
         workspace, '--url', browserUrl, '--feature', scope], { timeout: 90_000 });
@@ -307,7 +310,7 @@ async function walkthrough(language) {
       assert.ok(!text().includes((await expected(workspace, scope)).id));
       await assertDisconnected(browserUrl);
       await key('w');
-      await see('common workbench');
+      await see('Common workbench');
       const recoveredFrame = await see(/http:\/\/localhost:\d+/);
       const recoveredUrl = recoveredFrame.match(/http:\/\/localhost:\d+/)[0].replace('localhost', '127.0.0.1');
       assert.notEqual(recoveredUrl, browserUrl);

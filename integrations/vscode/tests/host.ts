@@ -11,7 +11,7 @@ export async function run() {
     assert.equal(vscode.workspace.isTrusted, false);
     assert.ok(!extension?.isActive);
     await assert.rejects(async () => { await vscode.commands.executeCommand('spectorque.review'); });
-    assert.equal(vscode.window.tabGroups.all.flatMap(g => g.tabs).some(tab => tab.label === 'SpecTorque'), false);
+    assert.equal(vscode.window.tabGroups.all.flatMap(g => g.tabs).some(tab => tab.label.startsWith('SpecTorque')), false);
     await writeFile(join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'evidence.json'), JSON.stringify({ vscode: vscode.version, platform: process.platform, restrictedMode: true, commandBlocked: true, noPanel: true }, null, 2));
     return;
   }
@@ -65,13 +65,13 @@ export async function run() {
     const saved = await download;
     await saved.saveAs(join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'assessment.json'));
     await frame.page().screenshot({ path: join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'webview.png') });
-    const countPanels = () => vscode.window.tabGroups.all.flatMap(group => group.tabs).filter(tab => tab.label === 'SpecTorque').length;
+    const countPanels = () => vscode.window.tabGroups.all.flatMap(group => group.tabs).filter(tab => tab.label.startsWith('SpecTorque')).length;
     assert.equal(countPanels(), 1);
     await vscode.commands.executeCommand('spectorque.review');
     assert.equal(countPanels(), 1, 'Repeated commands reuse the existing panel and server.');
     // reveal() crosses the extension-host/UI boundary asynchronously. Close
     // through the actual tab action rather than racing the tab inventory.
-    await frame.page().getByRole('tab', { name: 'SpecTorque' }).getByRole('button', { name: /Close/ }).click();
+    await frame.page().getByRole('tab', { name: /^SpecTorque/ }).getByRole('button', { name: /Close/ }).click();
     const stopDeadline = Date.now() + 5000;
     let stopped = false;
     while (!stopped && Date.now() < stopDeadline) {

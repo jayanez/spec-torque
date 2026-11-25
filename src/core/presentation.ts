@@ -1,4 +1,4 @@
-import type { Assessment, Finding } from './types.js';
+import type { Assessment, Evidence, Finding } from './types.js';
 
 /**
  * Host-independent presentation text. Every host builds its title, summary, finding card,
@@ -42,10 +42,9 @@ export function summaryLine(a: Summarized): string {
 export const dimensionsLine = (a: Pick<Assessment, 'dimensions'>) => a.dimensions.map(d => d.id + ' ' + (d.score === null ? '—' : d.score + '/3')).join('   ');
 
 /** A finding's card: heading, location, message, quoted evidence and fix, one entry per line. */
-export function findingCard(a: { findings: readonly Finding[] }, index: number): string[] {
+export function findingCard(a: { findings: readonly Finding[] }, index: number, evidence: Evidence | undefined = a.findings[index]?.evidence[0]): string[] {
   const finding = a.findings[index];
   if (!finding) return [];
-  const evidence = finding.evidence[0];
   return [
     `Finding ${index + 1} of ${a.findings.length} · ${finding.practiceId} · ${finding.severity}`,
     ...(evidence ? [`${evidence.path}:${evidence.line}`] : []),

@@ -50,7 +50,9 @@ export interface ScopeChoice { title: string; value: string; category: string }
  * layouts first. A current folder or based branch scope is listed too, so a selector can always
  * show the scope in use.
  */
-export function scopeChoices(index: WorkspaceIndex, current?: HostScope): ScopeChoice[] {
+/** Accepts a work-tree index, or a host's `features --json` listing with its document total. */
+export type ScopeSource = { features: readonly { id: string; layout: boolean }[] } & Parameters<typeof fitsReadLimit>[0];
+export function scopeChoices(index: ScopeSource, current?: HostScope): ScopeChoice[] {
   return [
     ...(current?.kind === 'path' ? [{ title: scopeLabel(current), value: scopeValue(current), category: 'Scope' }] : []),
     ...(fitsReadLimit(index) ? [{ title: LABELS.allDocuments, value: 'all', category: 'Scope' }] : []),

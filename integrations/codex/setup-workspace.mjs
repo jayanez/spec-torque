@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 const [major, minor] = process.versions.node.split('.').map(Number);
 if (major < 22 || (major === 22 && minor < 20)) throw new Error('SpecTorque requires Node 22.20 or later.');
-const [input, ...extra] = process.argv.slice(2);
-if (!input || extra.length) throw new Error('Usage: node setup-workspace.mjs <trusted-worktree>');
+const [input, feature, ...extra] = process.argv.slice(2);
+if (!input || extra.length || feature?.startsWith('-')) throw new Error('Usage: node setup-workspace.mjs <trusted-worktree> [feature-id]');
 const root = await realpath(resolve(input));
 if (!(await stat(root)).isDirectory()) throw new Error('The worktree must be a directory.');
 const node = await realpath(process.execPath);
@@ -29,5 +29,6 @@ const cmd = process.platform === 'win32'
 
 console.log('Merge this block into the trusted worktree’s .codex/config.toml:');
 console.log('\n' + config + '\n');
-console.log('To open the corresponding local workbench, run:');
-console.log(cmd([node, workbench, 'serve', '--root', root, '--port', '0']));
+// The workbench loads what it is started for on connect: this feature, or the whole work tree when it fits.
+console.log(feature ? 'To open the corresponding local workbench on ' + feature + ', run:' : 'To open the corresponding local workbench, run (add --feature <feature-id> to open it on one feature):');
+console.log(cmd([node, workbench, 'serve', '--root', root, '--port', '0', ...(feature ? ['--feature', feature] : [])]));
