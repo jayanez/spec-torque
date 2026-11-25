@@ -98,7 +98,7 @@ evidence categories. Retain native transcripts/source snapshots separately.
 
 `npm run qualify:claude` drives the installed plugin ZIP in a real Claude Code
 terminal through a pseudo-terminal. Build with Node 22.20+ in major 22, run
-`npm run package:integrations` and `npm run package:claude`, install Chromium,
+`npm run package:claude` (it rebuilds and runs `package:integrations` first), install Chromium,
 and provide an isolated tools directory with `node-pty@1.1.0` and
 `@xterm/headless@6.0.0`:
 

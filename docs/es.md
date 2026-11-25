@@ -38,8 +38,8 @@ En la versión de Codex Desktop probada, abrir el visor con `open_spectorque` in
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).
 
-En Claude Code, genera el paquete con `npm run package:integrations` y
-`npm run package:claude`; el script imprime el SHA-256 del ZIP determinista.
+En Claude Code, genera el paquete con `npm run package:claude`, que antes
+recompila el motor y los runtimes de los hosts; el script imprime el SHA-256 del ZIP determinista.
 Cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-0.2.0.zip`
 y ejecuta `/spectorque`. El panel usa el `node` del `PATH` (Node 22.20+).
 Si el workspace tiene varias funcionalidades, el panel ofrece **All documents** o
