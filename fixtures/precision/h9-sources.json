@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-25",
+  "purpose": "Fresh H9 confirmation set (qualified and non-adopted references in I2.3, #84). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"SPEC-0\" \"FR-0\" path:specs and \"SPEC-0\" \"REQ-0\" path:specs in files named tasks.md, and \"not adopted\" path:specs in files named plan.md, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a, H6, H6a and H6a-2, and the pilot repository owner, excluded; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "\"SPEC-0\" \"REQ-0\" path:specs filename:tasks.md": "2 of 4: no further eligible repository in the first 100 results after exclusions"
+  },
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/relmer/Casso",
+      "commit": "6e15585ad64c0ea26bff0a78189e2b00bbe700b4",
+      "license": "MIT",
+      "query": "\"SPEC-0\" \"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/xgentic/agentic-component-manifest",
+      "commit": "d351e4ff75d8b28afd93230627de170dd912f21d",
+      "license": "MIT",
+      "query": "\"SPEC-0\" \"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/ContextLab/llmXive",
+      "commit": "186e2b59c95684ba75d57622342f4d1ffaf5394d",
+      "license": "MIT",
+      "query": "\"SPEC-0\" \"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/torgebo/s2rst",
+      "commit": "7c57182a9f5f8d28f74db5ff77de2a08849a09c5",
+      "license": "Apache-2.0",
+      "query": "\"SPEC-0\" \"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/i-soumya18/AgentSDLC",
+      "commit": "03b575535cdf394d2f940cfe1f40eb6e50d156d9",
+      "license": "MIT",
+      "query": "\"SPEC-0\" \"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/GigaShalgham/wifi-data-guard",
+      "commit": "8b493479dafd9328743bda85f967e4aff7d25f0d",
+      "license": "MIT",
+      "query": "\"SPEC-0\" \"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/kusari-oss/waybill",
+      "commit": "1f85936f1fb9b6a79784afa79551a6c685deb2df",
+      "license": "Apache-2.0",
+      "query": "\"not adopted\" path:specs filename:plan.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/BjoernSchotte/atlcli",
+      "commit": "f784f5dad45b9548d4a6143d3731e04a173a9330",
+      "license": "Apache-2.0",
+      "query": "\"not adopted\" path:specs filename:plan.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/archimedes-run/omniHarness",
+      "commit": "53f94dfaffb68f12cc3c3db78837212444b7ad0a",
+      "license": "MIT",
+      "query": "\"not adopted\" path:specs filename:plan.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/CloudLandBeta/PowerRustCOBOL",
+      "commit": "77ae4a97f9d221d344f5f967868e5eb73735a7e7",
+      "license": "Apache-2.0",
+      "query": "\"not adopted\" path:specs filename:plan.md"
+    }
+  ]
+}
