@@ -45,7 +45,7 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
     status: Object.fromEntries(report.practices.map(p => [p.id, p.status])),
     evidence: Object.fromEntries(report.practices.map(p => [p.id, p.evidence])),
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
-    findings, decisions: report.decisions.length,
+    findings, decisions: report.decisions.length, decisionLines: report.decisions,
     findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
   };
 }
@@ -113,7 +113,9 @@ if (mode === 'synthetic') {
       if (added.length || changes.length || Object.keys(findingDelta).length || c.decisions !== b.decisions) {
         totals.changedFeatures++;
         detail.push({ root: root.id, repository: root.repository, sha, feature, added, roleChanges, changes, findingDelta, removedFindings, addedFindings,
-          decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])) });
+          decisions: { baseline: b.decisions, candidate: c.decisions }, evidence: Object.fromEntries(changes.map(ch => [ch.id, c.evidence[ch.id]])),
+          baselineEvidence: Object.fromEntries(changes.map(ch => [ch.id, b.evidence[ch.id]])),
+          removedDecisions: b.decisionLines.filter(l => !c.decisionLines.some(k => k.path === l.path && k.line === l.line)) });
       }
     }
   }
