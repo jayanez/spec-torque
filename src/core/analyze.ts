@@ -1,7 +1,7 @@
 import { contentHash } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.9';
+export const ENGINE_VERSION = '0.1.10';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -15,14 +15,29 @@ const monthEnumerationMay = new RegExp(
 const hasNormativeModal = (text: string) => modal.test(
   text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
 );
-interface Line extends Evidence { artifact: Artifact; requirement: boolean; heading: boolean }
+/** H5 (#78): a list item or paragraph with its hard-wrapped continuation lines. */
+interface Unit { hasId: boolean }
+interface Line extends Evidence { artifact: Artifact; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
+// Lines that start a block (or are a fence run), and lines that cannot be continued.
+const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<|```|~~~)/;
+const closedBlock = /^\s*(?:#{1,6}(?:[ \t]|$)|\||>|<|```|~~~)/;
+const thematicBreak = /^\s*(?:[-*_=][ \t]*){3,}$/;
 function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
+  let continuable = false;
+  let unit: Unit = { hasId: false };
   return artifact.content.split(/\r?\n/).map((text, index) => {
-    if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
+    const fenceRun = /^\s*(?:```|~~~)/.test(text);
+    if (fenceRun) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
     const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
-    return { path: artifact.path, line: index + 1, text, artifact, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text) };
+    const textLine = !fenced && !fenceRun && text.trim() !== '' && !thematicBreak.test(text);
+    // An unindented line led by a defining ID starts its own unit (one requirement per line).
+    const continuation = continuable && textLine && !blockStart.test(text) && !(/^\S/.test(text) && definedId(text));
+    if (!continuation) unit = { hasId: false };
+    if (requirementIdIn(text)) unit.hasId = true;
+    continuable = textLine && !closedBlock.test(text);
+    return { path: artifact.path, line: index + 1, text, artifact, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text), continuation, unit };
   });
 }
 // H3a (#83): an ID defines a requirement only in a defining position: first on the line after an
@@ -39,16 +54,18 @@ function inheritedLines(lines: Line[]): Set<Line> {
     if (line.path !== path) { path = line.path; current = undefined; }
     if (line.artifact.role !== 'spec') continue;
     if (line.heading) { current = definedId(line.text); continue; }
-    if (line.requirement && current && !requirementIdIn(line.text)) inherited.add(line);
+    if (line.requirement && current && !identifiedOnLine(line)) inherited.add(line);
   }
   return inherited;
 }
 const requirementIdIn = (text: string) => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(text);
+/** A line's own ID, or (H5) an ID elsewhere in the item or paragraph it belongs to. */
+const identifiedOnLine = (line: Line) => requirementIdIn(line.text) || line.unit.hasId;
 /** Defining positions per feature-qualified ID, among admitted spec lines and spec headings. */
 function definitionsOf(lines: Line[]): Map<string, Line[]> {
   const definitions = new Map<string, Line[]>();
   for (const line of lines) {
-    if (line.artifact.role !== 'spec' || !(line.requirement || line.heading)) continue;
+    if (line.artifact.role !== 'spec' || !(line.requirement || line.heading) || line.continuation) continue;
     const id = definedId(line.text);
     if (!id) continue;
     const key = line.artifact.featureId + ':' + id;
@@ -85,7 +102,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
   }
   if (id === 'I1.2' || id === 'I2.2') {
     const inherited = inheritedLines(lines);
-    const identified = specRequirements.filter(l => requirementIdIn(l.text) || inherited.has(l)).length;
+    const identified = specRequirements.filter(l => identifiedOnLine(l) || inherited.has(l)).length;
     const unique = ![...definitionsOf(lines).values()].some(entries => entries.length > 1);
     return { status: !specRequirements.length ? 'unknown' : identified === specRequirements.length && unique ? 'supported' : identified ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
   }
@@ -141,7 +158,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   for (const line of requirements) {
     for (const match of line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, '').matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
     if (/^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:it|this|that|esto|eso|ello)\b/i.test(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
-    if (!requirementIdIn(line.text) && !inherited.has(line) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
+    if (!identifiedOnLine(line) && !inherited.has(line) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
     if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }
   const definitions = definitionsOf(lines);
