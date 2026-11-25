@@ -18,8 +18,8 @@ import { ReviewPanel } from './ReviewPanel.js';
 type HistoryEntry = { report: Assessment; scope: string | null; demo: boolean };
 // A loaded set opens on the specification of its first listed feature (known layouts first,
 // templates last), not on an instruction file or a template that sorts first by path.
-// Within the feature, a file named spec.md comes before other spec-role files (such as a Spec Kit
-// checklists/requirements.md, which sorts first by path); classification itself is unchanged.
+// Within the feature, a file named spec.md comes before other spec-role files (a tie-breaker; since
+// engine 0.1.13, #79, a Spec Kit checklists/requirements.md is context, not a spec).
 function firstSource(artifacts: ArtifactSet['artifacts']): string {
   const feature = listFeatures(artifacts)[0]?.id;
   const specs = artifacts.filter(a => a.role === 'spec' && !a.archived && a.featureId === feature);
