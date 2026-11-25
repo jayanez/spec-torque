@@ -836,7 +836,7 @@ disputed items fall in it, and none of the 31 agreed negatives depends on it.
 
 **Decision.** The owner chose a narrowed H5a (a unit
 counts as identified only when its first line has a defining ID, so citations no
-longer identify wrapped lines), or stopping.
+longer identify wrapped lines), pre-registered as H5a below.
 
 ### H5a: only a unit's defining first line identifies its continuations — **holds; proposed for merge**
 
