@@ -939,6 +939,22 @@ any file content:
 The list is committed in `fixtures/precision/h85-sources.json` before the candidate
 commit.
 
+### Amendment H85-1 (2026-11-25, before the candidate and any measurement)
+
+While writing the candidate, two pronoun forms were found that the frozen rules
+would read as determiners. Both are added as pronoun cues. Each one only keeps
+findings that 0.1.12 already reports:
+- **Contractions.** `this` / `that` directly followed by `'s`, `'ll` or `'d`
+  (straight or curly apostrophe): "That's why …".
+- **Prepositions and conjunctions.** A determiner is never followed directly by one,
+  so a next word from this list makes `this` / `that` a pronoun: `and`, `or`, `but`,
+  `in`, `on`, `at`, `for`, `with`, `by`, `of`, `to`, `from`, `as`, `if`, `when`,
+  `because`, `so`. Example: "This in turn means …".
+
+Two EN twins are added to gate 1, both expected to keep their E1.3 finding:
+`That's why the export MUST …` and `This in turn means the export MUST …`. Nothing
+else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

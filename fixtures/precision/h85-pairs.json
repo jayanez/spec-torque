@@ -222,6 +222,48 @@
         "E1.3|specs/001-demo/spec.md|5"
       ],
       "note": "Control: eso is a pronoun."
+    },
+    {
+      "id": "pronoun-contraction-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-005: That's why the export MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Amendment H85-1: that + 's is a pronoun."
+    },
+    {
+      "id": "pronoun-preposition-en",
+      "construct": "demonstrative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-005: This in turn means the export MUST include the order date."
+        ]
+      },
+      "expected": {
+        "E1.3": "missing"
+      },
+      "findings": [
+        "E1.3|specs/001-demo/spec.md|5"
+      ],
+      "note": "Amendment H85-1: this + preposition is a pronoun."
     }
   ]
 }
