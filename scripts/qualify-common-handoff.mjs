@@ -19,7 +19,7 @@ const attached = options.get('--url');
 if (attached) {
   const address = new URL(attached);
   assert.equal(address.href, address.origin + '/', 'Use the root loopback URL from OpenCode.');
-  assert.equal(address.hostname, '127.0.0.1');
+  assert.ok(['127.0.0.1', 'localhost'].includes(address.hostname), 'Use the loopback workbench address.');
   assert.equal(address.protocol, 'http:');
   assert.ok(address.port, 'An explicit loopback port is required.');
 }
@@ -46,12 +46,12 @@ try {
   });
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto(url);
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
-  // With several features the workbench offers a feature picker that loads only that feature;
-  // otherwise the feature is chosen in the loaded artifact set.
+  // The workbench loads the served work tree, or its preselected feature, on connect. Above the
+  // read limit with nothing preselected it reads nothing and offers the feature picker instead.
   const artifactSet = page.getByLabel('Artifact set');
   const localFeature = page.getByLabel('Local workspace feature');
+  await page.goto(url);
+  await page.getByRole('status').filter({ hasText: 'Artifacts loaded.' }).or(localFeature).first().waitFor({ state: 'attached' });
   if (feature !== null) {
     await artifactSet.or(localFeature).first().waitFor();
     if (await localFeature.count()) {
@@ -61,6 +61,7 @@ try {
       await page.getByTitle(feature + '/spec.md').first().waitFor();
     } else await artifactSet.selectOption(feature);
   }
+  await page.getByTitle(decision.path).first().waitFor();
   await page.getByRole('button', { name: 'Decisions', exact: true }).click();
   await page.getByRole('button').filter({ hasText: `${decision.path}:${decision.line}` }).click();
   const editor = page.getByRole('textbox', { name: 'Source text editor' });

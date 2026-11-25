@@ -82,12 +82,23 @@ export function selectFeature(set: ArtifactSet, feature: string | null): Artifac
   return { ...set, artifacts: set.artifacts.filter(artifact => inFeatureScope(artifact, feature)) };
 }
 
+/** Documents read at once. Larger work trees are read one feature (or folder) at a time. */
+export const READ_LIMIT = 500;
+/** Whether a whole work tree fits one read: an index with its entries, or a host's document total. */
+export const fitsReadLimit = (index: { entries: readonly unknown[] } | { total: number }) => ('total' in index ? index.total : index.entries.length) <= READ_LIMIT;
+
 export interface FeatureSummary { id: string; framework: Framework; layout: boolean; artifacts: number }
 
-/** The selectable features: non-archived spec-role feature IDs. Known layouts first, then generic groups. */
+// Template folders (`.specify/templates`, Spec Kitty mission templates) are scaffolding, not features.
+const templateFolder = /(?:^|\/)templates?(?:\/|$)/i;
+
+/**
+ * The selectable features: non-archived spec-role feature IDs. Known layouts first, then generic
+ * groups. Template folders count as generic so they sort last; this is presentation only.
+ */
 export function listFeatures(artifacts: Pick<PathClassification, 'role' | 'framework' | 'featureId' | 'archived'>[]): FeatureSummary[] {
   const byId = new Map<string, FeatureSummary>();
-  for (const a of artifacts) if (!a.archived && a.role === 'spec' && !byId.has(a.featureId)) byId.set(a.featureId, { id: a.featureId, framework: a.framework, layout: a.framework !== 'generic', artifacts: 0 });
+  for (const a of artifacts) if (!a.archived && a.role === 'spec' && !byId.has(a.featureId)) byId.set(a.featureId, { id: a.featureId, framework: a.framework, layout: a.framework !== 'generic' && !templateFolder.test(a.featureId), artifacts: 0 });
   for (const a of artifacts) { const f = byId.get(a.featureId); if (f && a.role !== 'instructions') f.artifacts++; }
   return [...byId.values()].sort((a, b) => Number(b.layout) - Number(a.layout) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }

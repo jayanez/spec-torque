@@ -1,6 +1,6 @@
+import { ALL, CHANGED, DISCLAIMER, dimensionsLine, featureLabel, findingCard, replacementLabel, scopeLabel, scopeValue, summaryLine, titleLine, valueScope, workbenchLine, workbenchUrl } from './text.js';
+
 const PANE = 'spectorque';
-const ALL = 'All documents';
-const LIMIT = 500;
 const SHOWN = 12;
 let assessment;
 // The workspace index: root, mode, focus, total and the shared feature list.
@@ -30,11 +30,10 @@ async function run($, args, cwd) {
 }
 // Each refresh starts a generation; results from a superseded one are discarded.
 let generation = 0;
-const scopeLabel = value => !value ? 'not selected' : value.kind === 'all' ? ALL : value.kind === 'feature' ? value.id
-  : value.kind === 'path' ? 'Folder · ' + value.path : 'Changed on this branch' + (value.base ? ' (vs ' + value.base + ')' : '');
 const scopeArgs = value => value.kind === 'feature' ? ['--feature', value.id] : value.kind === 'path' ? ['--path', value.path]
   : value.kind === 'changed' ? ['--changed', ...(value.base ? ['--base', value.base] : [])] : [];
-const fits = () => index && index.total <= LIMIT;
+// The CLI reports the shared read limit with the index.
+const fits = () => index && index.total <= index.limit;
 const storeKey = () => 'scope:' + index.root;
 // `/spectorque specs/001-x`, `/spectorque docs/specs` or `/spectorque --changed [base]` narrow the scope.
 function parseArgs(text) {
@@ -94,9 +93,9 @@ async function openWorkbench($) {
   $.ui.invalidate('ui.render');
   const root = index?.root ?? await $.session.cwd();
   if (workbench !== current) return;
-  const feature = scope?.kind === 'feature' ? ['--feature', scope.id] : [];
-  const handle = $.process.spawn({ argv: ['node', cli, 'serve', '--root', root, '--port', '0', ...feature], cwd: root });
-  Object.assign(current, { handle, root });
+  const feature = scope?.kind === 'feature' ? scope.id : null;
+  const handle = $.process.spawn({ argv: ['node', cli, 'serve', '--root', root, '--port', '0', ...(feature ? ['--feature', feature] : [])], cwd: root });
+  Object.assign(current, { handle, root, feature });
   let output = '';
   try {
     for (;;) {
@@ -151,54 +150,45 @@ export function register(on) {
     const choose = value => refresh($, value);
     const finding = assessment?.findings[selected];
     const ev = finding?.evidence[0];
-    const children = [
-      Text({ children: ['SpecTorque · ' + (assessment?.name || 'Review')] }),
-      Button({ key: 'refresh', label: 'Refresh analysis', onPress: () => refresh($) }),
-      Button({ key: 'workbench', label: workbench?.url ? 'Close common workbench' : workbench ? 'Cancel common workbench startup' : 'Open common workbench', onPress: async () => {
-        if (workbench) { closeWorkbench(); workbenchNote = ''; redraw(); return; }
-        try {
-          const opened = await openWorkbench($);
-          if (!opened) { redraw(); return; }
-          workbenchNote = '';
-          try { await $.ui.copy({ text: opened.url }); opened.copied = true; } catch { opened.copied = false; }
-        } catch (e) { workbenchNote = 'Common workbench failed: ' + message(e); }
-        redraw();
-      } }),
-    ];
-    if (workbench?.url) {
-      children.push(Text({ children: ['Common workbench' + (workbench.copied ? ' (address copied)' : '') + ': ' + workbench.url + '\nOpen it in a browser and load the local workspace' + (scope?.kind === 'feature' ? '; it opens on ' + scope.id : '') + '.'] }));
-      // Desktop and VS Code make a Link clickable only for https: or http://localhost; the loopback server accepts both hosts.
-      children.push(Link({ key: 'workbench-link', href: workbench.url.replace('http://127.0.0.1:', 'http://localhost:') + '/', label: 'Open the common workbench' }));
-    }
-    if (workbenchNote) children.push(Text({ children: [workbenchNote] }));
+    const children = [Text({ children: [titleLine(index?.version, assessment?.name)] })];
+    // Scope: the current scope is always an option, so the Select never shows another one.
     if (index) {
       children.push(Text({ children: ['Scope: ' + scopeLabel(scope) + ' · ' + index.features.length + ' features · ' + index.mode] }));
       if (index.features.length > 1 || !scope) {
         const needle = filter.toLowerCase();
+        const current = scope?.kind === 'feature' ? scope.id : undefined;
         const matches = index.features.filter(f => f.id.toLowerCase().includes(needle));
+        const shown = new Set(matches.slice(0, SHOWN).map(f => f.id));
+        const listed = index.features.filter(f => f.id === current || shown.has(f.id));
         const options = [
+          ...(scope?.kind === 'path' ? [{ value: scopeValue(scope), label: scopeLabel(scope) }] : []),
           ...(fits() ? [{ value: 'all', label: ALL }] : []),
-          { value: 'changed', label: 'Changed on this branch' },
-          ...matches.slice(0, SHOWN).map(f => ({ value: 'f:' + f.id, label: (f.layout ? '' : 'Other · ') + f.id })),
+          { value: 'changed', label: CHANGED },
+          ...(scope?.kind === 'changed' && scope.base ? [{ value: scopeValue(scope), label: scopeLabel(scope) }] : []),
+          ...listed.map(f => ({ value: 'f:' + f.id, label: featureLabel(f) })),
         ];
-        if (index.features.length > SHOWN) children.push(Input({ key: 'scope-filter', label: 'Filter features (' + matches.length + ' of ' + index.features.length + ')', value: filter, submitLabel: 'filter', onInput: text => { filter = text; redraw(); }, onSubmit: text => { filter = text; redraw(); } }));
-        children.push(Select({ key: 'scope', label: scope ? 'Change scope' : 'Choose a feature to analyze', value: scope?.kind === 'feature' ? 'f:' + scope.id : scope?.kind === 'all' ? 'all' : scope?.kind === 'changed' ? 'changed' : undefined, options, onSelect: value => choose(value === 'all' ? { kind: 'all' } : value === 'changed' ? { kind: 'changed' } : { kind: 'feature', id: value.slice(2) }) }));
-        if (!scope && !fits()) children.push(Text({ children: ['This work tree has ' + index.total + ' documents, more than ' + LIMIT + ' analyzed at once. Choose a feature, or run /spectorque <feature | folder | --changed>.'] }));
+        if (index.features.length > SHOWN) children.push(Input({ key: 'scope-filter', label: 'Filter features (' + matches.length + ' of ' + index.features.length + ')', value: filter, submitLabel: 'Filter', onInput: text => { filter = text; redraw(); }, onSubmit: text => { filter = text; redraw(); } }));
+        children.push(Select({ key: 'scope', label: 'Select scope', value: scopeValue(scope), options, onSelect: value => choose(valueScope(value)) }));
+        if (!scope && !fits()) children.push(Text({ children: ['This work tree has ' + index.total + ' documents, more than ' + index.limit + ' analyzed at once. Choose a feature, or run /spectorque <feature | folder | --changed>.'] }));
       }
     }
     if (error) children.push(Text({ children: [error] }));
+    // Summary and dimensions, then the selected finding's card.
     if (assessment) {
-      children.push(Text({ children: [(assessment.summary.score === null ? 'Incomplete assessment' : assessment.summary.score + '/30') + ' · ' + assessment.findings.length + ' findings · ' + assessment.decisions.length + ' open decisions'] }));
-      children.push(Text({ children: [assessment.dimensions.map(d => d.id + ' ' + (d.score === null ? '—' : d.score + '/3')).join('   ')] }));
+      children.push(Text({ children: [summaryLine(assessment)] }));
+      children.push(Text({ children: [dimensionsLine(assessment)] }));
       if (!finding) children.push(Text({ children: ['No rule findings in this scope.'] }));
     }
     if (finding && ev) {
+      const last = assessment.findings.length - 1;
+      const move = to => () => { if (to === selected) return; selected = to; proposal = undefined; redraw(); };
+      children.push(Text({ children: [findingCard(assessment, selected).join('\n')] }));
+      // Mods Buttons have no disabled state: at either end the button is dimmed and does nothing.
       children.push(Box({ flexDirection: 'row', columnGap: 2, children: [
-        Button({ key: 'previous', label: 'Previous', onPress: () => { selected = Math.max(0, selected - 1); proposal = undefined; redraw(); } }),
-        Button({ key: 'next', label: 'Next', onPress: () => { selected = Math.min(assessment.findings.length - 1, selected + 1); proposal = undefined; redraw(); } }),
+        Button({ key: 'previous', label: 'Previous', dimColor: selected === 0, onPress: move(Math.max(0, selected - 1)) }),
+        Button({ key: 'next', label: 'Next', dimColor: selected === last, onPress: move(Math.min(last, selected + 1)) }),
       ] }));
-      children.push(Text({ children: [ev.path + ':' + ev.line + '\n' + finding.message + '\n' + ev.text + '\n' + finding.suggestion] }));
-      children.push(Input({ key: 'replacement-' + selected, label: 'Proposed wording', value: ev.text, submitLabel: 'review', onSubmit: async replacement => {
+      children.push(Input({ key: 'replacement-' + selected, label: replacementLabel(ev.line), value: ev.text, submitLabel: 'Review change', onSubmit: async replacement => {
         // Drop a proposal whose assessment or selected finding changed meanwhile.
         const request = generation, at = selected;
         const current = () => request === generation && at === selected;
@@ -216,13 +206,35 @@ export function register(on) {
     }
     if (proposal) {
       children.push(Text({ children: ['Before: ' + proposal.original + '\nAfter: ' + proposal.replacement] }));
-      children.push(Button({ key: 'apply', label: 'Apply reviewed change', onPress: async () => {
-        try { await run($, ['apply', '--root', index.root, '--proposal', JSON.stringify(proposal), '--apply']); await refresh($); }
-        catch (e) { error = 'Apply failed: ' + message(e) + ' Refresh the analysis before proposing again.'; proposal = undefined; redraw(); }
-      } }));
-      children.push(Button({ key: 'reject', label: 'Reject proposal', onPress: () => { proposal = undefined; redraw(); } }));
+      children.push(Box({ flexDirection: 'row', columnGap: 2, children: [
+        Button({ key: 'apply', label: 'Apply reviewed change', onPress: async () => {
+          try { await run($, ['apply', '--root', index.root, '--proposal', JSON.stringify(proposal), '--apply']); await refresh($); }
+          catch (e) { error = 'Apply failed: ' + message(e) + ' Refresh the analysis before proposing again.'; proposal = undefined; redraw(); }
+        } }),
+        Button({ key: 'reject', label: 'Reject proposal', onPress: () => { proposal = undefined; redraw(); } }),
+      ] }));
     }
-    children.push(Text({ children: ['Heuristic evidence, not a correctness certificate. No model is called by this pane.'] }));
+    // Actions: refresh and the common workbench in one row, then its address.
+    children.push(Box({ flexDirection: 'row', columnGap: 2, children: [
+      Button({ key: 'refresh', label: 'Refresh analysis', onPress: () => refresh($) }),
+      Button({ key: 'workbench', label: workbench?.url ? 'Close common workbench' : workbench ? 'Cancel common workbench startup' : 'Open common workbench', onPress: async () => {
+        if (workbench) { closeWorkbench(); workbenchNote = ''; redraw(); return; }
+        try {
+          const opened = await openWorkbench($);
+          if (!opened) { redraw(); return; }
+          workbenchNote = '';
+          // The copied address is the one the link opens.
+          try { await $.ui.copy({ text: workbenchUrl(opened.url) }); opened.copied = true; } catch { opened.copied = false; }
+        } catch (e) { workbenchNote = 'Common workbench failed: ' + message(e); }
+        redraw();
+      } }),
+    ] }));
+    if (workbench?.url) {
+      // Desktop and VS Code make a Link clickable only for https: or http://localhost; the loopback server accepts both hosts.
+      children.push(Link({ key: 'workbench-link', href: workbenchUrl(workbench.url), label: workbenchLine(workbench.url, workbench.feature) + (workbench.copied ? ' (address copied)' : '') }));
+    }
+    if (workbenchNote) children.push(Text({ children: [workbenchNote] }));
+    children.push(Text({ children: [DISCLAIMER + ' No model is called by this pane.'] }));
     return Box({ flexDirection: 'column', rowGap: 1, children });
   });
 }

@@ -27,7 +27,7 @@ const zip = resolve(zipPath);
 const bytes = await readFile(zip);
 const sha256 = createHash('sha256').update(bytes).digest('hex');
 const files = unzipSync(bytes);
-for (const name of ['.claude-plugin/plugin.json', '.mcp.json', 'hooks/hooks.json', 'hooks/register.js', 'dist/cli.js', 'dist/mcp.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) {
+for (const name of ['.claude-plugin/plugin.json', '.mcp.json', 'hooks/hooks.json', 'hooks/register.js', 'hooks/text.js', 'dist/cli.js', 'dist/mcp.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) {
   assert.ok(files[name]?.length, 'Required archive entry: ' + name);
 }
 assert.ok(!Object.keys(files).some(name => name.startsWith('tests/')), 'Tests must not be packaged.');
@@ -123,7 +123,7 @@ async function session(name, workspace, args, exercise, sessionEnv = env) {
   }
   async function focus(label) {
     for (let i = 0; i < 24; i++) {
-      if (label === 'input' ? /⏎ review/.test(text()) : focused(label)) return;
+      if (label === 'input' ? /⏎ Review change/.test(text()) : focused(label)) return;
       await key('\t', 250);
     }
     throw new Error(`${name}: could not focus ${label}\n${text()}`);
@@ -166,7 +166,8 @@ async function snapshot(root) {
   return result;
 }
 const expected = async (root, feature) => analyze(selectFeature(await discoverWorkspace(root), feature));
-const counts = report => report.findings.length + ' findings · ' + report.decisions.length + ' open decisions';
+const plural = (n, one) => n + ' ' + one + (n === 1 ? '' : 's');
+const counts = report => plural(report.findings.length, 'finding') + ' · ' + plural(report.decisions.length, 'open decision');
 // Portable listener check: a loopback TCP connection succeeds only while the server listens.
 const listening = port => new Promise(done => {
   const socket = connect({ host: '127.0.0.1', port: Number(port) });
@@ -193,7 +194,7 @@ try {
       await openPane(ui);
       const all = await expected(workspace, null);
       await ui.see('Scope: All documents · 2 features');
-      await ui.see('Change scope');
+      await ui.see('Select scope');
       await ui.see(counts(all));
       record(language + ': pane loads from ZIP with scope picker', { findings: all.findings.length });
 
@@ -253,9 +254,9 @@ try {
       record(language + ': new analysis permits a fresh proposal and keeps the external edit', { revision: recovered.id });
 
       await ui.press('Open common workbench');
-      const view = await ui.see(/Common workbench \(address copied\): http:\/\/127\.0\.0\.1:\d+/);
-      const url = /http:\/\/127\.0\.0\.1:\d+/.exec(view)[0];
-      await ui.see('it opens on ' + scope);
+      // One line: the copied address is the link's, and the workbench opens on the pane's feature.
+      const view = await ui.see(/Workbench: http:\/\/localhost:\d+\/ — opens on specs\/booking \(address copied\)/);
+      const url = /http:\/\/localhost:\d+/.exec(view)[0];
       const { stdout } = await run(process.execPath, ['--import', 'tsx', 'scripts/qualify-common-handoff.mjs', workspace, '--url', url, '--feature', scope], { timeout: 180_000 });
       const handoff = JSON.parse(stdout.slice(stdout.indexOf('{')));
       assert.equal(handoff.jsonExport && handoff.zipExport, true);

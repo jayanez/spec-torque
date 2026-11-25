@@ -54,7 +54,7 @@ const test = base.extend<{ workspace: { root: string; url: string } }>({
 for (const es of [false, true]) {
   test(`${es ? 'ES' : 'EN'} retains guided authoring across views and protects the generated draft`, async ({ page, workspace }) => {
     await page.goto(workspace.url);
-    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
     const build = page.getByRole('button', { name: es ? 'Crear una spec' : 'Build a spec', exact: true });
     const analyze = page.getByRole('button', { name: es ? 'Analizar' : 'Analyze', exact: true });
     const name = page.getByRole('textbox', { name: es ? 'Nombre del proyecto' : 'Project name' });
@@ -78,7 +78,7 @@ for (const es of [false, true]) {
     await expect(editor).toHaveValue(new RegExp(obligation));
     await expect(editor).toHaveValue(/NEEDS CLARIFICATION/);
 
-    const load = page.getByRole('button', { name: es ? 'Cargar proyecto local' : 'Load local workspace' });
+    const load = page.getByRole('button', { name: es ? 'Recargar proyecto local' : 'Reload local workspace' });
     let confirmed = false;
     page.once('dialog', async dialog => { confirmed = dialog.type() === 'confirm'; await dialog.dismiss(); });
     await load.click();
@@ -126,13 +126,13 @@ for (const es of [false, true]) {
       if (request.method() === 'POST') writes.push(request.url());
     });
     await page.goto(workspace.url);
-    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
     await page.locator('input[type=file]').setInputFiles({ name: 'spec.md', mimeType: 'text/markdown', buffer: Buffer.from(source) });
     const trigger = page.getByRole('button').filter({ hasText: /Unbounded wording:.*(?:as needed|cuando sea necesario)/ });
     await trigger.focus();
     await page.keyboard.press('Enter');
     const editor = page.getByRole('textbox', { name: es ? 'Editor del texto fuente' : 'Source text editor' });
-    const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed wording' });
+    const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed replacement' });
     const question = page.getByRole('heading', { name: es ? 'Pregunta de aclaración' : 'Clarification question', exact: true });
     await expect(question).toBeVisible();
     await expect(page.getByText(es ? '¿Qué evento o condición debe hacer que desaparezca?'
@@ -168,8 +168,8 @@ for (const es of [false, true]) {
     await page.keyboard.press(tabKey);
     await expect(page.getByRole('link', { name: /^SpecTorque/ })).toBeFocused();
     await page.keyboard.press(tabKey);
-    await expect(page.getByRole('button', { name: 'Spanish', exact: true })).toBeFocused();
-    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true })).toBeFocused();
+    if (es) await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
     await page.locator('input[type=file]').setInputFiles({ name: 'spec.md', mimeType: 'text/markdown', buffer: Buffer.from(source) });
     const finding = page.getByRole('button').filter({ hasText: 'Unbounded wording:' });
     await expect(finding).toHaveCount(1);
@@ -179,7 +179,7 @@ for (const es of [false, true]) {
     const editor = page.getByRole('textbox', { name: es ? 'Editor del texto fuente' : 'Source text editor' });
     await expect(editor).toBeFocused();
     expect(await editor.evaluate((node: HTMLTextAreaElement) => node.value.slice(node.selectionStart, node.selectionEnd))).toBe(source.trim().split('\n').at(-1));
-    const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed wording' });
+    const wording = page.getByRole('textbox', { name: es ? 'Texto propuesto' : 'Proposed replacement' });
     await wording.fill(replacement);
     const review = page.getByRole('button', { name: es ? 'Revisar diferencia' : 'Review difference', exact: true });
     const difference = page.getByRole('heading', { name: es ? 'Cambio propuesto' : 'Proposed change' });
@@ -205,7 +205,7 @@ for (const es of [false, true]) {
     expect(report.practices).toHaveLength(40);
     expect(report.summary.score).toBeNull();
     expect(report.decisions[0]).toMatchObject({ path: 'spec.md', line: 3 });
-    for (const [name, contents] of [[es ? '↓ Informe' : '↓ Report', markdownReport(report)], ['↓ Badge', badgeSvg(report)]]) {
+    for (const [name, contents] of [[es ? '↓ Informe' : '↓ Report', markdownReport(report)], [es ? '↓ Insignia' : '↓ Badge', badgeSvg(report)]]) {
       const download = page.waitForEvent('download');
       await page.getByRole('button', { name, exact: true }).click();
       expect(await readFile(await (await download).path(), 'utf8')).toBe(contents);
@@ -231,22 +231,23 @@ test('reviewed disk writes reject stale sources and undo preserves external chan
   const source = 'FR-001: The system MUST be fast.\n';
   await writeFile(path, source);
   await page.goto(workspace.url);
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  // The workbench loads the served work tree on connect.
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue(source);
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
   const replacement = 'FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].';
-  await page.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
+  await page.getByRole('textbox', { name: 'Proposed replacement' }).fill(replacement);
   await page.getByRole('button', { name: 'Review difference', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Write this change to the local workspace' }).check();
   await writeFile(path, source + 'External edit.\n');
   await page.getByRole('button', { name: 'Accept change', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Source changed');
   expect(await readFile(path, 'utf8')).toBe(source + 'External edit.\n');
-  await expect(page.getByRole('textbox', { name: 'Proposed wording' })).toHaveValue(replacement);
+  await expect(page.getByRole('textbox', { name: 'Proposed replacement' })).toHaveValue(replacement);
   page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await page.getByRole('button', { name: 'Reload local workspace', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue(source + 'External edit.\n');
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
-  await page.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
+  await page.getByRole('textbox', { name: 'Proposed replacement' }).fill(replacement);
   await page.getByRole('button', { name: 'Review difference', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Write this change to the local workspace' }).check();
   await page.getByRole('button', { name: 'Accept change', exact: true }).click();
@@ -258,8 +259,17 @@ test('reviewed disk writes reject stale sources and undo preserves external chan
 });
 
 test('connection failure preserves drafts and empty workspace remains unknown', async ({ page, workspace }) => {
+  const reads: string[] = [];
+  page.on('request', request => { if (request.url().includes('/api/workspace')) reads.push(request.url()); });
+  const indexed = page.waitForResponse('**/api/features');
   await page.goto(workspace.url);
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await indexed;
+  // An empty work tree keeps the sample on connect; a sample cannot be saved as new files.
+  await expect(page.getByText('Local workspace connected')).toBeAttached();
+  await expect(page.getByTitle('specs/booking/spec.md')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Save as new files' })).toHaveCount(0);
+  expect(reads).toEqual([]);
+  await page.getByRole('button', { name: 'Reload local workspace', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('');
   await expect(page.getByText('0/10 dimensions assessed', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Paste text', exact: true }).click();
@@ -267,7 +277,7 @@ test('connection failure preserves drafts and empty workspace remains unknown', 
   await page.getByRole('textbox', { name: 'Specification text', exact: true }).fill(source);
   await page.getByRole('button', { name: 'Analyze text', exact: true }).click();
   await page.route('**/api/workspace', route => route.abort('failed'));
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await page.getByRole('button', { name: 'Reload local workspace', exact: true }).click();
   await expect(page.getByRole('alert')).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue(source);
 });
@@ -275,9 +285,9 @@ test('connection failure preserves drafts and empty workspace remains unknown', 
 test('pending application excludes repeated writes and workspace mutations', async ({ page, workspace }) => {
   await writeFile(join(workspace.root, 'spec.md'), 'FR-001: The system MUST be fast.');
   await page.goto(workspace.url);
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The system MUST be fast.');
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
-  await page.getByRole('textbox', { name: 'Proposed wording' }).fill('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
+  await page.getByRole('textbox', { name: 'Proposed replacement' }).fill('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
   await page.getByRole('button', { name: 'Review difference', exact: true }).click();
   await page.getByRole('checkbox').check();
   let releaseLoad!: () => void;
@@ -285,7 +295,7 @@ test('pending application excludes repeated writes and workspace mutations', asy
   let loadStarted!: () => void;
   const loadEntered = new Promise<void>(done => { loadStarted = done; });
   await page.route('**/api/workspace', async route => { loadStarted(); await loadHold; await route.continue(); });
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await page.getByRole('button', { name: 'Reload local workspace', exact: true }).click();
   await loadEntered;
   let release!: () => void;
   const hold = new Promise<void>(done => { release = done; });
@@ -293,7 +303,7 @@ test('pending application excludes repeated writes and workspace mutations', asy
   await page.route('**/api/apply', async route => { calls++; await hold; await route.continue(); });
   try {
     await page.getByRole('button', { name: 'Accept change', exact: true }).evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
-    await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Reload local workspace', exact: true })).toBeDisabled();
     await expect(page.getByRole('textbox', { name: 'Source text editor' })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Accept change', exact: true })).toBeDisabled();
     expect(calls).toBe(1);
@@ -302,18 +312,18 @@ test('pending application excludes repeated writes and workspace mutations', asy
     await expect(page.getByRole('button', { name: 'Accept change', exact: true })).toBeDisabled();
   } finally { releaseLoad(); release(); }
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
-  await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Reload local workspace', exact: true })).toBeEnabled();
   let releaseUndo!: () => void;
   const undoHold = new Promise<void>(done => { releaseUndo = done; });
   await page.route('**/api/undo', async route => { await undoHold; await route.fulfill({ status: 400, json: { error: 'Source changed: this edit is stale.' } }); });
   try {
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(page.getByRole('textbox', { name: 'Source text editor' })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Reload local workspace', exact: true })).toBeDisabled();
   } finally { releaseUndo(); }
   await expect(page.getByRole('alert')).toContainText('stale');
   await expect(page.getByRole('textbox', { name: 'Source text editor' })).toHaveValue('FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].');
-  await expect(page.getByRole('button', { name: 'Load local workspace', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Reload local workspace', exact: true })).toBeEnabled();
 });
 
 test('late provider response cannot replace the newly selected document', async ({ page, workspace }) => {
@@ -340,7 +350,7 @@ test('late provider response cannot replace the newly selected document', async 
   await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).click();
   const response = page.waitForResponse('**/api/rewrite');
   release(); await response;
-  await expect(page.getByRole('textbox', { name: 'Proposed wording' })).toHaveValue(next);
+  await expect(page.getByRole('textbox', { name: 'Proposed replacement' })).toHaveValue(next);
   await expect(page.getByRole('heading', { name: 'Proposed change', exact: true })).toHaveCount(0);
 });
 
@@ -368,7 +378,7 @@ for (const es of [false, true]) {
     const review = { ...context, root: view.root, proposal };
 
     await page.goto(workspace.url + '/?review=1');
-    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
     const approve = page.getByRole('button', { name: es ? 'Aprobar y escribir en disco' : 'Approve and write to disk' });
     async function verify() {
       await page.getByRole('textbox').fill(JSON.stringify(review));
@@ -410,7 +420,7 @@ for (const es of [false, true]) {
     expect(updated.assessment.id).not.toBe(view.assessment.id);
     expect(updated.assessment.decisions.some(item => item.path === 'specs/booking/spec.md' && item.line === 3)).toBe(true);
     await page.goto(workspace.url + '/?export=1');
-    if (es) await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+    if (es) await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
     const selection = JSON.stringify({ root: view.root, feature: view.feature,
       revision: updated.assessment.id, createdAt: updated.assessment.createdAt });
     for (const pattern of ['**/api/scoped-export', '**/api/**']) {
@@ -434,18 +444,110 @@ for (const es of [false, true]) {
   });
 }
 
-test('large local workspaces load one feature at a time', async ({ page, workspace }) => {
+test('large local workspaces read nothing on connect and load one feature at a time', async ({ page, workspace }) => {
   for (let i = 1; i <= 102; i++) {
     const folder = join(workspace.root, 'specs', `${String(i).padStart(3, '0')}-feature`);
     await mkdir(folder, { recursive: true });
     for (const name of ['spec.md', 'plan.md', 'tasks.md', 'research-plan.md', 'design.md']) await writeFile(join(folder, name), `# ${name}\n\n- FR-001: The system MUST confirm a booking within 2 seconds.\n`);
   }
+  const reads: string[] = [];
+  page.on('request', request => { if (request.url().includes('/api/workspace')) reads.push(request.url()); });
+  const indexed = page.waitForResponse('**/api/features');
   await page.goto(workspace.url);
-  await page.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+  await indexed;
   const picker = page.getByRole('combobox', { name: 'Local workspace feature' });
   await expect(picker).toBeVisible();
+  await expect(page.getByText('This work tree has 510 documents, more than 500 read at once. Choose a feature.')).toBeVisible();
+  await expect(picker.locator('option', { hasText: 'All documents' })).toHaveCount(0);
   await expect(page.getByRole('alert')).toHaveCount(0);
+  expect(reads).toEqual([]);
   await picker.selectOption('specs/042-feature');
   await expect(picker).toHaveValue('specs/042-feature');
   await expect(page.getByTitle('specs/042-feature/spec.md')).toBeVisible();
+  await expect(page.getByTitle('specs/042-feature/spec.md')).toHaveAttribute('aria-pressed', 'true');
+});
+
+async function served(root: string, feature: string | null, run: (url: string) => Promise<void>) {
+  const { server, url } = await startServer(root, 0, feature);
+  try { await run(url); }
+  finally { await new Promise<void>((done, reject) => { server.close(e => e ? reject(e) : done()); server.closeAllConnections(); }); }
+}
+async function writeFeature(root: string, id: string, text: string) {
+  await mkdir(join(root, id), { recursive: true });
+  await writeFile(join(root, id, 'spec.md'), text);
+}
+
+test('serve --feature opens that feature on connect without a separate artifact set', async ({ page, workspace }) => {
+  await writeFile(join(workspace.root, 'AGENTS.md'), '# Agents\n\nFollow the specs.\n');
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  await writeFeature(workspace.root, 'specs/066-shadow', 'FR-066: The shadow system MUST be fast.\n');
+  await served(workspace.root, 'specs/066-shadow', async url => {
+    await page.goto(url);
+    const editor = page.getByRole('textbox', { name: 'Source text editor' });
+    await expect(editor).toHaveValue('FR-066: The shadow system MUST be fast.\n');
+    await expect(page.getByTitle('specs/066-shadow/spec.md')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('combobox', { name: 'Local workspace feature' })).toHaveValue('specs/066-shadow');
+    await expect(page.getByRole('combobox', { name: 'Artifact set' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Save as new files' })).toHaveCount(0);
+    await expect(page.getByText(/^Engine \d+\.\d+\.\d+ · Rubric /)).toBeAttached();
+  });
+});
+
+test('the artifact set selector appears only when the loaded set has several features', async ({ page, workspace }) => {
+  await writeFile(join(workspace.root, 'AGENTS.md'), '# Agents\n\nFollow the specs.\n');
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  await page.goto(workspace.url);
+  const editor = page.getByRole('textbox', { name: 'Source text editor' });
+  await expect(editor).toHaveValue('FR-001: The first system MUST be fast.\n');
+  await expect(page.getByRole('combobox', { name: 'Artifact set' })).toHaveCount(0);
+  await writeFeature(workspace.root, 'specs/002-second', 'FR-002: The second system MUST be fast.\n');
+  // A Spec Kit template sorts first by path, but the set opens on the first feature's spec.
+  await mkdir(join(workspace.root, '.specify', 'templates'), { recursive: true });
+  await writeFile(join(workspace.root, '.specify', 'templates', 'spec-template.md'), '# Feature Specification: [FEATURE NAME]\n');
+  await page.getByRole('button', { name: 'Reload local workspace', exact: true }).click();
+  const scope = page.getByRole('combobox', { name: 'Artifact set' });
+  await expect(scope).toBeVisible();
+  await expect(scope.locator('option')).toHaveText(['All documents', 'specs/001-first', 'specs/002-second', '.specify/templates']);
+  await expect(page.getByTitle('specs/001-first/spec.md')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('combobox', { name: 'Local workspace feature' })).toHaveCount(0);
+  await scope.selectOption('specs/002-second');
+  await expect(editor).toHaveValue('FR-002: The second system MUST be fast.\n');
+});
+
+test('a draft written before the workbench connects is not replaced', async ({ page, workspace }) => {
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  let release!: () => void;
+  const held = new Promise<void>(done => { release = done; });
+  await page.route('**/api/session', async route => { await held; await route.continue(); });
+  const reads: string[] = [];
+  page.on('request', request => { if (request.url().includes('/api/workspace')) reads.push(request.url()); });
+  await page.goto(workspace.url);
+  const editor = page.getByRole('textbox', { name: 'Source text editor' });
+  await editor.fill('FR-900: My draft MUST stay.');
+  const indexed = page.waitForResponse('**/api/features');
+  release();
+  await indexed;
+  await expect(page.getByText('Local workspace connected')).toBeAttached();
+  await expect(editor).toHaveValue('FR-900: My draft MUST stay.');
+  expect(reads).toEqual([]);
+});
+
+test('pasted text written before the workbench connects is not replaced', async ({ page, workspace }) => {
+  await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
+  let release!: () => void;
+  const held = new Promise<void>(done => { release = done; });
+  await page.route('**/api/session', async route => { await held; await route.continue(); });
+  const reads: string[] = [];
+  page.on('request', request => { if (request.url().includes('/api/workspace')) reads.push(request.url()); });
+  await page.goto(workspace.url);
+  await page.getByRole('button', { name: 'Paste text', exact: true }).click();
+  const draft = page.getByRole('textbox', { name: 'Specification text', exact: true });
+  await draft.fill('FR-901: My pasted draft MUST stay.');
+  const indexed = page.waitForResponse('**/api/features');
+  release();
+  await indexed;
+  await expect(page.getByText('Local workspace connected')).toBeAttached();
+  await expect(draft).toHaveValue('FR-901: My pasted draft MUST stay.');
+  await expect(page.getByTitle('specs/booking/spec.md')).toBeAttached();
+  expect(reads).toEqual([]);
 });

@@ -10,6 +10,7 @@ import { importGitHub } from './node/github.js';
 import { startServer } from './node/server.js';
 import { terminalSummary } from './integration.js';
 import { builderSchema, proposalSchema } from './node/schemas.js';
+import { READ_LIMIT } from './core/artifacts.js';
 async function main() {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: { json: { type: 'boolean' }, min: { type: 'string' }, root: { type: 'string' }, port: { type: 'string' }, output: { type: 'string' }, answers: { type: 'string' }, proposal: { type: 'string' }, line: { type: 'string' }, replacement: { type: 'string' }, reason: { type: 'string' }, feature: { type: 'string' }, path: { type: 'string', multiple: true }, changed: { type: 'boolean' }, base: { type: 'string' }, 'expect-hash': { type: 'string' }, apply: { type: 'boolean' }, 'fail-on-open': { type: 'boolean' }, 'require-complete': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
   const [command = 'help', explicitSource] = positionals;
@@ -61,7 +62,7 @@ async function main() {
     const changed = values.changed ? await changedFeatures(index, values.base) : undefined;
     if (command === 'features') {
       const features = changed ? index.features.filter(f => changed.includes(f.id)) : index.features;
-      console.log(values.json ? JSON.stringify({ root: index.root, mode: index.mode, focus: index.focus, total: index.entries.length, features }, null, 2)
+      console.log(values.json ? JSON.stringify({ version: PRODUCT_VERSION, root: index.root, mode: index.mode, focus: index.focus, total: index.entries.length, limit: READ_LIMIT, features }, null, 2)
         : [`Workspace: ${index.root} (${index.mode}${index.focus ? `, focus ${index.focus}` : ''})`, ...features.map(f => `${f.id}  ${f.framework} · ${f.artifacts} artifacts`)].join('\n') || 'No features.');
       return;
     }

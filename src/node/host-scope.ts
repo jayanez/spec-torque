@@ -1,9 +1,11 @@
 import { indexWorkspace, resolveImplicitRoot, type WorkspaceIndex } from './scope.js';
 import type { ScopeRequest } from './workspace.js';
+import { featureLabel, LABELS } from '../core/presentation.js';
+import { fitsReadLimit } from '../core/artifacts.js';
+export { READ_LIMIT, fitsReadLimit } from '../core/artifacts.js';
 
 /** A scope chosen in a host: everything, one feature, a folder, or the features changed on the branch. */
 export type HostScope = { kind: 'all' } | { kind: 'feature'; id: string } | { kind: 'path'; path: string } | { kind: 'changed'; base?: string };
-export const READ_LIMIT = 500;
 
 /** Indexes the work tree that contains a host's working directory, focused on it when it is a subfolder. */
 export async function hostIndex(directory: string): Promise<WorkspaceIndex> {
@@ -11,7 +13,6 @@ export async function hostIndex(directory: string): Promise<WorkspaceIndex> {
   return indexWorkspace(root, focus);
 }
 
-export const fitsReadLimit = (index: WorkspaceIndex) => index.entries.length <= READ_LIMIT;
 
 /** Command arguments: a feature ID, a folder, or `--changed [base]`. Empty text selects nothing. */
 export function parseScopeArgs(text: string | undefined, index: WorkspaceIndex): HostScope | undefined {
@@ -39,22 +40,31 @@ export function scopeRequest(scope: HostScope): ScopeRequest {
 
 export function scopeLabel(scope: HostScope | undefined): string {
   if (!scope) return 'not selected';
-  return scope.kind === 'all' ? 'All documents' : scope.kind === 'feature' ? scope.id
-    : scope.kind === 'path' ? 'Folder · ' + scope.path : 'Changed on this branch' + (scope.base ? ` (vs ${scope.base})` : '');
+  return scope.kind === 'all' ? LABELS.allDocuments : scope.kind === 'feature' ? scope.id
+    : scope.kind === 'path' ? LABELS.folder + scope.path : LABELS.changed + (scope.base ? ` (vs ${scope.base})` : '');
 }
 
 export interface ScopeChoice { title: string; value: string; category: string }
-/** Selector entries: everything when it fits, the branch's changes, then features with known layouts first. */
-export function scopeChoices(index: WorkspaceIndex): ScopeChoice[] {
+/**
+ * Selector entries: everything when it fits, the branch's changes, then features with known
+ * layouts first. A current folder or based branch scope is listed too, so a selector can always
+ * show the scope in use.
+ */
+export function scopeChoices(index: WorkspaceIndex, current?: HostScope): ScopeChoice[] {
   return [
-    ...(fitsReadLimit(index) ? [{ title: 'All documents', value: 'all', category: 'Scope' }] : []),
-    { title: 'Changed on this branch', value: 'changed', category: 'Scope' },
-    ...index.features.map(f => ({ title: f.id, value: 'f:' + f.id, category: f.layout ? 'Features' : 'Other documents' })),
+    ...(current?.kind === 'path' ? [{ title: scopeLabel(current), value: scopeValue(current), category: 'Scope' }] : []),
+    ...(fitsReadLimit(index) ? [{ title: LABELS.allDocuments, value: 'all', category: 'Scope' }] : []),
+    { title: LABELS.changed, value: 'changed', category: 'Scope' },
+    ...(current?.kind === 'changed' && current.base ? [{ title: scopeLabel(current), value: scopeValue(current), category: 'Scope' }] : []),
+    ...index.features.map(f => ({ title: featureLabel(f), value: 'f:' + f.id, category: f.layout ? 'Features' : 'Other documents' })),
   ];
 }
 export function choiceScope(value: string): HostScope {
-  return value === 'all' ? { kind: 'all' } : value === 'changed' ? { kind: 'changed' } : { kind: 'feature', id: value.replace(/^f:/, '') };
+  return value === 'all' ? { kind: 'all' } : value === 'changed' ? { kind: 'changed' }
+    : value.startsWith('c:') ? { kind: 'changed', base: value.slice(2) }
+    : value.startsWith('p:') ? { kind: 'path', path: value.slice(2) } : { kind: 'feature', id: value.replace(/^f:/, '') };
 }
 export function scopeValue(scope: HostScope | undefined): string {
-  return !scope ? '' : scope.kind === 'feature' ? 'f:' + scope.id : scope.kind;
+  return !scope ? '' : scope.kind === 'feature' ? 'f:' + scope.id : scope.kind === 'path' ? 'p:' + scope.path
+    : scope.kind === 'changed' && scope.base ? 'c:' + scope.base : scope.kind;
 }

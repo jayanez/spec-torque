@@ -86,13 +86,13 @@ async function withWorkbench(browser, root, recordVideo, fn) {
 function workflow(page, lang) {
   const label = (en, es) => lang === 'es' ? es : en;
   const button = (en, es) => page.getByRole('button', { name: label(en, es), exact: true });
-  const load = () => button('Load local workspace', 'Cargar proyecto local').click();
+  const load = () => button('Reload local workspace', 'Recargar proyecto local').click();
   return {
     button,
     load,
     async prepare() {
       await page.getByRole('button').filter({ hasText: 'Unbounded wording:' }).filter({ hasText: fixtureFile + ':5' }).click();
-      await page.getByRole('textbox', { name: label('Proposed wording', 'Texto propuesto') }).fill(styles[lang].line);
+      await page.getByRole('textbox', { name: label('Proposed replacement', 'Texto propuesto') }).fill(styles[lang].line);
       await button('Review difference', 'Revisar diferencia').click();
       await expect(page.locator('ins')).toHaveText(styles[lang].line);
     },
@@ -101,7 +101,9 @@ function workflow(page, lang) {
       await button('Accept change', 'Aceptar cambio').click();
     },
     async loadScoped() {
-      if (lang === 'es') await page.getByRole('button', { name: 'Spanish', exact: true }).click();
+      // Let the load on connect finish, so the explicit reload below is the only one in flight.
+      await page.getByTitle(fixtureFile).first().waitFor();
+      if (lang === 'es') await page.getByRole('button', { name: 'Español · Switch to Spanish', exact: true }).click();
       await load();
       await expect(page.getByRole('status')).toContainText(label('Artifacts loaded.', 'Documentos cargados.'));
       const scope = page.getByLabel(label('Artifact set', 'Conjunto de documentos'));
