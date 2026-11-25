@@ -45,10 +45,11 @@ async function assess(engine: Engine, files: Map<string, string> | Record<string
     dimensions: Object.fromEntries(report.dimensions.map(d => [d.id, d.score])),
     findings, decisions: report.decisions.length,
     findingKeys: report.findings.map(f => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}`).sort(),
-    // H85: finding identity with its line text, for removed/added finding lists.
-    findingLines: report.findings.map(f => ({ key: `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`, text: f.evidence[0]?.text ?? '' })),
+    // H85: structured findings with their line text, for removed/added finding lists.
+    findingLines: report.findings.map(f => ({ practiceId: f.practiceId, path: f.evidence[0]?.path ?? '', line: f.evidence[0]?.line ?? 0, message: f.message, text: f.evidence[0]?.text ?? '' })),
   };
 }
+const findingKey = (f: { practiceId: string; path: string; line: number; message: string }) => `${f.practiceId}|${f.path}|${f.line}|${f.message}`;
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h6-'));
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
 const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'b')), candidate: await archiveEngine(revisions.candidate, join(temp, 'c')) };
@@ -102,10 +103,9 @@ if (mode === 'synthetic') {
         if (c.dimensions[id] !== null && b.dimensions[id] !== null && c.dimensions[id]! < b.dimensions[id]!) totals.dimensionsDown++;
       }
       totals.decisionsAdded += c.decisions - b.decisions;
-      const keys = (r: NonNullable<typeof b>) => new Set(r.findingLines.map(f => f.key));
-      const [bKeys, cKeys] = [keys(b), keys(c)];
-      const findingsRemoved = b.findingLines.filter(f => !cKeys.has(f.key));
-      const findingsAdded = c.findingLines.filter(f => !bKeys.has(f.key));
+      const [bKeys, cKeys] = [b, c].map(r => new Set(r.findingLines.map(findingKey)));
+      const findingsRemoved = b.findingLines.filter(f => !cKeys.has(findingKey(f)));
+      const findingsAdded = c.findingLines.filter(f => !bKeys.has(findingKey(f)));
       if (added.length || changes.length || Object.keys(findingDelta).length || findingsRemoved.length || findingsAdded.length) {
         totals.changedFeatures++;
         detail.push({ root: root.id, repository: root.repository, sha, feature, added, changes, findingDelta, findingsRemoved, findingsAdded,

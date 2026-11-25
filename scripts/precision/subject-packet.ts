@@ -9,6 +9,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { sample } from './prose.js';
 import { rootSchema } from './sources.js';
 
 const { values } = parseArgs({ options: {
@@ -18,34 +19,35 @@ const { values } = parseArgs({ options: {
 if (!values.detail || !values.roots || !values.out) throw new Error('Use: subject-packet.ts --detail <h6-scan.json> --roots <roots.json> --out <dir>');
 const roots = rootSchema.parse(JSON.parse(await readFile(values.roots, 'utf8')));
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
-type Finding = { key: string; text: string };
+type Finding = { practiceId: string; path: string; line: number; message: string; text: string };
 const scan = JSON.parse(await readFile(values.detail, 'utf8')) as { detail: { root: string; sha: string; feature: string; findingsRemoved: Finding[]; findingsAdded: Finding[] }[] };
-
-// Same deterministic generator as the H3a, H5 and H6 packets.
-let state = Number(values.seed);
-const random = () => (state = (state * 1103515245 + 12345) % 2147483648) / 2147483648;
-const shuffle = <T>(items: T[]) => { const pool = [...items]; const out: T[] = []; while (pool.length) out.push(pool.splice(Math.floor(random() * pool.length), 1)[0]); return out; };
 
 const PROPOSITION = 'The subject of this line is a bare pronoun: the reader must look outside the line to know what the requirement is about.';
 // One item per distinct trimmed line text; the first occurrence supplies the context.
 const distinct = new Map<string, { root: string; sha: string; feature: string; path: string; line: number; occurrences: number }>();
-for (const d of scan.detail) for (const f of d.findingsRemoved.filter(f => f.key.startsWith('E1.3|'))) {
-  const [, path, line] = f.key.split('|');
+for (const d of scan.detail) for (const f of d.findingsRemoved.filter(f => f.practiceId === 'E1.3')) {
   const seen = distinct.get(f.text.trim());
   if (seen) seen.occurrences++;
-  else distinct.set(f.text.trim(), { root: d.root, sha: d.sha, feature: d.feature, path, line: Number(line), occurrences: 1 });
+  else distinct.set(f.text.trim(), { root: d.root, sha: d.sha, feature: d.feature, path: f.path, line: f.line, occurrences: 1 });
 }
-const chosen = shuffle([...distinct.values()]).slice(0, Number(values.sample));
+// The same seeded generator as the H3a, H5 and H6 packets, drawn without replacement.
+const chosen = sample([...distinct.values()], Number(values.sample), Number(values.seed));
 const around = Number(values.context);
-const git = (root: string, ...args: string[]) => execFileSync('git', ['-C', roots.find(r => r.id === root)!.path, ...args], { encoding: 'utf8', maxBuffer: 1 << 28 });
+const byId = new Map(roots.map(r => [r.id, r]));
+const files = new Map<string, string[]>();
+const linesOf = (root: string, sha: string, path: string) => {
+  const id = `${root}|${sha}|${path}`;
+  if (!files.has(id)) files.set(id, execFileSync('git', ['-C', byId.get(root)!.path, 'show', `${sha}:${path}`], { encoding: 'utf8', maxBuffer: 1 << 28 }).split(/\r?\n/));
+  return files.get(id)!;
+};
 
 const items: unknown[] = []; const key: unknown[] = [];
 for (const change of chosen) {
   const { path, line } = change;
-  const lines = git(change.root, 'show', `${change.sha}:${path}`).split(/\r?\n/);
+  const lines = linesOf(change.root, change.sha, path);
   const id = 'S' + String(items.length + 1).padStart(3, '0');
   items.push({
-    id, repository: roots.find(r => r.id === change.root)!.repository, revision: change.sha, path, line, proposition: PROPOSITION,
+    id, repository: byId.get(change.root)!.repository, revision: change.sha, path, line, proposition: PROPOSITION,
     context: lines.slice(Math.max(0, line - 1 - around), line + around).map((text, index) => `${Math.max(1, line - around) + index}${Math.max(1, line - around) + index === line ? ' >' : '  '} ${text}`),
   });
   key.push({ id, direction: 'removed', practice: 'E1.3', root: change.root, feature: change.feature, occurrences: change.occurrences });

@@ -156,11 +156,9 @@ export async function clarifyE12(
   const after = text.slice(index + cue.length);
   // #85: a quoted or code-formatted label after a label noun names an option or class, even when
   // the cue is one word of a longer label (the class `easily copied`).
-  if ([...text.matchAll(namedLabel)].some(m => {
-    const [start, end] = m.indices?.[1] ?? [0, 0];
-    return start < index && index + cue.length < end;
-  })) {
-    return decline('named-option');
+  for (const { indices } of text.matchAll(namedLabel)) {
+    const [start, end] = indices![1]!;
+    if (start < index && index + cue.length < end) return decline('named-option');
   }
 
   // Omit labels from the language cues while keeping the original evidence and offsets.
