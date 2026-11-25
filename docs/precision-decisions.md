@@ -806,3 +806,34 @@ of the removed findings. The owner fixes the threshold before labeling; the H3a
 packet builder (`scripts/precision/definitions-packet.ts`) applies unchanged to
 the H5 scan.
 
+
+### H5 adjudication — **fails the threshold; owner decision pending**
+
+The owner fixed the threshold on 2026-11-25 (`8131ae9`), before labeling: at most 2
+of the 38 removed findings may be agreed true problems. Two independent agent
+sessions labeled the full packet separately, without engine output, the key, the
+provisional review or each other's labels.
+
+| Removed (38) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 31 | 3 | 4 | 0 |
+
+Cohen's kappa 0.55.
+
+- **Agreed positive (3), over the threshold.** Each is a prose paragraph or item
+  that states its own rule, where the only ID in the unit is a citation:
+  `The LLM response must be a valid SKILL.md. … (see FR-006)`; a design paragraph
+  that "satisfies FR-006"; a conditional rule beside `(NFR-001)`. H5 counts the
+  unit as identified because any ID in it counts.
+- **Disputed (4).** Items of "Never" lists or notes that end with a trace tag
+  (`(FR-009)`, `(FR-014)`, `(FR-020)`, "per FR-005"). One reviewer read the tag as
+  the item's identifier; the other read it as a cross-reference.
+- The 31 agreed negatives are continuations of items or paragraphs led by a
+  defining ID, and the 2 duplicates.
+
+**Failing construction.** Unit identification by a cited ID. All 7 positive or
+disputed items fall in it, and none of the 31 agreed negatives depends on it.
+
+**Decision.** Pending owner choice under the H5 stop rule: a narrowed H5a (a unit
+counts as identified only when its first line has a defining ID, so citations no
+longer identify wrapped lines), or stopping.
