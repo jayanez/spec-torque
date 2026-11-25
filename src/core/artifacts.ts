@@ -8,6 +8,8 @@ const bmadTask = /(?:^|\/)_(?:bmad|bmad-output)\/(?:planning-artifacts\/(?:[^/]+
 const zeeContext = /(?:^|\/)\.spec\/(?:who|where|when|why|upstream|downstream)\.md$/i;
 const zeePlan = /(?:^|\/)\.spec\/how\.md$/i;
 const specKitDataModel = /(?:^|\/)specs\/\d{3}-[^/]+\/data-model\.md$/i;
+// H6 (#88): the Spec Kit quickstart holds the feature's run and test commands.
+const specKitQuickstart = /(?:^|\/)specs\/\d{3}-[^/]+\/quickstart\.md$/i;
 const byName = /spec|requirement|prd|plan|design|task|todo|agents|claude|gemini|constitution|architecture|what|where|when|who|why|how/i;
 
 /** Path-derived classification. Content can only refine the framework label (Spec Kitty banner). */
@@ -49,7 +51,7 @@ export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const legacyPath = basenameOnly ? normalized.slice(normalized.lastIndexOf('/') + 1) : normalized;
   return /\.md$/i.test(normalized) && (byName.test(legacyPath) || kittyWorkPackage.test(normalized) ||
     openSpecProposal.test(normalized) || bmadTask.test(normalized) || zeeContext.test(normalized) ||
-    specKitDataModel.test(normalized));
+    specKitDataModel.test(normalized) || specKitQuickstart.test(normalized));
 }
 export async function contentHash(content: string): Promise<string> {
   const bytes = new TextEncoder().encode(content);
