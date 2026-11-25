@@ -631,3 +631,123 @@ node --import tsx scripts/precision/audit-denominators.ts --fixture <f.jsonl> --
 The public roots file lists repositories and pinned SHAs. The external inventory's
 non-MIT and unconfirmed-license sources were scanned only as restricted, so none of
 their text was stored. None of their text is copied into the corpus.
+
+### H3: requirement definitions in defining positions — **iterate (owner decision)**
+
+Tracking: [#83](https://github.com/jayanez/spec-torque/issues/83).
+- Pre-registered at `7eeefa0`.
+- The sources (8 repositories, `"### REQ-001"` and `"**REQ-001"` queries) and the
+  synthetic twins were frozen at `31f16af`.
+- The twin for mentions was amended at `57f87ac`, before the candidate existed,
+  because it contradicted the frozen policy.
+- Candidate: `6a33bee`, engine 0.1.8.
+
+| Gate | Result |
+|---|---|
+| 1. Synthetic twins (14 EN/ES) and existing minimal pairs | holds: 14 of 14 (0.1.4 meets 8), and no admission, E1.4 or E1.2 change in the minimal pairs |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh set review | **fails on added findings** |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** The candidate was compared with 0.1.4 across 1,369 Spec Kit features
+in 8 roots, 4 of which contribute changes. It:
+- removes 2,227 I1.2/I2.3 findings: 1,086 missing identifiers, 994 duplicates and
+  147 unresolved references;
+- adds 431 duplicates.
+
+**Gate 3, added findings.** Provisional review of 100 added findings, seed 42039:
+- 75 are traceability table rows whose first cell restates an ID already defined
+  by a heading (`| REQ-005 | T4 | S6 | INV-005 |`);
+- 10 are dotted sub-requirements (`- REQ-2.1: …`) read as their parent `REQ-2`;
+- 15 are other cases: prose lines that begin with a cited ID, and a few real
+  restatements.
+
+Most added findings are therefore false. **Removed findings**, provisional review
+of 100: they are predominantly mentions that were counted as duplicates and body
+lines under a defining heading. No lost true problem was identified, but the full
+labelled review was not completed because gate 3 had already failed.
+
+**Decision.** The candidate stays on its branch, unmerged. The failing
+constructions are first-cell table IDs and dotted sub-IDs. The owner decides
+between:
+- **H3a**: exclude table cells from defining positions, and stop an ID at a
+  following `.digit`. Pre-register it, freeze new twins and select a fresh set
+  before the candidate.
+- stopping H3.
+
+### H3a: no table-cell definitions, dotted IDs end before `.digit` — **stop; best candidate to adjudication (owner decision)**
+
+- Pre-registered at `0903db2`.
+- The sources (8 repositories, `"### FR-001"` and `"| REQ-001 |"` queries) and 20
+  twins were frozen at `5244317`.
+- Candidate: `7a476d1`, engine 0.1.9.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (20 EN/ES) and existing minimal pairs | holds: 20 of 20 (0.1.4 meets 8, H3 meets 14), and no admission, E1.4 or E1.2 change |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh set and H3 development set | **fails on added findings** |
+| 4. Evidence | holds |
+
+**Fresh set.** 192 features in 8 roots: 204 findings are removed and 12 added.
+- Removed: 192 duplicates, 10 missing identifiers and 2 unresolved references.
+  Provisional review of a sample of 100 (seed 42039): the removed duplicates are
+  mid-line mentions, checklist citations and repeated mentions of an ID already
+  defined in a list or table. No lost true problem was identified.
+- Added: all 12 duplicates are restatements, not real duplicates. There are two
+  kinds:
+  - a hard-wrapped continuation line that starts with the ID (`   FR-010.`);
+  - a list item that restates the ID in another spec-role document of the
+    feature (`requirements.md` traceability lists, `spec-compact.md`, PR
+    descriptions classified as spec).
+
+**H3 development set.** 1,369 features: 2,487 findings removed and 81 added, down
+from 431 added under H3. The added findings fall into the same two kinds.
+
+**Pilot repository (development data, all 83 features).** 975 of 1,269 I1.2/I2.3
+findings are removed: 777 unresolved references, 141 duplicates and 57 missing
+identifiers. 10 duplicates are added.
+
+**Decision.** Stop under the H3a stop rule. There is no H3b. H3a is the best
+candidate. It goes to independent adjudication under
+[precision adjudication](precision-adjudication.md), with these known limits:
+- an ID restated as the first token of a list item, or of a wrapped line, in
+  another spec-role document or later in the same one is counted as a second
+  definition;
+- spec-role classification of summary documents (compact specs, validation
+  reports, PR descriptions) is unchanged and outside H3.
+
+The owner decides on the product change after adjudication.
+
+### H3a adjudication — **holds; proposed for merge with known limits**
+
+The owner fixed the threshold on 2026-11-25 (`caba058`), before labeling: at most
+2 of 100 sampled removed findings may be agreed true problems.
+
+The packet was built at `156e895` from the H3a fresh-set scan: 100 removed
+findings (seed 42039) and all 12 added ones, shuffled. Two independent agent
+sessions labeled it separately. Neither saw engine output, the key, the code or
+the other's labels.
+
+| Direction | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Removed (100) | 100 | 0 | 0 | 0 |
+| Added (12) | 12 | 0 | 0 | 0 |
+
+- **Removed:** 0 of 100 are true problems, within the threshold. Reviewers
+  described the removed duplicates as the only definition of the ID, or as lines
+  that cite, restate or trace it: wrapped continuations, checklist ranges,
+  traceability cells, assumptions, plan steps and test descriptions. The 4
+  missing-identifier items sit under an enclosing ID heading; one of them rests
+  on an inference beyond the context window. The single unresolved reference has
+  a visible heading definition.
+- **Added:** all 12 are false duplicates, which confirms the known limit.
+
+**Limits of this adjudication.**
+- Both reviewers are sessions of the same model family; calibrating an
+  alternative second reviewer is tracked in #65.
+- The packet shows three lines of context and at most 8 same-ID occurrences.
+
+**Decision.** Propose H3a (engine 0.1.9) for merge. The known limits are recorded
+in the H3a entry above. The owner decides at review.
+

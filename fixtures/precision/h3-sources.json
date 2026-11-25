@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-24",
+  "purpose": "Fresh H3 confirmation set (requirement definitions). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"### REQ-001\" and \"**REQ-001\" in files named spec.md, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51 and #52, and the pilot repository owner, excluded; pinned to the default-branch head SHA.",
+  "unfilled": {},
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/modu-ai/moai-adk",
+      "commit": "1176c97f4fc080db9ca7ef08de4d2cea523680d4",
+      "license": "Apache-2.0",
+      "query": "\"### REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Darkbluelr/dev-playbooks-cn",
+      "commit": "2608f9c30f337beeeb5ede20d52ee96de1530e03",
+      "license": "MIT",
+      "query": "\"### REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/tomas-rampas/agentic-framework",
+      "commit": "b75853a747a3809f65a2f31aaf920fbbe5aa4e12",
+      "license": "Apache-2.0",
+      "query": "\"### REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/autopus-ai/autopus-adk",
+      "commit": "b5915abe6de92df42fdfb634152936fd5d1aff4a",
+      "license": "MIT",
+      "query": "\"### REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/PaulDuvall/ai-development-patterns",
+      "commit": "9340d0c341fb7231e6acd00383b69f2fc858b7cd",
+      "license": "MIT",
+      "query": "\"**REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/abdes/DroidNet",
+      "commit": "6d72d854f02777692c411ec58f19c9b310144b47",
+      "license": "MIT",
+      "query": "\"**REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/eencinasq/asdd-harness-kit",
+      "commit": "678312329ea3771aa56e24d76ef439f7a1516824",
+      "license": "MIT",
+      "query": "\"**REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/MichelKerkmeester/skilled-agent-harness_spec-driven-loops",
+      "commit": "ae0f718ddb9564aa4297639e75c65423747edb6d",
+      "license": "MIT",
+      "query": "\"**REQ-001\" filename:spec.md"
+    }
+  ]
+}

@@ -55,3 +55,46 @@ contains both a quoted example and a rule of its own is a `requirement`.
 
 With 100 sampled items, a 5% upper bound needs a low observed error rate. For
 example, about 1 erroneous lineage out of 95 or more passes, and 3 out of 60 do not.
+
+## H3a: requirement definitions (#83)
+
+H3a changes I1.2 and I2.3 findings, not admission. The labels and packet differ
+from the admission protocol above. The owner fixed the threshold on 2026-11-25,
+before any labeling.
+
+**Packet.** It is built from the H3a fresh-set scan with
+`scripts/precision/definitions-packet.ts`. It contains:
+- a seeded sample of 100 removed findings (seed 42039);
+- all 12 added findings.
+
+Each item has:
+- an opaque ID;
+- one proposition;
+- the target line with three lines of context on each side;
+- every line in the feature's spec documents that contains the same ID (at most 8).
+
+Item order is shuffled. Whether the candidate removed or added the finding, and
+both engines' outputs, are kept in a separate `key.json` that reviewers do not
+open.
+
+**Propositions.**
+
+| Finding | Proposition |
+|---|---|
+| Duplicate identifier | This line states a second, separate requirement under an ID that the same feature already uses for a different requirement. |
+| Missing identifier | This line states a requirement that has no stable identifier of its own and is not under an enclosing requirement heading that identifies it. |
+| Unresolved reference | The requirement ID cited on this line has no definition anywhere in the feature's specification documents. |
+
+Labels are `positive` (the proposition holds, so the finding is a true problem),
+`negative` and `unknown`, each with a one-line reason grounded in the supplied text.
+
+**Reviewers.** Two independent sessions label separately. They do not see engine
+output, the key, this conversation, implementation diffs or each other's labels.
+
+**Threshold.**
+- At most 2 of the 100 removed findings may be agreed `positive`; these are true
+  problems the candidate would lose.
+- Disputed items count against the threshold until the owner resolves them.
+- Added findings are reported. They are already recorded as a known limit and do
+  not gate the decision.
+
