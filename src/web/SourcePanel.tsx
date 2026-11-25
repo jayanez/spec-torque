@@ -4,11 +4,15 @@ import type { Artifact, ArtifactSet, Language } from '../core/types.js';
 import type { FeatureSummary } from '../core/artifacts.js';
 import { api } from './api.js';
 import { sampleSet } from './samples.js';
+import { FeatureCombobox } from './FeatureCombobox.js';
+import { roleLabel } from './i18n.js';
+import { PanelResizer, PanelToggle, type PanelLayout } from './Panels.js';
 const WHOLE_TREE = '*';
 interface LocalInfo { total: number; features: FeatureSummary[]; preselected: string | null }
 export type ImportKind = 'file' | 'workspace' | 'draft' | 'sample';
-export function SourcePanel({ set, selected, language, local, onLoad, canAutoLoad, onSelect, onError, onPasteDraftChange }: { set: ArtifactSet; selected: string; language: Language; local: boolean; onLoad: (set: ArtifactSet, kind?: ImportKind, auto?: boolean) => boolean; canAutoLoad: () => boolean; onPasteDraftChange: (dirty: boolean) => void; onSelect: (path: string) => void; onError: (text: string) => void }) {
-  const es = language === 'es'; const input = useRef<HTMLInputElement>(null);
+export function SourcePanel({ set, selected, language, local, pending, panels, onLoad, canAutoLoad, onSelect, onError, onPasteDraftChange }: { set: ArtifactSet; selected: string; language: Language; local: boolean; pending: boolean; panels: PanelLayout; onLoad: (set: ArtifactSet, kind?: ImportKind, auto?: boolean) => boolean; canAutoLoad: () => boolean; onPasteDraftChange: (dirty: boolean) => void; onSelect: (path: string) => void; onError: (text: string) => void }) {
+  const es = language === 'es'; const input = useRef<HTMLInputElement>(null); const aside = useRef<HTMLElement>(null);
+  const collapsed = panels.layout.left.collapsed;
   const [repo, setRepo] = useState(''); const localRequest = useRef(0); const [busy, setBusy] = useState(false); const [paste, setPaste] = useState(false); const [text, setText] = useState('');
   const [localInfo, setLocalInfo] = useState<LocalInfo>();
   // The loaded local scope: undefined before a load, null for the whole work tree, else a feature ID.
@@ -61,18 +65,39 @@ export function SourcePanel({ set, selected, language, local, onLoad, canAutoLoa
   const picker = local && localInfo && localInfo.features.length > 1 && localScope !== null;
   const fits = !!localInfo && fitsReadLimit(localInfo);
   async function remote() { setBusy(true); try { onLoad(await api<ArtifactSet>('github', { source: repo })); } catch (e) { onError((e as Error).message); } finally { setBusy(false); } }
-  return <aside className="source-panel"><h2>{es ? 'Documentos' : 'Artifacts'}</h2><p className="muted">{loadedFeatures.length === 1 && loadedFeatures[0].id !== '(root)' ? loadedFeatures[0].id : es ? 'Selecciona un conjunto por funcionalidad.' : 'Review one feature set at a time.'}</p>
-    <div className="source-actions"><button onClick={() => input.current?.click()}>{es ? 'Importar archivos' : 'Import files'}</button><button onClick={() => setPaste(!paste)}>{es ? 'Pegar texto' : 'Paste text'}</button></div>
+  return <aside ref={aside} className={'source-panel' + (collapsed ? ' collapsed' : '')}>
+    <div className="panel-header"><h2 className="panel-title">{es ? 'Documentos' : 'Artifacts'}</h2><PanelToggle side="left" panels={panels} es={es} controls="artifacts-panel-body"/></div>
+    {/* Only the content is disabled while an operation is pending; the panel can still collapse. */}
+    <fieldset disabled={pending} className="panel-body mutation-controls" id="artifacts-panel-body" hidden={collapsed}><p className="muted">{loadedFeatures.length === 1 && loadedFeatures[0].id !== '(root)' ? loadedFeatures[0].id : es ? 'Selecciona un conjunto por funcionalidad.' : 'Review one feature set at a time.'}</p>
+    <div className="source-actions"><button onClick={() => input.current?.click()}><ActionIcon name="import"/>{es ? 'Importar archivos' : 'Import files'}</button><button aria-expanded={paste} onClick={() => setPaste(!paste)}><ActionIcon name="paste"/>{es ? 'Pegar texto' : 'Paste text'}</button>
+    {local && <button className="workspace-button" onClick={() => void loadLocal(localScope)}><ActionIcon name="reload"/>{es ? 'Recargar proyecto local' : 'Reload local workspace'}</button>}</div>
     <input ref={input} type="file" accept=".md" multiple hidden onChange={e => { void files(e.target.files); e.target.value = ''; }}/>
     {paste && <div className="paste"><label className="field"><span>{es ? 'Texto de la especificación' : 'Specification text'}</span><textarea value={text} rows={5} onChange={e => { setText(e.target.value); onPasteDraftChange(Boolean(e.target.value)); }}/></label><button disabled={!text.trim()} onClick={() => { if (onLoad({ name: es ? 'Texto importado' : 'Pasted specification', artifacts: [classifyArtifact('spec.md', text)] }, 'draft')) { setText(''); onPasteDraftChange(false); setPaste(false); } }}>{es ? 'Analizar texto' : 'Analyze text'}</button></div>}
-    {local && <button className="workspace-button" onClick={() => void loadLocal(localScope)}>{es ? 'Recargar proyecto local' : 'Reload local workspace'}</button>}
-    {picker && <label className="field feature-load"><span>{es ? 'Funcionalidad del proyecto local' : 'Local workspace feature'}</span><select value={localScope ?? ''} onChange={e => { if (e.target.value) void loadLocal(e.target.value === WHOLE_TREE ? null : e.target.value); }}>{localScope === undefined && <option value="">{es ? 'Elige una funcionalidad' : 'Choose a feature'}</option>}{fits && <option value={WHOLE_TREE}>{es ? 'Todos los documentos' : 'All documents'}</option>}{localInfo.features.map(f => <option key={f.id} value={f.id}>{f.layout ? f.id : (es ? 'Otros · ' : 'Other · ') + f.id}</option>)}</select></label>}
+    {picker && <FeatureCombobox label={es ? 'Funcionalidad del proyecto local' : 'Local workspace feature'} placeholder={es ? 'Busca una funcionalidad' : 'Search features'}
+      empty={es ? 'Ninguna funcionalidad coincide.' : 'No feature matches.'} value={localScope === null ? WHOLE_TREE : localScope ?? ''}
+      options={[...(fits ? [{ value: WHOLE_TREE, label: es ? 'Todos los documentos' : 'All documents' }] : []), ...localInfo.features.map(f => ({ value: f.id, label: f.layout ? f.id : (es ? 'Otros · ' : 'Other · ') + f.id }))]}
+      onChange={value => void loadLocal(value === WHOLE_TREE ? null : value)}/>}
     {picker && localScope === undefined && !fits && <p className="fine">{es ? `Este proyecto tiene ${localInfo.total} documentos, más de ${READ_LIMIT} a la vez. Elige una funcionalidad.` : `This work tree has ${localInfo.total} documents, more than ${READ_LIMIT} read at once. Choose a feature.`}</p>}
     <label className="field repo-field"><span>{es ? 'Repositorio público o carpeta de GitHub' : 'Public GitHub repository or folder'}</span><input value={repo} onChange={e => setRepo(e.target.value)} placeholder="owner/repo"/></label><button disabled={!repo.trim() || busy || !local} onClick={() => void remote()}>{busy ? (es ? 'Importando…' : 'Importing…') : es ? 'Buscar documentos' : 'Find artifacts'}</button>
     {!local && <p className="fine">{es ? 'Abre el servidor local para conectar GitHub y archivos.' : 'Start the local server to connect GitHub and workspace files.'}</p>}
     <div className="file-heading"><strong>{set.artifacts.length} {es ? 'archivos' : 'files'}</strong><span>{new Set(set.artifacts.map(a => a.framework)).size} {es ? 'formatos' : 'formats'}</span></div>
-    <div className="file-list">{set.artifacts.map(a => <button key={a.path} title={a.path} aria-pressed={selected === a.path} className={selected === a.path ? 'selected' : ''} onClick={() => onSelect(a.path)}><span className="file-icon">{a.role === 'tasks' ? '☑' : a.role === 'plan' ? '◇' : '≡'}</span><span><strong>{a.path.split('/').at(-1)}</strong><small>{a.role} · {a.framework}{a.archived ? ' · archive' : ''}</small></span></button>)}</div>
+    <div className="file-list">{set.artifacts.map(a => <button key={a.path} title={a.path} aria-pressed={selected === a.path} className={selected === a.path ? 'selected' : ''} onClick={() => onSelect(a.path)}><span className="file-icon">{a.role === 'tasks' ? '☑' : a.role === 'plan' ? '◇' : '≡'}</span><span><strong>{a.path.split('/').at(-1)}</strong><small>{roleLabel(language, a.role)} · {a.framework}{a.archived ? (es ? ' · archivado' : ' · archive') : ''}</small></span></button>)}</div>
     <details className="samples"><summary>{es ? 'Explorar ejemplos' : 'Explore samples'}</summary><button onClick={() => onLoad(sampleSet(false, es), 'sample')}>{es ? 'Borrador ambiguo' : 'Ambiguous draft'}</button><button onClick={() => onLoad(sampleSet(true), 'sample')}>{es ? 'Spec + plan + tareas' : 'Spec + plan + tasks'}</button></details>
-    <p className="privacy-note">◉ {es ? 'Análisis local. Sin telemetría.' : 'Local analysis. No telemetry.'}</p>
+    <p className="privacy-note">◉ {es ? 'Análisis local. Sin telemetría.' : 'Local analysis. No telemetry.'}</p></fieldset>
+    <PanelResizer side="left" panels={panels} es={es} panel={() => aside.current}/>
   </aside>;
+}
+
+const ICON_PATHS = {
+  // Tray with an arrow coming in: bring files from disk.
+  import: 'M8 2v8m0 0L5 7m3 3 3-3M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2',
+  // Clipboard: paste text.
+  paste: 'M5.5 2.5h5v2h-5zM5.5 3.5h-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1M6 8h4M6 10.5h3',
+  // Circular arrow: read the local workspace again.
+  reload: 'M13 8a5 5 0 1 1-1.46-3.54M13 2.5v3h-3',
+};
+
+/** Decorative icon for a source action; the button text stays the accessible name. */
+function ActionIcon({ name }: { name: keyof typeof ICON_PATHS }) {
+  return <svg className="action-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d={ICON_PATHS[name]} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 }
