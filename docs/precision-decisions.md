@@ -1118,7 +1118,7 @@ Tracking: [#85](https://github.com/jayanez/spec-torque/issues/85).
 
 | Gate | Result |
 |---|---|
-| 1. Twins (13 EN/ES), H3a, H5a, H6 and H6a twins, minimal pairs | holds: 13 of 13 (0.1.12 meets 10, failing exactly the 3 determiner targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12; minimal pairs: 0 rows changed, 0 regressions |
+| 1. Twins (13 EN/ES), H3a, H5a, H6, H6a and H8 twins, minimal pairs | holds: 13 of 13 (the comparator meets 10, failing exactly the 3 determiner targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12, H8 10/10; minimal pairs: 0 rows changed, 0 regressions |
 | 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
 | 3. Fresh set | holds: 387 Spec Kit features in 8 roots; 28 E1.3 findings removed (28 distinct lines, 4 repositories), all on lines that start with `this` or `that`; nothing added; no status, dimension, open decision or artifact set changes. The #39 replay over all 399 features agrees: E1.3 only, 42 unique removals, 0 admission or E1.2/E1.4 decision changes. Before Amendment H85-2: 51 findings, 29 distinct lines, 5 repositories |
 | 4. Evidence | holds: 0 invalid |
