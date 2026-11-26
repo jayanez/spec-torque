@@ -18,6 +18,8 @@ export const VERSION_TARGETS = [
   json('integrations/vscode/package.json', m => m.version, (m, v) => { m.version = v; }),
   json('.claude-plugin/marketplace.json', m => m.plugins[0].source.version, (m, v) => { m.plugins[0].source.version = v; }),
   json('.agents/plugins/marketplace.json', m => m.plugins[0].source.version, (m, v) => { m.plugins[0].source.version = v; }),
+  json('server.json', m => m.version, (m, v) => { m.version = v; }),
+  json('server.json', m => m.packages[0].version, (m, v) => { m.packages[0].version = v; }),
   { path: 'CITATION.cff', kind: 'text', get: t => /^version: (.+)$/mu.exec(t)?.[1], set: (t, v) => t.replace(/^version: .+$/mu, 'version: ' + v) },
 ];
 
