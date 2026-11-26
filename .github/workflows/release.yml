@@ -84,7 +84,7 @@ jobs:
         with:
           node-version: '22.20.0'
           registry-url: https://registry.npmjs.org
-      - run: npm install -g npm@11 # trusted publishing needs npm 11.5 or later
+      - run: npm install -g npm@11.21.3 # trusted publishing needs npm 11.5 or later
       - uses: actions/download-artifact@v4
         with:
           name: release-${{ needs.build.outputs.version }}
@@ -100,7 +100,12 @@ jobs:
           set -euo pipefail
           flags=(--access public --provenance --tag "$CHANNEL")
           [[ "$DRY_RUN" == true ]] && flags+=(--dry-run)
-          for tgz in release/*.tgz; do npm publish "$tgz" "${flags[@]}"; done
+          for tgz in release/*.tgz; do
+            spec="$(tar -xOzf "$tgz" package/package.json | node -p 'const p = JSON.parse(require("fs").readFileSync(0, "utf8")); p.name + "@" + p.version')"
+            # A re-run after a partial failure skips what is already published.
+            if npm view "$spec" version >/dev/null 2>&1; then echo "$spec is already published"; continue; fi
+            npm publish "$tgz" "${flags[@]}"
+          done
 
   editors:
     needs: build
@@ -166,7 +171,12 @@ jobs:
           set -euo pipefail
           if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish server.json"; cat server.json; exit 0; fi
           ./mcp-publisher login github-oidc
-          ./mcp-publisher publish
+          # The registry checks mcpName against npm, which can lag a fresh publish.
+          for attempt in 1 2 3 4; do
+            ./mcp-publisher publish && exit 0
+            echo "Publish attempt $attempt failed; retrying in 30 s" >&2; sleep 30
+          done
+          exit 1
 
   github:
     needs: [build, npm, editors, mcp-registry]

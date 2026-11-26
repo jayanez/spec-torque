@@ -24,6 +24,14 @@
           "type": "positional",
           "value": "mcp"
         }
+      ],
+      "environmentVariables": [
+        {
+          "name": "SPECTORQUE_ROOT",
+          "description": "Project folder to analyze. Without it, the git work tree of the client's working directory is used.",
+          "isRequired": false,
+          "format": "filepath"
+        }
       ]
     }
   ]
