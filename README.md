@@ -6,6 +6,9 @@
 
 <p align="center">
   <a href="https://github.com/jayanez/spec-torque/releases"><img src="https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&amp;label=release&amp;logo=github" alt="Latest GitHub release, including previews"></a>
+  <a href="https://www.npmjs.com/package/spectorque"><img src="https://img.shields.io/npm/v/spectorque/next?label=npm%20next&amp;logo=npm" alt="npm prerelease version of spectorque"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque"><img src="https://img.shields.io/badge/VS%20Code%20Marketplace-jayanez.spectorque-007ACC" alt="SpecTorque on the VS Code Marketplace"></a>
+  <a href="https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque"><img src="https://img.shields.io/badge/MCP%20Registry-io.github.jayanez%2Fspectorque-1f6feb" alt="Listed in the MCP Registry"></a>
   <a href="https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/jayanez/spec-torque/check.yml?branch=develop&amp;label=Validate%20repository&amp;logo=githubactions&amp;logoColor=white" alt="Validate repository on develop"></a>
 </p>
 
@@ -30,13 +33,33 @@
 
 SpecTorque is a local workbench for writing and reviewing software specifications. It takes you from a rough idea or an existing Markdown workspace to a spec, plan and tasks with traceable requirements, reviewable changes and explicit open decisions.
 
-[Install](#install) · [Quickstart](#quickstart) · [What's new](#whats-new-in-030) · [How the engine works](#how-the-engine-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
+[Try it](#try-it-in-one-command) · [Install](#install) · [Quickstart](#quickstart) · [What's new](#whats-new-in-030) · [How the engine works](#how-the-engine-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
 
 **40 EPIC practice checks · 10 quality dimensions · English and Spanish · One deterministic engine**
 
+## Try it in one command
+
+From the root of a git repository that holds your specs (Node.js 22.20+):
+
+```bash
+npx -y spectorque serve --root .
+```
+
+It opens the workbench on a loopback address and analyzes that work tree locally: no account, model or telemetry. To give your coding agent the six read-only tools instead, add the MCP server in one line:
+
+```bash
+claude mcp add spectorque -- npx -y spectorque mcp
+```
+
+```bash
+codex mcp add spectorque -- npx -y spectorque mcp
+```
+
+Other MCP clients take the same command (`npx -y spectorque mcp`) as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)). The server analyzes the git work tree of the folder the client starts it in; set `SPECTORQUE_ROOT` to point it elsewhere. The npm package is published from [`release.yml`](.github/workflows/release.yml) with npm provenance. For the native panels (`/spectorque` in Claude Code, OpenCode and Pi, the Codex viewer, the VS Code workbench), install the plugin for your host below.
+
 ## Install
 
-SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` channel until the [pilot's stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. Every route runs the same local engine and needs **Node.js 22.20+** on `PATH`. No account, model or telemetry is needed for analysis.
+SpecTorque 0.3.0 is a **prerelease**, published on the `next` channel until the [pilot's stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. As the first version on npm it is also `latest` there, so `npm i spectorque` installs it. Every route runs the same local engine and needs **Node.js 22.20+** on `PATH`. No account, model or telemetry is needed for analysis.
 
 | Platform | Install | Then |
 |---|---|---|
@@ -47,8 +70,10 @@ SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` chann
 | **ThinkRail** (runs Pi) | Install the Pi package `pi-spectorque` from ThinkRail's extensions, or run the Pi command above | `/spectorque` in a trusted project |
 | **VS Code** | Extensions view → search **SpecTorque** → *Switch to Pre-Release*, or `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
 | **Cursor, Windsurf, VSCodium** | The VSIX from the [GitHub release](https://github.com/jayanez/spec-torque/releases) (*Install from VSIX…*); the Open VSX listing follows once the `jayanez` namespace is approved. Installable, not yet qualified | Same command |
-| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)); listed in the MCP Registry as `io.github.jayanez/spectorque` once published | Six read-only tools |
+| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)); listed in the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque) as `io.github.jayanez/spectorque` | Six read-only tools |
 | **Browser workbench / CLI** | `npx -y spectorque@0.3.0 serve --root .` | Open the printed loopback URL |
+
+**Where it is published:** [npm](https://www.npmjs.com/package/spectorque) (`spectorque`, `spectorque-claude`, `spectorque-codex`, `opencode-spectorque`, `pi-spectorque`), the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque) (pre-release), the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque), this repository's Claude Code and Codex catalogs, and the [GitHub release](https://github.com/jayanez/spec-torque/releases/tag/v0.3.0). The Pi and ThinkRail galleries list `pi-spectorque` from npm. Open VSX follows once its namespace is approved.
 
 Install details, updates and removal for each host are in the [integration guides](docs/integrations.md). Offline or air-gapped installs use the ZIP, VSIX and tarball assets of each [GitHub release](docs/releases.md). Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
 

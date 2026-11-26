@@ -16,15 +16,17 @@ Do these in order. Every publishing job in [`release.yml`](../.github/workflows/
 
 1. Run the `release` workflow manually (Actions → release → Run workflow) on the release branch `release/v<version>` with **dry_run** checked. Every job must pass; nothing is published.
 2. Merge the release branch into `main`, tag the merge commit and push the tag: `git tag v0.3.0 <merge-sha> && git push origin v0.3.0`. Approve the `release` environment when asked. A failed job can be re-run: packages already on npm are skipped. The jobs publish npm (`next`; npm also points `latest` at the first version of a new package, so `npm i spectorque` installs 0.3.0 until a stable release moves `latest`), the VS Code Marketplace and Open VSX (pre-release), the MCP Registry and the GitHub pre-release.
-3. On npmjs.com, add a **trusted publisher** to each of the five packages: GitHub Actions, repository `jayanez/spec-torque`, workflow `release.yml`, environment `release`. Then delete the `NPM_TOKEN` secret, revoke the token and set each package's publishing access to *Require two-factor authentication and disallow tokens*. Later releases authenticate through OIDC.
-4. Restore the registry badges in the README in the same change that records the publish: npm `next`, VS Code Marketplace and Open VSX. They were removed because they report errors until the packages exist.
+3. On npmjs.com, add a **trusted publisher** to each of the five packages (package → Settings → Trusted Publisher → GitHub Actions): owner `jayanez`, repository `spec-torque`, workflow `release.yml`, environment `release`, and tick **Allow npm publish**, because the workflow publishes directly rather than with `npm stage publish`. Each save asks for your password or security key. Then delete the `NPM_TOKEN` secret and revoke the token. Optionally set each package's publishing access to *Require two-factor authentication and disallow bypass 2fa tokens*.
+4. Restore the registry badges in the README in the same change that records the publish. The Open VSX badge waits for the Open VSX listing.
+
+A new npm trusted publisher stays *pending validation* until a publish through it succeeds, and lapses after about 48 hours without one. If no release follows within that window, edit or re-add it on each package before the next release. The 0.3.0 connections were added on 2026-11-26 and lapse on 2026-11-28 unless a release publishes before then.
 
 ## Each later release
 
 1. Open `release/v<version>` from `develop` and a pull request into `main`. Run the `release` workflow on that branch with **dry_run** checked and confirm every job passes.
 2. Merge into `main`, tag `v<version>` on the merge commit and push the tag, then merge `main` back into `develop`. Approve the `release` environment when asked.
 3. Check the listings: [npm](https://www.npmjs.com/package/spectorque?activeTab=versions), [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque), [Open VSX](https://open-vsx.org/extension/jayanez/spectorque), the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque) and the GitHub release.
-4. Install through each catalog on a clean profile: `claude plugin marketplace add jayanez/spec-torque` and `codex plugin marketplace add jayanez/spec-torque`. Record observed results in [compatibility](compatibility.md).
+4. Install through each catalog on a clean profile: `claude plugin marketplace add jayanez/spec-torque`, `codex plugin marketplace add jayanez/spec-torque` and `pi install npm:pi-spectorque@<version> --local`. Record observed results in [compatibility](compatibility.md).
 
 ## Directories and galleries
 
