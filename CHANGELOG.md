@@ -4,7 +4,7 @@
 
 ## 0.3.0 — 2026-11-26
 
-Product version 0.3.0, engine 0.1.16, rubric `epic-heuristic-1`. Published as a prerelease (npm `next`, VS Code Marketplace and Open VSX pre-release, GitHub pre-release) until the [stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. See [versioning and releases](docs/releases.md#versioning-and-releases).
+Product version 0.3.0, engine 0.1.16, rubric `epic-heuristic-1`. Published as a prerelease (npm `next`, VS Code Marketplace pre-release, GitHub pre-release; Open VSX once its namespace is approved) until the [stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. See [versioning and releases](docs/releases.md#versioning-and-releases).
 
 - Native marketplace distribution. Host packages are published to npm: `spectorque` (CLI and MCP), `spectorque-claude`, `spectorque-codex`, `opencode-spectorque` and `pi-spectorque`. The repository is a Claude Code marketplace (`.claude-plugin/marketplace.json`) and a Codex marketplace (`.agents/plugins/marketplace.json`) whose entries install the npm packages. OpenCode installs by listing `opencode-spectorque` under `plugins` in `cli.json`; Pi and ThinkRail install with `pi install npm:pi-spectorque`. The VS Code extension is prepared for the VS Code Marketplace and Open VSX with an icon, keywords, categories and links.
 - One product version. `npm run version:sync` copies the root version into every host manifest, both catalogs and `CITATION.cff`; `tests/manifests.test.ts` fails on drift. The VS Code manifest (was 0.1.0) and `CITATION.cff` (was 0.1.0) now follow the product version, and `npm run test:vscode` finds the VSIX by its manifest version.

@@ -13,7 +13,7 @@ SpecTorque 0.3.0 es una **versión preliminar**: los paquetes se publican en el 
 | OpenCode | Añade `"opencode-spectorque@0.3.0"` a `plugins` en `~/.config/opencode/cli.json` | `/spectorque` en una sesión |
 | Pi y ThinkRail | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
 | VS Code | Busca **SpecTorque** y elige *Switch to Pre-Release*, o `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
-| Cursor, Windsurf, VSCodium | La misma extensión desde Open VSX (instalable, aún sin cualificar) | El mismo comando |
+| Cursor, Windsurf, VSCodium | El VSIX de la [release de GitHub](https://github.com/jayanez/spec-torque/releases) (*Install from VSIX…*); en Open VSX cuando se apruebe el namespace `jayanez` (instalable, aún sin cualificar) | El mismo comando |
 | Navegador, CLI o cualquier cliente MCP | `npx -y spectorque@0.3.0 serve --root .` o `npx -y spectorque@0.3.0 mcp` | Abre la dirección local mostrada |
 
 Los recursos de cada versión para instalaciones sin conexión y la política de versiones están en [releases](releases.md). Desde el código fuente, con Node.js 22.20 o superior, ejecuta `npm ci --ignore-scripts` y `npm run build`, después `node dist/cli.js serve --root /ruta/absoluta/a/tu/proyecto`, y abre la dirección local mostrada.

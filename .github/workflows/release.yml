@@ -139,6 +139,8 @@ jobs:
           vsix="$(ls release/*.vsix)"
           pre=(); [[ "$CHANNEL" == next ]] && pre=(--pre-release)
           if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish $vsix ${pre[*]}"; exit 0; fi
+          # Open VSX issues tokens only for verified namespaces (docs/publishing.md).
+          if [[ -z "${OVSX_PAT:-}" ]]; then echo "::warning::OVSX_PAT is not set; Open VSX skipped"; exit 0; fi
           npx --yes "$OVSX" publish "$vsix" "${pre[@]}"
 
   mcp-registry:

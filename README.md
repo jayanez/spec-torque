@@ -46,7 +46,7 @@ SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` chann
 | **Pi** | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
 | **ThinkRail** (runs Pi) | Install the Pi package `pi-spectorque` from ThinkRail's extensions, or run the Pi command above | `/spectorque` in a trusted project |
 | **VS Code** | Extensions view → search **SpecTorque** → *Switch to Pre-Release*, or `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
-| **Cursor, Windsurf, VSCodium** | Same extension from [Open VSX](https://open-vsx.org/extension/jayanez/spectorque) (installable, not yet qualified) | Same command |
+| **Cursor, Windsurf, VSCodium** | The VSIX from the [GitHub release](https://github.com/jayanez/spec-torque/releases) (*Install from VSIX…*); the Open VSX listing follows once the `jayanez` namespace is approved. Installable, not yet qualified | Same command |
 | **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)); listed in the MCP Registry as `io.github.jayanez/spectorque` once published | Six read-only tools |
 | **Browser workbench / CLI** | `npx -y spectorque@0.3.0 serve --root .` | Open the printed loopback URL |
 
@@ -68,7 +68,7 @@ Open the printed loopback URL. Select the finding for `FR-001`, jump to its sour
 
 ## What's new in 0.3.0
 
-- **Native marketplace installs** for Claude Code and Codex (this repository is a marketplace for both), npm packages for OpenCode, Pi and ThinkRail, and the VS Code Marketplace and Open VSX for editors. One [release workflow](.github/workflows/release.yml) publishes them all from one commit with npm provenance.
+- **Native marketplace installs** for Claude Code and Codex (this repository is a marketplace for both), npm packages for OpenCode, Pi and ThinkRail, and the VS Code Marketplace for editors (Open VSX once its namespace is approved). One [release workflow](.github/workflows/release.yml) publishes them all from one commit with npm provenance.
 - **Engine 0.1.16** after the 0.2.x precision series: requirement IDs count only in a defining position (H3a), hard-wrapped continuations stay with their item (H5a), acceptance scenarios and validation tables count as verification evidence (H6, H6a), plan-local `R-n` labels and references qualified by another specification are no longer reported as undefined (H8, H9), demonstratives no longer read as pronoun subjects (H85), and Spec Kit `checklists/` are review context, not requirements (H7a). Each change went through the pre-registered replay, and those from engine 0.1.10 on show no change in corpus predictions; see [precision decisions](docs/precision-decisions.md).
 - **Work-tree-scoped discovery** with feature, folder and changed-on-branch scopes in every host, a shared presentation layer so every panel shows the same title, summary, finding card and disclaimer, and a refined workbench with collapsible, resizable panels.
 - **One product version** across the CLI, every host package, the catalogs and the citation, checked in CI. See the [changelog](CHANGELOG.md) and the [versioning policy](docs/releases.md#versioning-and-releases).
@@ -249,7 +249,7 @@ The basic workflow runs locally without an account, a model, a GPU or telemetry.
 
 ## Browser, CLI and coding agents
 
-The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode, Pi and ThinkRail, and the VS Code extension is also published to Open VSX for Cursor, Windsurf and VSCodium, which are not yet qualified. See the [native panels](#native-panels) and check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
+The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode, Pi and ThinkRail, and the VS Code extension installs in Cursor, Windsurf and VSCodium from its VSIX (Open VSX once the namespace is approved); they are not yet qualified. See the [native panels](#native-panels) and check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
 
 ```sh
 node dist/cli.js analyze fixtures/en-complete --json
