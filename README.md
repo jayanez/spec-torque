@@ -1,8 +1,22 @@
 # SpecTorque
 
 <p align="center">
+  <img src="docs/assets/brand/icon-128.png" width="72" height="72" alt="">
+</p>
+
+<p align="center">
   <a href="https://github.com/jayanez/spec-torque/releases"><img src="https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&amp;label=release&amp;logo=github" alt="Latest GitHub release, including previews"></a>
+  <a href="https://www.npmjs.com/package/spectorque"><img src="https://img.shields.io/npm/v/spectorque/next?label=npm%20next&amp;logo=npm" alt="npm prerelease version of spectorque"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque"><img src="https://img.shields.io/visual-studio-marketplace/v/jayanez.spectorque?label=VS%20Marketplace&amp;include_prereleases" alt="VS Code Marketplace version"></a>
+  <a href="https://open-vsx.org/extension/jayanez/spectorque"><img src="https://img.shields.io/open-vsx/v/jayanez/spectorque?label=Open%20VSX" alt="Open VSX version"></a>
   <a href="https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/jayanez/spec-torque/check.yml?branch=develop&amp;label=Validate%20repository&amp;logo=githubactions&amp;logoColor=white" alt="Validate repository on develop"></a>
+</p>
+
+<p align="center">
+  <a href="docs/releases.md#versioning-and-releases"><img src="https://img.shields.io/badge/product-0.3.0-173f4f" alt="Product version 0.3.0"></a>
+  <a href="#how-the-engine-works"><img src="https://img.shields.io/badge/engine-0.1.16-196d83" alt="Engine version 0.1.16"></a>
+  <a href="docs/rubric.md"><img src="https://img.shields.io/badge/rubric-epic--heuristic--1-196d83" alt="Rubric epic-heuristic-1"></a>
+  <a href=".nvmrc"><img src="https://img.shields.io/badge/node-%E2%89%A522.20-339933?logo=nodedotjs&amp;logoColor=white" alt="Node.js 22.20 or later"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
 </p>
 
@@ -19,13 +33,31 @@
 
 SpecTorque is a local workbench for writing and reviewing software specifications. It takes you from a rough idea or an existing Markdown workspace to a spec, plan and tasks with traceable requirements, reviewable changes and explicit open decisions.
 
-[Quickstart](#quickstart) · [How it works](#how-it-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
+[Install](#install) · [Quickstart](#quickstart) · [What's new](#whats-new-in-030) · [How the engine works](#how-the-engine-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
 
 **40 EPIC practice checks · 10 quality dimensions · English and Spanish · One deterministic engine**
 
+## Install
+
+SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` channel until the [pilot's stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. Every route runs the same local engine and needs **Node.js 22.20+** on `PATH`. No account, model or telemetry is needed for analysis.
+
+| Platform | Install | Then |
+|---|---|---|
+| **Claude Code** (CLI and Desktop Code tab) | `claude plugin marketplace add jayanez/spec-torque`<br>`claude plugin install spectorque@spectorque` | `/spectorque` |
+| **Codex** (CLI and Desktop) | `codex plugin marketplace add jayanez/spec-torque`<br>`codex plugin add spectorque@spectorque` | [Bind a trusted worktree](integrations/codex/README.md#install-and-bind-a-worktree), then `open_spectorque` |
+| **OpenCode** | Add `"opencode-spectorque@0.3.0"` to `plugins` in `~/.config/opencode/cli.json` (a terminal-only plugin) | `/spectorque` in a session |
+| **Pi** | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
+| **ThinkRail** (runs Pi) | Install the Pi package `pi-spectorque` from ThinkRail's extensions, or run the Pi command above | `/spectorque` in a trusted project |
+| **VS Code** | Extensions view → search **SpecTorque** → *Switch to Pre-Release*, or `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
+| **Cursor, Windsurf, VSCodium** | Same extension from [Open VSX](https://open-vsx.org/extension/jayanez/spectorque) (installable, not yet qualified) | Same command |
+| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)) | Six read-only tools |
+| **Browser workbench / CLI** | `npx -y spectorque@0.3.0 serve --root .` | Open the printed loopback URL |
+
+Install details, updates and removal for each host are in the [integration guides](docs/integrations.md). Offline or air-gapped installs use the ZIP, VSIX and tarball assets of each [GitHub release](docs/releases.md). Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
+
 ## Quickstart
 
-Requires **Node.js 22.20+** and npm.
+From source, with **Node.js 22.20+** and npm:
 
 ```sh
 git clone https://github.com/jayanez/spec-torque.git
@@ -35,9 +67,14 @@ npm run build
 node dist/cli.js serve --root fixtures/en-draft
 ```
 
-Open the printed loopback URL. Select the finding for `FR-001`, jump to its source line, and review the suggested clarification. To use your own Markdown workspace, replace `fixtures/en-draft` with its path.
+Open the printed loopback URL. Select the finding for `FR-001`, jump to its source line, and review the suggested clarification. To use your own Markdown workspace, replace `fixtures/en-draft` with its path. The [EN/ES pilot walkthrough](docs/pilot.md) ([Spanish](docs/pilot.es.md)) covers review and export step by step.
 
-Download the CLI package or a host integration from the [0.2.0 pilot prerelease](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0), or follow the [EN/ES pilot walkthrough](docs/pilot.md) and its [Spanish version](docs/pilot.es.md). See the [qualification record](docs/common-workbench-qualification.md) for observed results and remaining checks.
+## What's new in 0.3.0
+
+- **Native marketplace installs** for Claude Code and Codex (this repository is a marketplace for both), npm packages for OpenCode, Pi and ThinkRail, and the VS Code Marketplace and Open VSX for editors. One [release workflow](.github/workflows/release.yml) publishes them all from one commit with npm provenance.
+- **Engine 0.1.16** after the 0.2.x precision series: requirement IDs count only in a defining position (H3a), hard-wrapped continuations stay with their item (H5a), acceptance scenarios and validation tables count as verification evidence (H6, H6a), plan-local `R-n` labels and references qualified by another specification are no longer reported as undefined (H8, H9), demonstratives no longer read as pronoun subjects (H85), and Spec Kit `checklists/` are review context, not requirements (H7a). Each change went through the pre-registered replay, and those from engine 0.1.10 on show no change in corpus predictions; see [precision decisions](docs/precision-decisions.md).
+- **Work-tree-scoped discovery** with feature, folder and changed-on-branch scopes in every host, a shared presentation layer so every panel shows the same title, summary, finding card and disclaimer, and a refined workbench with collapsible, resizable panels.
+- **One product version** across the CLI, every host package, the catalogs and the citation, checked in CI. See the [changelog](CHANGELOG.md) and the [versioning policy](docs/releases.md#versioning-and-releases).
 
 ## See the difference
 
@@ -110,59 +147,68 @@ Find the host integration guides and copy the local MCP configuration for your p
 
 ## Native panels
 
-Each integration brings the same engine into the host you already use. The captures use the bundled booking draft or, in ThinkRail, a SpecTorque test checkout with repository fixtures. Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
+Each integration brings the same engine into the host you already use. `npm run docs:capture` regenerates the workbench, Codex viewer, Claude Code, OpenCode, Pi and VS Code captures from the bundled booking draft in real hosts with isolated profiles and no model calls; the desktop captures are recorded in [docs/assets](docs/assets/README.md). Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
 
-<details>
+<details open>
 <summary><strong>Claude Code (CLI)</strong> · <code>/spectorque</code> pane</summary>
 
-Read dimension scores and findings beside the conversation, refresh the analysis or open the common workbench. The pane calls no model. [Install for Claude Code CLI](docs/integrations.md#claude-code)
+Read dimension scores and the current finding beside the conversation, step through findings, propose a replacement, refresh the analysis or open the common workbench. The pane calls no model. [Install for Claude Code](docs/integrations.md#claude-code)
 
-[![SpecTorque pane beside the Claude Code prompt, showing dimension scores and the first finding](docs/assets/panels/claude.png)](docs/assets/panels/claude.png)
+[![SpecTorque 0.3.0 pane beside the Claude Code prompt, showing scope, dimension scores and the first of five findings](docs/assets/panels/claude.png)](docs/assets/panels/claude.png)
 
 </details>
 
 <details>
 <summary><strong>Claude Code Desktop</strong> · <code>/spectorque</code> pane</summary>
 
-Install the plugin from a local marketplace at project scope. Start a session in the Code tab, then run `/spectorque` to view dimension scores and findings in the native pane. Starting the session takes a model turn. The pane runs its analysis locally. [Install for Claude Desktop](docs/host-common-qualification.md#claude-desktop)
+Install the plugin from the marketplace, start a session in the Code tab, then run `/spectorque` to view dimension scores and findings in the native pane. Starting the session takes a model turn. The pane runs its analysis locally. [Install for Claude Desktop](docs/integrations.md#claude-code) · capture from the 0.2.0 qualification
 
 [![SpecTorque pane in Claude Code Desktop showing dimension scores and the first of five findings](docs/assets/panels/claude-desktop.png)](docs/assets/panels/claude-desktop.png)
 
 </details>
 
 <details>
-<summary><strong>Codex Desktop</strong> · inline viewer</summary>
+<summary><strong>Codex</strong> · inline viewer</summary>
 
-The viewer opens in the conversation from the project's local MCP server. Choose a finding, preview a change, then hand off to the local workbench to approve or export. Opening it takes one model turn. [Install the Codex Desktop viewer](integrations/codex/README.md)
+The viewer opens in the conversation from the project's local MCP server. Choose a scope and finding, preview a change, then hand off to the local workbench to approve or export. Opening it in Codex Desktop takes one model turn. The capture shows the viewer as Codex renders it, driven by a local MCP Apps host. [Install for Codex](integrations/codex/README.md) · [Codex Desktop capture](docs/assets/panels/codex-desktop.jpg)
 
-[![SpecTorque inline viewer in a Codex Desktop conversation](docs/assets/panels/codex.jpg)](docs/assets/panels/codex.jpg)
+[![SpecTorque 0.3.0 inline viewer with the summary, dimensions, finding card and change preview](docs/assets/panels/codex.png)](docs/assets/panels/codex.png)
 
 </details>
 
 <details>
 <summary><strong>OpenCode</strong> · <code>/spectorque</code> panel</summary>
 
-Press **e** for the exact source line, **r** for reviewed changes and **w** for the local workbench URL. [Install for OpenCode](docs/integrations.md#opencode)
+Press **s** for scope, **e** for the exact source line, **r** for reviewed changes and **w** for the local workbench URL. [Install for OpenCode](docs/integrations.md#opencode)
 
-[![SpecTorque panel in the OpenCode terminal UI with dimension scores and findings](docs/assets/panels/opencode.png)](docs/assets/panels/opencode.png)
-
-</details>
-
-<details>
-<summary><strong>Pi</strong> · <code>/spectorque</code> in ThinkRail</summary>
-
-Pi is shown through ThinkRail, a desktop host that runs Pi natively. Pick a finding to open its exact evidence, then review the before and after wording. The workspace in this capture is a SpecTorque test checkout, so it lists findings from the repository's own fixtures. [Install in ThinkRail](docs/host-common-qualification.md#thinkrail-desktop-with-pi-package) · [Install for Pi CLI](docs/integrations.md#pi)
-
-[![SpecTorque evidence picker in ThinkRail running Pi](docs/assets/panels/pi.jpg)](docs/assets/panels/pi.jpg)
+[![SpecTorque 0.3.0 panel in the OpenCode terminal UI with dimension scores and findings](docs/assets/panels/opencode.png)](docs/assets/panels/opencode.png)
 
 </details>
 
 <details>
-<summary><strong>VS Code</strong> · embedded workbench (preview)</summary>
+<summary><strong>Pi</strong> · <code>/spectorque</code> widget and finding picker</summary>
 
-The shared workbench opens in an editor tab, with findings that jump to source. [Install the VS Code preview](docs/integrations.md#vs-code-workbench)
+The widget shows the scope and dimension scores; pick a finding to open its exact evidence, then review the before and after wording. Headless runs print the same report without a model turn. [Install for Pi](docs/integrations.md#pi)
 
-[![SpecTorque workbench in a VS Code editor tab](docs/assets/panels/vscode.png)](docs/assets/panels/vscode.png)
+[![SpecTorque 0.3.0 widget and finding picker in the Pi terminal](docs/assets/panels/pi.png)](docs/assets/panels/pi.png)
+
+</details>
+
+<details>
+<summary><strong>ThinkRail</strong> · Pi package in a desktop host</summary>
+
+ThinkRail runs Pi natively and installs the same `pi-spectorque` package. `/spectorque` runs as a project extension command without a model turn: the widget line and the finding picker appear above the message box. [Install in ThinkRail](docs/integrations.md#thinkrail)
+
+[![SpecTorque 0.3.0 finding picker and summary in ThinkRail running Pi](docs/assets/panels/thinkrail.jpg)](docs/assets/panels/thinkrail.jpg)
+
+</details>
+
+<details>
+<summary><strong>VS Code</strong> · embedded workbench</summary>
+
+The shared workbench opens in an editor tab, with findings that jump to source. The capture is the end of the automated extension-host walkthrough, after a reviewed change was applied. [Install for VS Code](docs/integrations.md#vs-code-workbench)
+
+[![SpecTorque workbench in a VS Code editor tab after a reviewed change](docs/assets/panels/vscode.png)](docs/assets/panels/vscode.png)
 
 </details>
 
@@ -178,6 +224,20 @@ See the [integration guides](docs/integrations.md) for each host's behavior and 
 
 [Archify diagram source](docs/assets/workbench/workflow.archify.json)
 
+## How the engine works
+
+One deterministic TypeScript engine (`src/core`) runs in Node and the browser. The CLI, MCP server, workbench and every host adapter call it; adapters may change presentation, never scoring.
+
+1. **Discover.** Inside a git work tree, candidates come from `git ls-files` (tracked plus unignored drafts); elsewhere a bounded walk. A path-only index lists features without reading content, and only the selected scope (feature, folder or changed on the branch) is read, up to 500 artifacts. [Discovery criteria](docs/architecture.md#discovery-criteria)
+2. **Classify.** Layout hints for Spec Kit, Spec Kitty, OpenSpec, Kiro, BMAD, ZeeSpec and generic Markdown assign each file a role: spec, plan, tasks, instruction file, or context such as `quickstart.md` (validation evidence only) and Spec Kit `checklists/` (review context, never requirements).
+3. **Recognize requirements.** Normative words are recognized as whole words in English and Spanish (`MUST`, `SHALL`, `DEBE`, `DEBERÁ`…), keeping obligation, recommendation and permission apart. An ID defines a requirement only in a defining position; a hard-wrapped line belongs to the item it continues. [Normative recognition](docs/normative-recognition.md) · [Requirement classification](docs/requirement-classification.md)
+4. **Resolve references.** Plan and task references resolve inside the selected feature's ID namespace. Plan-local labels and references qualified by another specification are not reported as undefined.
+5. **Check 40 practices.** Explainable line and document rules for the 40 EPIC practices produce findings with the exact path, line and text as evidence. Each practice is supported, partial, missing, not applicable or unknown.
+6. **Score ten dimensions.** Supported = 1, partial = 0.5, missing = 0, averaged per dimension and rounded to 0–3. An unknown practice leaves its dimension unscored, and the /30 total appears only when every dimension is known. The assessment carries the engine and rubric versions and a SHA-256 revision of its inputs.
+7. **Refine with review.** A clarification question is offered only when the cited wording identifies a decision. A proposal changes one line, must preserve requirement IDs, quantities, obligations and negative clauses, is bound to the source hash, and is written only after explicit human approval. MCP never writes files.
+
+Precision changes follow a pre-registered replay against a frozen comparator and a labeled EN/ES corpus before they ship. [Architecture](docs/architecture.md) · [Rubric](docs/rubric.md) · [Precision method](docs/research.md#precision-method)
+
 ## From draft to reviewed handoff
 
 | Step | What you can do |
@@ -192,7 +252,7 @@ The basic workflow runs locally without an account, a model, a GPU or telemetry.
 
 ## Browser, CLI and coding agents
 
-The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode and Pi. The project also provides a VS Code workbench preview. See the [native panels](#native-panels) and check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
+The workbench, CLI and six read-only MCP tools share the same analysis engine. Integrations and portable skills cover Claude Code, Codex, OpenCode, Pi and ThinkRail, and the VS Code extension is also published to Open VSX for Cursor, Windsurf and VSCodium, which are not yet qualified. See the [native panels](#native-panels) and check the tested routes and versions before installing. [Integration guides](docs/integrations.md) · [Compatibility matrix](docs/compatibility.md)
 
 ```sh
 node dist/cli.js analyze fixtures/en-complete --json

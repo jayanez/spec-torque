@@ -6,6 +6,6 @@ const { archive } = await packageArchive({
   host: 'opencode',
   version: manifest.version,
   files: ['package.json', 'tui.tsx', 'README.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'],
-  directories: ['runtime', 'web-dist'],
+  directories: ['assets', 'runtime', 'web-dist'],
 });
 console.log(archive);

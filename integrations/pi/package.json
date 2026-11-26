@@ -1,10 +1,52 @@
 {
   "name": "pi-spectorque",
-  "version": "0.2.9",
+  "version": "0.3.0",
+  "description": "SpecTorque for Pi and ThinkRail: /spectorque review command, widget, reviewed refinements and three skills.",
   "type": "module",
+  "author": {
+    "name": "jayanez",
+    "url": "https://github.com/jayanez"
+  },
   "license": "Apache-2.0",
+  "homepage": "https://github.com/jayanez/spec-torque#readme",
+  "bugs": {
+    "url": "https://github.com/jayanez/spec-torque/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jayanez/spec-torque.git",
+    "directory": "integrations/pi"
+  },
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "keywords": [
-    "pi-package"
+    "pi-package",
+    "spectorque",
+    "specification",
+    "spec-driven-development",
+    "requirements",
+    "epic",
+    "mcp",
+    "skills",
+    "pi",
+    "pi-coding-agent",
+    "thinkrail"
+  ],
+  "files": [
+    "index.ts",
+    "runtime",
+    "web-dist",
+    "skills",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_NOTICES",
+    "assets"
   ],
   "pi": {
     "extensions": [
@@ -12,12 +54,13 @@
     ],
     "skills": [
       "./skills"
-    ]
+    ],
+    "image": "https://raw.githubusercontent.com/jayanez/spec-torque/develop/docs/assets/panels/pi.jpg"
   },
   "dependencies": {
     "zod": "^4.0.0"
   },
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": ">=1.0.0"
+    "@earendil-works/pi-coding-agent": "*"
   }
 }

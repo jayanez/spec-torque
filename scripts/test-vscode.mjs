@@ -4,10 +4,15 @@ import { spawn, spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, cp, writeFile } from 'node:fs/promises';
 import { resolve, join, basename } from 'node:path';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 const root = resolve(import.meta.dirname, '..');
+const vsixName = () => { const m = JSON.parse(readFileSync(join(root, 'integrations/vscode/package.json'), 'utf8')); return `${m.name}-${m.version}.vsix`; };
 const restricted = process.argv.includes('--restricted');
-await mkdir(join(root, '.spec-torque'), { recursive: true });
-const run = await mkdtemp(join(root, '.spec-torque', 'vscode-run-'));
+// VS Code's IPC socket lives in the user-data folder, and macOS limits socket paths to 103
+// characters, so the run uses a short temporary root rather than the checkout.
+const run = await mkdtemp(join(process.platform === 'win32' ? tmpdir() : '/tmp', 'stq-vscode-'));
 const workspace = join(run, 'workspace');
 await cp(join(root, 'fixtures/en-draft'), workspace, { recursive: true });
 await mkdir(join(run, 'user-data/User'), { recursive: true });
@@ -16,11 +21,13 @@ const probe = createServer();
 await new Promise(done => probe.listen(0, '127.0.0.1', done));
 const port = probe.address().port;
 await new Promise(done => probe.close(done));
-await build({ entryPoints: ['integrations/vscode/tests/host.ts'], bundle: true, platform: 'node', target: 'node22', format: 'cjs', external: ['vscode', 'playwright'], outfile: join(run, 'host.cjs') });
+await build({ entryPoints: ['integrations/vscode/tests/host.ts'], bundle: true, platform: 'node', target: 'node22', format: 'cjs', external: ['vscode'], outfile: join(run, 'host.cjs'),
+  // The harness runs outside the checkout, so Playwright is required by its absolute path.
+  plugins: [{ name: 'playwright-path', setup(b) { b.onResolve({ filter: /^playwright$/ }, () => ({ path: createRequire(import.meta.url).resolve('playwright'), external: true })); } }] });
 const executable = process.env.VSCODE_EXECUTABLE;
 if (!executable) throw new Error('Set VSCODE_EXECUTABLE to an installed VS Code executable; this test does not download or change your editor.');
 const [cli, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(executable);
-const installation = spawnSync(cli, [...cliArgs, '--user-data-dir', join(run, 'user-data'), '--extensions-dir', join(run, 'extensions'), '--install-extension', join(root, 'artifacts/spectorque-0.1.0.vsix')], { stdio: 'inherit', shell: process.platform === 'win32' });
+const installation = spawnSync(cli, [...cliArgs, '--user-data-dir', join(run, 'user-data'), '--extensions-dir', join(run, 'extensions'), '--install-extension', join(root, 'artifacts', vsixName())], { stdio: 'inherit', shell: process.platform === 'win32' });
 if (installation.error) throw installation.error;
 if (installation.status !== 0) throw new Error('VSIX installation failed.');
 const harness = join(run, 'harness');

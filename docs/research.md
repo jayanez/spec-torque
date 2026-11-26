@@ -162,6 +162,10 @@ correction to a lexical practice follows the precision process in
 Consensus, a research-paper index, arXiv, Context7, Claude Academy and Vercel
 documentation. Consensus rate limits reduced peer-reviewed coverage.
 
+## Precision method
+
+Engines 0.1.9 to 0.1.16 changed detection through a pre-registered replay rather than ad hoc rule edits ([#39](https://github.com/jayanez/spec-torque/issues/39)). Each hypothesis (H1 to H9) states the failure, the policy and the endpoint before any natural source is scanned. It is compared against a frozen comparator (engine 0.1.4, rubric `epic-heuristic-1`), with the 716 historical corpus units kept as regression controls. A candidate ships only when its gates hold on synthetic and natural roots and an adjudication of the changed predictions does not fail; otherwise it stops or is narrowed (H5 to H5a, H7 to H7a, and H9's reverted second rule). The shipped changes concern requirement admission, references and context roles, not scoring policy; from engine 0.1.10 on, each reports no change in corpus predictions. Labels so far come from a single provisional agent reviewer, so these results support the specific rule changes, not claims of human-level precision. [Replay protocol](precision-replay.md) · [Decisions and measurements](precision-decisions.md) · [Requirement classification](requirement-classification.md)
+
 ## Evaluation policy
 
 Measure detection precision/recall on independently reviewed EN/ES examples, false positives by format, preserved decisions, accepted/rejected proposals, time to first analysis and installation success. Separate original/synthetic cases, human labels, offline contracts and real-client results. No observed outcome yet establishes reduced implementation defects or international adoption.

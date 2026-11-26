@@ -23,3 +23,4 @@ integrations/claude/tsconfig.json
 /integrations/codex/LICENSE
 /integrations/codex/NOTICE
 /integrations/codex/THIRD_PARTY_NOTICES
+integrations/*/assets/

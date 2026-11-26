@@ -1,0 +1,21 @@
+{
+  "name": "spectorque",
+  "owner": {
+    "name": "jayanez",
+    "url": "https://github.com/jayanez"
+  },
+  "description": "SpecTorque preview: traceable review of agent-ready specifications for Claude Code.",
+  "plugins": [
+    {
+      "name": "spectorque",
+      "description": "Native review pane, author/review/refine skills and six read-only MCP tools backed by the shared SpecTorque engine (preview).",
+      "source": {
+        "source": "npm",
+        "package": "spectorque-claude",
+        "version": "0.3.0"
+      },
+      "category": "development",
+      "homepage": "https://github.com/jayanez/spec-torque#readme"
+    }
+  ]
+}
