@@ -1,6 +1,6 @@
 # Releases and installation
 
-SpecTorque 0.3.0 is the current **prerelease**. It is published to npm under the `next` dist-tag, to the VS Code Marketplace and Open VSX as a pre-release, and as a GitHub pre-release, until the [stable candidate gate](pilot-operations.md#stable-candidate-gate) passes. Earlier previews remain available: [0.2.0 pilot prerelease](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0) and [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0). Check the release's qualification record for supported host versions, operating systems and architectures.
+SpecTorque 0.3.0 is the current **prerelease**. It is published to npm under the `next` dist-tag, to the VS Code Marketplace as a pre-release (Open VSX follows once the `jayanez` namespace is approved), and as a GitHub pre-release, until the [stable candidate gate](pilot-operations.md#stable-candidate-gate) passes. Earlier previews remain available: [0.2.0 pilot prerelease](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0) and [0.1.0 executable preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0). Check the release's qualification record for supported host versions, operating systems and architectures.
 
 ## Install from the marketplaces
 
@@ -12,7 +12,7 @@ SpecTorque 0.3.0 is the current **prerelease**. It is published to npm under the
 | OpenCode | `opencode-spectorque` | Add `"opencode-spectorque@<version>"` to `plugins` in `~/.config/opencode/cli.json` |
 | Pi and ThinkRail | `pi-spectorque` | `pi install npm:pi-spectorque@<version>` |
 | VS Code | `jayanez.spectorque` | Marketplace, *Switch to Pre-Release*; or `code --install-extension jayanez.spectorque --pre-release` |
-| Cursor, Windsurf, VSCodium | `jayanez/spectorque` on Open VSX | The editor's extension view (installable, not yet qualified) |
+| Cursor, Windsurf, VSCodium | `spectorque-<version>.vsix` from the GitHub release; `jayanez/spectorque` on Open VSX once the namespace is approved | *Install from VSIX…* (installable, not yet qualified) |
 
 `<version>` is the release you install, `0.3.0` for this prerelease. The two catalogs pin the npm version they install, so a catalog update is the upgrade path for Claude Code and Codex.
 

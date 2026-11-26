@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           flags=(--access public --provenance --tag "$CHANNEL")
           [[ "$DRY_RUN" == true ]] && flags+=(--dry-run)
-          for tgz in release/*.tgz; do
+          for tgz in ./release/*.tgz; do # ./ keeps npm from reading release/x.tgz as a GitHub repo
             spec="$(tar -xOzf "$tgz" package/package.json | node -p 'const p = JSON.parse(require("fs").readFileSync(0, "utf8")); p.name + "@" + p.version')"
             # A re-run after a partial failure skips what is already published.
             if npm view "$spec" version >/dev/null 2>&1; then echo "$spec is already published"; continue; fi
@@ -139,6 +139,8 @@ jobs:
           vsix="$(ls release/*.vsix)"
           pre=(); [[ "$CHANNEL" == next ]] && pre=(--pre-release)
           if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish $vsix ${pre[*]}"; exit 0; fi
+          # Open VSX issues tokens only for verified namespaces (docs/publishing.md).
+          if [[ -z "${OVSX_PAT:-}" ]]; then echo "::warning::OVSX_PAT is not set; Open VSX skipped"; exit 0; fi
           npx --yes "$OVSX" publish "$vsix" "${pre[@]}"
 
   mcp-registry:
