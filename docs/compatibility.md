@@ -36,6 +36,20 @@ Observed on 2026-11-26 against the uncommitted 0.3.0 working tree, before public
 | Pi 1.6.1 | The same qualifier stops at the headless text report: with no model configured, Pi 1.6.1 writes a "No models available" warning to stderr, which the check requires to be empty. The SpecTorque report itself is unchanged. `pi install` of the extracted `pi-spectorque` tarball (`--local`) loaded the extension and the three skills; `/spectorque` showed the widget and finding picker offline. |
 | VS Code 1.147.0 | The VSIX built by `@vscode/vsce` 4.1.1 installed in an isolated extension host and passed `npm run test:vscode`. |
 
+## 0.3.0 installs from the public registries (macOS 27.2 arm64, Node 22.20.0)
+
+Observed on 2026-11-26 after release [v0.3.0](https://github.com/jayanez/spec-torque/releases/tag/v0.3.0), each in an isolated profile. They confirm that the published packages and catalogs install; they do not repeat the qualification runs above.
+
+| Route | Result |
+|---|---|
+| Claude Code 2.1.311 | With an isolated `CLAUDE_CONFIG_DIR`, `claude plugin marketplace add jayanez/spec-torque` and `claude plugin install spectorque@spectorque` installed `spectorque@spectorque` 0.3.0, enabled. |
+| Codex CLI 0.170.0 | With an isolated `CODEX_HOME`, `codex plugin marketplace add jayanez/spec-torque` and `codex plugin add spectorque@spectorque` installed 0.3.0 from npm with its runtime (`server.mjs`, `viewer.html`, `workbench.mjs`), skills and web assets. |
+| Pi 1.5.2 | `pi install npm:pi-spectorque@0.3.0 --local` in a scratch git project installed the package and recorded it in `.pi/settings.json`. |
+| npm CLI and MCP | `npx -y spectorque@0.3.0 --help` reports SpecTorque 0.3.0; `npx -y spectorque@0.3.0 mcp` answers `initialize` as server `spectorque` 0.3.0. |
+| Listings | npm: five packages at 0.3.0 (`next`, and `latest` as first versions). VS Code Marketplace: `jayanez.spectorque` 0.3.0 pre-release. MCP Registry: `io.github.jayanez/spectorque` 0.3.0. Open VSX: not published, namespace claim pending. |
+
+OpenCode was not reinstalled from npm in this pass.
+
 ## Detected layout hints
 
 | Family | Main hint | Caveat |

@@ -6,6 +6,9 @@
 
 <p align="center">
   <a href="https://github.com/jayanez/spec-torque/releases"><img src="https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&amp;label=release&amp;logo=github" alt="Latest GitHub release, including previews"></a>
+  <a href="https://www.npmjs.com/package/spectorque"><img src="https://img.shields.io/npm/v/spectorque/next?label=npm%20next&amp;logo=npm" alt="npm prerelease version of spectorque"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque"><img src="https://img.shields.io/badge/VS%20Code%20Marketplace-jayanez.spectorque-007ACC" alt="SpecTorque on the VS Code Marketplace"></a>
+  <a href="https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque"><img src="https://img.shields.io/badge/MCP%20Registry-io.github.jayanez%2Fspectorque-1f6feb" alt="Listed in the MCP Registry"></a>
   <a href="https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/jayanez/spec-torque/check.yml?branch=develop&amp;label=Validate%20repository&amp;logo=githubactions&amp;logoColor=white" alt="Validate repository on develop"></a>
 </p>
 
