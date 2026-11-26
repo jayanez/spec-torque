@@ -4,7 +4,7 @@ SpecTorque ayuda a crear, revisar y refinar especificaciones antes de entregarla
 
 ## Instalación
 
-SpecTorque 0.3.0 es una **versión preliminar**: los paquetes se publican en el canal `next` hasta superar el [gate de candidato estable](pilot-operations.md#stable-candidate-gate). Todas las rutas usan el mismo motor local y necesitan Node.js 22.20 o superior en el `PATH`.
+SpecTorque 0.3.0 es una **versión preliminar**, publicada en el canal `next` hasta superar el [gate de candidato estable](pilot-operations.md#stable-candidate-gate). Al ser la primera versión en npm también es `latest`, así que `npm i spectorque` la instala. Todas las rutas usan el mismo motor local y necesitan Node.js 22.20 o superior en el `PATH`.
 
 | Plataforma | Instalación | Después |
 |---|---|---|
@@ -14,7 +14,9 @@ SpecTorque 0.3.0 es una **versión preliminar**: los paquetes se publican en el 
 | Pi y ThinkRail | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
 | VS Code | Busca **SpecTorque** y elige *Switch to Pre-Release*, o `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
 | Cursor, Windsurf, VSCodium | El VSIX de la [release de GitHub](https://github.com/jayanez/spec-torque/releases) (*Install from VSIX…*); en Open VSX cuando se apruebe el namespace `jayanez` (instalable, aún sin cualificar) | El mismo comando |
-| Navegador, CLI o cualquier cliente MCP | `npx -y spectorque@0.3.0 serve --root .` o `npx -y spectorque@0.3.0 mcp` | Abre la dirección local mostrada |
+| Navegador, CLI o cualquier cliente MCP | `npx -y spectorque@0.3.0 serve --root .` o `npx -y spectorque@0.3.0 mcp`; en el [registro MCP](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque) como `io.github.jayanez/spectorque` | Abre la dirección local mostrada |
+
+**Dónde está publicado:** [npm](https://www.npmjs.com/package/spectorque) (los cinco paquetes), [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque) (pre-release), el registro MCP, los catálogos de Claude Code y Codex de este repositorio y la [release de GitHub](https://github.com/jayanez/spec-torque/releases/tag/v0.3.0). Las galerías de Pi y ThinkRail listan `pi-spectorque` desde npm. Open VSX llegará cuando se apruebe su namespace.
 
 Los recursos de cada versión para instalaciones sin conexión y la política de versiones están en [releases](releases.md). Desde el código fuente, con Node.js 22.20 o superior, ejecuta `npm ci --ignore-scripts` y `npm run build`, después `node dist/cli.js serve --root /ruta/absoluta/a/tu/proyecto`, y abre la dirección local mostrada.
 

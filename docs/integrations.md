@@ -12,7 +12,7 @@ Use this server configuration in a host's supported local MCP configuration. Fro
 {"mcpServers":{"spectorque":{"command":"node","args":["/absolute/spectorque/dist/mcp.js"],"env":{"SPECTORQUE_ROOT":"/absolute/project"}}}}
 ```
 
-Clients that browse the [MCP Registry](https://registry.modelcontextprotocol.io), such as the VS Code MCP gallery, find the same server as `io.github.jayanez/spectorque` once a release is published; [`server.json`](../server.json) is the entry.
+Clients that browse the [MCP Registry](https://registry.modelcontextprotocol.io), such as the VS Code MCP gallery, find the same server as `io.github.jayanez/spectorque`; [`server.json`](../server.json) is the entry.
 
 Without `SPECTORQUE_ROOT`, the server uses the git work tree of the host's project folder (`CLAUDE_PROJECT_DIR` or its working directory). See [discovery criteria](architecture.md#discovery-criteria). `discover_specs` with `index: true` lists features without reading content; `discover_specs`, `analyze_specs` and `export_report` accept one of `feature`, `paths` or `changed` (with optional `base`). The CLI offers the same through `spectorque features`, `--feature`, `--path` and `--changed [--base rev]`.
 

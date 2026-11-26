@@ -39,7 +39,7 @@ SpecTorque is a local workbench for writing and reviewing software specification
 
 ## Install
 
-SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` channel until the [pilot's stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. Every route runs the same local engine and needs **Node.js 22.20+** on `PATH`. No account, model or telemetry is needed for analysis.
+SpecTorque 0.3.0 is a **prerelease**, published on the `next` channel until the [pilot's stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. As the first version on npm it is also `latest` there, so `npm i spectorque` installs it. Every route runs the same local engine and needs **Node.js 22.20+** on `PATH`. No account, model or telemetry is needed for analysis.
 
 | Platform | Install | Then |
 |---|---|---|
@@ -50,8 +50,10 @@ SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` chann
 | **ThinkRail** (runs Pi) | Install the Pi package `pi-spectorque` from ThinkRail's extensions, or run the Pi command above | `/spectorque` in a trusted project |
 | **VS Code** | Extensions view → search **SpecTorque** → *Switch to Pre-Release*, or `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
 | **Cursor, Windsurf, VSCodium** | The VSIX from the [GitHub release](https://github.com/jayanez/spec-torque/releases) (*Install from VSIX…*); the Open VSX listing follows once the `jayanez` namespace is approved. Installable, not yet qualified | Same command |
-| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)); listed in the MCP Registry as `io.github.jayanez/spectorque` once published | Six read-only tools |
+| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)); listed in the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque) as `io.github.jayanez/spectorque` | Six read-only tools |
 | **Browser workbench / CLI** | `npx -y spectorque@0.3.0 serve --root .` | Open the printed loopback URL |
+
+**Where it is published:** [npm](https://www.npmjs.com/package/spectorque) (`spectorque`, `spectorque-claude`, `spectorque-codex`, `opencode-spectorque`, `pi-spectorque`), the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque) (pre-release), the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque), this repository's Claude Code and Codex catalogs, and the [GitHub release](https://github.com/jayanez/spec-torque/releases/tag/v0.3.0). The Pi and ThinkRail galleries list `pi-spectorque` from npm. Open VSX follows once its namespace is approved.
 
 Install details, updates and removal for each host are in the [integration guides](docs/integrations.md). Offline or air-gapped installs use the ZIP, VSIX and tarball assets of each [GitHub release](docs/releases.md). Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
 
