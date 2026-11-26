@@ -3,6 +3,7 @@
 ## Unreleased
 
 - 0.3.0 is published: npm (five packages), the VS Code Marketplace (pre-release), the MCP Registry and a GitHub pre-release. The npm `next` badge is back in the README, with link badges for the VS Code Marketplace (shields.io retired its version badge) and the MCP Registry; Open VSX follows once the `jayanez` namespace is approved.
+- The README and Spanish guide open with a one-command start: `npx -y spectorque serve --root .` for the workbench, and `claude mcp add` / `codex mcp add` lines for the MCP server, checked against Claude Code 2.1.311 and Codex CLI 0.170.0 in isolated profiles.
 - npm publishing now goes through trusted publishers on all five packages; the first-publish token is removed. The publishing checklist records the npm validation window and the *Allow npm publish* setting, and the public-registry installs are recorded in [compatibility](docs/compatibility.md).
 
 ## 0.3.0 — 2026-11-26

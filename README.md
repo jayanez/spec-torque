@@ -33,9 +33,29 @@
 
 SpecTorque is a local workbench for writing and reviewing software specifications. It takes you from a rough idea or an existing Markdown workspace to a spec, plan and tasks with traceable requirements, reviewable changes and explicit open decisions.
 
-[Install](#install) · [Quickstart](#quickstart) · [What's new](#whats-new-in-030) · [How the engine works](#how-the-engine-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
+[Try it](#try-it-in-one-command) · [Install](#install) · [Quickstart](#quickstart) · [What's new](#whats-new-in-030) · [How the engine works](#how-the-engine-works) · [Research basis](#why-wording-matters) · [Tested compatibility](docs/compatibility.md) · [Guía en español](docs/es.md)
 
 **40 EPIC practice checks · 10 quality dimensions · English and Spanish · One deterministic engine**
+
+## Try it in one command
+
+From the root of a git repository that holds your specs (Node.js 22.20+):
+
+```bash
+npx -y spectorque serve --root .
+```
+
+It opens the workbench on a loopback address and analyzes that work tree locally: no account, model or telemetry. To give your coding agent the six read-only tools instead, add the MCP server in one line:
+
+```bash
+claude mcp add spectorque -- npx -y spectorque mcp
+```
+
+```bash
+codex mcp add spectorque -- npx -y spectorque mcp
+```
+
+Other MCP clients take the same command (`npx -y spectorque mcp`) as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)). The server analyzes the git work tree of the folder the client starts it in; set `SPECTORQUE_ROOT` to point it elsewhere. The npm package is published from [`release.yml`](.github/workflows/release.yml) with npm provenance. For the native panels (`/spectorque` in Claude Code, OpenCode and Pi, the Codex viewer, the VS Code workbench), install the plugin for your host below.
 
 ## Install
 

@@ -2,6 +2,16 @@
 
 SpecTorque ayuda a crear, revisar y refinar especificaciones antes de entregarlas a un agente. El análisis básico funciona en local, sin GPU ni credenciales de IA.
 
+## Pruébalo con un comando
+
+Desde la raíz de un repositorio git con tus specs (Node.js 22.20 o superior):
+
+```bash
+npx -y spectorque serve --root .
+```
+
+Abre el workbench en una dirección local y analiza ese árbol de trabajo en tu máquina, sin cuenta, modelo ni telemetría. Para dar a tu agente las seis herramientas de solo lectura, añade el servidor MCP en una línea: `claude mcp add spectorque -- npx -y spectorque mcp` o `codex mcp add spectorque -- npx -y spectorque mcp`. Otros clientes MCP usan el mismo comando como servidor stdio. Los paneles nativos llegan con el plugin de cada plataforma, en la tabla siguiente.
+
 ## Instalación
 
 SpecTorque 0.3.0 es una **versión preliminar**, publicada en el canal `next` hasta superar el [gate de candidato estable](pilot-operations.md#stable-candidate-gate). Al ser la primera versión en npm también es `latest`, así que `npm i spectorque` la instala. Todas las rutas usan el mismo motor local y necesitan Node.js 22.20 o superior en el `PATH`.
