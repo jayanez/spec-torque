@@ -10,6 +10,7 @@ import { unzipSync, strFromU8 } from 'fflate';
 import { startServer } from '../../src/node/server.js';
 import { bindWorkspace } from '../../src/node/scoped-review.js';
 import { badgeSvg, markdownReport } from '../../src/core/report.js';
+import { PRODUCT_VERSION } from '../../src/version.js';
 
 const test = base.extend<{ workspace: { root: string; url: string } }>({
   workspace: async ({}, use) => {
@@ -672,6 +673,29 @@ test('a Spec Kit feature opens on spec.md, not its requirements checklist, and t
   });
 });
 
+test('Connect agents shows the released install commands for each host in both languages', async ({ page, workspace }) => {
+  await page.goto(workspace.url);
+  await page.getByRole('button', { name: 'Connect agents', exact: true }).click();
+  const view = page.locator('main', { has: page.getByRole('heading', { level: 1, name: /^(One engine, in your environment|El mismo motor, en tu entorno)$/ }) });
+  const card = (host: string) => view.getByRole('article', { name: host, exact: true });
+  await expect(card('Claude Code')).toContainText('claude plugin marketplace add jayanez/spec-torque\nclaude plugin install spectorque@spectorque');
+  await expect(card('Codex')).toContainText('codex plugin marketplace add jayanez/spec-torque\ncodex plugin add spectorque@spectorque');
+  await expect(card('OpenCode')).toContainText('{"plugins":["opencode-spectorque@' + PRODUCT_VERSION + '"]}');
+  await expect(card('OpenCode')).toContainText('~/.config/opencode/cli.json');
+  await expect(card('Pi / ThinkRail')).toContainText('pi install npm:pi-spectorque@' + PRODUCT_VERSION);
+  await expect(card('VS Code')).toContainText('code --install-extension jayanez.spectorque --pre-release');
+  await expect(page.getByText('"spectorque@' + PRODUCT_VERSION + '"')).toBeAttached();
+  await expect(page.getByText('/absolute/path/to/spectorque/dist/mcp.js', { exact: false })).toBeAttached();
+  await expect(view).not.toContainText(/integrations\/(claude|vscode|opencode|pi)/);
+  expect((await new AxeBuilder({ page }).include('main:not([hidden]) .integration-grid').analyze()).violations).toEqual([]);
+  await page.getByRole('button', { name: 'Switch to Spanish', exact: true }).click();
+  await expect(view.getByRole('heading', { level: 1 })).toHaveText('El mismo motor, en tu entorno');
+  await expect(card('Codex')).toContainText('Vincula un worktree confiable');
+  await expect(card('VS Code')).toContainText('Extensión + banco de trabajo');
+  await expect(page.getByText('Desde npm, en cualquier cliente MCP:', { exact: true })).toBeVisible();
+  for (const text of ['From npm, in any MCP client:', 'Run /spectorque', 'Commands + widgets']) await expect(page.getByText(text, { exact: true })).toHaveCount(0);
+});
+
 test('the Spanish view translates the header, dimensions, practices, roles and counts', async ({ page, workspace }) => {
   await writeFile(join(workspace.root, 'AGENTS.md'), '# Agents\n\nFollow the specs.\n');
   await writeFeature(workspace.root, 'specs/001-first', 'FR-001: The first system MUST be fast.\n');
@@ -691,7 +715,7 @@ test('the Spanish view translates the header, dimensions, practices, roles and c
   await expect(page.locator('.history-row').first()).toContainText(/\d+ hallazgos?/);
   await expect(page.locator('.history-row').first()).not.toContainText('1 hallazgos');
   await page.getByRole('button', { name: 'Conectar agentes', exact: true }).click();
-  await expect(page.getByText('MCP + panel de VS Code', { exact: true })).toBeVisible();
+  await expect(page.getByText('Plugin + visor integrado', { exact: true })).toBeVisible();
 });
 
 test('the language toggle keeps light-on-dark text on hover', async ({ page, workspace }) => {

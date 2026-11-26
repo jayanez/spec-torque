@@ -1,6 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
+const { version } = JSON.parse(await readFile('package.json', 'utf8'));
 await Promise.all(['dist', 'web-dist'].map(path => rm(path, { recursive: true, force: true })));
 await mkdir('web-dist/assets', { recursive: true });
 const [, web] = await Promise.all([
@@ -23,6 +24,8 @@ const [, web] = await Promise.all([
     entryNames: '[name]-[hash]',
     outdir: 'web-dist/assets',
     metafile: true,
+    // The workbench needs only the version; importing package.json would bundle the whole manifest.
+    define: { __PRODUCT_VERSION__: JSON.stringify(version) },
   }),
 ]);
 const assets = Object.keys(web.metafile.outputs).map(path => path.replaceAll('\\', '/').replace(/^web-dist\//, './'));
