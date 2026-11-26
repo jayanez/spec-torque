@@ -40,6 +40,19 @@ test('host npm packages carry publish metadata', async () => {
   assert.ok((await json('integrations/pi/package.json')).keywords.includes('pi-package'), 'Pi gallery and ThinkRail list packages by this keyword');
 });
 
+test('MCP Registry entry matches the npm package it lists', async () => {
+  const server = await json('server.json');
+  const pkg = await json('package.json');
+  assert.equal(server.name, pkg.mcpName, 'the registry verifies ownership through mcpName');
+  assert.match(server.name, /^io\.github\.jayanez\//u, 'GitHub OIDC login grants only the io.github.<owner> namespace');
+  assert.ok(server.description.length <= 100, 'the registry schema caps description at 100 characters');
+  const [entry] = server.packages;
+  assert.equal(server.packages.length, 1);
+  assert.deepEqual([entry.registryType, entry.registryBaseUrl, entry.identifier], ['npm', 'https://registry.npmjs.org', pkg.name]);
+  assert.equal(entry.transport.type, 'stdio');
+  assert.deepEqual(entry.packageArguments, [{ type: 'positional', value: 'mcp' }], 'clients start the server with `spectorque mcp`');
+});
+
 test('listing metadata: icons, links and VS Code identity', async () => {
   const claude = await json('integrations/claude/.claude-plugin/plugin.json');
   for (const key of ['homepage', 'repository', 'documentationUrl', 'supportUrl', 'privacyPolicyUrl']) assert.ok(String(claude[key]).startsWith(REPO), key);

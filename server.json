@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.jayanez/spectorque",
+  "title": "SpecTorque",
+  "description": "Review agent specs, plans and tasks against EPIC practices with cited evidence.",
+  "websiteUrl": "https://github.com/jayanez/spec-torque#readme",
+  "repository": {
+    "url": "https://github.com/jayanez/spec-torque",
+    "source": "github"
+  },
+  "version": "0.3.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "spectorque",
+      "version": "0.3.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ]
+    }
+  ]
+}

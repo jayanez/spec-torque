@@ -36,7 +36,7 @@ The basic workbench runs with Node.js 22.20+ and npm dependencies. Acquire the f
 
 ## Versioning and releases
 
-**One product version.** The root `package.json` version is the product version. The CLI, every host package (`spectorque-claude`, `spectorque-codex`, `opencode-spectorque`, `pi-spectorque`), the Claude and Codex plugin manifests, the VSIX, both marketplace catalogs and `CITATION.cff` carry the same number. `npm run version:sync` copies it from the root (see `scripts/versions.mjs` for the list), and `tests/manifests.test.ts` fails on any drift.
+**One product version.** The root `package.json` version is the product version. The CLI, every host package (`spectorque-claude`, `spectorque-codex`, `opencode-spectorque`, `pi-spectorque`), the Claude and Codex plugin manifests, the VSIX, both marketplace catalogs, the MCP Registry entry `server.json` and `CITATION.cff` carry the same number. `npm run version:sync` copies it from the root (see `scripts/versions.mjs` for the list), and `tests/manifests.test.ts` fails on any drift.
 
 **Product numbering (SemVer).** Before 1.0, a minor version marks a new public surface or distribution route (0.3.0 added the marketplaces). A patch version covers fixes, presentation changes and engine rule refinements. Versions bumped on `develop` without a tag are internal; the changelog groups them under the next released version (0.2.1–0.2.9 shipped in 0.3.0). The Marketplace accepts only `major.minor.patch`, so prereleases do not use a `-pre` suffix; the channel marks them instead.
 
@@ -49,7 +49,7 @@ The basic workbench runs with Node.js 22.20+ and npm dependencies. Acquire the f
 1. Change the root version, run `npm run version:sync`, add a `## <version>` section to the [changelog](../CHANGELOG.md) with the engine and rubric versions, and set `date-released` in `CITATION.cff`.
 2. Merge through review with `npm run check` green.
 3. The maintainer tags `v<version>` on the merged commit. The tag, publication and issue closure each need maintainer authorization.
-4. [`release.yml`](../.github/workflows/release.yml) checks that the tag matches the version, builds every package, archive and the VSIX, writes `SHA256SUMS`, publishes to npm with provenance, publishes the VSIX to both editor registries and creates the GitHub release. A manual run is a dry run by default. Account setup is in [publishing](publishing.md).
+4. [`release.yml`](../.github/workflows/release.yml) checks that the tag matches the version, builds every package, archive and the VSIX, writes `SHA256SUMS`, publishes to npm with provenance, publishes the VSIX to both editor registries, publishes `server.json` to the MCP Registry and creates the GitHub release. A manual run is a dry run by default. Account setup is in [publishing](publishing.md).
 
 **Current and historical documents.** Install instructions in the README, this page, [integrations](integrations.md), the [Spanish guide](es.md) and the host READMEs describe the current version and are updated every release; `tests/docs.test.ts` rejects a stale product version there. Qualification records ([compatibility](compatibility.md), [host qualification](host-common-qualification.md), [Codex Desktop probe](codex-desktop-probe.md), the precision pages and past changelog entries) are evidence for the exact version they name. They are never rewritten; a new observation adds a row.
 

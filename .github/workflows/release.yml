@@ -91,6 +91,11 @@ jobs:
           path: release
       - name: Publish the CLI and host packages
         shell: bash
+        env:
+          # Only for the first publish, before the packages exist and a trusted publisher
+          # can be attached (docs/publishing.md). Leave the secret unset afterwards:
+          # npm then authenticates through OIDC.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
           flags=(--access public --provenance --tag "$CHANNEL")
@@ -101,6 +106,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: release
+    permissions:
+      contents: read
+      id-token: write # VS Code Marketplace trusted publishing
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -109,21 +117,59 @@ jobs:
         with:
           name: release-${{ needs.build.outputs.version }}
           path: release
-      - name: Publish to the VS Code Marketplace and Open VSX
+      - name: Publish to the VS Code Marketplace
+        shell: bash
+        run: |
+          set -euo pipefail
+          vsix="$(ls release/*.vsix)"
+          pre=(); [[ "$CHANNEL" == next ]] && pre=(--pre-release)
+          if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish $vsix ${pre[*]}"; exit 0; fi
+          npx --yes "$VSCE" publish --oidc --packagePath "$vsix" "${pre[@]}"
+      - name: Publish to Open VSX
         shell: bash
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         run: |
           set -euo pipefail
           vsix="$(ls release/*.vsix)"
           pre=(); [[ "$CHANNEL" == next ]] && pre=(--pre-release)
           if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish $vsix ${pre[*]}"; exit 0; fi
-          npx --yes "$VSCE" publish --packagePath "$vsix" "${pre[@]}"
           npx --yes "$OVSX" publish "$vsix" "${pre[@]}"
 
+  mcp-registry:
+    needs: [build, npm]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # MCP Registry login for the io.github.jayanez namespace
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Download and verify mcp-publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=mcp-publisher_linux_amd64.tar.gz
+          base="https://github.com/modelcontextprotocol/registry/releases/download/$MCP_PUBLISHER_VERSION"
+          curl --fail --location --silent --show-error --output "$archive" "$base/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base/$archive.sigstore.json"
+          cosign verify-blob --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/$MCP_PUBLISHER_VERSION" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com "$archive"
+          tar xzf "$archive" mcp-publisher
+      - name: Publish server.json to the MCP Registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$DRY_RUN" == true ]]; then echo "Dry run: would publish server.json"; cat server.json; exit 0; fi
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
+
   github:
-    needs: [build, npm, editors]
+    needs: [build, npm, editors, mcp-registry]
     runs-on: ubuntu-latest
     permissions:
       contents: write

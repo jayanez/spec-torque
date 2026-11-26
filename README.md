@@ -6,9 +6,6 @@
 
 <p align="center">
   <a href="https://github.com/jayanez/spec-torque/releases"><img src="https://img.shields.io/github/v/release/jayanez/spec-torque?include_prereleases&amp;label=release&amp;logo=github" alt="Latest GitHub release, including previews"></a>
-  <a href="https://www.npmjs.com/package/spectorque"><img src="https://img.shields.io/npm/v/spectorque/next?label=npm%20next&amp;logo=npm" alt="npm prerelease version of spectorque"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque"><img src="https://img.shields.io/visual-studio-marketplace/v/jayanez.spectorque?label=VS%20Marketplace&amp;include_prereleases" alt="VS Code Marketplace version"></a>
-  <a href="https://open-vsx.org/extension/jayanez/spectorque"><img src="https://img.shields.io/open-vsx/v/jayanez/spectorque?label=Open%20VSX" alt="Open VSX version"></a>
   <a href="https://github.com/jayanez/spec-torque/actions/workflows/check.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/jayanez/spec-torque/check.yml?branch=develop&amp;label=Validate%20repository&amp;logo=githubactions&amp;logoColor=white" alt="Validate repository on develop"></a>
 </p>
 
@@ -50,7 +47,7 @@ SpecTorque 0.3.0 is a **prerelease**: packages are published on the `next` chann
 | **ThinkRail** (runs Pi) | Install the Pi package `pi-spectorque` from ThinkRail's extensions, or run the Pi command above | `/spectorque` in a trusted project |
 | **VS Code** | Extensions view → search **SpecTorque** → *Switch to Pre-Release*, or `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
 | **Cursor, Windsurf, VSCodium** | Same extension from [Open VSX](https://open-vsx.org/extension/jayanez/spectorque) (installable, not yet qualified) | Same command |
-| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)) | Six read-only tools |
+| **Any MCP client** | `npx -y spectorque@0.3.0 mcp` as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)); listed in the MCP Registry as `io.github.jayanez/spectorque` once published | Six read-only tools |
 | **Browser workbench / CLI** | `npx -y spectorque@0.3.0 serve --root .` | Open the printed loopback URL |
 
 Install details, updates and removal for each host are in the [integration guides](docs/integrations.md). Offline or air-gapped installs use the ZIP, VSIX and tarball assets of each [GitHub release](docs/releases.md). Check [tested compatibility](docs/compatibility.md) for the host versions we observed.
