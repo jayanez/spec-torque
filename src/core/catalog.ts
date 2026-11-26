@@ -6,6 +6,9 @@ export const DIMENSIONS = [
   ['C1', 'Scope discipline', 'Compartmentalized'], ['C2', 'Implementation planning', 'Compartmentalized'],
 ] as const;
 export interface PracticeDefinition { id: string; title: string; roles: Role[]; pattern?: RegExp; fix: string }
+// H6 (#88): a validation-plan table row with an identifier cell and a test-file reference.
+const testFile = /(?:^|[\s|\x60(/])(?:tests?|__tests__)\/[^\s|\x60]+|\btest_[\w-]+\.py\b|\b[\w.-]+(?:_test|_spec|\.test|\.spec)\.\w+\b|\b\w+Tests?\.(?:cs|java|kt|swift)\b/;
+const validationRow = new RegExp(String.raw`^(?=\s*\|)(?=.*\|\s*(?:\*\*|\x60)?[A-Z]{1,8}-\d+(?:\*\*|\x60)?\s*\|)(?=.*(?:${testFile.source}))`);
 const s: Role[] = ['spec']; const p: Role[] = ['plan']; const t: Role[] = ['tasks'];
 const all: Role[] = ['spec', 'plan', 'tasks', 'instructions', 'context'];
 export const PRACTICES: PracticeDefinition[] = [
@@ -19,8 +22,8 @@ export const PRACTICES: PracticeDefinition[] = [
   { id: 'E2.3', title: 'Isolated risks, assumptions and edge cases', roles: all, pattern: /^\s*(?:[-*]|[A-Z]+-\d+).*\b(?:risk|assumption|edge case|riesgo|supuesto|caso límite)\b/i, fix: 'Give each risk, assumption or edge case its own entry.' },
   { id: 'E2.4', title: 'Singular definitions and scenarios', roles: s, pattern: /(?:GIVEN|DADO).+(?:WHEN|CUANDO).+(?:THEN|ENTONCES)|(?:Scenario|Escenario):/i, fix: 'Define one behavior per scenario and one concept per definition.' },
   { id: 'E2.5', title: 'Singular security and privacy properties', roles: s, pattern: /^\s*(?:[-*]|[A-Z]+-\d+).*(?:MUST|SHALL|DEBE).*(?:privacy|personal data|encrypt|secret|privacidad|datos personales|cifra|secreto)/i, fix: 'State applicable security and privacy obligations as separate, testable requirements.' },
-  { id: 'E3.1', title: 'Verification criteria and outcomes', roles: s, pattern: /acceptance criteria|criterios de aceptación|success criteria|criterios de éxito/i, fix: 'Connect each requirement to observable acceptance criteria.' },
-  { id: 'E3.2', title: 'Validation methods', roles: all, pattern: /npm (?:run )?test|pytest|cargo test|dotnet test|verification method|método de verificación|manual check|comprobación manual/i, fix: 'Describe an executable or manual method for checking each outcome.' },
+  { id: 'E3.1', title: 'Verification criteria and outcomes', roles: s, pattern: /acceptance criteria|criterios de aceptación|success criteria|criterios de éxito|acceptance scenarios?|escenarios? de aceptación|\b(?:given|dado|dada)\b.+\b(?:when|cuando)\b.+\b(?:then|entonces)\b/i, fix: 'Connect each requirement to observable acceptance criteria.' },
+  { id: 'E3.2', title: 'Validation methods', roles: all, pattern: new RegExp(String.raw`npm (?:run )?test|pytest|cargo test|dotnet test|python3? -m unittest|go test|node --test|bun test|deno test|make (?:test|check)|mvn test|(?:\.\/)?gradlew? test|verification method|método de verificación|manual check|comprobación manual|${validationRow.source}`, 'i'), fix: 'Describe an executable or manual method for checking each outcome.' },
   { id: 'E3.3', title: 'Verification coverage', roles: all, pattern: /test.*(?:invalid|failure|boundary|edge)|prueba.*(?:inválid|fallo|límite)|(?:GIVEN|DADO).*(?:invalid|failure|inválid|fallo)/i, fix: 'Cover normal, exceptional and boundary scenarios.' },
   { id: 'E3.4', title: 'Verification completion and readiness', roles: all, pattern: /definition of done|exit criteria|ready when|complete when|terminad[oa] cuando|criterios de salida|definición de terminado/i, fix: 'State what evidence is required to consider verification complete.' },
   { id: 'P1.1', title: 'Declared assumptions and dependencies', roles: all, pattern: /(?:dependenc|dependencia|assumption|supuesto).*[:—-].+|no external dependencies|sin dependencias externas/i, fix: 'Declare dependencies and assumptions, including an explicit absence where applicable.' },

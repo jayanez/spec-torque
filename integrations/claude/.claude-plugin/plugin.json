@@ -1,12 +1,26 @@
 {
   "name": "spectorque",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Traceable specification review with a native pane, shared EPIC analysis and reviewed refinements.",
   "author": {
     "name": "jayanez",
     "url": "https://github.com/jayanez"
   },
+  "homepage": "https://github.com/jayanez/spec-torque#readme",
+  "repository": "https://github.com/jayanez/spec-torque",
+  "license": "Apache-2.0",
+  "keywords": [
+    "specification",
+    "spec-driven-development",
+    "requirements",
+    "review",
+    "mcp",
+    "skills"
+  ],
+  "icon": "./assets/icon.png",
+  "documentationUrl": "https://github.com/jayanez/spec-torque/blob/develop/docs/integrations.md#claude-code",
+  "supportUrl": "https://github.com/jayanez/spec-torque/issues",
+  "privacyPolicyUrl": "https://github.com/jayanez/spec-torque/blob/develop/docs/privacy.md",
   "skills": "./skills",
-  "mcpServers": "./.mcp.json",
-  "license": "Apache-2.0"
+  "mcpServers": "./.mcp.json"
 }

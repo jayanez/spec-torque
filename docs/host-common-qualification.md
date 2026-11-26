@@ -98,7 +98,7 @@ evidence categories. Retain native transcripts/source snapshots separately.
 
 `npm run qualify:claude` drives the installed plugin ZIP in a real Claude Code
 terminal through a pseudo-terminal. Build with Node 22.20+ in major 22, run
-`npm run package:integrations` and `npm run package:claude`, install Chromium,
+`npm run package:claude` (it rebuilds and runs `package:integrations` first), install Chromium,
 and provide an isolated tools directory with `node-pty@1.1.0` and
 `@xterm/headless@6.0.0`:
 
@@ -313,3 +313,24 @@ Pi package workflow; no SpecTorque MCP server was configured in this host. No
 model-backed skill was invoked. These results qualify this ThinkRail/Pi/macOS
 combination only; other host versions, operating systems and human accessibility
 remain unqualified. Tracking remains in [#7](https://github.com/jayanez/spec-torque/issues/7).
+
+Requalification on 2026-11-20 used ThinkRail 0.4.0, Pi 1.5.2 for project-local
+`install`/`remove`, Node 22.20.0 and macOS 27.2.1 arm64 with the released 0.2.0
+ZIP (SHA-256 `b475c88549609dd27ce24e946590db165420b66ff88ac05fcc1373201ac57602`).
+The untrusted project exposed neither `/spectorque` nor the project skills.
+All documents matched the engine in EN and ES; approval, EN rejection,
+stale-source rejection and the browser handoff behaved as above, and no model
+prompt was submitted. ThinkRail drives Pi in RPC mode, and this package shows the
+scope picker only in Pi's TUI mode, so feature scopes were not reachable.
+The unreleased fix (package SHA-256
+`4085332b022826b76999598466799a0142c9253874296e82fc0e80c134111c19`) showed the
+picker in ThinkRail, and `specs/booking` and `specs/other` matched the engine in
+EN; `qualify:pi` checks scope selection over RPC in the EN and ES workspaces.
+Two host behaviors remain: after the first proposal in a chat, the ThinkRail
+editor shows the previously submitted text instead of the selected line, and
+running `/spectorque` while a picker is open queues the second run and
+interleaves both runs' dialogs. The before/after confirmation and stale-source
+check still apply, and cancelling wrote nothing. Back up
+`~/.thinkrail/projects.json`, `workspaces.json` and `chats.json` before the run
+and restore them after quitting ThinkRail; closing a project keeps its
+entries.

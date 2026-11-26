@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-22",
+  "purpose": "Development set for #52 requirement-line classification. Iteration is allowed on this set.",
+  "rule": "GitHub code search, once with \"system\" and once with \"sistema\", by the H2b family paths (openspec/specs, specs, kitty-specs, .kiro/specs, _bmad-output); results taken in search order and dealt to the dev, t1 and t2 sets in turn, 2 per set, family and query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39 and #51 excluded, and no owner appears in two sets; pinned to the default-branch head SHA. No file content was read.",
+  "unfilled": {
+    "spec-kitty/system": "1 of 6 qualifying repositories",
+    "spec-kitty/sistema": "0 of 6 qualifying repositories",
+    "bmad/sistema": "5 of 6 qualifying repositories"
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/kcalvelli/cairn",
+      "commit": "712dc76d47efd44f2affc5a07865cd26231ef3e6",
+      "license": "MIT",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/spencermarx/open-code-review",
+      "commit": "373a6c340312c86a6b42ded368f86f12570c34c5",
+      "license": "Apache-2.0",
+      "query": "system path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/ElPitagoras14/aniseek",
+      "commit": "8010a757eab11db7fca993b88b97901cd426569b",
+      "license": "Apache-2.0",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/tupperwave/Projeto_MPS",
+      "commit": "c7d0f8ee4fe0a7f0b604e05db492660850046b8f",
+      "license": "MIT",
+      "query": "sistema path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/iotaledger/firefly",
+      "commit": "89c9e0d6da3954a3e45d04364124c952d24c1caa",
+      "license": "Apache-2.0",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/ambient-code/platform",
+      "commit": "6e10db2b411655aaf88ef29016943ed514b35e6f",
+      "license": "MIT",
+      "query": "system path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/juanklagos/spec-driven-development-template",
+      "commit": "939649d7d482026ede829547a0c0fe413fe86a6f",
+      "license": "MIT",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/fmnapoli/md2confl",
+      "commit": "d0136f0eeb83ec77a79e773f5b466a2f24b0c7c4",
+      "license": "Apache-2.0",
+      "query": "sistema path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/spec-kitty/spec-kitty",
+      "commit": "f8fee580bbd0025da039336c94fa3a8fc6ae068f",
+      "license": "MIT",
+      "query": "system path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/shettydev/mukti",
+      "commit": "c066b6957ceb025885e826a5bed1a359f9b35c39",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/mretallack/SlimBook",
+      "commit": "ffda6bc9857325c2f4146d02cf2d1ce7ef670184",
+      "license": "MIT",
+      "query": "system path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/ghostnetrn/bot-tesouro-direto",
+      "commit": "8e7855b312da80e776b27bc18e3d8f080cde4238",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/estrosebas/noox-cli",
+      "commit": "7dc4d0974e3b0c51987976b65989b3a99676ea1a",
+      "license": "MIT",
+      "query": "sistema path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/janithush/OptiMeal-Smart_Food_Ordering-ML_Forecasting_Platform",
+      "commit": "c57ffe439f1416511212cbaf1e10bcdadd6b3a9a",
+      "license": "MIT",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/abibiano/dart-oracledb",
+      "commit": "da821f317f7761e045a6aaa689d550117ebc0174",
+      "license": "Apache-2.0",
+      "query": "system path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/betorbr/betor",
+      "commit": "51c506864c63e5482012380a7bfb45f80663f83c",
+      "license": "MIT",
+      "query": "sistema path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/paulotodo/metanoia-hub",
+      "commit": "d1e748f9a62130c61941e9baea9782fc8ced43ac",
+      "license": "Apache-2.0",
+      "query": "sistema path:_bmad-output filename:prd.md"
+    }
+  ]
+}

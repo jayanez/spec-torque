@@ -1,22 +1,87 @@
-import { contentHash } from './artifacts.js';
+import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
+import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.3';
+export const ENGINE_VERSION = '0.1.16';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
 const modal = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
 const calendarMay = /(?<![\p{L}\p{N}\p{M}_])(?:May[ \t]+(?:\d{4}|(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?)(?=[,.]|[ \t]+(?:is|was)\b)|(?:[Ii]n|[Dd]uring|[Ss]ince|[Uu]ntil|[Oo]f)[ \t]+May(?![\p{L}\p{N}\p{M}_]))/gu;
-const hasNormativeModal = (text: string) => modal.test(text.normalize('NFC').replace(calendarMay, ' '));
-interface Line extends Evidence { artifact: Artifact; requirement: boolean }
+const monthItem = (name: string) => `(?:${name}|\`${name}\`|"${name}"|'${name}'|“${name}”|‘${name}’)`;
+const monthEnumerationMay = new RegExp(
+  `(?<![\\p{L}\\p{N}\\p{M}_])(${monthItem('Apr(?:il)?')}[ \\t]*,[ \\t]*)${monthItem('May')}([ \\t]*,[ \\t]*${monthItem('Jun(?:e)?')})(?![\\p{L}\\p{N}\\p{M}_])`,
+  'giu',
+);
+const hasNormativeModal = (text: string) => modal.test(
+  text.normalize('NFC').replace(calendarMay, ' ').replace(monthEnumerationMay, '$1 $2'),
+);
+/** H5a (#78): a list item or paragraph with its hard-wrapped continuation lines; `defined` when its first line has a defining ID. */
+interface Unit { defined: boolean }
+interface Line extends Evidence { artifact: Artifact; scope: LineScope; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
+// Lines that start a block (or are a fence run), and lines that cannot be continued.
+const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<|```|~~~)/;
+const closedBlock = /^\s*(?:#{1,6}(?:[ \t]|$)|\||>|<|```|~~~)/;
+const thematicBreak = /^\s*(?:[-*_=][ \t]*){3,}$/;
 function linesOf(artifact: Artifact): Line[] {
+  const scope = lineScope(artifact.path);
   let fenced = false;
+  let continuable = false;
+  let unit: Unit = { defined: false };
   return artifact.content.split(/\r?\n/).map((text, index) => {
-    if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
+    const fenceRun = /^\s*(?:```|~~~)/.test(text);
+    if (fenceRun) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    const requirement = !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
-    return { path: artifact.path, line: index + 1, text, artifact, requirement };
+    const requirement = scope === 'all' && !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
+    const textLine = !fenced && !fenceRun && text.trim() !== '' && !thematicBreak.test(text);
+    // An unindented line led by a defining ID starts its own unit (one requirement per line).
+    const continuation = continuable && textLine && !blockStart.test(text) && !(/^\S/.test(text) && definedId(text));
+    if (!continuation) unit = { defined: Boolean(definedId(text)) };
+    continuable = textLine && !closedBlock.test(text);
+    return { path: artifact.path, line: index + 1, text, artifact, scope, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text), continuation, unit };
   });
+}
+// H3a (#83): an ID defines a requirement only in a defining position: first on the line after an
+// optional heading marker, list marker, task checkbox and bold or code markup. Table cells restate
+// IDs (traceability), and a dotted sub-ID such as REQ-2.1 does not define its parent REQ-2.
+const definingId = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\*\*|__|`)?[ \t]*((?:FR|NFR|REQ|R)-\d+)(?!\.\d)\b/i;
+const definedId = (text: string) => definingId.exec(text)?.[1]?.toUpperCase();
+/** Spec requirement lines without their own ID that inherit one from the nearest preceding defining heading. */
+function inheritedLines(lines: Line[]): Set<Line> {
+  const inherited = new Set<Line>();
+  let path = '';
+  let current: string | undefined;
+  for (const line of lines) {
+    if (line.path !== path) { path = line.path; current = undefined; }
+    if (line.artifact.role !== 'spec') continue;
+    if (line.heading) { current = definedId(line.text); continue; }
+    if (line.requirement && current && !identifiedOnLine(line)) inherited.add(line);
+  }
+  return inherited;
+}
+const requirementIdIn = (text: string) => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(text);
+/** A line's own ID, or (H5a) a defining ID on the first line of the item or paragraph it belongs to. */
+const identifiedOnLine = (line: Line) => requirementIdIn(line.text) || line.unit.defined;
+/** Defining positions per feature-qualified ID, among admitted spec lines and spec headings. */
+function definitionsOf(lines: Line[]): Map<string, Line[]> {
+  const definitions = new Map<string, Line[]>();
+  for (const line of lines) {
+    if (line.artifact.role !== 'spec' || !(line.requirement || line.heading) || line.continuation) continue;
+    const id = definedId(line.text);
+    if (!id) continue;
+    const key = line.artifact.featureId + ':' + id;
+    definitions.set(key, [...(definitions.get(key) ?? []), line]);
+  }
+  return definitions;
+}
+/**
+ * Requirement references per plan or tasks line. H8 (#80): a bare R-n is a reference only when the
+ * feature's spec documents use the R- family; otherwise it is a label local to that document.
+ */
+function referencesOf(lines: Line[]): Map<Line, RegExpExecArray[]> {
+  const rFamily = new Set(lines.filter(l => l.artifact.role === 'spec' && /\bR-\d+\b/i.test(l.text)).map(l => l.artifact.featureId));
+  return new Map(lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role)).map(l => [l,
+    [...l.text.matchAll(requirementId)].filter(match => !match[0].toUpperCase().startsWith('R-') || rFamily.has(l.artifact.featureId))]));
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
@@ -25,6 +90,23 @@ const minimumDuration = /(?<![\p{L}\p{N}\p{M}_])al menos\s+\d+(?:[.,]\d+)?\s+(?:
 const boundedRate = /[≤≥]\s*\d+(?:[.,]\d+)?\s+(?:entr(?:y|ies)|tickets?|requests?|turnos?|lecturas?|solicitudes?)\s+(?:per|por)\s+(?:second|minute|hour|segundo|minuto|hora)(?![\p{L}\p{N}\p{M}_])/iu;
 const observableDenial = /(?<![\p{L}\p{N}\p{M}_])(?:(?:MUST|SHALL|SHOULD)\s+(?:reject|deny)|DEBE(?:N|RÁN?|RÍAN?)?\s+(?:rechazar|denegar))(?![\p{L}\p{N}\p{M}_])/iu;
 const unboundedWording = new RegExp(vagueTerms.source, 'iu');
+// H85 (#85): `this`/`that` lead a noun phrase ("This amendment MUST") unless the next token marks a
+// pronoun: punctuation, a contraction, a modal or auxiliary, an adverb, a preposition or conjunction,
+// or a verb form. The verb and adverb suffixes err towards keeping the finding.
+const subjectLead = /^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:(it|esto|eso|ello)|this|that)\b/i;
+const pronounCues = [
+  'must|shall|should|may|might|can|cannot|could|will|won|would', // modals (H85, H85-2)
+  'is|was|are|were|be|been|being|has|had|have|does|did|do', // auxiliaries
+  'also|only|never|always|then|now|still|not|alone|itself|\\w+ly', // adverbs
+  'and|or|but|in|on|at|for|with|by|of|to|from|as|if|when|because|so', // prepositions and conjunctions (H85-1)
+  'made|led|meant|became|took|gave|kept|\\w*[^\\Wsui]s|\\w+ed', // verb forms
+].join('|');
+// Punctuation or no next word, a contraction ('s, 'll, 'd, H85-1; -n't, H85-3), or a listed word.
+const pronounNext = new RegExp(String.raw`^(?:\s*(?:$|[.,;:!?)—–-])|['’](?:s|ll|d)\b|\s+\w+n['’]t\b|\s+(?:${pronounCues})\b)`, 'i');
+function pronounSubject(text: string): boolean {
+  const lead = subjectLead.exec(text);
+  return Boolean(lead && (lead[1] || pronounNext.test(text.slice(lead[0].length))));
+}
 
 function hasObservableCue(text: string): boolean {
   const clause = text.normalize('NFC').replace(requirementId, '');
@@ -32,7 +114,7 @@ function hasObservableCue(text: string): boolean {
     (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
 }
 
-function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { status: Status; hits: Line[] } | undefined {
+function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, RegExpExecArray[]>): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
     const hits = specRequirements.filter(predicate);
@@ -46,12 +128,13 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[]): { sta
     return { status: specRequirements.length && context ? 'partial' : 'missing', hits: specRequirements.length && context ? specRequirements.slice(0, 3) : [] };
   }
   if (id === 'I1.2' || id === 'I2.2') {
-    const ids = specRequirements.flatMap(l => (l.text.match(requirementId) ?? []).map(x => l.artifact.featureId + ':' + x.toUpperCase()));
-    const unique = new Set(ids);
-    return { status: !specRequirements.length ? 'unknown' : ids.length === specRequirements.length && ids.length === unique.size ? 'supported' : ids.length ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
+    const inherited = inheritedLines(lines);
+    const identified = specRequirements.filter(l => identifiedOnLine(l) || inherited.has(l)).length;
+    const unique = ![...definitionsOf(lines).values()].some(entries => entries.length > 1);
+    return { status: !specRequirements.length ? 'unknown' : identified === specRequirements.length && unique ? 'supported' : identified ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
   }
   if (['I2.3', 'C1.3', 'C2.3'].includes(id)) {
-    const hits = lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role) && /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text));
+    const hits = lines.filter(l => references.get(l)?.length);
     return { status: hits.length ? 'partial' : 'missing', hits };
   }
   if (id === 'C1.2') {
@@ -69,6 +152,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const active = set.artifacts.filter(a => !a.archived);
   const lines = active.flatMap(linesOf);
   const requirements = lines.filter(l => l.requirement);
+  const references = referencesOf(lines);
   const roles = new Set(active.map(a => a.role));
   const multipleFeatures = new Set(active.filter(a => a.role === 'spec').map(a => a.featureId)).size > 1;
   const practices: PracticeResult[] = PRACTICES.map(def => {
@@ -80,8 +164,10 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     const missingRoles = def.roles.filter(role => !roles.has(role));
     const roleRequired = def.roles.length === 1 || ['I2.3', 'I2.4', 'I3.2', 'C1.2', 'C1.3', 'C2.3'].includes(def.id);
     if ((roleRequired && missingRoles.length) || !active.length) return { ...base, status: 'unknown', evidence: [], reason: `Not assessed: supply ${missingRoles.join(', ') || 'source'} artifacts.` };
-    const relevant = lines.filter(l => def.roles.includes(l.artifact.role));
-    const special = evaluateSpecial(def.id, relevant, requirements);
+    // H6a (#88): quickstart lines count only as validation-method evidence (E3.2). H7a (#79): checklist lines are
+    // never requirements or decisions, but count like any context document.
+    const relevant = lines.filter(l => def.roles.includes(l.artifact.role) && (l.scope !== 'validation' || def.id === 'E3.2'));
+    const special = evaluateSpecial(def.id, relevant, requirements, references);
     const hits = special?.hits ?? relevant.filter((l, i) => {
       if (!def.pattern?.test(l.text) || l.text.trim().length < 4) return false;
       if (l.text.includes('[NEEDS CLARIFICATION:') && !['E1.1', 'P2.5'].includes(def.id)) return false;
@@ -98,23 +184,38 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
   const add = (practiceId: string, line: Evidence, message: string, suggestion: string, severity: Finding['severity'] = 'warning') => {
     findings.push({ id: `${practiceId}:${line.path}:${line.line}:${findings.length}`, practiceId, dimension: practiceId.split('.')[0], severity, message, suggestion, evidence: [evidenceOf(line)], source: 'rule' });
   };
+  const inherited = inheritedLines(lines);
   for (const line of requirements) {
     for (const match of line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, '').matchAll(vagueTerms)) add('E1.2', line, `Unbounded wording: “${match[0]}”.`, 'Specify observable behavior and its conditions. Ask for any missing limit.');
-    if (/^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:it|this|that|esto|eso|ello)\b/i.test(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
-    if (!/\b(?:FR|NFR|REQ|R)-\d+\b/i.test(line.text) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
+    if (pronounSubject(line.text)) add('E1.3', line, 'The subject depends on a pronoun.', 'Name the responsible actor or component.');
+    if (!identifiedOnLine(line) && !inherited.has(line) && line.artifact.role === 'spec') add('I1.2', line, 'Requirement has no stable identifier.', 'Assign a stable requirement ID and reference it from tasks.');
     if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }
-  const definitions = new Map<string, Line[]>();
+  const definitions = definitionsOf(lines);
+  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${definingId.exec(entries[1].text)?.[1]}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
+  // References resolve against defining positions and, as before, any ID on an admitted spec line.
+  const resolvable = new Set(definitions.keys());
   for (const line of requirements.filter(l => l.artifact.role === 'spec')) {
-    for (const raw of line.text.match(requirementId) ?? []) { const id = line.artifact.featureId + ':' + raw.toUpperCase(); definitions.set(id, [...(definitions.get(id) ?? []), line]); }
+    for (const raw of line.text.match(requirementId) ?? []) resolvable.add(line.artifact.featureId + ':' + raw.toUpperCase());
   }
-  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${entries[1].text.match(requirementId)?.[0]}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
+  // H9: namespaces that the feature's own spec lines join to an ID.
+  const ownNamespaces = new Set<string>();
+  for (const line of lines.filter(l => l.artifact.role === 'spec' && (l.requirement || l.heading))) {
+    for (const match of line.text.matchAll(requirementId)) {
+      const namespace = namespaceOf(textBefore(line.text, match.index));
+      if (namespace) ownNamespaces.add(line.artifact.featureId + ':' + namespace);
+    }
+  }
+  const external = (featureId: string, prefix: string) => {
+    const qualifier = qualifierOf(prefix);
+    return qualifier !== undefined && !ownNamespaces.has(featureId + ':' + qualifier) && !isOwnSpec(qualifier, featureId);
+  };
   const traceability: Assessment['traceability'] = [];
-  for (const line of lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role))) {
-    for (const raw of line.text.match(requirementId) ?? []) {
-      const id = raw.toUpperCase(); const resolved = definitions.has(line.artifact.featureId + ':' + id);
+  for (const [line, matches] of references) {
+    for (const match of matches) {
+      const id = match[0].toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
-      if (!resolved && roles.has('spec')) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
+      if (!resolved && roles.has('spec') && !external(line.artifact.featureId, textBefore(line.text, match.index))) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
@@ -141,6 +242,6 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     schemaVersion: '1.0', engineVersion: ENGINE_VERSION, rubricVersion: RUBRIC_VERSION, id, createdAt: new Date().toISOString(), name: set.name,
     artifacts, practices, findings, dimensions,
     summary: { score: dimensions.every(d => d.score !== null) ? dimensions.reduce((n, d) => n + (d.score ?? 0), 0) : null, maximum: 30, assessedDimensions: dimensions.filter(d => d.score !== null).length, supported: practices.filter(p => p.status === 'supported').length, partial: practices.filter(p => p.status === 'partial').length, missing: practices.filter(p => p.status === 'missing').length, unknown: practices.filter(p => p.status === 'unknown').length, notApplicable: practices.filter(p => p.status === 'not_applicable').length },
-    decisions: lines.filter(l => /NEEDS CLARIFICATION|PENDIENTE DE ACLARAR/i.test(l.text)).map(evidenceOf), traceability,
+    decisions: lines.filter(l => l.scope === 'all' && /NEEDS CLARIFICATION|PENDIENTE DE ACLARAR/i.test(l.text)).map(evidenceOf), traceability,
   };
 }

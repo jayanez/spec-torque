@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-21",
+  "purpose": "Spanish confirmation set for #51 (H2b). Frozen before any file content was read.",
+  "rule": "GitHub code search for \"DEBE\" by path per family, search order, up to 4 repositories per family; public, non-fork, not archived, MIT or Apache-2.0; repositories and owners used earlier in #39 (including the H2b confirmation set) excluded; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "zeespec": "No qualifying repository for \"DEBE\" path:.spec filename:what.md.",
+    "spec-kitty": "Only 1 qualifying repository."
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/atareao/shuul",
+      "commit": "f779627c0fa68bcb828b8a90ec7f8a0e3f4a893b",
+      "license": "MIT",
+      "query": "\"DEBE\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/alvarosdev/lex-chile-mcp",
+      "commit": "91ccd7d18965284b911db3e31b947cec269b4121",
+      "license": "MIT",
+      "query": "\"DEBE\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/stefanods29/Hackathon-ElComercio-Shabat-Shalom",
+      "commit": "ff838c031094ffdb55bea54604735e71d9923239",
+      "license": "MIT",
+      "query": "\"DEBE\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/raimangsxr/dynamic-thermal-charge",
+      "commit": "7e69350b502a45a7a100c7a27f5ee5ec3aee7d2c",
+      "license": "MIT",
+      "query": "\"DEBE\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/sercasti/aws-hardening",
+      "commit": "4bd60bcee5beb8b47c619a218350eab5991b57f9",
+      "license": "MIT",
+      "query": "\"DEBE\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Sayoner-000/gomemory",
+      "commit": "7cd5e35768c65459cc0798274a0d7aed84a91fcf",
+      "license": "MIT",
+      "query": "\"DEBE\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/LuisMUtec/utec-horarios",
+      "commit": "bf6b8a5ed825e14dd228c275c745cb00a0502024",
+      "license": "MIT",
+      "query": "\"DEBE\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Luiss2080/WeatherNow",
+      "commit": "3fa0c6a6f8f0235fbc258873a2dc6f0a7003d362",
+      "license": "MIT",
+      "query": "\"DEBE\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/LynnColeArt/hubnot",
+      "commit": "f71d1e6621e1c491e744e1cca8c80d3d364e1310",
+      "license": "MIT",
+      "query": "\"DEBE\" path:kitty-specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/ricardo8725/healthtrack",
+      "commit": "d52a14bf643baca8e346091169164e0aa19f174b",
+      "license": "MIT",
+      "query": "\"DEBE\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/vicmaHo/spine-hero",
+      "commit": "9485f0c1e55cbca45819a94f112b51c42c51e68f",
+      "license": "Apache-2.0",
+      "query": "\"DEBE\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/anthonnymejia2004/flujos-de-trabajo-",
+      "commit": "a3a8ccb94501d882cdeb407e35d5091bbaa6ba6d",
+      "license": "MIT",
+      "query": "\"DEBE\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/inginddie/smart-rag-system",
+      "commit": "040beea79f2fdf5a2edf92505583151e27215f3a",
+      "license": "MIT",
+      "query": "\"DEBE\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/ChrisBP-Dev/portfolio",
+      "commit": "9972df6b53979dede4caf1496d13c856e9bdda0f",
+      "license": "MIT",
+      "query": "\"DEBE\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/asprinkleofcode/asprinkleofcode.github.io",
+      "commit": "9da4750c9127977d513e2ae2acfb2282b77eacfd",
+      "license": "MIT",
+      "query": "\"DEBE\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "bmad",
+      "repository": "github.com/rxm7706/local-recipes",
+      "commit": "c661299f29a7279548d25873b9fbcc89921b73b5",
+      "license": "Apache-2.0",
+      "query": "\"DEBE\" path:_bmad-output filename:prd.md"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/Jrgil20/gapto10-cfpp",
+      "commit": "b1b12240200948828282eb8cf3d172bfe5d8edfe",
+      "license": "MIT",
+      "query": "\"DEBE\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/UPC-MEI/Agentic-MRP",
+      "commit": "dcef8acfaf39a1fa753d5d5d45dea3dbbeb26c23",
+      "license": "MIT",
+      "query": "\"DEBE\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/jonatha1992/Auditext",
+      "commit": "9af64540a90222c3e12f2bece40ab2d6e50cc58e",
+      "license": "MIT",
+      "query": "\"DEBE\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/nandocdev/laraShift",
+      "commit": "66c6facf90c7eba402aeb54621ddf344e0aa9e28",
+      "license": "MIT",
+      "query": "\"DEBE\" filename:PRD.md path:docs"
+    }
+  ]
+}

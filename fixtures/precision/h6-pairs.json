@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "description": "H6 synthetic twins (#88): acceptance scenarios, validation tables and Spec Kit quickstart.md. Constructed before the H6 candidate from the frozen policy; not independent labels.",
+  "cases": [
+    {
+      "id": "acceptance-scenarios-heading-en",
+      "construct": "e3.1-vocabulary",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements and acceptance scenarios",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ]
+      },
+      "expected": {
+        "E3.1": "partial",
+        "E3.2": "missing"
+      },
+      "note": "The heading names acceptance scenarios and is followed by content."
+    },
+    {
+      "id": "heading-without-verification-en",
+      "construct": "e3.1-vocabulary",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements and design notes",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: no verification vocabulary."
+    },
+    {
+      "id": "numbered-gwt-scenario-en",
+      "construct": "e3.1-scenario",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode.",
+          "  - **SC-001:** Given a valid request, when it is recorded, then the episode file exists."
+        ]
+      },
+      "expected": {
+        "E3.1": "partial",
+        "E3.2": "missing"
+      },
+      "note": "A Given/When/Then scenario on one line is a verification criterion."
+    },
+    {
+      "id": "given-without-when-then-en",
+      "construct": "e3.1-scenario",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode.",
+          "  - **SC-001:** Given a valid request, the episode is recorded."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: Given alone states no observable outcome."
+    },
+    {
+      "id": "validation-table-test-file-en",
+      "construct": "e3.2-table",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "## Validation plan",
+          "",
+          "| Requirement | Scenario | File | Check |",
+          "|---|---|---|---|",
+          "| REQ-001 | SC-001 | tests/test_recorder.py | RecorderTests.test_records |"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "note": "A table row maps the scenario to a planned test file."
+    },
+    {
+      "id": "validation-table-source-file-en",
+      "construct": "e3.2-table",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "## Validation plan",
+          "",
+          "| Requirement | Scenario | File | Check |",
+          "|---|---|---|---|",
+          "| REQ-001 | SC-001 | src/recorder.py | Recorder.record |"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: the row names a source file, not a test."
+    },
+    {
+      "id": "quickstart-command-en",
+      "construct": "quickstart",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Quickstart",
+          "",
+          "Run the checks:",
+          "",
+          "```sh",
+          "python3 -m pytest tests/test_recorder.py",
+          "```"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "note": "quickstart.md is a feature artifact and its pytest command is a validation method."
+    },
+    {
+      "id": "quickstart-without-command-en",
+      "construct": "quickstart",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST record an episode."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Quickstart",
+          "",
+          "Start the recorder and open the episode folder."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: the quickstart has no test command."
+    },
+    {
+      "id": "acceptance-scenarios-heading-es",
+      "construct": "e3.1-vocabulary",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos y escenarios de aceptación",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ]
+      },
+      "expected": {
+        "E3.1": "partial",
+        "E3.2": "missing"
+      },
+      "note": "The heading names acceptance scenarios and is followed by content."
+    },
+    {
+      "id": "heading-without-verification-es",
+      "construct": "e3.1-vocabulary",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos y notas de diseño",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: no verification vocabulary."
+    },
+    {
+      "id": "numbered-gwt-scenario-es",
+      "construct": "e3.1-scenario",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio.",
+          "  - **SC-001:** Dada una solicitud válida, cuando se registra, entonces existe el archivo del episodio."
+        ]
+      },
+      "expected": {
+        "E3.1": "partial",
+        "E3.2": "missing"
+      },
+      "note": "A Given/When/Then scenario on one line is a verification criterion."
+    },
+    {
+      "id": "given-without-when-then-es",
+      "construct": "e3.1-scenario",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio.",
+          "  - **SC-001:** Dada una solicitud válida, se registra el episodio."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: Given alone states no observable outcome."
+    },
+    {
+      "id": "validation-table-test-file-es",
+      "construct": "e3.2-table",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "## Plan de validación",
+          "",
+          "| Requisito | Escenario | Archivo | Comprobación |",
+          "|---|---|---|---|",
+          "| REQ-001 | SC-001 | tests/test_recorder.py | RecorderTests.test_records |"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "note": "A table row maps the scenario to a planned test file."
+    },
+    {
+      "id": "validation-table-source-file-es",
+      "construct": "e3.2-table",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "## Plan de validación",
+          "",
+          "| Requisito | Escenario | Archivo | Comprobación |",
+          "|---|---|---|---|",
+          "| REQ-001 | SC-001 | src/recorder.py | Recorder.record |"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: the row names a source file, not a test."
+    },
+    {
+      "id": "quickstart-command-es",
+      "construct": "quickstart",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Inicio rápido",
+          "",
+          "Ejecuta las comprobaciones:",
+          "",
+          "```sh",
+          "python3 -m pytest tests/test_recorder.py",
+          "```"
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "partial"
+      },
+      "note": "quickstart.md is a feature artifact and its pytest command is a validation method."
+    },
+    {
+      "id": "quickstart-without-command-es",
+      "construct": "quickstart",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE registrar un episodio."
+        ],
+        "specs/001-demo/quickstart.md": [
+          "# Inicio rápido",
+          "",
+          "Arranca el grabador y abre la carpeta de episodios."
+        ]
+      },
+      "expected": {
+        "E3.1": "missing",
+        "E3.2": "missing"
+      },
+      "note": "Twin: the quickstart has no test command."
+    }
+  ]
+}

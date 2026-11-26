@@ -1,0 +1,167 @@
+import { createHash } from 'node:crypto';
+import type { Engine } from './engines.js';
+
+export type Label = 'positive' | 'negative' | 'unknown';
+export const sha256 = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+
+/** Split into text segments while keeping each original line separator. */
+export function segments(content: string): { text: string; eol: string }[] {
+  const parts = content.split(/(\r?\n)/u);
+  const rows: { text: string; eol: string }[] = [];
+  for (let index = 0; index < parts.length; index += 2) rows.push({ text: parts[index], eol: parts[index + 1] ?? '' });
+  return rows;
+}
+
+// Superset of the tokens that can admit a line in either engine arm.
+const token = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])|\b(?:FR|NFR|RF|RNF|REQ|CON|C|R)-\d+\b/iu;
+// Lines that may carry Markdown structure. They are never blanked by the probe.
+const structural = /^\s*(?:#|>|`{3,}|~{3,})/u;
+
+export const candidateLines = (content: string) => segments(content)
+  .map((row, index) => ({ line: index + 1, text: row.text.normalize('NFC') }))
+  .filter(row => token.test(row.text)).map(row => row.line);
+
+/**
+ * Keep the target line and every structural line; blank other lines that contain a
+ * candidate token. Separators, line numbers and target bytes are unchanged, so the
+ * target is the only possible requirement line in the probe document.
+ */
+export function isolate(content: string, line: number): string {
+  return segments(content).map((row, index) => {
+    const keep = index + 1 === line || structural.test(row.text) || !token.test(row.text.normalize('NFC'));
+    return (keep ? row.text : '') + row.eol;
+  }).join('');
+}
+
+export type Kind = 'requirement' | 'acceptance' | 'other';
+export interface LinePrediction { admitted: boolean; kind: Kind; 'E1.4': Label; 'E1.2': Label; evidenceValid: boolean | null }
+
+export async function predictLine(engine: Engine, path: string, content: string, line: number): Promise<LinePrediction> {
+  const artifact = engine.classifyArtifact(path, isolate(content, line));
+  const report = await engine.analyze({ name: 'probe', artifacts: [artifact] });
+  const original = segments(content)[line - 1]?.text ?? '';
+  const out: LinePrediction = { admitted: false, kind: 'other', 'E1.4': 'unknown', 'E1.2': 'unknown', evidenceValid: null };
+  for (const rule of ['E1.4', 'E1.2'] as const) {
+    const practice = report.practices.find(item => item.id === rule);
+    if (!practice || practice.status === 'unknown') continue;
+    out.admitted = true;
+    // Engine 0.1.4 has no acceptance kind: scenario lines are excluded, so they read as other.
+    out.kind = 'requirement';
+    const hit = practice.evidence.find(item => item.path === artifact.path && item.line === line);
+    out[rule] = hit ? 'positive' : 'negative';
+    if (hit) out.evidenceValid = (out.evidenceValid ?? true) && hit.text === original.slice(0, 300);
+  }
+  return out;
+}
+
+/**
+ * Independent CommonMark-style fence oracle (lines inside or delimiting a fenced code
+ * block). Opener: a run of 3+ backticks or tildes; a backtick info string cannot contain
+ * a backtick. Closer: the same character, a run at least as long, followed only by
+ * spaces. An unclosed fence runs to the end of the document. Container indentation
+ * is not modelled; indentation is accepted as in the frozen engine.
+ */
+export function fencedLines(content: string): Set<number> {
+  const inside = new Set<number>();
+  let open: { char: string; length: number } | undefined;
+  segments(content).forEach((row, index) => {
+    const match = /^\s*(`{3,}|~{3,})(.*)$/u.exec(row.text);
+    if (open) {
+      inside.add(index + 1);
+      if (match && match[1][0] === open.char && match[1].length >= open.length && /^[ \t]*$/u.test(match[2])) open = undefined;
+      return;
+    }
+    if (match && !(match[1][0] === '`' && match[2].includes('`'))) {
+      open = { char: match[1][0], length: match[1].length };
+      inside.add(index + 1);
+    }
+  });
+  return inside;
+}
+
+/** Spanish when the line has a Spanish modal, English when it has an English one. */
+export function lineLanguage(text: string): 'en' | 'es' | 'und' {
+  const nfc = text.normalize('NFC');
+  if (/(?<![\p{L}\p{N}\p{M}_])(?:DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu.test(nfc)) return 'es';
+  if (/(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY)(?![\p{L}\p{N}\p{M}_])/iu.test(nfc)) return 'en';
+  return 'und';
+}
+
+const modalWord = /(?<![\p{L}\p{N}\p{M}_])(?:MUST|SHALL|SHOULD|MAY|DEBERÍAN|DEBERÍA|DEBERÁN|DEBERÁ|DEBEN|DEBE|PUEDEN|PUEDE)(?![\p{L}\p{N}\p{M}_])/iu;
+/**
+ * Character ranges of mentions, found by a scanner written independently from the engine:
+ * keyword-only code spans on lines with an even number of backticks, straight double quotes bounded by non-word characters,
+ * curly double quotes and guillemets. Single quotes are not mentions.
+ */
+const keywordWords = new Set(['must', 'shall', 'should', 'may', 'deberían', 'debería', 'deberán', 'deberá', 'deben', 'debe',
+  'pueden', 'puede', 'or', 'and', 'o', 'y', 'not', 'no']);
+/** A code span is a mention only when every word in it is a modal keyword or a joiner (H2b). */
+function keywordOnlySpan(content: string): boolean {
+  if (/[^\p{L}\p{N}\p{M}_\s/,|.]/u.test(content)) return false;
+  const words = content.toLowerCase().split(/[^\p{L}\p{N}\p{M}_]+/u).filter(Boolean);
+  return words.length > 0 && words.every(word => keywordWords.has(word)) && words.some(word => !['or', 'and', 'o', 'y', 'not', 'no'].includes(word));
+}
+
+export function mentionRanges(text: string): [number, number][] {
+  const ranges: [number, number][] = [];
+  const evenBackticks = [...text].filter(char => char === '`').length % 2 === 0;
+  const word = (char: string | undefined) => char !== undefined && /[\p{L}\p{N}\p{M}_]/u.test(char);
+  let i = 0;
+  while (i < text.length) {
+    const char = text[i];
+    if (char === '`') {
+      let n = 0;
+      while (text[i + n] === '`') n++;
+      let j = i + n;
+      let close = -1;
+      while (j < text.length) {
+        if (text[j] === '`') {
+          let m = 0;
+          while (text[j + m] === '`') m++;
+          if (m === n) { close = j; break; }
+          j += m;
+        } else j++;
+      }
+      if (close > i + n) {
+        if (evenBackticks && keywordOnlySpan(text.slice(i + n, close))) ranges.push([i, close + n]);
+        i = close + n;
+        continue;
+      }
+      i += n;
+      continue;
+    }
+    const pairs: Record<string, string> = { '“': '”', '«': '»' };
+    if (pairs[char]) {
+      const close = text.indexOf(pairs[char], i + 1);
+      if (close > 0) { ranges.push([i, close + 1]); i = close + 1; continue; }
+    }
+    if (char === '"' && !word(text[i - 1])) {
+      let close = text.indexOf('"', i + 1);
+      while (close > 0 && word(text[close + 1])) close = text.indexOf('"', close + 1);
+      if (close > 0) { ranges.push([i, close + 1]); i = close + 1; continue; }
+    }
+    i++;
+  }
+  return ranges;
+}
+
+/** True when the line has modal words and every one sits inside a mention range. */
+export function quotedOnlyModal(text: string): boolean {
+  const nfc = text.normalize('NFC');
+  const ranges = mentionRanges(nfc);
+  const hits = [...nfc.matchAll(new RegExp(modalWord.source, 'giu'))];
+  return hits.length > 0 && hits.every(hit => ranges.some(([start, end]) => hit.index! >= start && hit.index! < end));
+}
+
+/** Lines inside, opening or closing an HTML comment. */
+export function commentLines(content: string): Set<number> {
+  const inside = new Set<number>();
+  let open = false;
+  segments(content).forEach((row, index) => {
+    const starts = row.text.includes('<!--');
+    if (open || starts) inside.add(index + 1);
+    if (starts) open = true;
+    if (open && row.text.includes('-->') && row.text.lastIndexOf('-->') > row.text.lastIndexOf('<!--')) open = false;
+  });
+  return inside;
+}

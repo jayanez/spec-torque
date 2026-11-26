@@ -1,8 +1,27 @@
 cff-version: 1.2.0
 message: "Please cite this software and the separately attributed EPIC research."
 title: SpecTorque
-version: 0.1.0
+abstract: "Local, explainable review of agent-ready specifications, plans and tasks against the 40 EPIC practices, with source evidence and reviewed refinements."
+type: software
+version: 0.3.0
+date-released: 2026-11-26
 authors:
   - name: jayanez
 license: Apache-2.0
 repository-code: https://github.com/jayanez/spec-torque
+url: https://github.com/jayanez/spec-torque
+keywords:
+  - spec-driven development
+  - requirements engineering
+  - specification quality
+  - coding agents
+references:
+  - type: article
+    title: "The EPIC Framework for Spec-Driven Development"
+    authors:
+      - family-names: Claudino
+        name-suffix: "et al."
+    url: https://arxiv.org/abs/2610.07534
+    identifiers:
+      - type: other
+        value: "arXiv:2610.07534"

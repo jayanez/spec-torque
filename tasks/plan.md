@@ -29,3 +29,42 @@ Pi print output and adds an explicit offline EN/ES text/JSON qualification route
 Package/skill discovery and supported-OS acceptance remain pending. Continue the
 real-producer/independent-label corpus in #2 and human acceptance in #3 alongside
 these client corrections.
+
+## Work-tree-scoped discovery (#68)
+
+The #8 pilot on a large Spec Kit repository showed that whole-root discovery fails
+before any scope applies. Deliver it in two increments: first the shared engine, CLI,
+MCP and workbench (#69–#71), then every host adapter, the skills and a cross-host
+parity test (#72–#77). Discovery criteria are recorded in
+[architecture](../docs/architecture.md#discovery-criteria). Detector precision
+follow-ups from the same pilot (#78–#80, the #52 comment) follow the #39 replay
+process and do not block this work.
+
+Delivered: #81 (engine, CLI, MCP, workbench) and #82 (host adapters, skills,
+parity test) closed #68–#77. H3a (#83, engine 0.1.9) is integrated through #86. Next
+precision candidates from the pilot, by impact: #88 (E3.1/E3.2 vocabulary, 30 of 32
+features) and #78 (wrapped continuations, the largest remaining false-positive class),
+then #79, #80 and #85, each through the #39 replay process. A cross-host UI/UX
+refinement (workbench auto-load, one scope control, a shared finding card) follows as
+its own increment.
+
+## Pilot precision follow-ups
+
+Order agreed after #68: #78 and #88 first, then #79, #80, #85, #84 and #94, each
+through the #39 replay (pre-registered hypothesis, synthetic twins, paired replay,
+adjudication). H5 (#78) failed adjudication on units identified only by a cited
+ID; the narrowed H5a (engine 0.1.10) passed and is integrated through #96. H6 (#88,
+engine 0.1.11, product 0.2.4) adds acceptance-scenario and validation-table
+vocabulary and discovers the Spec Kit `quickstart.md`. H6a (#88, engine 0.1.12,
+product 0.2.5) reads the quickstart only as validation-method evidence and adds
+test-runner vocabulary. H8 (#80, engine 0.1.13, product 0.2.6) treats a bare `R-n`
+on a plan or tasks line as a local label unless the specification uses the `R-`
+family. H85 (#85, engine 0.1.14, product 0.2.7) stops reading a
+demonstrative that leads a noun phrase as an E1.3 pronoun subject; E1.2 detection is
+unchanged and the clarifier treats a quoted label after a label noun as a named
+option. H7 (#79) failed its redesigned
+adjudication on the evidence it removed; the narrowed H7a (engine 0.1.15, product
+0.2.8) reads Spec Kit checklists as review context that is never requirements text or an
+open decision. H9 (#84, engine 0.1.16, product 0.2.9) leaves out of I2.3 the
+references a line qualifies by another specification; its "not adopted" rule was
+reverted.

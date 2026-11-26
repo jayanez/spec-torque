@@ -4,7 +4,14 @@ The package includes the inline viewer, project MCP server, review skills and lo
 
 ## Install and bind a worktree
 
-1. Verify the ZIP against the supplied SHA-256 and extract it into a local marketplace directory, for example as `plugins/spectorque`. Create `.agents/plugins/marketplace.json` at the marketplace root:
+1. Add this repository's marketplace and install the plugin:
+
+   ```sh
+   codex plugin marketplace add jayanez/spec-torque
+   codex plugin add spectorque@spectorque --json
+   ```
+
+   The catalog installs the `spectorque-codex` npm package. Use the emitted `installedPath` in step 3. For an offline install, verify the release ZIP against its SHA-256 and extract it into a local marketplace directory, for example as `plugins/spectorque`, with this `.agents/plugins/marketplace.json` at the marketplace root:
 
    ```json
    {
@@ -18,8 +25,8 @@ The package includes the inline viewer, project MCP server, review skills and lo
    }
    ```
 
-2. From that marketplace root, run `codex plugin marketplace add .` and `codex plugin add spectorque@spectorque-local --json`. Use the emitted `installedPath` in the next step. The marketplace supplies the skills. The MCP connection comes from the trusted project.
-3. Run `node /path/to/installed/plugin/setup-workspace.mjs /path/to/trusted/worktree`, quoting paths as needed. Merge its MCP block into that worktree’s `.codex/config.toml`. Replace any previous SpecTorque block for this server so the key is declared once. For a linked worktree, run this step with its own path. The script also prints the command to start the corresponding workbench.
+2. For the offline route, run `codex plugin marketplace add .` and `codex plugin add spectorque@spectorque-local --json` from that marketplace root. Either route supplies the skills. The MCP connection comes from the trusted project.
+3. Run `node /path/to/installed/plugin/setup-workspace.mjs /path/to/trusted/worktree [feature-id]`, quoting paths as needed. Merge its MCP block into that worktree’s `.codex/config.toml`. Replace any previous SpecTorque block for this server so the key is declared once. For a linked worktree, run this step with its own path. The script also prints the command to start the corresponding workbench, with `--feature` when you pass a feature; the workbench loads that feature, or the whole work tree when it fits, as soon as it opens.
 4. Open a new local chat in the trusted project in Codex Desktop. Invoke `open_spectorque` from the local `spectorque-workspace` server. The inline viewer opens with **All documents** and supports feature selection and exact source evidence. Testing the opening turn uses disposable documents.
 
 ## Review and export
@@ -30,4 +37,4 @@ Use **Export in local workbench** to select the scope data and paste it into the
 
 ## Update and remove
 
-On update, verify and extract the replacement ZIP into the marketplace source and refresh or reinstall the plugin. Re-run setup against the new installed path and start a new local chat. To disable the viewer for a worktree, remove its `spectorque-workspace` block and open a new chat. Stop the workbench from the terminal that launched it. When the plugin is no longer needed, run `codex plugin remove spectorque@spectorque-local` and remove this dedicated marketplace using `codex plugin marketplace remove spectorque-local`.
+On update, run `codex plugin marketplace upgrade spectorque` and reinstall the plugin (offline: verify and extract the replacement ZIP into the marketplace source and reinstall). Re-run setup against the new installed path and start a new local chat. To disable the viewer for a worktree, remove its `spectorque-workspace` block and open a new chat. Stop the workbench from the terminal that launched it. When the plugin is no longer needed, run `codex plugin remove spectorque@spectorque` and `codex plugin marketplace remove spectorque` (offline: `spectorque@spectorque-local` and `spectorque-local`).

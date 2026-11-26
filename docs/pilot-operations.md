@@ -20,7 +20,7 @@ Summarize known sessions and attempts, denominators per question and missing dat
 
 ## Early publication
 
-The maintainer may approve a GitHub prerelease before participant sessions. Require independent review, passing CI, reproducible installers with verified checksums, and exact candidate evidence for each advertised route. Publish the reproducible EN/ES demo and disclose the pending pilot and host limits. Keep issue #8 open and record participant evidence against the version and digest they actually use. Apply the stable candidate gate below when deciding whether to publish a post-pilot release.
+The maintainer may approve a GitHub prerelease before participant sessions. Require independent review, passing CI, reproducible installers with verified checksums, and exact candidate evidence for each advertised route. Publish the reproducible EN/ES demo and disclose the pending pilot and host limits. Keep issue #8 open and record participant evidence against the version and digest they actually use. Apply the stable candidate gate below when deciding whether to publish a post-pilot release. The 0.3.0 marketplace packages are published under this rule on the prerelease channel ([releases](releases.md#versioning-and-releases)); participants may install from a catalog, and their evidence still records the exact version and package digest.
 
 ## Stable candidate gate
 

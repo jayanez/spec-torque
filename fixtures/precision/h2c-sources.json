@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-21",
+  "purpose": "Fresh H2c confirmation set (Spanish requirement IDs). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"RF-\" \"EL SISTEMA\" by path per family, search order, up to 5 repositories per family; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39 and #51 excluded; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "spec-kitty": "No qualifying repository.",
+    "bmad": "No qualifying repository.",
+    "zeespec": "No qualifying repository.",
+    "kiro": "Only 2 qualifying repositories."
+  },
+  "sources": [
+    {
+      "family": "openspec",
+      "repository": "github.com/LicTony/AccesosLauncher",
+      "commit": "12f8d27c43a26723a0985ad3c3cfe36278640697",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/Brydyan/Control-s-Elector",
+      "commit": "a5fbe5f582aefdd97a4aee374adcc0c149ce4fe4",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" \"EL SISTEMA\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/DataDave-Dev/Testly",
+      "commit": "05f43b92ae65f16c3aec3bdcd2e23cee3e3798be",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/Fozzy3/web-security-analizer",
+      "commit": "23a140acc6b0c84b9cb826671d100cbd6d7afa6d",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "openspec",
+      "repository": "github.com/CEOUBB/CEOUBB",
+      "commit": "ecbf787a2341d1cbc97e661fc9953117e927108b",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:openspec/specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/ArielSuntasig/atlas-deal-desk-copilot",
+      "commit": "a4c61fe2747b15f12f5575dce764b9bfce7e5002",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Calevin/seb-harness",
+      "commit": "ed2a5338d200466f699d03421ff7d15d85f97327",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/ESTRIN217/secure-notes",
+      "commit": "a74b3a5b49503c76a5149035a759e40448ad3e7b",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/lubswer-academico/EPMAPS",
+      "commit": "c5574222bb1a615a3f65795c17d2cd0814779d38",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Nain9Dev/NainNotify",
+      "commit": "a7246850b4750870e3d43e8e5d187d05ecba488a",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:specs filename:spec.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/carlosjcastro/entiscore",
+      "commit": "302f07f9c41692977342fc9d2e97c1cc46ed8b7d",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "kiro",
+      "repository": "github.com/OmarMira/Contabilidadbackup",
+      "commit": "4c51b8d468dbd79dc0ab9cd052cd2e3117a8ac9d",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" path:.kiro/specs filename:requirements.md"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/danimirdev/space-flight-news",
+      "commit": "eb20e49311794a5d8647bc9d638dc24a6d7a6a7c",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/azahel-barrera-cortes/G19X-ITCH-ABC-955-ACADEMIC",
+      "commit": "0be8ab8907703bfa134ef0b0ce54f282b9a655c8",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/luckypadua/Gestion-de-vacaciones-daw",
+      "commit": "2469caaca3f171f019cf541fa745ee83cb42f1ab",
+      "license": "Apache-2.0",
+      "query": "\"RF-\" \"EL SISTEMA\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/hexab1t3/Engine-Transactional",
+      "commit": "f7c6b276d58fe4c8dd651fde7c530dc070633688",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" filename:PRD.md path:docs"
+    },
+    {
+      "family": "generic",
+      "repository": "github.com/lankamar/pragmatic-llm-alignment",
+      "commit": "a13189b3bc041359a9a2b31476f31dc2c66bef9c",
+      "license": "MIT",
+      "query": "\"RF-\" \"EL SISTEMA\" filename:PRD.md path:docs"
+    }
+  ]
+}

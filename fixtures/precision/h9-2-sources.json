@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-25",
+  "purpose": "Second fresh H9 confirmation set (amendment H9-2, #84). Frozen before any file content was read and before any scan.",
+  "rule": "GitHub code search for \"FR-0\" path:specs and \"REQ-0\" path:specs in files named tasks.md, search order, up to 8 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, #52, H3, H3a, H5, H5a, H6, H6a, H6a-2 and H9, and the pilot repository owner, excluded; pinned to the default-branch head SHA.",
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/necronicle/z2k",
+      "commit": "37ac40bca78f673c9c073d4c2b2569f404816e72",
+      "license": "MIT",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/chancehouston/rr-dr60-emu",
+      "commit": "80852a229fa35fe7c08446280d87bfc3942ae4af",
+      "license": "MIT",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/fancy1108/Clutch",
+      "commit": "d4d23af46e871a663886743535956d5c331313db",
+      "license": "MIT",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/mbeacom/adrkit",
+      "commit": "9513165152459379f6bb933713d1f0e7badda0a1",
+      "license": "Apache-2.0",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/kosavan/mashina",
+      "commit": "cbf352ce84ca9aa785282d5f02a45b8c8556df5c",
+      "license": "MIT",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/FlatBone/Feather-Calendar",
+      "commit": "7e19d20318cd49de7139b2c71ede0dad1a446834",
+      "license": "MIT",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/oryx-labs/oryxos",
+      "commit": "52cbfd3ee8a6606eebca89825bf2d476be9f2776",
+      "license": "Apache-2.0",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/mark3labs/louper-v3",
+      "commit": "cf4c0cc1712fef6ba1e1578fc22c14a629cbf3e7",
+      "license": "MIT",
+      "query": "\"FR-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Fukuchan77/vaz-agentic-ai-next",
+      "commit": "4463e606f6e545ab18c1d8ec6adb3d06cae3aefc",
+      "license": "MIT",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/leocamello/spec-kit-v-model",
+      "commit": "e050c7bee795ab8fddd40d3fa1d3966e027bf132",
+      "license": "MIT",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/justingrammens/OSN-2026",
+      "commit": "e0706ea4146631ab92732ad831a69fe9ccfb0b86",
+      "license": "Apache-2.0",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/splunk/token-meter",
+      "commit": "91372ec35dc0b1258b21eaade30a45acb22c532b",
+      "license": "MIT",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/longcipher/hpsvm",
+      "commit": "55813f5f3c13961e740569ddd328d10abd5ccb1c",
+      "license": "Apache-2.0",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/illusionaireal/oh-my-patent",
+      "commit": "befd512a2f0cd6b3a12c4147b3fc34ddfe66732a",
+      "license": "MIT",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/traylorre/openclaw-mac",
+      "commit": "8acd370a9df930ea097320226df8640dba28f67e",
+      "license": "MIT",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/jpiedrafita/agent-templates",
+      "commit": "5dfda265f1d59f6549c4a0565a739b2e88cff0d8",
+      "license": "MIT",
+      "query": "\"REQ-0\" path:specs filename:tasks.md"
+    }
+  ]
+}

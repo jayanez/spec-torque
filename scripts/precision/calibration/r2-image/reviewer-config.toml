@@ -1,0 +1,22 @@
+# R2 reviewer: no tools, no remote apps or plugins. The reviewer only reads the prompt it receives.
+web_search = "disabled"
+[features]
+shell_tool = false
+unified_exec = false
+apps = false
+plugins = false
+remote_plugin = false
+browser_use = false
+browser_use_external = false
+in_app_browser = false
+computer_use = false
+image_generation = false
+multi_agent = false
+skill_search = false
+tool_suggest = false
+hooks = false
+goals = false
+view_image = false
+
+[agents]
+enabled = false

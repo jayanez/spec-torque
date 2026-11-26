@@ -1,14 +1,12 @@
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
+import { archiveEngine, commit, git, repository, type Engine } from './precision/engines.js';
 import { referenceFor, reviewFile, reviewProvenance, summarize, type Label, type Reviews } from './corpus-metrics.js';
 
-const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtureRoot = join(repository, 'fixtures', 'calibration');
 const sha256 = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 const digest = z.string().regex(/^[a-f0-9]{64}$/u);
@@ -136,27 +134,8 @@ function unitsFor(entry: Example): Unit[] {
   return units;
 }
 
-const git = (...args: string[]) => execFileSync('git', args, { cwd: repository, encoding: 'utf8' }).trim();
-const commit = (ref: string) => git('rev-parse', '--verify', '--end-of-options', `${ref}^{commit}`);
-async function loadEngine(root: string) {
-  const load = (path: string) => import(pathToFileURL(join(root, path)).href);
-  const [rules, artifacts, workspace] = await Promise.all([
-    load('src/core/analyze.ts') as Promise<typeof import('../src/core/analyze.js')>,
-    load('src/core/artifacts.ts') as Promise<typeof import('../src/core/artifacts.js')>,
-    load('src/node/workspace.ts') as Promise<typeof import('../src/node/workspace.js')>,
-  ]);
-  return { ...rules, ...artifacts, ...workspace };
-}
-
-async function archiveEngine(revision: string, directory: string) {
-  await mkdir(directory);
-  const snapshot = execFileSync('git', ['archive', revision, 'package.json', 'src/core', 'src/node'], { cwd: repository });
-  execFileSync('tar', ['-xf', '-', '-C', directory], { input: snapshot });
-  return loadEngine(directory);
-}
-
 const polarity = (value: boolean): Label => value ? 'positive' : 'negative';
-async function evaluate(engine: Awaited<ReturnType<typeof loadEngine>>, entry: Example, units: Unit[]) {
+async function evaluate(engine: Engine, entry: Example, units: Unit[]) {
   const set = await engine.discoverWorkspace(join(fixtureRoot, entry.root));
   const report = await engine.analyze(set);
   const files = new Map(set.artifacts.map(artifact => [artifact.path, artifact]));

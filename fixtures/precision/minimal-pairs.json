@@ -1,0 +1,2120 @@
+{
+  "version": 1,
+  "description": "Original synthetic minimal pairs for detector admission and E1.4/E1.2 decisions. Apache-2.0. Expected outcomes are constructed references, not independent labels.",
+  "cases": [
+    {
+      "id": "fence-tilde-holds-backtick-en",
+      "family": "fence-mismatch",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Example",
+        "~~~markdown",
+        "```",
+        "The API MUST return 200 for the sample.",
+        "```",
+        "~~~",
+        "The API MUST return 201 on creation."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Inside the outer tilde fence."
+        },
+        {
+          "line": 7,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-tilde-holds-backtick-es",
+      "family": "fence-mismatch",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "# Ejemplo",
+        "~~~markdown",
+        "```",
+        "La API DEBE devolver 200 en el ejemplo.",
+        "```",
+        "~~~",
+        "La API DEBE devolver 201 al crear."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Inside the outer tilde fence."
+        },
+        {
+          "line": 7,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-longer-opener-en",
+      "family": "fence-mismatch",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "````markdown",
+        "```",
+        "The client MUST send a token.",
+        "```",
+        "````",
+        "The client MUST refresh tokens."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Inside the four-backtick fence."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-longer-opener-es",
+      "family": "fence-mismatch",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "````markdown",
+        "```",
+        "El cliente DEBE enviar un token.",
+        "```",
+        "````",
+        "El cliente DEBE renovar los tokens."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Inside the four-backtick fence."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-longer-opener-openspec-en",
+      "family": "fence-mismatch",
+      "language": "en",
+      "path": "openspec/specs/auth/spec.md",
+      "lines": [
+        "## Requirements",
+        "### Requirement: Token refresh",
+        "````markdown",
+        "```",
+        "The client MUST send a token.",
+        "```",
+        "````",
+        "The client MUST refresh tokens."
+      ],
+      "targets": [
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-shorter-closer-en",
+      "family": "fence-mismatch",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "````",
+        "The app MUST log.",
+        "```",
+        "The app MUST hide secrets.",
+        "````",
+        "The app MUST audit access."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A shorter run cannot close the fence."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-shorter-closer-es",
+      "family": "fence-mismatch",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "````",
+        "La app DEBE registrar.",
+        "```",
+        "La app DEBE ocultar secretos.",
+        "````",
+        "La app DEBE auditar el acceso."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A shorter run cannot close the fence."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-closer-info-en",
+      "family": "fence-mismatch",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "```",
+        "sample",
+        "```text",
+        "The app MUST log requests.",
+        "```",
+        "The app MUST rotate logs."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A closing fence has no info string."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-closer-info-es",
+      "family": "fence-mismatch",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "```",
+        "ejemplo",
+        "```text",
+        "La app DEBE registrar las peticiones.",
+        "```",
+        "La app DEBE rotar los registros."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A closing fence has no info string."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-inline-backticks-en",
+      "family": "fence-mismatch",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "```json``` blocks are shown below.",
+        "The app MUST encrypt data."
+      ],
+      "targets": [
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "A backtick info string cannot contain backticks, so line 1 opens no fence."
+        }
+      ]
+    },
+    {
+      "id": "fence-inline-backticks-es",
+      "family": "fence-mismatch",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "```json``` se muestra abajo.",
+        "La app DEBE cifrar los datos."
+      ],
+      "targets": [
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "A backtick info string cannot contain backticks, so line 1 opens no fence."
+        }
+      ]
+    },
+    {
+      "id": "fence-plain-en",
+      "family": "fence-control",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "```",
+        "The client MUST retry.",
+        "```",
+        "The client MUST log retries."
+      ],
+      "targets": [
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-plain-es",
+      "family": "fence-control",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "```",
+        "El cliente DEBE reintentar.",
+        "```",
+        "El cliente DEBE registrar los reintentos."
+      ],
+      "targets": [
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-unclosed-en",
+      "family": "fence-control",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "The app MUST start.",
+        "```",
+        "The app MUST stop."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "An unclosed fence runs to the end."
+        }
+      ]
+    },
+    {
+      "id": "fence-unclosed-es",
+      "family": "fence-control",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "La app DEBE arrancar.",
+        "```",
+        "La app DEBE parar."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "An unclosed fence runs to the end."
+        }
+      ]
+    },
+    {
+      "id": "fence-in-list-en",
+      "family": "fence-control",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "- Example:",
+        "  ```",
+        "  The app MUST log.",
+        "  ```",
+        "- The app MUST audit."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-in-list-es",
+      "family": "fence-control",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "- Ejemplo:",
+        "  ```",
+        "  La app DEBE registrar.",
+        "  ```",
+        "- La app DEBE auditar."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-longer-closer-en",
+      "family": "fence-control",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "```",
+        "The app MUST log.",
+        "`````",
+        "The app MUST audit."
+      ],
+      "targets": [
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-longer-closer-es",
+      "family": "fence-control",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "```",
+        "La app DEBE registrar.",
+        "`````",
+        "La app DEBE auditar."
+      ],
+      "targets": [
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "fence-indented-four-en",
+      "family": "fence-residual",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "Some text.",
+        "",
+        "    ```",
+        "The app MUST log."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Line 3 is indented code, not a fence. Container indentation is outside H1."
+        }
+      ]
+    },
+    {
+      "id": "fence-indented-four-es",
+      "family": "fence-residual",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "Un texto.",
+        "",
+        "    ```",
+        "La app DEBE registrar."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Line 3 is indented code, not a fence. Container indentation is outside H1."
+        }
+      ]
+    },
+    {
+      "id": "blockquote-en",
+      "family": "admission-control",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "> The app MUST log.",
+        "The app MUST audit."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "blockquote-es",
+      "family": "admission-control",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "> La app DEBE registrar.",
+        "La app DEBE auditar."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "inline-quoted-modal-en",
+      "family": "quoted-modal-residual",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "Use the keyword \"MUST\" only for obligations."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "The modal is quoted as a term, not used as a requirement."
+        }
+      ]
+    },
+    {
+      "id": "inline-quoted-modal-es",
+      "family": "quoted-modal-residual",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "Usa la palabra \"DEBE\" solo para obligaciones."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "The modal is quoted as a term, not used as a requirement."
+        }
+      ]
+    },
+    {
+      "id": "html-comment-en",
+      "family": "admission-residual",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "<!-- The app MUST log. -->",
+        "The app MUST audit."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "HTML comments are not rendered prose."
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "html-comment-es",
+      "family": "admission-residual",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "<!-- La app DEBE registrar. -->",
+        "La app DEBE auditar."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "HTML comments are not rendered prose."
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "table-row-en",
+      "family": "admission-residual",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "| ID | Requirement |",
+        "|---|---|",
+        "| R-1 | The app MUST log. |"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": null,
+          "E1.4": "unknown",
+          "E1.2": "negative",
+          "note": "Tables can hold requirements; no admission expectation."
+        }
+      ]
+    },
+    {
+      "id": "table-row-es",
+      "family": "admission-residual",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "| ID | Requisito |",
+        "|---|---|",
+        "| R-1 | La app DEBE registrar. |"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": null,
+          "E1.4": "unknown",
+          "E1.2": "negative",
+          "note": "Tables can hold requirements; no admission expectation."
+        }
+      ]
+    },
+    {
+      "id": "comparator-en",
+      "family": "comparator",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "The API MUST respond within 2 seconds.",
+        "The client MUST use TLS 1.3.",
+        "Step 3 MUST validate the form.",
+        "The service MUST keep at least 3 replicas.",
+        "The export MUST finish in under 5 minutes.",
+        "The report MUST list release 2.4 changes."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Version, not a bound."
+        },
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Incidental number."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Version, not a bound."
+        }
+      ]
+    },
+    {
+      "id": "comparator-es",
+      "family": "comparator",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "lines": [
+        "La API DEBE responder en 2 segundos como máximo.",
+        "El cliente DEBE usar TLS 1.3.",
+        "El paso 3 DEBE validar el formulario.",
+        "El servicio DEBE mantener al menos 3 réplicas.",
+        "La exportación DEBE terminar en menos de 5 minutos.",
+        "El informe DEBE listar los cambios de la versión 2.4."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive",
+          "note": "Comparator after the quantity."
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "crlf-tilde-holds-backtick-en",
+      "family": "encoding",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "eol": "\r\n",
+      "lines": [
+        "# Example",
+        "~~~markdown",
+        "```",
+        "The API MUST return 200 for the sample.",
+        "```",
+        "~~~",
+        "The API MUST return 201 on creation."
+      ],
+      "targets": [
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 7,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "bom-first-line-en",
+      "family": "encoding",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "bom": true,
+      "lines": [
+        "The app MUST start.",
+        "```",
+        "The app MUST stop.",
+        "```"
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Evidence keeps the BOM bytes of line 1."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "nfd-tilde-holds-backtick-es",
+      "family": "encoding",
+      "language": "es",
+      "path": "specs/001-demo-es/spec.md",
+      "nfd": true,
+      "lines": [
+        "~~~",
+        "```",
+        "El sistema DEBERÁ registrar el ejemplo.",
+        "```",
+        "~~~",
+        "El sistema DEBERÁ registrar el acceso."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-en",
+      "family": "quoted-modal",
+      "language": "en",
+      "path": "specs/002-keywords/spec.md",
+      "lines": [
+        "Keywords such as `SHALL` and `MUST` stay in English.",
+        "Show an example: \"The system SHALL log.\"",
+        "\"The system SHALL log every request.\"",
+        "FR-010: Reject bodies without `MUST`.",
+        "The parser MUST reject lines without `SHALL`.",
+        "Requirements SHOULD use the `SHALL` keyword.",
+        "The screen MUST be 5\" wide.",
+        "The app MUST show \"Saved\" after the edit."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Keywords are mentioned as terms."
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Quoted example."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A fully quoted sentence is illustrative under the annotation guide."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Admitted by its ID; the only modal is a mentioned term."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive",
+          "note": "Bare MUST plus explicit rejection."
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 7,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Unbalanced quote mark."
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Quoted UI text next to a bare modal."
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-es",
+      "family": "quoted-modal",
+      "language": "es",
+      "path": "specs/002-palabras/spec.md",
+      "lines": [
+        "Las palabras `DEBE` y `PUEDE` se mantienen en español.",
+        "Mostrar: “El sistema DEBE registrar.”",
+        "¿Qué \"debe\" significar el término?",
+        "FR-010: Rechazar cuerpos sin `DEBE`.",
+        "El sistema DEBE rechazar textos sin `DEBE`.",
+        "La app DEBE mostrar \"Guardado\" tras editar."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Curly-quoted example."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "The modal is quoted inside a question."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "positive"
+        },
+        {
+          "line": 6,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-boundaries-en",
+      "family": "quoted-modal",
+      "language": "en",
+      "path": "specs/003-boundaries/spec.md",
+      "lines": [
+        "Displays up to 27\" MUST be supported; 32\" are out of scope.",
+        "Keywords like ``MUST`` stay in English.",
+        "The label MUST read \"Saved\" and the hint \"Retry\"."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Inch marks are not quotation marks."
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Double-backtick code span."
+        },
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Bare modal between two quotations."
+        }
+      ]
+    },
+    {
+      "id": "quoted-modal-boundaries-es",
+      "family": "quoted-modal",
+      "language": "es",
+      "path": "specs/003-limites/spec.md",
+      "lines": [
+        "Las pantallas de hasta 27\" DEBEN admitirse; las de 32\" quedan fuera.",
+        "El analizador reconoce «DEBE» como palabra clave.",
+        "Palabras como ``DEBE`` se mantienen.",
+        "La etiqueta DEBE decir «Guardado» y la ayuda «Reintentar»."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Inch marks are not quotation marks."
+        },
+        {
+          "line": 2,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Guillemets are Spanish quotation marks."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "single-quoted-modal-en",
+      "family": "quoted-modal-residual",
+      "language": "en",
+      "path": "specs/004-single/spec.md",
+      "lines": [
+        "Use 'MUST' only for obligations."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Single quotes are outside H2; a known residual false positive."
+        }
+      ]
+    },
+    {
+      "id": "code-span-requirement-en",
+      "family": "quoted-modal-h2b",
+      "language": "en",
+      "path": "specs/005-code-spans/spec.md",
+      "lines": [
+        "If no rows exist, `openingBalance MUST be \"0.00\"`.",
+        "verify`) the CLI SHALL rerun the comparison against `codes.json`",
+        "Keywords `SHALL`/`MUST` and `SHALL or MUST` stay in English."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "A requirement written inside a code span."
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Odd backticks: a span from the previous line."
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Keyword-only code spans."
+        }
+      ]
+    },
+    {
+      "id": "code-span-requirement-es",
+      "family": "quoted-modal-h2b",
+      "language": "es",
+      "path": "specs/005-spans/spec.md",
+      "lines": [
+        "Si no hay movimientos, `saldoInicial DEBE ser \"0.00\"`.",
+        "verify`) la CLI DEBE regenerar la comparación con `codes.json`",
+        "Las palabras `DEBE` y `PUEDE` o `DEBE/PUEDE` se mantienen."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 2,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "code-template-residual-en",
+      "family": "quoted-modal-residual",
+      "language": "en",
+      "path": "specs/006-templates/spec.md",
+      "lines": [
+        "Acceptance criteria use `WHEN [trigger], THE SYSTEM SHALL [behavior]`."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "A code-formatted template; H2b deliberately admits it again."
+        }
+      ]
+    },
+    {
+      "id": "code-template-residual-es",
+      "family": "quoted-modal-residual",
+      "language": "es",
+      "path": "specs/006-plantillas/spec.md",
+      "lines": [
+        "Los criterios usan `CUANDO [evento], EL SISTEMA DEBE [comportamiento]`."
+      ],
+      "targets": [
+        {
+          "line": 1,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative"
+        }
+      ]
+    },
+    {
+      "id": "spanish-requirement-id-es",
+      "family": "spanish-requirement-id",
+      "language": "es",
+      "path": "specs/007-ids/spec.md",
+      "lines": [
+        "# Requisitos",
+        "",
+        "- RF-12: EL SISTEMA guardará el borrador (usuario: «nada debe perderse»).",
+        "- RNF-3: Los datos se cifrarán en reposo.",
+        "- RF-13: EL SISTEMA DEBE registrar cada acceso.",
+        "La norma RFC-7231 define los códigos de estado.",
+        "La tarea PERF-12 sigue abierta."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Admitted by its Spanish ID; the only modal is quoted."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Admitted by its Spanish ID; future tense, no modal."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative"
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "RFC is not a requirement ID."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "An ID suffix inside another word does not count."
+        }
+      ]
+    },
+    {
+      "id": "id-position-en",
+      "family": "id-position",
+      "language": "en",
+      "path": "specs/008-ids/spec.md",
+      "lines": [
+        "# Requirements",
+        "",
+        "- FR-3: The service records each login.",
+        "- [ ] Wire the login form (FR-3)",
+        "| FR-4 | Export a monthly report |",
+        "| T-7 | FR-4 | Done |",
+        "Satisfies FR-3 and FR-4.",
+        "**FR-5:** Tokens expire after one hour.",
+        "See FR-5; the token MUST be rotated."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Defining position, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Task checkbox that only cites an ID."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "First table cell."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Traceability cell that is not the first."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites IDs."
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Bold label."
+        },
+        {
+          "line": 9,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Cites an ID but admitted by its own modal."
+        }
+      ]
+    },
+    {
+      "id": "id-position-es",
+      "family": "id-position",
+      "language": "es",
+      "path": "specs/008-ids/spec.md",
+      "lines": [
+        "# Requisitos",
+        "",
+        "- RF-3: El servicio registrará cada acceso.",
+        "- [ ] Conectar el formulario de acceso (RF-3)",
+        "| RF-4 | Exportar un informe mensual |",
+        "| T-7 | RF-4 | Hecho |",
+        "Cumple RF-3 y RF-4.",
+        "**RF-5:** Los tokens caducan tras una hora.",
+        "Ver RF-5; el token DEBE rotarse."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Defining position, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Task checkbox that only cites an ID."
+        },
+        {
+          "line": 5,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "First table cell."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Traceability cell that is not the first."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites IDs."
+        },
+        {
+          "line": 8,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Bold label."
+        },
+        {
+          "line": 9,
+          "admitted": true,
+          "E1.4": "positive",
+          "E1.2": "negative",
+          "note": "Cites an ID but admitted by its own modal."
+        }
+      ]
+    },
+    {
+      "id": "constraint-id-en",
+      "family": "constraint-id",
+      "language": "en",
+      "path": "specs/009-constraints/spec.md",
+      "lines": [
+        "# Constraints",
+        "",
+        "| C-003 | No credential appears in argv (FR-18) |",
+        "- **CON-2:** The tool runs offline.",
+        "- **SC-002**: 95% of users finish in under 2 minutes (FR-3).",
+        "This change applies C-003."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID in the first table cell."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID as a bold label."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Success criterion: residual, admitted only by a modal."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites a constraint."
+        }
+      ]
+    },
+    {
+      "id": "constraint-id-es",
+      "family": "constraint-id",
+      "language": "es",
+      "path": "specs/009-constraints/spec.md",
+      "lines": [
+        "# Restricciones",
+        "",
+        "| C-003 | Ninguna credencial aparece en argv (RF-18) |",
+        "- **CON-2:** La herramienta funciona sin conexión.",
+        "- **SC-002**: El 95 % de los usuarios termina en menos de 2 minutos (RF-3).",
+        "Este cambio aplica C-003."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID in the first table cell."
+        },
+        {
+          "line": 4,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Constraint ID as a bold label."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Success criterion: residual, admitted only by a modal."
+        },
+        {
+          "line": 6,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "note": "Prose that only cites a constraint."
+        }
+      ]
+    },
+    {
+      "id": "imperative-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "- Reuse the existing parser exactly.",
+        "Reuse of the parser was discussed in the review."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Imperative bullet, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "imperative-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "- Reutilizar el analizador existente sin cambios.",
+        "La reutilización del analizador se discutió en la revisión."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Imperative bullet, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "negative-constraint-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "- No schema change to the events table.",
+        "Never mind the earlier draft."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Negative constraint, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Idiom, not a rule."
+        }
+      ]
+    },
+    {
+      "id": "negative-constraint-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "- Nunca exponer tokens en los registros.",
+        "Nunca llegó la respuesta del equipo."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Negative constraint, no modal."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Narration, not a rule."
+        }
+      ]
+    },
+    {
+      "id": "future-tense-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The system will store the change history.",
+        "The workshop will take place on Tuesday."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Future tense with a system subject."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "future-tense-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "EL SISTEMA guardará el historial de cambios.",
+        "El taller se celebrará el martes."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Future tense with a system subject."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "capability-en",
+      "family": "requirement-wording",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The system can detect duplicate entries.",
+        "Competitors can detect duplicates only by hand."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Capability wording."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Statement about third parties."
+        }
+      ]
+    },
+    {
+      "id": "capability-es",
+      "family": "requirement-wording",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "El sistema es capaz de detectar entradas duplicadas.",
+        "Los competidores detectan duplicados a mano."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Capability wording."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "section-context-en",
+      "family": "section-context",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "- Support offline mode.",
+        "## Background",
+        "- Offline mode support is common in this market."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Same shape, requirements section."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Background prose."
+        }
+      ]
+    },
+    {
+      "id": "section-context-es",
+      "family": "section-context",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "- Soportar el modo sin conexión.",
+        "## Antecedentes",
+        "- El soporte sin conexión es habitual en este mercado."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Same shape, requirements section."
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Background prose."
+        }
+      ]
+    },
+    {
+      "id": "acceptance-scenario-en",
+      "family": "acceptance",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The system MUST lock the account after 5 failed attempts.",
+        "### Scenario: lock",
+        "- GIVEN a user with 4 failed attempts",
+        "- WHEN the fifth attempt fails",
+        "- THEN the account is locked"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        }
+      ]
+    },
+    {
+      "id": "acceptance-scenario-es",
+      "family": "acceptance",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "El sistema DEBE bloquear la cuenta tras 5 intentos fallidos.",
+        "### Escenario: bloqueo",
+        "- DADO un usuario con 4 intentos fallidos",
+        "- CUANDO falla el quinto intento",
+        "- ENTONCES la cuenta se bloquea"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        },
+        {
+          "line": 7,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Scenario step."
+        }
+      ]
+    },
+    {
+      "id": "success-criterion-en",
+      "family": "acceptance",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Success criteria",
+        "- SC-001: 95% of users finish checkout in under 2 minutes."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Measurable success criterion."
+        }
+      ]
+    },
+    {
+      "id": "success-criterion-es",
+      "family": "acceptance",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Criterios de éxito",
+        "- SC-001: El 95% de los usuarios completa el pago en menos de 2 minutos."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "acceptance",
+          "note": "Measurable success criterion."
+        }
+      ]
+    },
+    {
+      "id": "question-en",
+      "family": "non-requirement",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The app MUST support guests.",
+        "- C-2: Does this apply to guest users?"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Clarification question with an ID."
+        }
+      ]
+    },
+    {
+      "id": "question-es",
+      "family": "non-requirement",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "La app DEBE soportar invitados.",
+        "- C-2: ¿Aplica a invitados?"
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Clarification question with an ID."
+        }
+      ]
+    },
+    {
+      "id": "changelog-en",
+      "family": "non-requirement",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "The app MUST log.",
+        "## Change log",
+        "- Changed MUST to SHOULD in section 3."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Change-log entry."
+        }
+      ]
+    },
+    {
+      "id": "changelog-es",
+      "family": "non-requirement",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "La app DEBE registrar.",
+        "## Historial de cambios",
+        "- Se cambió DEBE por PUEDE en la sección 3."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement"
+        },
+        {
+          "line": 5,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Change-log entry."
+        }
+      ]
+    },
+    {
+      "id": "cross-reference-en",
+      "family": "non-requirement",
+      "language": "en",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requirements",
+        "FR-003: The app logs every login.",
+        "See FR-003 for the full rule."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Defining position."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Cross-reference."
+        }
+      ]
+    },
+    {
+      "id": "cross-reference-es",
+      "family": "non-requirement",
+      "language": "es",
+      "path": "specs/001-demo/spec.md",
+      "lines": [
+        "# Demo",
+        "## Requisitos",
+        "FR-003: La app registra cada inicio de sesión.",
+        "Véase FR-003 para la regla completa."
+      ],
+      "targets": [
+        {
+          "line": 3,
+          "admitted": true,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "requirement",
+          "note": "Defining position."
+        },
+        {
+          "line": 4,
+          "admitted": false,
+          "E1.4": "negative",
+          "E1.2": "negative",
+          "kind": "other",
+          "note": "Cross-reference."
+        }
+      ]
+    }
+  ]
+}

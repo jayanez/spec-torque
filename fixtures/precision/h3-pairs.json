@@ -1,0 +1,326 @@
+{
+  "version": 1,
+  "description": "H3 synthetic twins for requirement definitions (#83). Expected I1.2 and I2.3 findings per case, constructed before the candidate; not independent labels.",
+  "cases": [
+    {
+      "id": "heading-definition-en",
+      "construct": "heading",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### REQ-001 — Consent",
+          "",
+          "The system MUST ask for consent before recording."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [],
+      "note": "A heading defines REQ-001; the body inherits it and the plan reference resolves."
+    },
+    {
+      "id": "heading-without-id-en",
+      "construct": "heading",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Consent",
+          "",
+          "The system MUST ask for consent before recording."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/plan.md|3|Reference REQ-001 has no definition in the supplied specs."
+      ],
+      "note": "Twin: the heading defines no ID, so the body lacks one and the reference is undefined."
+    },
+    {
+      "id": "bold-lead-mention-en",
+      "construct": "mention",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "**REQ-001 Consent.** The system MUST ask for consent before recording.",
+          "",
+          "Imported records MUST also follow REQ-001."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [],
+      "note": "A later mid-line mention of REQ-001 is not a second definition. (Amended before the candidate: a line that starts with the ID is a defining position under the frozen H3 policy.)"
+    },
+    {
+      "id": "two-list-definitions-en",
+      "construct": "mention",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "- REQ-001: The system MUST ask for consent before recording.",
+          "- REQ-001: The system MUST export records as JSON."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|4|Duplicate requirement identifier REQ-001."
+      ],
+      "note": "Twin: two defining positions are a real duplicate."
+    },
+    {
+      "id": "table-definition-en",
+      "construct": "table",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "| ID | Requirement |",
+          "|----|-------------|",
+          "| REQ-001 | The system MUST ask for consent before recording. |"
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [],
+      "note": "A first-cell table ID defines the requirement."
+    },
+    {
+      "id": "table-duplicate-en",
+      "construct": "table",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "| ID | Requirement |",
+          "|----|-------------|",
+          "| REQ-001 | The system MUST ask for consent before recording. |",
+          "| REQ-001 | The system MUST export records as JSON. |"
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|6|Duplicate requirement identifier REQ-001."
+      ],
+      "note": "Twin: two first-cell definitions are a real duplicate."
+    },
+    {
+      "id": "inheritance-boundary-en",
+      "construct": "inheritance",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### REQ-001 — Consent",
+          "",
+          "The system MUST ask for consent before recording.",
+          "",
+          "### Notes",
+          "",
+          "The system MUST log every export."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|9|Requirement has no stable identifier."
+      ],
+      "note": "The body under the defining heading inherits REQ-001; a body under a later heading without ID does not."
+    },
+    {
+      "id": "heading-definition-es",
+      "construct": "heading",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### REQ-001 — Consentimiento",
+          "",
+          "El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [],
+      "note": "A heading defines REQ-001; the body inherits it and the plan reference resolves."
+    },
+    {
+      "id": "heading-without-id-es",
+      "construct": "heading",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### Consentimiento",
+          "",
+          "El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/plan.md|3|Reference REQ-001 has no definition in the supplied specs."
+      ],
+      "note": "Twin: the heading defines no ID, so the body lacks one and the reference is undefined."
+    },
+    {
+      "id": "bold-lead-mention-es",
+      "construct": "mention",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "**REQ-001 Consentimiento.** El sistema DEBE pedir consentimiento antes de grabar.",
+          "",
+          "Los registros importados también DEBEN cumplir REQ-001."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [],
+      "note": "A later mid-line mention of REQ-001 is not a second definition. (Amended before the candidate: a line that starts with the ID is a defining position under the frozen H3 policy.)"
+    },
+    {
+      "id": "two-list-definitions-es",
+      "construct": "mention",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "- REQ-001: El sistema DEBE pedir consentimiento antes de grabar.",
+          "- REQ-001: El sistema DEBE exportar los registros en JSON."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|4|Duplicate requirement identifier REQ-001."
+      ],
+      "note": "Twin: two defining positions are a real duplicate."
+    },
+    {
+      "id": "table-definition-es",
+      "construct": "table",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "| ID | Requirement |",
+          "|----|-------------|",
+          "| REQ-001 | El sistema DEBE pedir consentimiento antes de grabar. |"
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [],
+      "note": "A first-cell table ID defines the requirement."
+    },
+    {
+      "id": "table-duplicate-es",
+      "construct": "table",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "| ID | Requirement |",
+          "|----|-------------|",
+          "| REQ-001 | El sistema DEBE pedir consentimiento antes de grabar. |",
+          "| REQ-001 | El sistema DEBE exportar los registros en JSON. |"
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|6|Duplicate requirement identifier REQ-001."
+      ],
+      "note": "Twin: two first-cell definitions are a real duplicate."
+    },
+    {
+      "id": "inheritance-boundary-es",
+      "construct": "inheritance",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "### REQ-001 — Consentimiento",
+          "",
+          "El sistema DEBE pedir consentimiento antes de grabar.",
+          "",
+          "### Notas",
+          "",
+          "El sistema DEBE registrar cada exportación."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|9|Requirement has no stable identifier."
+      ],
+      "note": "The body under the defining heading inherits REQ-001; a body under a later heading without ID does not."
+    }
+  ]
+}

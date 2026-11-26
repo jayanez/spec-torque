@@ -11,7 +11,7 @@ export async function run() {
     assert.equal(vscode.workspace.isTrusted, false);
     assert.ok(!extension?.isActive);
     await assert.rejects(async () => { await vscode.commands.executeCommand('spectorque.review'); });
-    assert.equal(vscode.window.tabGroups.all.flatMap(g => g.tabs).some(tab => tab.label === 'SpecTorque'), false);
+    assert.equal(vscode.window.tabGroups.all.flatMap(g => g.tabs).some(tab => tab.label.startsWith('SpecTorque')), false);
     await writeFile(join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'evidence.json'), JSON.stringify({ vscode: vscode.version, platform: process.platform, restrictedMode: true, commandBlocked: true, noPanel: true }, null, 2));
     return;
   }
@@ -44,13 +44,13 @@ export async function run() {
     await writeFile(join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'frames.json'), JSON.stringify(browser.contexts().flatMap(c => c.pages().flatMap(p => p.frames().map(f => f.url()))), null, 2));
     assert.ok(frame, 'The actual webview must load its loopback workbench (including CSP).');
     url = new URL(frame.url()).origin;
-    await frame.getByRole('button', { name: 'Load local workspace', exact: true }).click();
+    // The workbench loads the workspace it was started for on connect; no click is needed.
     const finding = frame.getByRole('button').filter({ hasText: 'Unbounded wording: “fast”' });
     await finding.click();
     const editor = frame.getByRole('textbox', { name: 'Source text editor' });
     const original = await editor.inputValue();
     const replacement = 'FR-001: The system MUST be [NEEDS CLARIFICATION: define fast].';
-    await frame.getByRole('textbox', { name: 'Proposed wording' }).fill(replacement);
+    await frame.getByRole('textbox', { name: 'Proposed replacement' }).fill(replacement);
     await frame.getByRole('button', { name: 'Review difference', exact: true }).click();
     await frame.getByRole('button', { name: 'Reject', exact: true }).click();
     assert.equal(await editor.inputValue(), original);
@@ -65,13 +65,13 @@ export async function run() {
     const saved = await download;
     await saved.saveAs(join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'assessment.json'));
     await frame.page().screenshot({ path: join(process.env.SPECTORQUE_EVIDENCE_DIR!, 'webview.png') });
-    const countPanels = () => vscode.window.tabGroups.all.flatMap(group => group.tabs).filter(tab => tab.label === 'SpecTorque').length;
+    const countPanels = () => vscode.window.tabGroups.all.flatMap(group => group.tabs).filter(tab => tab.label.startsWith('SpecTorque')).length;
     assert.equal(countPanels(), 1);
     await vscode.commands.executeCommand('spectorque.review');
     assert.equal(countPanels(), 1, 'Repeated commands reuse the existing panel and server.');
     // reveal() crosses the extension-host/UI boundary asynchronously. Close
     // through the actual tab action rather than racing the tab inventory.
-    await frame.page().getByRole('tab', { name: 'SpecTorque' }).getByRole('button', { name: /Close/ }).click();
+    await frame.page().getByRole('tab', { name: /^SpecTorque/ }).getByRole('button', { name: /Close/ }).click();
     const stopDeadline = Date.now() + 5000;
     let stopped = false;
     while (!stopped && Date.now() < stopDeadline) {
