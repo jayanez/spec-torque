@@ -6,7 +6,7 @@ Maintainer steps that need accounts or credentials. The repository prepares ever
 
 Do these in order. Every publishing job in [`release.yml`](../.github/workflows/release.yml) runs in the GitHub environment `release`, so registry trust is bound to that environment.
 
-1. **GitHub environment.** Settings → Environments → New environment `release`. Add yourself as a required reviewer. Under deployment branches and tags choose *Selected branches and tags* and allow the branch `develop` (for dry runs) and the tag pattern `v*` (for releases). Each run then waits for your approval.
+1. **GitHub environment.** Settings → Environments → New environment `release`. Add yourself as a required reviewer. Under deployment branches and tags choose *Selected branches and tags* and allow the branches `main`, `develop` and `release/*` (for dry runs) and the tag pattern `v*` (for releases). Each run then waits for your approval.
 2. **npm, first publish.** The five packages (`spectorque`, `spectorque-claude`, `spectorque-codex`, `opencode-spectorque`, `pi-spectorque`) do not exist yet, and npm attaches a trusted publisher only to an existing package. On npmjs.com create a granular access token with read and write access, **Bypass two-factor authentication** checked (otherwise CI fails with `EOTP` when your account requires 2FA for writes) and an expiry of 7 days. Packages that do not exist yet cannot be selected, so scope it to *All packages*. Store it as the environment secret `NPM_TOKEN` of `release` and do the first release within those days. Alternatively, publish the five tarballs once by hand with `npm publish <file>.tgz --access public --tag next` from a verified build and skip the secret; that first version then has no provenance.
 3. **VS Code Marketplace.** Create the publisher `jayanez` at [marketplace.visualstudio.com/manage](https://marketplace.visualstudio.com/manage). Open the publisher's **Trusted Publishing** tab and create a policy: owner `jayanez`, repository `spec-torque`, workflow `release.yml`, environment `release`. No token is stored; the job publishes with `vsce publish --oidc`. Personal access tokens are retired for the Marketplace on 2026-12-01.
 4. **Open VSX.** Sign in at [open-vsx.org](https://open-vsx.org) with an Eclipse account, sign the Publisher Agreement and create an access token. Run once `npx ovsx@1.4.0 create-namespace jayanez -p <token>`, then store the token as the environment secret `OVSX_PAT`. Claim the namespace for the verified badge.
@@ -14,15 +14,15 @@ Do these in order. Every publishing job in [`release.yml`](../.github/workflows/
 
 ## First release
 
-1. Run the `release` workflow manually (Actions → release → Run workflow) on `develop` with **dry_run** checked. Every job must pass; nothing is published.
-2. Tag the merged commit and push the tag: `git tag v0.3.0 && git push origin v0.3.0`. Approve the `release` environment when asked. A failed job can be re-run: packages already on npm are skipped. The jobs publish npm (`next`; npm also points `latest` at the first version of a new package, so `npm i spectorque` installs 0.3.0 until a stable release moves `latest`), the VS Code Marketplace and Open VSX (pre-release), the MCP Registry and the GitHub pre-release.
+1. Run the `release` workflow manually (Actions → release → Run workflow) on the release branch `release/v<version>` with **dry_run** checked. Every job must pass; nothing is published.
+2. Merge the release branch into `main`, tag the merge commit and push the tag: `git tag v0.3.0 <merge-sha> && git push origin v0.3.0`. Approve the `release` environment when asked. A failed job can be re-run: packages already on npm are skipped. The jobs publish npm (`next`; npm also points `latest` at the first version of a new package, so `npm i spectorque` installs 0.3.0 until a stable release moves `latest`), the VS Code Marketplace and Open VSX (pre-release), the MCP Registry and the GitHub pre-release.
 3. On npmjs.com, add a **trusted publisher** to each of the five packages: GitHub Actions, repository `jayanez/spec-torque`, workflow `release.yml`, environment `release`. Then delete the `NPM_TOKEN` secret, revoke the token and set each package's publishing access to *Require two-factor authentication and disallow tokens*. Later releases authenticate through OIDC.
 4. Restore the registry badges in the README in the same change that records the publish: npm `next`, VS Code Marketplace and Open VSX. They were removed because they report errors until the packages exist.
 
 ## Each later release
 
-1. Run the `release` workflow manually with **dry_run** checked and confirm every job passes.
-2. Tag `v<version>` on the merged commit and push the tag. Approve the `release` environment when asked.
+1. Open `release/v<version>` from `develop` and a pull request into `main`. Run the `release` workflow on that branch with **dry_run** checked and confirm every job passes.
+2. Merge into `main`, tag `v<version>` on the merge commit and push the tag, then merge `main` back into `develop`. Approve the `release` environment when asked.
 3. Check the listings: [npm](https://www.npmjs.com/package/spectorque?activeTab=versions), [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque), [Open VSX](https://open-vsx.org/extension/jayanez/spectorque), the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque) and the GitHub release.
 4. Install through each catalog on a clean profile: `claude plugin marketplace add jayanez/spec-torque` and `codex plugin marketplace add jayanez/spec-torque`. Record observed results in [compatibility](compatibility.md).
 

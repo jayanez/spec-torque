@@ -4,6 +4,7 @@ title: SpecTorque
 abstract: "Local, explainable review of agent-ready specifications, plans and tasks against the 40 EPIC practices, with source evidence and reviewed refinements."
 type: software
 version: 0.3.0
+date-released: 2026-11-26
 authors:
   - name: jayanez
 license: Apache-2.0

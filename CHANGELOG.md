@@ -2,11 +2,7 @@
 
 ## Unreleased
 
-- MCP Registry listing. `server.json` describes the `spectorque` npm package as `io.github.jayanez/spectorque` with `npx spectorque mcp` over stdio, and the root `package.json` carries the matching `mcpName`. `release.yml` publishes it after npm with GitHub OIDC and a Sigstore-verified `mcp-publisher`. `version:sync` and `tests/manifests.test.ts` cover it.
-- Release workflow fixes before the first publish. The npm job reads an optional `NPM_TOKEN` for the first publication, when trusted publishing cannot yet be attached, and uses OIDC once it is unset. The VS Code Marketplace job publishes with trusted publishing (`vsce publish --oidc`) instead of a personal access token, which the Marketplace retires on 2026-12-01.
-- The npm, VS Code Marketplace and Open VSX version badges are removed from the README until the first publish; they reported errors for packages not yet published.
-
-## 0.3.0 — prerelease candidate
+## 0.3.0 — 2026-11-26
 
 Product version 0.3.0, engine 0.1.16, rubric `epic-heuristic-1`. Published as a prerelease (npm `next`, VS Code Marketplace and Open VSX pre-release, GitHub pre-release) until the [stable candidate gate](docs/pilot-operations.md#stable-candidate-gate) passes. See [versioning and releases](docs/releases.md#versioning-and-releases).
 
@@ -15,6 +11,9 @@ Product version 0.3.0, engine 0.1.16, rubric `epic-heuristic-1`. Published as a 
 - The root npm package no longer bundles the host integrations; each host ships as its own package. `src/integration.ts` exports the `ArtifactSet`, `Assessment`, `Evidence` and `Finding` types, and the OpenCode TUI imports them from its bundled runtime instead of a source path missing from the package.
 - Release workflow (`.github/workflows/release.yml`) for tags `v*`: checks, host packages, checksums, npm provenance publishing, VS Code Marketplace and Open VSX publishing and a GitHub pre-release. Publishing needs owner-configured credentials ([publishing checklist](docs/publishing.md)).
 - Documentation: README install matrix per platform, version badges, refreshed screenshots captured by `npm run docs:capture`, engine pipeline and scientific basis; versioning policy; updated architecture, integration, release and Spanish guides.
+- MCP Registry listing. `server.json` describes the `spectorque` npm package as `io.github.jayanez/spectorque` with `npx spectorque mcp` over stdio, and the root `package.json` carries the matching `mcpName`. `release.yml` publishes it after npm with GitHub OIDC and a Sigstore-verified `mcp-publisher`. `version:sync` and `tests/manifests.test.ts` cover it.
+- Release workflow fixes before the first publish. The npm job reads an optional `NPM_TOKEN` for the first publication, when trusted publishing cannot yet be attached, and uses OIDC once it is unset. The VS Code Marketplace job publishes with trusted publishing (`vsce publish --oidc`) instead of a personal access token, which the Marketplace retires on 2026-12-01.
+- The npm, VS Code Marketplace and Open VSX version badges are removed from the README until the first publish; they reported errors for packages not yet published.
 
 ### Internal versions 0.2.1–0.2.9
 
