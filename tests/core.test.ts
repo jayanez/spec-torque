@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { classifyArtifact, contentHash } from '../src/core/artifacts.js';
 import { analyze } from '../src/core/analyze.js';
+import { PRACTICES } from '../src/core/catalog.js';
 import { createProposal, applyProposal } from '../src/core/refine.js';
 import { buildArtifacts } from '../src/core/builder.js';
 
@@ -138,8 +139,8 @@ test('month enumeration suppression preserves independent modal and identifier e
   assert.equal(example.practices.find(row => row.id === 'E1.4')?.status, 'unknown');
 });
 test('H106: a labeled dependency field with an ID counts for P1.3, an absent value does not', async () => {
-  const status = async (line: string, language: 'en' | 'es') => (await analyze({ name: 'h106', artifacts: [
-    classifyArtifact('specs/001-demo/spec.md', language === 'en' ? '# Demo\n\n- REQ-001: The system MUST export the report.\n' : '# Demo\n\n- REQ-001: El sistema DEBE exportar el informe.\n'),
+  const status = async (line: string) => (await analyze({ name: 'h106', artifacts: [
+    classifyArtifact('specs/001-demo/spec.md', '# Demo\n\n- REQ-001: The system MUST export the report.\n'),
     classifyArtifact('specs/001-demo/tasks.md', `# Tasks\n\n- [ ] T001 (REQ-001): Write the schema.\n- [ ] T002 (REQ-001): Write the exporter.\n  ${line}\n`),
   ] })).practices.find(p => p.id === 'P1.3')?.status;
   const twins: Array<[string, string, 'partial' | 'missing']> = [
@@ -155,10 +156,25 @@ test('H106: a labeled dependency field with an ID counts for P1.3, an absent val
     ['Dependencies: the exporter must finish first.', 'Dependencias: el exportador debe terminar antes.', 'missing'],
     ['Dependencies: none. Verified by T009.', 'Dependencias: ninguna. Verificado por T009.', 'missing'],
     ['Dependencies between tasks are tracked separately (see T001).', 'Las dependencias entre tareas se revisan aparte (ver T001).', 'missing'],
+    // Amendment H106-2.
+    ['**Dependencies**: T001', '**Dependencias**: T001', 'partial'],
+    ['Dependency: T001.', 'Dependencia: T001.', 'partial'],
+    ['Dependencies: see spec.md, T001.', 'Dependencias: ver spec.md, T001.', 'partial'],
+    ['**Primary Dependencies**: FastAPI, ISO-8601 parsing', '**Dependencias principales**: FastAPI, ISO-8601', 'missing'],
+    ['Dependencies: utf-8 encoding, AWS t3.', 'Dependencias: codificación utf-8, AWS t3.', 'missing'],
+    ['Dependencies: *none* (see T003).', 'Dependencias: _ninguna_ (ver T003).', 'missing'],
+    ['Dependencies: nothing blocks this; T001 is optional.', 'Dependencias: sin dependencias (ver T001).', 'missing'],
+    ['Dependencies: N/A, T001 later.', 'Dependencias: N/A, T001 después.', 'missing'],
+    // Known limit: the unchanged verb phrase of 0.1.16 still counts a labeled "Depends on: none".
+    ['Depends on: none. Verified by T009.', 'Depende de: ninguna. Verificado por T009.', 'partial'],
   ];
-  for (const [en, es, expected] of twins) {
-    assert.equal(await status(en, 'en'), expected, en);
-    assert.equal(await status(es, 'es'), expected, es);
+  for (const [en, es, expected] of twins) for (const line of [en, es]) assert.equal(await status(line), expected, line);
+  // Untrusted Markdown: long padding or repeated labels stay linear.
+  const p13 = PRACTICES.find(p => p.id === 'P1.3')!.pattern!;
+  for (const line of ['Dependencies:' + '*'.repeat(100_000), 'Dependencies:' + ' '.repeat(100_000), 'Dependencies: x; '.repeat(6_000)]) {
+    const started = performance.now();
+    assert.equal(p13.test(line), false);
+    assert.ok(performance.now() - started < 500, 'P1.3 pattern backtracks on a long line');
   }
 });
 test('H85: a demonstrative that leads a noun phrase is not a pronoun subject (E1.3)', async () => {
