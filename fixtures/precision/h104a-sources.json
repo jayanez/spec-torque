@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H104a confirmation set (product actors named by role for P2.1 and C1.1, #104). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"When the developer\", \"As an operator\", \"the maintainer can\" and \"el administrador\" in Markdown files named spec.md under specs/, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, #52, H3-H9 and H104, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "\"el administrador\" path:specs filename:spec.md": "only 2 eligible repositories in the search results"
+  },
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/streamlit/streamlit",
+      "commit": "04884fb17d902c5e8066f60bc4bcc16b371f3ab6",
+      "license": "Apache-2.0",
+      "query": "\"When the developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/DilawarShafiq/nietzschian-debugger",
+      "commit": "15b956116f47ff200b614751fac32ac7dc7e9af6",
+      "license": "MIT",
+      "query": "\"When the developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Loop3D/LoopStructural",
+      "commit": "6874364c9f4f772338b1fb30f3ef8c1bf0b4efd2",
+      "license": "MIT",
+      "query": "\"When the developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/alfredoperez/speckit-companion",
+      "commit": "9fc0238f33513dc7e1d75262a81929eff2c5c1c8",
+      "license": "MIT",
+      "query": "\"When the developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/pselamy/polymarket-insider-tracker",
+      "commit": "49f8770c87148c41c3161198e178f2e11bf7ad23",
+      "license": "MIT",
+      "query": "\"As an operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/gosha70/code-copilot-team",
+      "commit": "6a023205611895315ad4b3abc85dc51000eda219",
+      "license": "MIT",
+      "query": "\"As an operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Jooho/nfs-provisioner-operator",
+      "commit": "ad31812095a2e65110d4cd4a5ad4e8d021a4513f",
+      "license": "Apache-2.0",
+      "query": "\"As an operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/zalando-incubator/agentic-identity-broker",
+      "commit": "68de24fe35671a28c9b5755aecab3c8907cce231",
+      "license": "MIT",
+      "query": "\"As an operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/lihan3238/speckit-superpowers-bridge",
+      "commit": "755418398d9eaadedb9d98e9a20fea6101429883",
+      "license": "MIT",
+      "query": "\"the maintainer can\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/onlineeric/speedy-git-ext",
+      "commit": "523e1775146418dc6b31469a9a81cbf47416e2c3",
+      "license": "MIT",
+      "query": "\"the maintainer can\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/vizier-lab/vizier",
+      "commit": "6d9ea163c43a3e43f821531301adeb1ebfdfc8b6",
+      "license": "MIT",
+      "query": "\"the maintainer can\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/christopherlouet/claude-base",
+      "commit": "ff61275e1f81060e5b5800b050c680facd297945",
+      "license": "MIT",
+      "query": "\"the maintainer can\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/vizardkill/Wifimoneystack",
+      "commit": "636c7699e63a7bf2a93e55f30450b34d7348ddef",
+      "license": "Apache-2.0",
+      "query": "\"el administrador\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Miguel-Vinamagua/sistema-reservas-labs",
+      "commit": "a7ac73731716c12a69e36d004a686e9745e3ad3e",
+      "license": "MIT",
+      "query": "\"el administrador\" path:specs filename:spec.md"
+    }
+  ]
+}

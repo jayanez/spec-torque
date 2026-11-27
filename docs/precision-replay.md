@@ -1583,6 +1583,314 @@ outside that set is adjudicated the same way.
 **Known limit (not changed).** The unchanged verb phrase still counts a labeled
 `Depends on: none. Verified by T009.`; a twin pins that outcome.
 
+## Pre-registered hypothesis H104 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#104](https://github.com/jayanez/spec-torque/issues/104). Like H85, this
+hypothesis is named after its issue, because precision tracks run in parallel.
+
+**Failure.** P2.1 (functional and user requirement coverage) and C1.1 (behavioral
+product specification) are `partial` only when the feature's spec has admitted
+requirements and a spec line that is neither a requirement nor a heading contains
+`user`, `visitor`, `actor`, `customer`, `usuario`, `visitante` or `cliente`.
+Otherwise both are `missing`. A spec that names its actors by role ("the developer
+requests …", "el operador aprueba …") gets `missing`, although it says who acts.
+Since H7a (#79) Spec Kit checklists are `context`, so their lines no longer supply
+the word, and this gap alone decides the status.
+
+**Development data.** The #8 pilot repository. On its 32 open features, engine
+0.1.16 reports P2.1 and C1.1 `partial` in 26 features and `missing` in 6, the same 6
+for both practices. The owner adjudicated 3 of the 6 as an engine defect: the spec
+states its actor by role in a scenario or narrative line. In the other 3, role
+nouns occur only as modifiers of another noun (synthetic: "the reviewer queue") or in
+constructions this rule does not read (a relative clause, a subjunctive).
+
+**Why a position rule and not a wider word list.** The current cue is a bare
+substring anywhere on the line; adding role nouns to it would make any mention
+count ("operator precedence", "owner field", "reviewer comments", "the owner-approved
+plan"). H104 instead reads a role noun only in *actor position*: a user story, or
+the subject of a clause, recognised by a determiner or the start of a clause and a
+verb right after the noun. The noun list is bounded to human roles; system nouns
+(`agent`, `service`, `client`, `caller`, `consumer`, `worker`) are left out,
+because in agent and API specifications they usually name the system itself. The
+verb test is H85's, already used for E1.3, so the two rules read "a verb follows"
+the same way.
+
+**Policy.** P2.1 and C1.1 keep their current cue, unchanged. A spec line that is
+neither a requirement nor a heading now also counts when it names an actor in one
+of these two forms:
+1. **User story.** `As a` / `As an` + one to four words + a comma + `I want`,
+   `I need`, `I can`, `I would like`, `I should` or `I must`; in Spanish `Como` +
+   optional `un` / `una` + one to four words + a comma + `quiero`, `necesito`,
+   `puedo`, `deseo` or `me gustaría`. Any role word counts here: the form itself
+   states the actor.
+2. **Role subject.** A role noun from the list below, singular or plural:
+   - *Position:* directly after a determiner (`the`, `a`, `an`, `each`, `every`,
+     `any`; `el`, `la`, `los`, `las`, `un`, `una`, `cada`), or first on the line
+     after optional quote, list and bold markers and an optional scenario keyword
+     (`Given`, `When`, `Then`, `And`, `But`; `Dado`, `Dado que`, `Cuando`,
+     `Entonces`, `Y`).
+   - *Verb right after the noun,* separated only by spaces. English: a modal or
+     auxiliary (`must`, `shall`, `should`, `may`, `might`, `can`, `cannot`,
+     `could`, `will`, `would`, `is`, `are`, `was`, `were`, `has`, `have`, `had`,
+     `does`, `do`, `did`), a negative contraction ending in `n't`, or a verb form
+     as in H85 (ends in `-s` but not `-ss`, `-us` or `-is`, or ends in `-ed`).
+     Spanish: `debe`, `deben`, `deberá`, `deberán`, `puede`, `pueden`, `podrá`,
+     `podrán`, `es`, `son`, `está`, `están`, `tiene`, `tienen`, `ha`, `han`, or a
+     word ending in `-a`, `-e`, `-an`, `-en`, `-ó` or `-ió`.
+   - *Role nouns.* English: developer, operator, maintainer, reviewer,
+     administrator, admin, owner, engineer, author, contributor, approver, auditor,
+     analyst, member (with `-s`). Spanish: desarrollador, operador, mantenedor,
+     revisor, administrador, propietario, dueño, ingeniero, autor, colaborador,
+     aprobador, auditor, analista, miembro, with their feminine and plural forms
+     (`-a`, `-es`/`-os`, `-as`).
+
+A role noun joined to the next word by a hyphen or apostrophe ("owner-approved",
+"the operator's token") is not followed by a verb, so it does not count. Nothing
+else changes: the practices' scope (spec lines only), their `partial` ceiling,
+their evidence (the first three spec requirements), every other practice, finding,
+decision and artifact set.
+
+**Comparator.** 0.1.16 (`develop` at `0084178`, product 0.3.0). Candidate engine
+0.1.17, product 0.3.1. If another track merges first, the candidate takes the next
+patch versions and every measurement is repeated against the new `develop`.
+
+**Endpoints.** P2.1 and C1.1 statuses, by language, with the lines that carry the
+new cue. Also every other practice status, finding, dimension score, open decision
+and artifact set.
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs and the H3a, H5a, H6, H6a, H7a,
+  H8, H85 and H9 twins do not change. The corpus rules do not include P2.1 or C1.1.
+- On natural sources, P2.1 and C1.1 only move from `missing` to `partial`, always
+  together, and their new evidence is the feature's first three spec requirements.
+  The P and C dimension scores may rise accordingly. Nothing else changes.
+- Pilot (development data): the 3 adjudicated features move to `partial` on both
+  practices; the other 3 stay `missing`; the 26 `partial` features do not change.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, each with a twin of
+   the opposite expected outcome:
+   - the issue's example (`Given the developer requests a release`) is `partial`,
+     against the same spec whose only role mention is `operator precedence`
+     (`missing`);
+   - `When the operator approves …` / `Cuando el operador aprueba …` (`partial`),
+     against `The operator status is shown …` / `El operador lógico se evalúa …`
+     style modifiers (`missing`);
+   - a user story `As a maintainer, I want …` / `Como mantenedora, quiero …`
+     (`partial`), against `as a result, the cache …` / `como resultado, …`
+     (`missing`);
+   - `Maintainers can …` / `Los revisores pueden …` first on the line (`partial`),
+     against `the owner-approved plan` / `el campo propietario` (`missing`);
+   - a role subject on a requirement line only (`REQ-001: The operator MUST …`,
+     `missing`, as in 0.1.16), and on a heading only (`missing`);
+   - a generic-word control (`The user …`, `partial` in both engines).
+
+   The candidate meets every twin. The minimal pairs and the earlier twin suites
+   are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report --
+   --baseline origin/develop`).
+3. On the earlier sets (development data for H104, never examined for P2.1 or
+   C1.1: the 33 roots of the H3a–H6a-2 sets and the H9 and H9-2 fresh sets): only
+   P2.1 and C1.1 change, only upward, together, and with the P and C dimension
+   scores. Each changed feature is listed.
+4. On a fresh public set, the same holds. The changed features of gates 3 and 4
+   (all, or 100 drawn with seed 42104) are adjudicated blind by two agent sessions.
+   The threshold, fixed now and open to the owner to tighten before any label: at
+   most 2 items agreed `negative` or disputed, or at most 5% when there are more
+   than 40 items.
+5. No evidence becomes invalid.
+
+**Adjudication proposition.** For a changed feature the packet shows each line that
+carries the new cue, with two lines of context on each side: "This line names a
+person or role who performs, requests or receives the specified product behavior."
+Labels are `positive` (the gain is right), `negative` and `unknown`. A feature is
+`positive` when at least one of its lines is.
+
+**Stop rule.** If a gate fails, H104 stops and is reverted; the owner decides
+between a narrowed H104a and stopping #104.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"When the operator"`, `"As a developer"`,
+  `"operator precedence"` (a negative control) and `"el operador"`, limited to
+  Markdown files named `spec.md` under `specs/`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner used earlier in #39, #51, #52, H3–H9, and the pilot
+  repository owner, excluded; one repository per owner;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h104-sources.json` before the
+candidate commit.
+
+### Amendment H104-1 (2026-11-27, before the twins and the candidate)
+
+The issue's synthetic example defines its requirement in a heading
+(`### REQ-001 — Draft note`) and states its obligation in a `then` scenario line.
+Neither is admitted as a requirement (headings and scenario lines never are), so the
+spec has no admitted requirement, and P2.1 and C1.1 stay `missing` for that reason,
+with or without H104. The gate-1 twin adds one admitted requirement line
+(`- REQ-001: The release note MUST list every merged change.`). Scenario-only
+requirements are a separate gap and are not addressed here. Nothing else changes.
+
+### Amendment H104-2 (2026-11-27, before the candidate and any measurement)
+
+While writing the candidate, two prepositions were found that the frozen verb test
+reads as verbs. Both are excluded, so they only keep 0.1.16's `missing`:
+- **English.** `as` ends in `-s` and passes H85's verb-form test: "The owner as a
+  concept …". It is not a verb after a role noun.
+- **Spanish.** The prepositions `a`, `ante`, `contra`, `de`, `desde`, `durante`,
+  `entre`, `hacia`, `hasta`, `mediante`, `para` and `sobre` end in `-a` or `-e`:
+  "Ayudar a las mantenedoras a publicar …".
+
+Two twins are added to gate 1, both expected `missing`: `The owner as a concept is
+defined …` and `Ayudar a las mantenedoras a publicar …`. Nothing else changes.
+
+### Amendment H104-3 (2026-11-27, after the first twin run, before any natural measurement)
+
+The first candidate run met 24 of 25 twins. The miss, `Los revisores pueden aprobar
+la nota.`, is a twin error: `pueden` is a normative modal in this engine, so the line
+is admitted as a requirement, and requirement lines never carry the cue (by policy,
+as in 0.1.16). The twin is kept as a scope twin expecting `missing`
+(`revisores-pueden-es`), and the intended form is added as `revisores-es`:
+`Los revisores aprueban la nota.` (`partial`). The rule is unchanged.
+
+## Pre-registered hypothesis H104a (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#104](https://github.com/jayanez/spec-torque/issues/104). H104 failed its
+adjudication gate: 2 agreed `negative` and 5 disputed, against a threshold of 5. The
+owner decided (2026-11-27) to retry once, narrowed, with a new fresh set and new blind
+labels, under the same stop rule.
+
+**Owner policy.** A role noun names an actor only when the role acts on the product or
+system behavior. A role acting on the specification's own process does not count:
+requesting, asking for, approving, deciding or writing the document ("the maintainer
+requested …", "the operator asked for the spec", "the owner approved the thresholds").
+The two agreed-negative classes are also fixed: `member` naming a system node, and a
+role noun first on a wrapped continuation line.
+
+**Development data.** The #8 pilot repository and every set measured for H104 (the 59
+earlier roots, the 16 H104 fresh roots and the 100 labeled items). In the pilot, the
+H104 cue lines of the 3 owner-adjudicated features fall into two groups: present-tense
+roles acting on the system (in a terminology entry and in a scenario line), and
+process records (in a clarifications section, a risks section, and past-tense
+approvals).
+
+**Policy.** H104's rule, narrowed as follows. Each change removes a class of false
+positive seen in H104's adjudication, in the pilot or in the H104 review:
+1. **No `member`.** Removed from the role nouns (system nodes in distributed specs),
+   with `miembro`.
+2. **Process sections.** A line under a heading (of any level, the nearest one above
+   it) whose text contains `clarif`, `decision`, `status`, `risk`, `assumption`,
+   `note`, `changelog`, `history`, `revision`, `review`, `sign-off`, `signoff`,
+   `approval` or `open question`, or in Spanish `aclaraci`, `decisi`, `estado`,
+   `riesgo`, `supuesto`, `nota`, `historial`, `revisi`, `aprobaci` or `pregunta`,
+   does not carry the role cue. These sections record the specification's process.
+3. **Dated lines.** A line with an ISO date (`2026-11-03`) does not carry the role
+   cue: it records an event, not behavior.
+4. **Present tense only.** The verb test drops the past forms: English `-ed`, `was`,
+   `were`, `had`, `did`, and Spanish `-ó` / `-ió`. Product behavior is stated in the
+   present or with a modal; a past form after a role records what someone did.
+5. **Document objects.** The cue does not count when one of `spec`, `specs`,
+   `specification`, `plan`, `tasks`, `document`, `draft`, `proposal`,
+   `clarification`; `especificación`, `plan`, `tareas`, `documento`, `borrador`,
+   `propuesta` or `aclaración` occurs within the six words after the verb: the role
+   acts on the document.
+6. **Continuation lines.** The line-start position is not read on a line that the
+   engine joins to the previous one (H5a continuation); the determiner position
+   still is.
+7. **Plural nouns.** A word in `-s` after the role noun is not a verb when the next
+   word is `is`, `are`, `was`, `were`, `has` or `have` ("the operator logs are …").
+8. **Bold scenario keywords.** The keyword may be wrapped in bold
+   (`1. **Given** the operator …`), as in Spec Kit's acceptance scenarios.
+9. **One verb test.** H85's `-s` verb-form fragment is shared by E1.3 and H104a, not
+   retyped. E1.3 does not change.
+10. **Generic cue, word boundaries and fences.** The 0.1.16 words (`user`, `visitor`,
+    `actor`, `customer`, `usuario`, `visitante`, `cliente`) count only as whole words,
+    singular or plural, so "refactor", "factor" and "superuser" no longer count. No
+    cue, generic or role, is read inside a fenced code block.
+
+The user-story form is unchanged. Nothing else changes: the practices' scope (spec
+lines that are neither requirements nor headings), their `partial` ceiling, their
+evidence, and every other practice, finding, decision and artifact set.
+
+**Comparator.** 0.1.16 (`develop` at `0084178`, product 0.3.0). Candidate engine
+0.1.17, product unchanged (owner decision: engine-only bumps until the next release).
+If #106 merges first, the candidate takes 0.1.18 and every measurement is repeated.
+
+**Endpoints.** P2.1 and C1.1 statuses by language, with the lines that carry the new
+cue (gains) or lost the 0.1.16 cue (losses); every other practice status, finding,
+dimension score, open decision and artifact set.
+
+**Predictions.**
+- The 716 historical predictions, the minimal pairs and the H3a, H5a, H6, H6a, H7,
+  H7a, H8, H85 and H9 twins do not change.
+- P2.1 and C1.1 change only together. Gains (`missing` → `partial`) come from the
+  role cue; losses (`partial` → `missing`) only from rule 10. Nothing else changes.
+- Pilot: 041, 043 and 079 move to `partial` (each keeps at least one present-tense
+  role line outside a process section); 048, 050 and 076 stay `missing`; no
+  `partial` feature drops. If the 3 gains disappear, that is recorded and #104 stops.
+
+**Gate (all must hold to proceed).**
+1. The H104 twins are re-run, and new EN/ES twins are committed before the candidate,
+   each with an opposite twin: a process role (`the maintainer requested …`,
+   `el operador pidió la especificación`), a process section, a dated line, a past
+   form, a document object, `member`, a continuation line, a plural noun, a bold
+   `**Given**`, a fenced line, and generic substrings (`refactor`, `superusuario`).
+   The candidate meets every twin; the earlier suites and minimal pairs are unchanged.
+2. The 716 historical predictions are unchanged.
+3. On the earlier sets (now 75 roots, development data): only P2.1 and C1.1 change,
+   together; every loss comes from rule 10. Each changed feature is listed.
+4. On a new fresh public set, the same holds. The changed features of gates 3 and 4,
+   excluding the 100 items labeled for H104 (all, or 100 drawn with seed 42105), are
+   adjudicated blind by two new agent sessions. Same threshold: at most 2 items agreed
+   wrong or disputed, or at most 5% when there are more than 40. A gain is wrong when
+   agreed `negative`; a loss is wrong when agreed `positive`.
+5. No evidence becomes invalid.
+
+**Adjudication proposition.** As for H104, with the line's section heading shown: "This
+line names a person or role who performs, requests or receives the specified product
+behavior." Process roles are `negative` under the owner policy, and the reviewers are
+told so.
+
+**Stop rule.** As for H104. If a gate fails, H104a is reverted and #104 closes as a
+recorded failure with a docs-only result.
+
+**Fresh sources.** Selected before the candidate exists, without reading any file
+content: GitHub code search, once each for `"When the developer"`, `"As an operator"`,
+`"the maintainer can"` and `"el administrador"`, in Markdown files named `spec.md` under
+`specs/`; up to 4 repositories per query, public, non-fork, not archived, MIT or
+Apache-2.0; every repository and owner used earlier in #39, #51, #52, H3–H9 and H104,
+and the pilot repository owner, excluded; one repository per owner; pinned to the
+default-branch head SHA. Committed in `fixtures/precision/h104a-sources.json` before
+the candidate.
+
+### Amendment H104a-1 (2026-11-27, after the first twin run, before any natural measurement)
+
+The first candidate run met the 29 H104a twins but 3 of the 26 H104 twins. Two rules
+were wider than intended:
+- **Rule 2** matched `note` inside the heading "Draft note" and `nota` in "Redactar la
+  nota", a product's own release note. The section words are now whole words, and the
+  note words only plural: `clarification(s)`, `decision(s)`, `status`, `risk(s)`,
+  `assumption(s)`, `notes`, `changelog`, `history`, `revision(s)`, `review(s)`,
+  `sign-off`, `signoff`, `approval(s)`, `open question(s)`; `aclaración`/`aclaraciones`,
+  `decisión`/`decisiones`, `estado`, `riesgo(s)`, `supuesto(s)`, `notas`, `historial`,
+  `revisión`/`revisiones`, `aprobación`/`aprobaciones`, `preguntas`.
+- **Rule 5** read the verb `draft` ("Maintainers can draft a note") as a document
+  noun. `draft` is removed from the document objects; `borrador` stays.
+
+The twins are unchanged.
+
+### Amendment H104a-2 (2026-11-27, after adjudication; code review)
+
+The pre-merge review found that `was` passes H85's `-s` verb-form fragment, so "The
+operator was notified" counted although rule 4 drops `was`. The verb test now excludes
+`was`, as frozen. The change only removes gains. The adjudicated packet, rebuilt with the
+fix, is checked below. Twelve twins are added for the opposite cases the review found
+missing (no date, a product object, a line after a fence, a whole generic word beside a
+substring, a product subheading under a process heading, `Notes` against `Draft note`,
+and `was` against `is`). Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
