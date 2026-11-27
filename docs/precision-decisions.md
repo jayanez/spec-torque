@@ -1767,3 +1767,33 @@ with scenario steps keep E1.4, E1.2 and E2.1 `unknown`; H52c addresses modal sce
 (Sonnet); the fresh Spanish power is low (3 repositories from the `Dado` queries).
 
 **Decision.** Propose H52 with Amendment H52-1 (engine 0.1.20) for merge.
+
+### H52b: qualified and group-infixed IDs read as one ID — **fails gate 1 (an earlier twin suite changes); reverted, owner decides**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). Second of the approved sequence
+(H52 merged as engine 0.1.20).
+- Pre-registered at `23539ba`. Fresh sources (8 repositories, 4 queries short) frozen at `1ad08ae`,
+  26 EN/ES twins at `1a2db10`, Amendment H52b-1 (short forms made resolvable by a qualified
+  definition; ASCII ID boundary) at `6cac8f5`, all before the candidate.
+- Candidate `7f598d7` (engine 0.1.21), reverted at the commit after it. Comparator 0.1.20
+  (`develop`, `297b7ed`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins, earlier twins, minimal pairs | **fails**: the H52b twins hold 26 of 26 (0.1.20 meets 16, failing exactly the 10 targets), but the H9 twins `namespace-local-en/es` change. Their reference error now names the full ID (`Reference VPC-REQ-02 …` instead of `REQ-02`), which is the H52b rule (the H52b twin `undefined-own-namespace` pins the same message), so prediction 1 contradicted the policy. Every other suite and the minimal pairs are unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3, 4. Earlier and fresh sets | not judged (stop rule). Measured for information with the H3 definitions replay (Spec Kit features only): earlier, 7276 features: 152 "no stable identifier" warnings removed, 16 reference errors and 9 duplicate errors added; fresh, 27 features: 64 reference errors removed and 116 added |
+| Pilot (counts only) | nothing changes in 87 features |
+
+**What the information scans show, beyond the failed gate.** The 116 added fresh errors are 64
+renamed messages (`SEC-REQ-n`, `PRIV-REQ-n` instead of the bare number) and 52 group-infixed
+references (`NFR-M-007` …) that 0.1.20 did not read at all. These are defined in the spec on lines
+such as `- **NFR-M-007**：…` that have no English or Spanish modal. Admission was left unchanged by
+the pre-registration, so the defining line is not a requirement line, its definition does not
+count, and the newly read reference becomes an undefined-reference error. A retry would have to make
+a new-form ID in a defining position count as a definition (or admit the line), and pre-register
+the renamed messages of earlier H9 twins.
+
+**Decision.** H52b stops and the candidate is reverted; engine stays 0.1.20. The owner decides
+between a pre-registered H52b-a (the two corrections above, a new fresh set and new labelers) and
+stopping. No labels were drawn.

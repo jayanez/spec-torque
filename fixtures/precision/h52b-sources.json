@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H52b confirmation set (qualified and group-infixed requirement IDs, #52). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search (REST API) for the eight pre-registered queries, search order, up to 2 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files, every one of the 137 earlier roots, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": [
+    {
+      "query": "\"UI-FR-001\" filename:spec.md",
+      "found": 0,
+      "limit": 2
+    },
+    {
+      "query": "\"API-FR-001\" filename:spec.md",
+      "found": 1,
+      "limit": 2
+    },
+    {
+      "query": "\"SYS-REQ-001\" filename:plan.md",
+      "found": 0,
+      "limit": 2
+    },
+    {
+      "query": "\"FR-A-001\" filename:spec.md",
+      "found": 1,
+      "limit": 2
+    },
+    {
+      "query": "\"FR-P1-001\" filename:spec.md",
+      "found": 0,
+      "limit": 2
+    }
+  ],
+  "sources": [
+    {
+      "family": "spec",
+      "repository": "github.com/kashifhm333/kubecheck",
+      "commit": "48daacd6f41dd2d7aa036fa1573c11fe1386824e",
+      "license": "Apache-2.0",
+      "query": "\"SEC-REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/altromon/AI-SDLC",
+      "commit": "65f77986f1b8aced4d1197260fad6fec0fca3522",
+      "license": "MIT",
+      "query": "\"SEC-REQ-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/albertov/openapi-codegen",
+      "commit": "3591e0e62f4294572fd0f9921b5cc7d4b96bb4a6",
+      "license": "MIT",
+      "query": "\"API-FR-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/ma-pony/cryptotrader-ai",
+      "commit": "238866de6930aabe1f56dc45abd5eba7e9cad595",
+      "license": "MIT",
+      "query": "\"FR-A-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/VexDB-THU/VexDB-Lite",
+      "commit": "273db0a1b9be3f3277c5ab48f690d27aba85e3eb",
+      "license": "MIT",
+      "query": "\"NFR-SEC-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/mazkagaz/sonoff_powct_esphome",
+      "commit": "c751e87cd7fae660d63e322d15b0f72691a20968",
+      "license": "MIT",
+      "query": "\"NFR-SEC-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/lyclycNSP/SteamWatch",
+      "commit": "c85de53747bf9a92dfff4870dc797c01d487fdfe",
+      "license": "MIT",
+      "query": "\"FR-UI-001\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/LeonardSchwier/leotheca",
+      "commit": "91bcb82a2f7b8ae1be8e9857958ed27016a7df95",
+      "license": "MIT",
+      "query": "\"FR-UI-001\" filename:spec.md"
+    }
+  ]
+}
