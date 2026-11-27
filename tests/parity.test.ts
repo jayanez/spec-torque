@@ -54,7 +54,7 @@ test('CLI, MCP, the workbench, Codex and the in-process adapters agree on featur
     // OpenCode and Pi read through the shared host index in process.
     const index = await hostIndex(join(root, 'specs'));
     const features = index.features.map(f => f.id);
-    assert.deepEqual(features, ['specs/001-booking', 'specs/002-payments', 'docs/notes', '.specify/templates']);
+    assert.deepEqual(features, ['specs/001-booking', 'specs/002-payments', 'docs/notes']);
     assert.deepEqual(listFeatures(index.entries).map(f => f.id), features);
     const expected: any = withoutTime(await analyze(await readScope(index, scopeRequest({ kind: 'feature', id: feature }))) as any);
     assert.ok(expected.artifacts.some((a: { path: string }) => a.path === 'AGENTS.md'));

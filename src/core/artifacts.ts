@@ -13,6 +13,9 @@ const specKitQuickstart = /(?:^|\/)specs\/\d{3}-[^/]+\/quickstart\.md$/i;
 // H7 (#79): a Spec Kit checklist reviews the feature's specification and cites its IDs.
 const specKitChecklist = /(?:^|\/)specs\/\d{3}-[^/]+\/checklists\/[^/]+\.md$/i;
 const byName = /spec|requirement|prd|plan|design|task|todo|agents|claude|gemini|constitution|architecture|what|where|when|who|why|how/i;
+// H92 (#92): scaffolding that Spec Kit (`.specify/`) and Spec Kitty (`.kittify/`) install or ship: a `templates` or
+// `command-templates` folder anywhere below their own folder. A `templates` folder elsewhere is project content.
+const frameworkTemplate = /(?:^|\/)\.(?:specify|kittify)\/(?:[^/]+\/)*(?:command-)?templates\//i;
 
 /** Path-derived classification. Content can only refine the framework label (Spec Kitty banner). */
 export interface PathClassification { path: string; role: Role; framework: Framework; featureId: string; archived: boolean }
@@ -60,10 +63,13 @@ export const isReviewChecklist = (path: string) => specKitChecklist.test(path.re
 export type LineScope = 'all' | 'validation' | 'context';
 export const lineScope = (path: string): LineScope => isReviewChecklist(path) ? 'context' : isValidationGuide(path) ? 'validation' : 'all';
 
+/** H92 (#92): a framework template file is never discovered, so no host lists, reads or scores it. */
+export const isFrameworkTemplate = (path: string) => frameworkTemplate.test(path.replaceAll('\\', '/'));
+
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const normalized = path.replaceAll('\\', '/');
   const legacyPath = basenameOnly ? normalized.slice(normalized.lastIndexOf('/') + 1) : normalized;
-  return /\.md$/i.test(normalized) && (byName.test(legacyPath) || kittyWorkPackage.test(normalized) ||
+  return /\.md$/i.test(normalized) && !frameworkTemplate.test(normalized) && (byName.test(legacyPath) || kittyWorkPackage.test(normalized) ||
     openSpecProposal.test(normalized) || bmadTask.test(normalized) || zeeContext.test(normalized) ||
     specKitDataModel.test(normalized) || specKitQuickstart.test(normalized));
 }
@@ -105,18 +111,10 @@ export const fitsReadLimit = (index: { entries: readonly unknown[] } | { total: 
 
 export interface FeatureSummary { id: string; framework: Framework; layout: boolean; artifacts: number }
 
-// Template folders (`.specify/templates`, Spec Kitty mission templates) are scaffolding, not features.
-const templateFolder = /(?:^|\/)templates?(?:\/|$)/i;
-
-/**
- * The selectable features: non-archived spec-role feature IDs. Known layouts first, then generic
- * groups. Template folders count as generic so they sort last; this is presentation only.
- */
+/** The selectable features: non-archived spec-role feature IDs. Known layouts first, then generic groups, each by ID. */
 export function listFeatures(artifacts: Pick<PathClassification, 'role' | 'framework' | 'featureId' | 'archived'>[]): FeatureSummary[] {
   const byId = new Map<string, FeatureSummary>();
-  for (const a of artifacts) if (!a.archived && a.role === 'spec' && !byId.has(a.featureId)) byId.set(a.featureId, { id: a.featureId, framework: a.framework, layout: a.framework !== 'generic' && !templateFolder.test(a.featureId), artifacts: 0 });
+  for (const a of artifacts) if (!a.archived && a.role === 'spec' && !byId.has(a.featureId)) byId.set(a.featureId, { id: a.featureId, framework: a.framework, layout: a.framework !== 'generic', artifacts: 0 });
   for (const a of artifacts) { const f = byId.get(a.featureId); if (f && a.role !== 'instructions') f.artifacts++; }
-  // Templates come after every other group, so they never sit between features.
-  const template = (f: FeatureSummary) => Number(templateFolder.test(f.id));
-  return [...byId.values()].sort((a, b) => Number(b.layout) - Number(a.layout) || template(a) - template(b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return [...byId.values()].sort((a, b) => Number(b.layout) - Number(a.layout) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
