@@ -141,9 +141,9 @@ const englishVerb = new RegExp(String.raw`^(?:must|shall|should|may|might|can|ca
 const spanishVerb = /^(?!(?:a|ante|contra|de|desde|durante|entre|hacia|hasta|mediante|para|sobre)$)(?:debe|deben|deberá|deberán|puede|pueden|podrá|podrán|es|son|está|están|tiene|tienen|ha|han|\p{L}*(?:a|e|an|en))$/iu;
 // Rule 7: a word in -s followed by is/are/… is a plural noun ("the operator logs are …").
 const nounBefore = /^(?:is|are|was|were|has|have)$/i;
-const processSection = /clarif|decision|status|risk|assumption|note|changelog|history|revision|review|sign-?off|approval|open question|aclaraci|decisi|estado|riesgo|supuesto|nota|historial|revisi|aprobaci|pregunta/i;
+const processSection = /(?<![\p{L}])(?:clarifications?|decisions?|status|risks?|assumptions?|notes|changelog|history|revisions?|reviews?|sign-?off|approvals?|open questions?|aclaraciones|aclaración|decisiones|decisión|estado|riesgos?|supuestos?|notas|historial|revisión|revisiones|aprobación|aprobaciones|preguntas)(?![\p{L}])/iu;
 const isoDate = /\b\d{4}-\d{2}-\d{2}\b/;
-const documentObject = /^(?:\s+[\p{L}\p{N}'’-]+){0,5}?\s+(?:specs?|specification|plan|tasks|document|draft|proposal|clarification|especificación|tareas|documento|borrador|propuesta|aclaración)(?![\p{L}\p{N}_])/iu;
+const documentObject = /^(?:\s+[\p{L}\p{N}'’-]+){0,5}?\s+(?:specs?|specification|plan|tasks|document|proposal|clarification|especificación|tareas|documento|borrador|propuesta|aclaración)(?![\p{L}\p{N}_])/iu;
 function subjectAt(text: string, match: RegExpExecArray, verb: RegExp): boolean {
   const rest = text.slice(match.index + match[0].length);
   const after = /^\s+([\p{L}'’]+)/u.exec(rest)?.[1] ?? '';

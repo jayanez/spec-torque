@@ -1709,6 +1709,22 @@ and the pilot repository owner, excluded; one repository per owner; pinned to th
 default-branch head SHA. Committed in `fixtures/precision/h104a-sources.json` before
 the candidate.
 
+### Amendment H104a-1 (2026-11-27, after the first twin run, before any natural measurement)
+
+The first candidate run met the 29 H104a twins but 3 of the 26 H104 twins. Two rules
+were wider than intended:
+- **Rule 2** matched `note` inside the heading "Draft note" and `nota` in "Redactar la
+  nota", a product's own release note. The section words are now whole words, and the
+  note words only plural: `clarification(s)`, `decision(s)`, `status`, `risk(s)`,
+  `assumption(s)`, `notes`, `changelog`, `history`, `revision(s)`, `review(s)`,
+  `sign-off`, `signoff`, `approval(s)`, `open question(s)`; `aclaración`/`aclaraciones`,
+  `decisión`/`decisiones`, `estado`, `riesgo(s)`, `supuesto(s)`, `notas`, `historial`,
+  `revisión`/`revisiones`, `aprobación`/`aprobaciones`, `preguntas`.
+- **Rule 5** read the verb `draft` ("Maintainers can draft a note") as a document
+  noun. `draft` is removed from the document objects; `borrador` stays.
+
+The twins are unchanged.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
