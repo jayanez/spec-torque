@@ -1,0 +1,171 @@
+/**
+ * H92 (#92) discovery replay: compares what two engine revisions discover, list and score on the
+ * committed Markdown of local Git roots. Per root it reports the candidate paths in workspace mode
+ * (basename names) and GitHub mode (full paths), the feature list, the result of every common
+ * feature, and the "All documents" and template-parent folder scopes.
+ *
+ *   node --import tsx scripts/precision/discovery.ts --baseline <ref> --candidate <ref> --roots <roots.json> [--out <file>]
+ *
+ * Public roots only: the detail names paths. Nothing is written to a root.
+ */
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { parseArgs } from 'node:util';
+import { archiveEngine, commit, type Engine } from './engines.js';
+import { rootSchema, snapshot } from './sources.js';
+import { excludedNames } from '../../src/node/scope.js';
+
+const { values } = parseArgs({ options: { baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' }, roots: { type: 'string' }, out: { type: 'string' } } });
+if (!values.baseline || !values.roots) throw new Error('Use: discovery.ts --baseline <ref> [--candidate <ref>] --roots <roots.json> [--out <file>]');
+
+type Result = Awaited<ReturnType<Engine['analyze']>>;
+type Set = { name: string; artifacts: ReturnType<Engine['classifyArtifact']>[] };
+const LIMIT = 500;
+// The same fixed exclusions as workspace discovery (src/node/scope.ts) and GitHub import (src/node/github.ts).
+const workspaceExcluded = (path: string) => path.split('/').some(segment => excludedNames.has(segment) || segment.startsWith('.env'));
+const githubExcluded = (path: string) => /(?:^|\/)(?:node_modules|vendor|dist|\.git)\//.test(path);
+// A path with a folder named like a template, outside or inside framework folders (negative control).
+const templateNamed = /(?:^|\/)[^/]*templates?[^/]*\//i;
+
+const temp = await mkdtemp(join(tmpdir(), 'spectorque-discovery-'));
+const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
+const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'baseline')), candidate: await archiveEngine(revisions.candidate, join(temp, 'candidate')) };
+if (typeof (arms.candidate as { isFrameworkTemplate?: unknown }).isFrameworkTemplate !== 'function') throw new Error('The candidate does not export isFrameworkTemplate.');
+const isTemplate = (arms.candidate as unknown as { isFrameworkTemplate: (path: string) => boolean }).isFrameworkTemplate;
+
+const findingKey = (f: Result['findings'][number]) => `${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`;
+const evidenceKey = (e: { path: string; line: number; text: string }) => `${e.path}:${e.line}|${e.text}`;
+const edgeKey = (t: Result['traceability'][number]) => `${t.from}>${t.to}|${t.resolved}|${evidenceKey(t.evidence)}`;
+const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined });
+const overLimit = (set: Set) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
+
+function diffKeys(before: string[], after: string[], cites: (key: string) => boolean) {
+  const [b, a] = [new Set(before), new Set(after)];
+  const removed = [...b].filter(k => !a.has(k)); const added = [...a].filter(k => !b.has(k));
+  return { removed: removed.length, removedCitingTemplate: removed.filter(cites).length, added: added.length, addedCitingTemplate: added.filter(cites).length,
+    removedOutside: removed.filter(k => !cites(k)), addedOutside: added.filter(k => !cites(k)) };
+}
+const citesTemplate = (key: string) => [...key.matchAll(/([^|,>]+?\.md):\d+/gi)].some(m => isTemplate(m[1]));
+
+/** Compares one scope: findings, decisions and traceability by whether they cite a template, plus statuses and score. */
+function scopeDiff(before: Result, after: Result) {
+  const statuses: Record<string, number> = {};
+  for (const p of before.practices) {
+    const next = after.practices.find(q => q.id === p.id)!;
+    if (p.status !== next.status) statuses[`${p.id}:${p.status}->${next.status}`] = (statuses[`${p.id}:${p.status}->${next.status}`] ?? 0) + 1;
+  }
+  return {
+    findings: diffKeys(before.findings.map(findingKey), after.findings.map(findingKey), citesTemplate),
+    decisions: diffKeys(before.decisions.map(evidenceKey), after.decisions.map(evidenceKey), citesTemplate),
+    traceability: diffKeys(before.traceability.map(edgeKey), after.traceability.map(edgeKey), citesTemplate),
+    statuses, score: [before.summary.score, after.summary.score] as const,
+  };
+}
+
+/** Evidence is valid when its line exists at its path and the line starts with the cited text. */
+function invalidEvidence(result: Result, files: Map<string, string>) {
+  let invalid = 0;
+  const all = [...result.findings.flatMap(f => f.evidence), ...result.decisions, ...result.practices.flatMap(p => p.evidence)];
+  for (const e of all) {
+    const line = (files.get(e.path) ?? '').replace(/^﻿/, '').split(/\r?\n/)[e.line - 1];
+    if (line === undefined || !line.trim().startsWith(e.text.trim().slice(0, 200))) invalid++;
+  }
+  return invalid;
+}
+
+const roots = rootSchema.parse(JSON.parse((await readFile(values.roots)).toString()));
+const totals = {
+  roots: 0, rootsWithTemplates: 0,
+  workspace: { baseline: 0, candidate: 0, removed: 0, removedNotTemplate: 0, added: 0 },
+  github: { baseline: 0, candidate: 0, removed: 0, removedNotTemplate: 0, added: 0 },
+  features: { baseline: 0, candidate: 0, removed: 0, removedWithNonTemplateFile: 0, added: 0, countChanged: 0, orderChangedRoots: 0 },
+  commonFeatures: { analyzed: 0, overLimit: 0, changed: 0 },
+  scopes: { analyzed: 0, overLimit: 0, changed: 0, findingsRemoved: 0, findingsRemovedOutside: 0, findingsAdded: 0, findingsAddedOutside: 0,
+    decisionsRemoved: 0, decisionsRemovedOutside: 0, decisionsAdded: 0, traceabilityRemoved: 0, traceabilityRemovedOutside: 0, traceabilityAdded: 0, traceabilityAddedOutside: 0,
+    statusChanges: {} as Record<string, number>, scoreUp: 0, scoreDown: 0 },
+  keptTemplateNamed: 0, keptTemplateNamedRoots: 0,
+  evidenceInvalid: { baseline: 0, candidate: 0 },
+};
+const detail: unknown[] = [];
+for (const root of roots) {
+  if (root.restricted) throw new Error('Restricted roots are not supported: the detail names paths.');
+  const { sha, files } = snapshot(root);
+  totals.roots++;
+  const md = [...files.keys()];
+  const discover = (engine: Engine, basename: boolean) => md.filter(p => engine.isSpecCandidate(p, basename) && !(basename ? workspaceExcluded(p) : githubExcluded(p)));
+  const modes = { workspace: { baseline: discover(arms.baseline, true), candidate: discover(arms.candidate, true) }, github: { baseline: discover(arms.baseline, false), candidate: discover(arms.candidate, false) } };
+  const removedPaths: string[] = [];
+  for (const mode of ['workspace', 'github'] as const) {
+    const { baseline, candidate } = modes[mode]; const c = new globalThis.Set(candidate); const b = new globalThis.Set(baseline);
+    const removed = baseline.filter(p => !c.has(p));
+    const t = totals[mode];
+    t.baseline += baseline.length; t.candidate += candidate.length; t.removed += removed.length;
+    t.removedNotTemplate += removed.filter(p => !isTemplate(p)).length; t.added += candidate.filter(p => !b.has(p)).length;
+    if (mode === 'workspace') removedPaths.push(...removed);
+  }
+  if (removedPaths.length) totals.rootsWithTemplates++;
+  const kept = modes.workspace.candidate.filter(p => templateNamed.test(p));
+  totals.keptTemplateNamed += kept.length; if (kept.length) totals.keptTemplateNamedRoots++;
+
+  const sets = {
+    baseline: { name: root.id, artifacts: modes.workspace.baseline.map(p => arms.baseline.classifyArtifact(p, files.get(p)!)) },
+    candidate: { name: root.id, artifacts: modes.workspace.candidate.map(p => arms.candidate.classifyArtifact(p, files.get(p)!)) },
+  };
+  const lists = { baseline: arms.baseline.listFeatures(sets.baseline.artifacts), candidate: arms.candidate.listFeatures(sets.candidate.artifacts) };
+  const after = new Map(lists.candidate.map(f => [f.id, f]));
+  const removedFeatures = lists.baseline.filter(f => !after.has(f.id));
+  const before = new Map(lists.baseline.map(f => [f.id, f]));
+  totals.features.baseline += lists.baseline.length; totals.features.candidate += lists.candidate.length;
+  totals.features.removed += removedFeatures.length; totals.features.added += lists.candidate.filter(f => !before.has(f.id)).length;
+  totals.features.removedWithNonTemplateFile += removedFeatures.filter(f => sets.baseline.artifacts.some(a => a.featureId === f.id && a.role !== 'instructions' && !isTemplate(a.path))).length;
+  const common = lists.candidate.filter(f => before.has(f.id));
+  totals.features.countChanged += common.filter(f => before.get(f.id)!.artifacts !== f.artifacts).length;
+  const orderBefore = lists.baseline.filter(f => after.has(f.id)).map(f => f.id);
+  const orderChanged = JSON.stringify(orderBefore) !== JSON.stringify(common.map(f => f.id));
+  if (orderChanged) totals.features.orderChangedRoots++;
+
+  const changedFeatures: string[] = [];
+  for (const feature of common) {
+    const selected = { baseline: arms.baseline.selectFeature(sets.baseline, feature.id), candidate: arms.candidate.selectFeature(sets.candidate, feature.id) };
+    if (overLimit(selected.baseline) || overLimit(selected.candidate)) { totals.commonFeatures.overLimit++; continue; }
+    totals.commonFeatures.analyzed++;
+    const [b, c] = await Promise.all([arms.baseline.analyze(selected.baseline), arms.candidate.analyze(selected.candidate)]);
+    totals.evidenceInvalid.baseline += invalidEvidence(b, files); totals.evidenceInvalid.candidate += invalidEvidence(c, files);
+    if (comparable(b) !== comparable(c)) { totals.commonFeatures.changed++; changedFeatures.push(feature.id); }
+  }
+
+  // "All documents" plus each template folder's framework folder and the project folder above it.
+  const prefixes = new globalThis.Set<string>(['']);
+  for (const p of removedPaths) {
+    const m = /^(.*?)(?:^|\/)\.(?:specify|kittify)\//i.exec(p)!;
+    const framework = p.slice(0, m[0].length - 1);
+    prefixes.add(framework); if (m[1]) prefixes.add(m[1]);
+  }
+  const scopes: unknown[] = [];
+  if (removedPaths.length) for (const prefix of [...prefixes].sort()) {
+    const pick = (engine: Engine, set: Set) => prefix === '' ? set : { ...set, artifacts: set.artifacts.filter(a => engine.inPathScope(a, [prefix])) };
+    const selected = { baseline: pick(arms.baseline, sets.baseline), candidate: pick(arms.candidate, sets.candidate) };
+    if (overLimit(selected.baseline) || overLimit(selected.candidate)) { totals.scopes.overLimit++; scopes.push({ prefix: prefix || '(all)', overLimit: true }); continue; }
+    totals.scopes.analyzed++;
+    const [b, c] = await Promise.all([arms.baseline.analyze(selected.baseline), arms.candidate.analyze(selected.candidate)]);
+    totals.evidenceInvalid.baseline += invalidEvidence(b, files); totals.evidenceInvalid.candidate += invalidEvidence(c, files);
+    const d = scopeDiff(b, c);
+    const s = totals.scopes;
+    if (comparable(b) !== comparable(c)) s.changed++;
+    s.findingsRemoved += d.findings.removed; s.findingsRemovedOutside += d.findings.removedOutside.length;
+    s.findingsAdded += d.findings.added; s.findingsAddedOutside += d.findings.addedOutside.length;
+    s.decisionsRemoved += d.decisions.removed; s.decisionsRemovedOutside += d.decisions.removedOutside.length; s.decisionsAdded += d.decisions.added;
+    s.traceabilityRemoved += d.traceability.removed; s.traceabilityRemovedOutside += d.traceability.removedOutside.length;
+    s.traceabilityAdded += d.traceability.added; s.traceabilityAddedOutside += d.traceability.addedOutside.length;
+    for (const [k, n] of Object.entries(d.statuses)) s.statusChanges[k] = (s.statusChanges[k] ?? 0) + n;
+    if ((c.summary.score ?? -1) > (b.summary.score ?? -1)) s.scoreUp++; else if ((c.summary.score ?? -1) < (b.summary.score ?? -1)) s.scoreDown++;
+    scopes.push({ prefix: prefix || '(all)', artifacts: [selected.baseline.artifacts.length, selected.candidate.artifacts.length], ...d });
+  }
+  detail.push({ root: root.id, repository: root.repository, revision: sha, removedPaths, removedFeatures: removedFeatures.map(f => f.id),
+    orderChanged, changedFeatures, keptTemplateNamed: kept, scopes });
+}
+await rm(temp, { recursive: true, force: true });
+const report = { revisions, engines: { baseline: arms.baseline.ENGINE_VERSION, candidate: arms.candidate.ENGINE_VERSION }, totals };
+if (values.out) await writeFile(values.out, JSON.stringify({ ...report, detail }, null, 2) + '\n');
+console.log(JSON.stringify(report, null, 2));
