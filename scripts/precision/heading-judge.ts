@@ -55,6 +55,9 @@ function expectedStatus(before: Status, duplicated: boolean): Status {
   return before === 'missing' ? 'partial' : before;
 }
 
+const reasonFor = (status: Status, evidence: boolean) => status === 'supported' ? 'The deterministic check is satisfied; semantic review may still find gaps.'
+  : evidence ? 'Textual signals found. Presence does not establish completeness or correctness.' : 'No evidence found by this check in the supplied artifacts.';
+
 /** Violations of H52 predictions 2 and 3 for one feature; empty when the change is as predicted. */
 export function judge(before: Assessment, after: Assessment, headings: Evidence[]): string[] {
   const strip = ({ engineVersion: _v, id: _i, createdAt: _c, ...rest }: Assessment) => rest;
@@ -71,8 +74,8 @@ export function judge(before: Assessment, after: Assessment, headings: Evidence[
   for (const id of IDENTIFICATION) {
     const [was, now] = [before.practices.find(p => p.id === id)!, after.practices.find(p => p.id === id)!];
     if (now.status !== expectedStatus(was.status, duplicated)) violations.push(`${id} ${was.status}->${now.status}`);
-    // The engine derives the reason from the status, so an unchanged status keeps its reason.
-    if (now.status === was.status && now.reason !== was.reason) violations.push(`${id} reason`);
+    // The engine's reason follows the status and whether there is evidence (analyze.ts).
+    if (now.reason !== reasonFor(now.status, now.evidence.length > 0)) violations.push(`${id} reason`);
     // Known limit: with four 0.1.19 hits the evidence cannot show the headings, so it must stay as it was.
     if (!same(now.evidence, was.evidence.length >= 4 ? was.evidence : [...was.evidence, ...headings].slice(0, 4))) violations.push(`${id} evidence`);
   }
