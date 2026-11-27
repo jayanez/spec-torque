@@ -1416,4 +1416,27 @@ practice status, finding, open decision or non-P1 dimension changes. 21 features
 - The Spanish fresh power is low: 1 eligible root.
 - Both reviewers are agent sessions of one model family.
 
+**Counterfactual and adversarial review (owner request, after the record).**
+- *Recall.* Of the 21 pilot features still `missing`, 18 declare no dependency in
+  their plan or tasks (dependencies appear only as product subject matter, or not at
+  all). 2 state an order in prose ("after T0nn is reviewed"), which is not a declared
+  field. 1 uses an unlabeled verb without "on" (`depends T001`, 3 lines). None uses a
+  field whose IDs are on the following list lines, a table column or another label.
+- *Precision.* An independent agent session that saw only the diff built 44 lines.
+  The field accepts 14 that are not dependencies, almost all uppercase standard or
+  product names (`UTF-8`, `ISO-8601`, `GPT-4`, `SHA-256`, `CVE-2024`, `RFC-6749`). It
+  rejects 5 genuine or arguable ones (`Dependencies - T001`, lowercase `t001`, and
+  values without an ID). On natural text none of these standard names occurs in a
+  newly accepted line: 0 of 134 evidence lines on the earlier sets, 0 of 40 on the
+  fresh set, 0 on the pilot.
+- *Guards considered.* An allow-list of ID families (`T\d{3,}`, `FR-`, `REQ-`, `SC-`, …)
+  removes 12 of the 14 synthetic false accepts. It would also drop genuine natural
+  fields with project prefixes (`ENV-`, `PROJ-`, `ARCH-`, `PARSE-`) in 11 of the 54
+  changed earlier features. A stop list of standard prefixes is open-ended. A digit
+  threshold does not help (`ISO-8601`, `SHA-256`). No cheap guard improves the measured
+  result, so no Amendment H106-3 is made.
+- *Follow-ups (not in this change).* Resolve a field's IDs against the feature's own
+  task and requirement IDs, which is the general fix for standard names; read
+  `depends T001` and fields with IDs on the following list lines.
+
 **Decision.** Propose H106 (engine 0.1.17) for merge.
