@@ -1590,6 +1590,15 @@ reads as verbs. Both are excluded, so they only keep 0.1.16's `missing`:
 Two twins are added to gate 1, both expected `missing`: `The owner as a concept is
 defined …` and `Ayudar a las mantenedoras a publicar …`. Nothing else changes.
 
+### Amendment H104-3 (2026-11-27, after the first twin run, before any natural measurement)
+
+The first candidate run met 24 of 25 twins. The miss, `Los revisores pueden aprobar
+la nota.`, is a twin error: `pueden` is a normative modal in this engine, so the line
+is admitted as a requirement, and requirement lines never carry the cue (by policy,
+as in 0.1.16). The twin is kept as a scope twin expecting `missing`
+(`revisores-pueden-es`), and the intended form is added as `revisores-es`:
+`Los revisores aprueban la nota.` (`partial`). The rule is unchanged.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

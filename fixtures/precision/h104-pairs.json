@@ -341,8 +341,8 @@
       "note": "Twin: a hyphen joins the role noun to the next word."
     },
     {
-      "id": "revisores-es",
-      "construct": "clause-start",
+      "id": "revisores-pueden-es",
+      "construct": "scope",
       "language": "es",
       "files": {
         "specs/001-demo/spec.md": [
@@ -358,10 +358,33 @@
         ]
       },
       "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104-3: \"pueden\" is a normative modal, so the line is a requirement and outside the cue (unchanged)."
+    },
+    {
+      "id": "revisores-es",
+      "construct": "clause-start",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Los revisores aprueban la nota.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
         "P2.1": "partial",
         "C1.1": "partial"
       },
-      "note": "Plural role after a determiner, followed by a modal."
+      "note": "H104-3: plural role after a determiner, followed by a verb in -an."
     },
     {
       "id": "campo-propietario-es",
