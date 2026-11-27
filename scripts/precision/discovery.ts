@@ -64,6 +64,7 @@ function scopeDiff(before: Result, after: Result, selected: { baseline: Selectio
   const templateText = selected.baseline.artifacts.filter(a => isTemplate(a.path)).map(a => a.content).join('\n');
   const specText = selected.baseline.artifacts.filter(a => a.role === 'spec' && !isTemplate(a.path)).map(a => a.content).join('\n');
   const word = (id: string) => new RegExp(`(?<![\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`);
+  // Scope-wide, not per feature namespace: an ID defined in another feature's spec only adds breaks (conservative).
   const templateDefined = (id: string) => word(id).test(templateText) && !word(id).test(specText);
   const undefinedRef = (f: Finding) => /^Reference (\S+) has no definition/.exec(f.message)?.[1];
   const status = (id: string) => after.practices.find(p => p.id === id)?.status;

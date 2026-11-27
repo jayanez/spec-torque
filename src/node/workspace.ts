@@ -62,7 +62,8 @@ export async function readScope(index: WorkspaceIndex, request: ScopeRequest = {
   if (request.base !== undefined && !request.changed) throw new Error('A base revision requires changed.');
   if (paths?.some(p => isAbsolute(p) || p.replaceAll('\\', '/').split('/').includes('..'))) throw new Error('Paths must be relative to the workspace.');
   // H92 (#92): an explicit scope inside a framework template folder would read nothing; say why.
-  const template = [feature, ...(paths ?? []), request.changed ? null : index.focus].find(p => p && isFrameworkTemplate(p));
+  const focus = feature === null && !paths && !request.changed ? index.focus : null;
+  const template = [feature, ...(paths ?? []), focus].find(p => p && isFrameworkTemplate(p));
   if (template) throw new Error(`${template} is a template folder. ${TEMPLATES_NOT_ANALYZED}`);
   if (feature !== null) {
     if (!index.entries.some(a => a.featureId === feature && a.role !== 'instructions')) throw new Error(`Unknown feature: ${feature}`);

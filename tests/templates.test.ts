@@ -59,6 +59,8 @@ test('an explicit scope inside a template folder fails with a reason; its parent
     for (const request of [{ paths: ['.specify/templates'] }, { paths: ['.specify/templates/spec-template.md'] }, { feature: '.specify/templates' }])
       await assert.rejects(readScope(index, request), /is a template folder\. Spec Kit and Spec Kitty templates are not analyzed\./, JSON.stringify(request));
     await assert.rejects(readScope({ ...index, focus: '.specify/templates' }), /is a template folder/);
+    // An explicit scope wins over a focus inside a template folder.
+    assert.equal((await readScope({ ...index, focus: '.specify/templates' }, { paths: ['.specify/memory'] })).artifacts.length, 1);
     assert.deepEqual((await readScope(index, { paths: ['.specify'] })).artifacts.map(a => a.path), ['.specify/memory/constitution.md', '.specify/specs/001-a/templates/spec.md']);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
