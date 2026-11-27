@@ -2615,6 +2615,15 @@ archived, MIT or Apache-2.0; every repository and owner in the earlier
 earlier roots, and the pilot repository owner, excluded; one repository per owner; each pinned to
 its default-branch head SHA. The list is committed in `fixtures/precision/h52ca-sources.json`.
 
+### Amendment H52c-a-1 (2026-11-27, before the candidate is rebuilt and any measurement)
+
+Building the twins showed that the opposite-obligation rule keys a behavior by the text before the
+modal, including a leading scenario keyword (`then the system …`), so an entering step never shares
+a key with a line that 0.1.20 admits and never takes an earlier line's place. The twin "an entering
+step between two opposite obligations" therefore pins the earlier conflict as unchanged, and a
+second twin pins two opposite entering steps, which gain the error. The allowance for a removed
+opposite-obligation error in prediction 3 stays (it cannot occur). Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
