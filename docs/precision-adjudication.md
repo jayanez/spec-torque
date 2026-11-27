@@ -355,3 +355,32 @@ document) is `negative`, and the reviewers are told so.
 
 **Reviewers.** Two new independent agent sessions, with no engine output, key, scan,
 hypothesis, direction or each other's labels.
+
+## H52: requirement headings (#52)
+
+H52 raises I1.2 and I2.2 when a specification heading carries a defining family ID. The
+threshold was fixed in the pre-registration (`8bd46a9`) and by the owner's adjudication decision
+of 2026-11-27, before any packet was built.
+
+**Packet.** `scripts/precision/heading-packet.ts --scan <earlier h52-scan.json> --scan <fresh
+h52-scan.json> --roots … --seed 42052`: every feature whose I1.2 or I2.2 status changes, or 100
+drawn. One item per feature: one of its defining headings, drawn with the seed, with its heading
+chain and its section up to the next heading of the same or a higher level (at most 30 lines),
+read at the scanned revision. Items are shuffled and then numbered. `key.json` holds the root,
+feature and transitions and is not opened by labelers.
+
+**Proposition.** *This heading names a requirement that the specification itself imposes, and the
+ID in it identifies that requirement.* `positive` means the gain is right. A heading that only
+cites, indexes, traces or groups requirements, or that names a scenario, decision, question,
+risk or change, is `negative`.
+
+**Labelers.** Two new Sonnet agent sessions that did not write the rule. They see no engine
+output, key, scan, hypothesis, direction or each other's labels. Each reads every item in full
+and quotes its last section line, which is checked against the packet.
+
+**Threshold.** An item passes only when both labelers say `positive`. Any `negative`,
+disagreement or `unknown` counts against the threshold, and the author's notes never resolve one.
+At most 2 items fail, or at most 5% when there are more than 40. Both labelers are one model
+family.
+
+**Result.** 35 items (every changed feature of the earlier and fresh sets): 35/35 `positive` from both labelers, 0 failing. See [precision decisions](precision-decisions.md).

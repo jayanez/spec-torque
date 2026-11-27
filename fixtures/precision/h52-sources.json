@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H52 confirmation set (defining ID headings count for I1.2 and I2.2, #52). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search (REST API) for \"### REQ-001\" Given, \"### FR-001\" Given, \"### REQ-001\" Dado and \"### FR-001\" Dado, each with filename:spec.md, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files, every one of the 137 earlier roots, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": [
+    {
+      "query": "\"### REQ-001\" Dado filename:spec.md",
+      "found": 3,
+      "limit": 4
+    }
+  ],
+  "sources": [
+    {
+      "family": "spec",
+      "repository": "github.com/bohmian-ai/wyrd",
+      "commit": "57665045e356f6b684020dead6af12b14ae61a2c",
+      "license": "Apache-2.0",
+      "query": "\"### REQ-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/dallay/agentsync",
+      "commit": "b36de7e46d7b557109f6a26b920b186c000de278",
+      "license": "MIT",
+      "query": "\"### REQ-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/elCorbacho/2026.01-backend-test",
+      "commit": "29cf29ea9362ffbbf67c31b642f24b336177c036",
+      "license": "MIT",
+      "query": "\"### REQ-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/Ryu6Zero/dsh-hindsight",
+      "commit": "200eab8ab5cf395e86d0ddb3cc809061f6ee09c4",
+      "license": "MIT",
+      "query": "\"### REQ-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/dan-s-github/ha-electricityinfo-nz",
+      "commit": "c3c0cb3e51e7ef66d2da918a416dcb1174024ada",
+      "license": "MIT",
+      "query": "\"### FR-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/RyanBrainNew/sdd-kit",
+      "commit": "ba2e2c0fd395efbbab94a26e9239a2fd6ba76b99",
+      "license": "Apache-2.0",
+      "query": "\"### FR-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/SourceShift/mini-ork",
+      "commit": "95f8a6d9bfe13bd5c0e87529696fd46febeb0e6d",
+      "license": "Apache-2.0",
+      "query": "\"### FR-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/manutej/categorical-meta-prompting",
+      "commit": "e0867f3c46d5e666d8e36f127ba630e369a75d1d",
+      "license": "MIT",
+      "query": "\"### FR-001\" Given filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/oN0V41S/nexus-7-agent",
+      "commit": "412a907c862653db3cdf940baab70a4d9b0866f2",
+      "license": "MIT",
+      "query": "\"### REQ-001\" Dado filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/unb-mds/2026-1-Squad07",
+      "commit": "8b91904659f63c169ada643e6625c0d3c477004b",
+      "license": "MIT",
+      "query": "\"### REQ-001\" Dado filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/leandroluk/golem",
+      "commit": "b7e0792367c849568235ae5a03ba8c43624e6370",
+      "license": "MIT",
+      "query": "\"### REQ-001\" Dado filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/efreet111/engram-dotnet",
+      "commit": "100a9befa28f3049e126870eb8ac838658e82fda",
+      "license": "MIT",
+      "query": "\"### FR-001\" Dado filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/ijaureguialzo/kanji-vue",
+      "commit": "5121d6f957d337d677fbb14c8f86c9e47d9f25df",
+      "license": "Apache-2.0",
+      "query": "\"### FR-001\" Dado filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/wvianna/wemos-lolin-lite-teste",
+      "commit": "90aaf23a39022f8c2b39b7a48ecc269701dfcab1",
+      "license": "MIT",
+      "query": "\"### FR-001\" Dado filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/JotJunior/space-pinball",
+      "commit": "cd39a2fd9e1f8798d249798cd547eb87f296c061",
+      "license": "MIT",
+      "query": "\"### FR-001\" Dado filename:spec.md"
+    }
+  ]
+}
