@@ -1797,6 +1797,7 @@ the renamed messages of earlier H9 twins.
 **Decision.** H52b stops and the candidate is reverted; engine stays 0.1.20. The owner decides
 between a pre-registered H52b-a (the two corrections above, a new fresh set and new labelers) and
 stopping. No labels were drawn.
+
 ### H52c: scenario steps with a modal are requirement lines — **fails gate 3 (one prediction missed); reverted, owner decides**
 
 Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). Third of the approved sequence;
