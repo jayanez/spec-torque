@@ -1,6 +1,6 @@
 {
   "name": "pi-spectorque",
-  "version": "0.3.1",
+  "version": "0.3.0",
   "description": "SpecTorque for Pi and ThinkRail: /spectorque review command, widget, reviewed refinements and three skills.",
   "type": "module",
   "author": {

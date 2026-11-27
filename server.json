@@ -8,13 +8,13 @@
     "url": "https://github.com/jayanez/spec-torque",
     "source": "github"
   },
-  "version": "0.3.1",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "spectorque",
-      "version": "0.3.1",
+      "version": "0.3.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

@@ -1,7 +1,7 @@
 {
   "name": "spectorque",
   "displayName": "SpecTorque",
-  "version": "0.3.1",
+  "version": "0.3.0",
   "description": "Score agent-ready specifications against 40 EPIC practices with source evidence and reviewed refinements.",
   "publisher": "jayanez",
   "license": "Apache-2.0",

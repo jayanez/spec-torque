@@ -1,6 +1,6 @@
 {
   "name": "opencode-spectorque",
-  "version": "0.3.1",
+  "version": "0.3.0",
   "description": "SpecTorque for OpenCode: native TUI review panel with scoped analysis, evidence and reviewed refinements.",
   "type": "module",
   "author": {

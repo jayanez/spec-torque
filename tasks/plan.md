@@ -67,5 +67,5 @@ adjudication on the evidence it removed; the narrowed H7a (engine 0.1.15, produc
 0.2.8) reads Spec Kit checklists as review context that is never requirements text or an
 open decision. H9 (#84, engine 0.1.16, product 0.2.9) leaves out of I2.3 the
 references a line qualifies by another specification; its "not adopted" rule was
-reverted. H106 (#106, engine 0.1.17, product 0.3.1) counts a labeled dependency field
+reverted. H106 (#106, engine 0.1.17) counts a labeled dependency field
 (`Dependencies: T001`) with a task or requirement ID as P1.3 evidence.
