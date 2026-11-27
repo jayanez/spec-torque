@@ -19,7 +19,7 @@ SpecTorque 0.3.0 es una **versión preliminar**, publicada en el canal `next` ha
 | Plataforma | Instalación | Después |
 |---|---|---|
 | Claude Code (CLI y pestaña Code de Desktop) | `claude plugin marketplace add jayanez/spec-torque` y `claude plugin install spectorque@spectorque` | `/spectorque` |
-| Codex (CLI y Desktop) | `codex plugin marketplace add jayanez/spec-torque` y `codex plugin add spectorque@spectorque` | [Vincula un worktree](../integrations/codex/README.md#install-and-bind-a-worktree) y luego `$spec-view` |
+| Codex (CLI y Desktop) | `codex plugin marketplace add jayanez/spec-torque` y `codex plugin add spectorque@spectorque` | [Vincula un worktree](../integrations/codex/README.md#install-and-bind-a-worktree) y luego `$spec-view` (visor integrado: solo Desktop) |
 | OpenCode | Añade `"opencode-spectorque@0.3.0"` a `plugins` en `~/.config/opencode/cli.json` | `/spectorque` en una sesión |
 | Pi y ThinkRail | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
 | VS Code | Busca **SpecTorque** y elige *Switch to Pre-Release*, o `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |

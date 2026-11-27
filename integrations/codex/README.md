@@ -1,6 +1,6 @@
 # SpecTorque in Codex Desktop
 
-The package includes the inline viewer, project MCP server, four skills (`spec-author`, `spec-refine`, `spec-review` and `spec-view`) and local workbench. Use Node 22.20 or later. The desktop scenario uses a local project or worktree.
+The package includes the inline viewer, project MCP server, skills (`spec-author`, `spec-refine`, `spec-review` and the Codex-only `spec-view`) and local workbench. Use Node 22.20 or later. The desktop scenario uses a local project or worktree.
 
 ## Install and bind a worktree
 
