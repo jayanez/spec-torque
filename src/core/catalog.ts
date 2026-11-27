@@ -9,6 +9,9 @@ export interface PracticeDefinition { id: string; title: string; roles: Role[]; 
 // H6 (#88): a validation-plan table row with an identifier cell and a test-file reference.
 const testFile = /(?:^|[\s|\x60(/])(?:tests?|__tests__)\/[^\s|\x60]+|\btest_[\w-]+\.py\b|\b[\w.-]+(?:_test|_spec|\.test|\.spec)\.\w+\b|\b\w+Tests?\.(?:cs|java|kt|swift)\b/;
 const validationRow = new RegExp(String.raw`^(?=\s*\|)(?=.*\|\s*(?:\*\*|\x60)?[A-Z]{1,8}-\d+(?:\*\*|\x60)?\s*\|)(?=.*(?:${testFile.source}))`);
+// H106 (#106): a labeled dependency field ("Dependencies: T001, T003") whose value, before the sentence ends, names
+// a task or requirement ID. Absent values (none, a dash, empty) do not count.
+const dependencyField = /\b(?:dependencies|dependencias|depends on|depende de|blocked by|bloqueado por)\**\s*:\**\s*(?!\**\s*(?:none|ninguna|ninguno|nada|n\/a)\b|\**\s*[—–-])[^.\n]*?\b(?:[A-Z]{1,8}-\d+|T\d+)\b/;
 const s: Role[] = ['spec']; const p: Role[] = ['plan']; const t: Role[] = ['tasks'];
 const all: Role[] = ['spec', 'plan', 'tasks', 'instructions', 'context'];
 export const PRACTICES: PracticeDefinition[] = [
@@ -28,7 +31,7 @@ export const PRACTICES: PracticeDefinition[] = [
   { id: 'E3.4', title: 'Verification completion and readiness', roles: all, pattern: /definition of done|exit criteria|ready when|complete when|terminad[oa] cuando|criterios de salida|definición de terminado/i, fix: 'State what evidence is required to consider verification complete.' },
   { id: 'P1.1', title: 'Declared assumptions and dependencies', roles: all, pattern: /(?:dependenc|dependencia|assumption|supuesto).*[:—-].+|no external dependencies|sin dependencias externas/i, fix: 'Declare dependencies and assumptions, including an explicit absence where applicable.' },
   { id: 'P1.2', title: 'Explicit constraints and scope', roles: s, pattern: /constraint|restricción|out of scope|fuera de alcance|MUST NOT|NO DEBE/i, fix: 'Document constraints that affect feasible solutions.' },
-  { id: 'P1.3', title: 'Requirement-level dependency traceability', roles: ['plan', 'tasks'], pattern: /(?:depends on|depende de|requires|requiere).*(?:[A-Z]{1,8}-\d+|T\d+)/i, fix: 'Link each dependency or risk to the requirement or task it affects.' },
+  { id: 'P1.3', title: 'Requirement-level dependency traceability', roles: ['plan', 'tasks'], pattern: new RegExp(String.raw`(?:depends on|depende de|requires|requiere).*(?:[A-Z]{1,8}-\d+|T\d+)|${dependencyField.source}`, 'i'), fix: 'Link each dependency or risk to the requirement or task it affects.' },
   { id: 'P1.4', title: 'Dependency verification and failure handling', roles: all, pattern: /(?:dependency|provider|API|dependencia|proveedor).*(?:fail|timeout|unavailable|fall|tiempo|no disponible)|(?:retry|reintento|fallback).*(?:\d|limit|límite)/i, fix: 'State how dependencies are checked and what happens when they fail.' },
   { id: 'P2.1', title: 'Functional and user requirement coverage', roles: s, fix: 'Identify intended actors, capabilities and scope; completeness still needs domain review.' },
   { id: 'P2.2', title: 'Exceptional behavior and scope definition', roles: s, pattern: /invalid|failure|empty|boundary|edge case|inválid|fallo|vacío|caso límite/i, fix: 'Describe relevant invalid input, failures, empty states and exclusions.' },
