@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H52c confirmation set (scenario steps with a modal are requirement lines, #52). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search (REST API) for the four pre-registered queries, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files (H52 and H52b included), every one of the 137 earlier roots, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": [
+    {
+      "query": "\"ENTONCES el sistema DEBE\" filename:spec.md",
+      "found": 3,
+      "limit": 4
+    }
+  ],
+  "sources": [
+    {
+      "family": "spec",
+      "repository": "github.com/dataelement/bisheng",
+      "commit": "f11fca298c0230d1c7c2ecaf5fd19e3e9683c9ec",
+      "license": "Apache-2.0",
+      "query": "\"THEN the system SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/jasonkneen/kiro",
+      "commit": "22577b636dc3095f774ace4c846034514d9fa071",
+      "license": "MIT",
+      "query": "\"THEN the system SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/quiqr/quiqr-desktop",
+      "commit": "51b24ce9d7daaf7903383af487ae80b164077f66",
+      "license": "MIT",
+      "query": "\"THEN the system SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/jengzang/dialects-vue-frontend",
+      "commit": "1f143c9b96da46198a16795ed05675e7a53656d1",
+      "license": "MIT",
+      "query": "\"THEN the system SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/jobiols/odoo-env",
+      "commit": "adb34e49342e74ecbe9be90f7f5fc9b9dd520168",
+      "license": "MIT",
+      "query": "\"THEN the system MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/bithyve/bitcoin-tribe",
+      "commit": "fc14159ec8094fd14520ce0bab9c135bee6eca2e",
+      "license": "MIT",
+      "query": "\"THEN the system MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/RandyZ/openspec-ext",
+      "commit": "64c13832946f7cde873cc3aea9f18cb03e2bac64",
+      "license": "MIT",
+      "query": "\"THEN the system MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/JNZader/ghagga",
+      "commit": "ea88fa85739bb409b4433240d046c691c258f643",
+      "license": "MIT",
+      "query": "\"THEN the system MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/TrainingITCourses/softtek-java_ng-ai",
+      "commit": "a4cef95abc754a3c7fb906f2c89aca18f53214c0",
+      "license": "MIT",
+      "query": "\"ENTONCES el sistema DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/AlbertoBasalo/astro-bookings-specs",
+      "commit": "8c3efe62adf7f96de8d564312e24c47edd64d5a2",
+      "license": "MIT",
+      "query": "\"ENTONCES el sistema DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/adriandizdev/tools-for-gemini-notebook",
+      "commit": "4ea61cf37f238c7fb2d17db16c009a1030bb8d1f",
+      "license": "MIT",
+      "query": "\"ENTONCES el sistema DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/container-storage-interface/spec",
+      "commit": "fd2dbb3af215c4faeba7df1cfc9400d16be5d98e",
+      "license": "Apache-2.0",
+      "query": "\"WHEN\" \"SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/containernetworking/cni",
+      "commit": "42e11794c073c4a7f3db324a33d266bdd0344e58",
+      "license": "Apache-2.0",
+      "query": "\"WHEN\" \"SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/mgree/smoosh",
+      "commit": "cc67dbe6a4953e51431997eac025b5e3f46c3d2d",
+      "license": "MIT",
+      "query": "\"WHEN\" \"SHALL\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/cdevents/spec",
+      "commit": "946a06b5fc42f43565fa3c388d3f8b81a314bf5a",
+      "license": "Apache-2.0",
+      "query": "\"WHEN\" \"SHALL\" filename:spec.md"
+    }
+  ]
+}
