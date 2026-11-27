@@ -1577,6 +1577,19 @@ with or without H104. The gate-1 twin adds one admitted requirement line
 (`- REQ-001: The release note MUST list every merged change.`). Scenario-only
 requirements are a separate gap and are not addressed here. Nothing else changes.
 
+### Amendment H104-2 (2026-11-27, before the candidate and any measurement)
+
+While writing the candidate, two prepositions were found that the frozen verb test
+reads as verbs. Both are excluded, so they only keep 0.1.16's `missing`:
+- **English.** `as` ends in `-s` and passes H85's verb-form test: "The owner as a
+  concept …". It is not a verb after a role noun.
+- **Spanish.** The prepositions `a`, `ante`, `contra`, `de`, `desde`, `durante`,
+  `entre`, `hacia`, `hasta`, `mediante`, `para` and `sobre` end in `-a` or `-e`:
+  "Ayudar a las mantenedoras a publicar …".
+
+Two twins are added to gate 1, both expected `missing`: `The owner as a concept is
+defined …` and `Ayudar a las mantenedoras a publicar …`. Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

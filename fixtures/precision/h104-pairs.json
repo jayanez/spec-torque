@@ -544,6 +544,52 @@
         "C1.1": "partial"
       },
       "note": "Spanish control: the 0.1.16 cue, partial in both engines."
+    },
+    {
+      "id": "as-preposition-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The owner as a concept is defined in the glossary.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104-2 twin: \"as\" after a role noun is a preposition, not a verb form."
+    },
+    {
+      "id": "preposicion-es",
+      "construct": "non-actor",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Ayudar a las mantenedoras a publicar una nota de versión.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104-2 twin: the preposition \"a\" after a role noun is not a verb."
     }
   ]
 }
