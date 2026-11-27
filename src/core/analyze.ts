@@ -2,7 +2,7 @@ import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.16';
+export const ENGINE_VERSION = '0.1.17';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -114,6 +114,28 @@ function hasObservableCue(text: string): boolean {
     (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
 }
 
+// H104 (#104): actors named by role. A bounded list of human role nouns counts only in actor
+// position: a user story, or a clause subject (after a determiner, or first on the line) that a
+// verb follows directly. System nouns (agent, service, client, caller) are left out on purpose.
+const genericActor = /user|visitor|actor|customer|usuario|visitante|cliente/i;
+const userStory = /\bas\s+an?\s+(?:[\p{L}-]+\s+){0,3}[\p{L}-]+\s*,\s*I\s+(?:want|need|can|would\s+like|should|must)\b|(?<!\p{L})como\s+(?:una?\s+)?(?:[\p{L}-]+\s+){0,3}[\p{L}-]+\s*,\s*(?:quiero|necesito|puedo|deseo|me\s+gustaría)(?!\p{L})/iu;
+const lineStart = String.raw`^\s*(?:>\s*)*(?:(?:[-*+]|\d+[.)])\s+)?(?:\[[ xX]\]\s+)?(?:\*\*|__)?\s*`;
+const roleSubject = (keywords: string, determiners: string, roles: string) =>
+  new RegExp(String.raw`(?:${lineStart}(?:(?:${keywords})\s+)?(?:(?:${determiners})\s+)?|(?<![\p{L}\p{N}_'’-])(?:${determiners})\s+)(?:${roles})\s+([\p{L}'’]+)`, 'giu');
+const englishSubject = roleSubject('given|when|then|and|but', 'the|a|an|each|every|any',
+  '(?:developer|operator|maintainer|reviewer|administrator|admin|owner|engineer|author|contributor|approver|auditor|analyst|member)s?');
+const spanishSubject = roleSubject('dado(?:\\s+que)?|cuando|entonces|y', 'el|la|los|las|un|una|cada',
+  '(?:desarrollador|operador|mantenedor|revisor|administrador|colaborador|aprobador|autor|auditor)(?:a|es|as)?|(?:propietari|dueñ|ingenier|miembr)(?:o|a|os|as)|analistas?');
+// H85's verb-form test (-s but not -ss/-us/-is, or -ed), less the preposition "as" (H104-2).
+const englishVerb = /^(?:must|shall|should|may|might|can|cannot|could|will|would|is|are|was|were|has|have|had|does|do|did|\p{L}+n['’]t|(?!as$)\w*[^\Wsui]s|\w+ed)$/iu;
+const spanishVerb = /^(?!(?:a|ante|contra|de|desde|durante|entre|hacia|hasta|mediante|para|sobre)$)(?:debe|deben|deberá|deberán|puede|pueden|podrá|podrán|es|son|está|están|tiene|tienen|ha|han|\p{L}*(?:a|e|an|en|ó|ió))$/iu;
+const followedByVerb = (text: string, subject: RegExp, verb: RegExp) => [...text.matchAll(subject)].some(m => verb.test(m[1]));
+/** Whether a spec line names who acts: a generic actor word (0.1.16) or a role noun in actor position (H104). */
+function namesActor(text: string): boolean {
+  return genericActor.test(text) || userStory.test(text) ||
+    followedByVerb(text, englishSubject, englishVerb) || followedByVerb(text, spanishSubject, spanishVerb);
+}
+
 function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, RegExpExecArray[]>): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
@@ -124,7 +146,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[], refere
   if (id === 'E1.4') return ratio(line => hasNormativeModal(line.text));
   if (id === 'E2.1') return ratio(l => !/;.+\b(?:MUST|SHALL|DEBE)\b|\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(l.text));
   if (id === 'P2.1' || id === 'C1.1') {
-    const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && /user|visitor|actor|customer|usuario|visitante|cliente/i.test(l.text));
+    const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && namesActor(l.text));
     return { status: specRequirements.length && context ? 'partial' : 'missing', hits: specRequirements.length && context ? specRequirements.slice(0, 3) : [] };
   }
   if (id === 'I1.2' || id === 'I2.2') {
