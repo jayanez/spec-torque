@@ -17,8 +17,8 @@ import { ReviewPanel } from './ReviewPanel.js';
 
 // `demo` marks an unedited sample: kept as the baseline for a sample edit, but not listed in History.
 type HistoryEntry = { report: Assessment; scope: string | null; demo: boolean };
-// A loaded set opens on the specification of its first listed feature (known layouts first,
-// templates last), not on an instruction file or a template that sorts first by path.
+// A loaded set opens on the specification of its first listed feature (known layouts first),
+// not on an instruction file that sorts first by path.
 // Within the feature, a file named spec.md comes before other spec-role files.
 function firstSource(artifacts: ArtifactSet['artifacts']): string {
   const feature = listFeatures(artifacts)[0]?.id;

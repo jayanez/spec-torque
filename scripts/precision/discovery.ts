@@ -28,41 +28,65 @@ const templateNamed = /(?:^|\/)[^/]*templates?[^/]*\//i;
 
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-discovery-'));
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
-const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'baseline')), candidate: await archiveEngine(revisions.candidate, join(temp, 'candidate')) };
+// H92a prediction 6: both arms analyze "All documents" beyond the 500-document guard; hosts still apply it (`overLimit`).
+const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'baseline'), true), candidate: await archiveEngine(revisions.candidate, join(temp, 'candidate'), true) };
 if (typeof (arms.candidate as { isFrameworkTemplate?: unknown }).isFrameworkTemplate !== 'function') throw new Error('The candidate does not export isFrameworkTemplate.');
 const isTemplate = (arms.candidate as unknown as { isFrameworkTemplate: (path: string) => boolean }).isFrameworkTemplate;
 
-type Keyed = [key: string, paths: string[]];
+type Finding = Result['findings'][number]; type Edge = Result['traceability'][number]; type Mark = Result['decisions'][number];
 // Unlike replay.ts, a finding is keyed by every evidence location, so a cross-document finding that loses a template line counts as changed.
-const findingKey = (f: Result['findings'][number]): Keyed => [`${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`, f.evidence.map(e => e.path)];
-const evidenceKey = (e: { path: string; line: number; text: string }): Keyed => [`${e.path}:${e.line}|${e.text}`, [e.path]];
-const edgeKey = (t: Result['traceability'][number]): Keyed => [`${t.from}>${t.to}|${t.resolved}|${evidenceKey(t.evidence)[0]}`, [t.evidence.path]];
+const findingKey = (f: Finding) => `${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`;
+const markKey = (e: Mark) => `${e.path}:${e.line}|${e.text}`;
+const edgeKey = (t: Edge) => `${t.from}>${t.to}|${t.resolved}|${markKey(t.evidence)}`;
 const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined });
 const overLimit = (set: Selection) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
+const hasSpec = (set: Selection) => set.artifacts.some(a => a.role === 'spec' && !a.archived && !isTemplate(a.path));
 
-function diffKeys(beforeKeys: Keyed[], afterKeys: Keyed[]) {
-  // An item cites a template when any of its evidence paths is one (from the evidence objects, not the key text).
-  const paths = new Map([...beforeKeys, ...afterKeys]);
-  const cites = (key: string) => paths.get(key)!.some(isTemplate);
-  const [b, a] = [new Set(beforeKeys.map(([k]) => k)), new Set(afterKeys.map(([k]) => k))];
-  const removed = [...b].filter(k => !a.has(k)); const added = [...a].filter(k => !b.has(k));
-  return { removed: removed.length, removedCitingTemplate: removed.filter(cites).length, added: added.length, addedCitingTemplate: added.filter(cites).length,
-    removedOutside: removed.filter(k => !cites(k)), addedOutside: added.filter(k => !cites(k)) };
+function diff<T>(before: T[], after: T[], key: (item: T) => string) {
+  const [b, a] = [new Map(before.map(i => [key(i), i])), new Map(after.map(i => [key(i), i]))];
+  return { removed: [...b].filter(([k]) => !a.has(k)).map(([, i]) => i), added: [...a].filter(([k]) => !b.has(k)).map(([, i]) => i) };
 }
 
-/** Compares one scope: findings, decisions and traceability by whether they cite a template, plus statuses and score. */
-function scopeDiff(before: Result, after: Result) {
+/**
+ * H92a prediction 5. Items citing a template may go. Otherwise, in a *kept* scope (a non-template spec remains)
+ * nothing is removed, except a resolved edge to a template-defined ID that comes back unresolved, and only an
+ * undefined-reference finding or unresolved edge for a template-defined ID may be added. In an *emptied* scope
+ * a finding may go only when its practice is `unknown` in the candidate, an edge only when its target is
+ * template-defined, and nothing is added. Returns every item that breaks the prediction.
+ */
+function scopeDiff(before: Result, after: Result, selected: { baseline: Selection; candidate: Selection }) {
   const statuses: Record<string, number> = {};
   for (const id of new Set([...before.practices, ...after.practices].map(p => p.id))) {
     const [b, a] = [before.practices.find(q => q.id === id)?.status ?? 'absent', after.practices.find(q => q.id === id)?.status ?? 'absent'];
     if (b !== a) statuses[`${id}:${b}->${a}`] = (statuses[`${id}:${b}->${a}`] ?? 0) + 1;
   }
-  return {
-    findings: diffKeys(before.findings.map(findingKey), after.findings.map(findingKey)),
-    decisions: diffKeys(before.decisions.map(evidenceKey), after.decisions.map(evidenceKey)),
-    traceability: diffKeys(before.traceability.map(edgeKey), after.traceability.map(edgeKey)),
-    statuses, score: [before.summary.score, after.summary.score] as const,
-  };
+  const kind = hasSpec(selected.candidate) ? 'kept' : 'emptied';
+  const templateText = selected.baseline.artifacts.filter(a => isTemplate(a.path)).map(a => a.content).join('\n');
+  const specText = selected.baseline.artifacts.filter(a => a.role === 'spec' && !isTemplate(a.path)).map(a => a.content).join('\n');
+  const word = (id: string) => new RegExp(`(?<![\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`);
+  const templateDefined = (id: string) => word(id).test(templateText) && !word(id).test(specText);
+  const undefinedRef = (f: Finding) => /^Reference (\S+) has no definition/.exec(f.message)?.[1];
+  const status = (id: string) => after.practices.find(p => p.id === id)?.status;
+  const cites = (paths: string[]) => paths.some(isTemplate);
+  const findings = diff(before.findings, after.findings, findingKey);
+  const decisions = diff(before.decisions, after.decisions, markKey);
+  const edges = diff(before.traceability, after.traceability, edgeKey);
+  const addedEdge = new Set(edges.added.map(t => `${t.from}>${t.to}|${markKey(t.evidence)}`));
+  const breaks: string[] = [];
+  for (const f of findings.removed) if (!cites(f.evidence.map(e => e.path)) && !(kind === 'emptied' && status(f.practiceId) === 'unknown')) breaks.push(`finding-removed ${findingKey(f)}`);
+  for (const f of findings.added) if (!cites(f.evidence.map(e => e.path))) {
+    const id = undefinedRef(f);
+    if (!(kind === 'kept' && f.practiceId === 'I2.3' && id && templateDefined(id))) breaks.push(`finding-added ${findingKey(f)}`);
+  }
+  for (const e of decisions.removed) if (!cites([e.path])) breaks.push(`decision-removed ${markKey(e)}`);
+  for (const e of decisions.added) if (!cites([e.path])) breaks.push(`decision-added ${markKey(e)}`);
+  for (const t of edges.removed) if (!cites([t.evidence.path])) {
+    const back = t.resolved && addedEdge.has(`${t.from}>${t.to}|${markKey(t.evidence)}`);
+    if (!(templateDefined(t.to) && (kind === 'emptied' || back))) breaks.push(`edge-removed ${edgeKey(t)}`);
+  }
+  for (const t of edges.added) if (!cites([t.evidence.path]) && !(kind === 'kept' && !t.resolved && templateDefined(t.to))) breaks.push(`edge-added ${edgeKey(t)}`);
+  const count = <T>(d: { removed: T[]; added: T[] }) => ({ removed: d.removed.length, added: d.added.length });
+  return { kind, findings: count(findings), decisions: count(decisions), traceability: count(edges), breaks, statuses, score: [before.summary.score, after.summary.score] as const };
 }
 
 /** Evidence is valid when its line exists at its path and the line starts with the cited text. */
@@ -86,9 +110,11 @@ const totals = {
   github: { baseline: 0, candidate: 0, removed: 0, removedNotTemplate: 0, added: 0 },
   features: { baseline: 0, candidate: 0, removed: 0, removedWithNonTemplateFile: 0, added: 0, countChanged: 0, orderChangedRoots: 0 },
   commonFeatures: { analyzed: 0, overLimit: 0, changed: 0 },
-  scopes: { analyzed: 0, overLimit: 0, overLimitScopes: [] as string[], changed: 0, findingsRemoved: 0, findingsRemovedOutside: 0, findingsAdded: 0, findingsAddedOutside: 0,
-    decisionsRemoved: 0, decisionsRemovedOutside: 0, decisionsAdded: 0, traceabilityRemoved: 0, traceabilityRemovedOutside: 0, traceabilityAdded: 0, traceabilityAddedOutside: 0,
+  scopes: { analyzed: 0, kept: 0, emptied: 0, overLimit: 0, overLimitScopes: [] as string[], allBeyondHostLimit: [] as string[], changed: 0,
+    findings: { removed: 0, added: 0 }, decisions: { removed: 0, added: 0 }, traceability: { removed: 0, added: 0 }, breaks: 0,
     statusChanges: {} as Record<string, number>, scoreUp: 0, scoreDown: 0 },
+  // Roots whose index exceeds the read limit in the baseline and fits it in the candidate (hosts read them at once).
+  newlyReadable: [] as string[],
   keptTemplateNamed: 0, keptTemplateNamedRoots: 0,
   evidenceInvalid: { baseline: 0, candidate: 0 },
 };
@@ -111,6 +137,7 @@ for (const root of roots) {
     if (mode === 'workspace') removedPaths.push(...removed);
   }
   if (removedPaths.length) totals.rootsWithTemplates++;
+  if (modes.workspace.baseline.length > LIMIT && modes.workspace.candidate.length <= LIMIT) totals.newlyReadable.push(root.id);
   const kept = modes.workspace.candidate.filter(p => templateNamed.test(p));
   totals.keptTemplateNamed += kept.length; if (kept.length) totals.keptTemplateNamedRoots++;
 
@@ -153,18 +180,20 @@ for (const root of roots) {
   if (removedPaths.length) for (const prefix of [...prefixes].sort()) {
     const pick = (engine: Engine, set: Selection) => prefix === '' ? set : { ...set, artifacts: set.artifacts.filter(a => engine.inPathScope(a, [prefix])) };
     const selected = { baseline: pick(arms.baseline, sets.baseline), candidate: pick(arms.candidate, sets.candidate) };
-    if (overLimit(selected.baseline) || overLimit(selected.candidate)) { totals.scopes.overLimit++; totals.scopes.overLimitScopes.push(`${root.id}:${prefix || '(all)'}`); scopes.push({ prefix: prefix || '(all)', overLimit: true }); continue; }
+    // Folder scopes keep the host limit; "All documents" is compared beyond it (prediction 6), within 1 MB per document.
+    const hostOver = overLimit(selected.baseline) || overLimit(selected.candidate);
+    const tooLarge = [selected.baseline, selected.candidate].some(set => set.artifacts.some(a => a.content.length > 1_000_000));
+    if ((hostOver && prefix !== '') || tooLarge) { totals.scopes.overLimit++; totals.scopes.overLimitScopes.push(`${root.id}:${prefix || '(all)'}`); scopes.push({ prefix: prefix || '(all)', overLimit: true }); continue; }
+    if (hostOver) totals.scopes.allBeyondHostLimit.push(root.id);
     totals.scopes.analyzed++;
     const [b, c] = await Promise.all([arms.baseline.analyze(selected.baseline), arms.candidate.analyze(selected.candidate)]);
     totals.evidenceInvalid.baseline += invalidEvidence(b, files); totals.evidenceInvalid.candidate += invalidEvidence(c, files);
-    const d = scopeDiff(b, c);
+    const d = scopeDiff(b, c, selected);
     const s = totals.scopes;
+    s[d.kind as 'kept' | 'emptied']++;
     if (comparable(b) !== comparable(c)) s.changed++;
-    s.findingsRemoved += d.findings.removed; s.findingsRemovedOutside += d.findings.removedOutside.length;
-    s.findingsAdded += d.findings.added; s.findingsAddedOutside += d.findings.addedOutside.length;
-    s.decisionsRemoved += d.decisions.removed; s.decisionsRemovedOutside += d.decisions.removedOutside.length; s.decisionsAdded += d.decisions.added;
-    s.traceabilityRemoved += d.traceability.removed; s.traceabilityRemovedOutside += d.traceability.removedOutside.length;
-    s.traceabilityAdded += d.traceability.added; s.traceabilityAddedOutside += d.traceability.addedOutside.length;
+    for (const k of ['findings', 'decisions', 'traceability'] as const) { s[k].removed += d[k].removed; s[k].added += d[k].added; }
+    s.breaks += d.breaks.length;
     for (const [k, n] of Object.entries(d.statuses)) s.statusChanges[k] = (s.statusChanges[k] ?? 0) + n;
     if ((c.summary.score ?? -1) > (b.summary.score ?? -1)) s.scoreUp++; else if ((c.summary.score ?? -1) < (b.summary.score ?? -1)) s.scoreDown++;
     scopes.push({ prefix: prefix || '(all)', artifacts: [selected.baseline.artifacts.length, selected.candidate.artifacts.length], ...d });
