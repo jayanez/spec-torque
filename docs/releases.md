@@ -8,7 +8,7 @@ SpecTorque 0.3.0 is the current **prerelease**. It is published to npm under the
 |---|---|---|
 | CLI, browser workbench, any MCP client | `spectorque` | `npx -y spectorque@<version> serve --root .` or `npx -y spectorque@<version> mcp` |
 | Claude Code (CLI and Desktop) | `spectorque-claude` through `.claude-plugin/marketplace.json` | `claude plugin marketplace add jayanez/spec-torque`, then `claude plugin install spectorque@spectorque` |
-| Codex (CLI and Desktop) | `spectorque-codex` through `.agents/plugins/marketplace.json` | `codex plugin marketplace add jayanez/spec-torque`, then `codex plugin add spectorque@spectorque` and [bind a worktree](../integrations/codex/README.md#install-and-bind-a-worktree) |
+| Codex (CLI and Desktop) | `spectorque-codex` through `.agents/plugins/marketplace.json` | `codex plugin marketplace add jayanez/spec-torque`, then `codex plugin add spectorque@spectorque` and [bind a worktree](../integrations/codex/README.md#install-and-bind-a-worktree), then `$spec-view` |
 | OpenCode | `opencode-spectorque` | Add `"opencode-spectorque@<version>"` to `plugins` in `~/.config/opencode/cli.json` |
 | Pi and ThinkRail | `pi-spectorque` | `pi install npm:pi-spectorque@<version>` |
 | VS Code | `jayanez.spectorque` | Marketplace, *Switch to Pre-Release*; or `code --install-extension jayanez.spectorque --pre-release` |

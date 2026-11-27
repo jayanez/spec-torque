@@ -1,6 +1,6 @@
 # SpecTorque in Codex Desktop
 
-The package includes the inline viewer, project MCP server, review skills and local workbench. Use Node 22.20 or later. The desktop scenario uses a local project or worktree.
+The package includes the inline viewer, project MCP server, skills (`spec-author`, `spec-refine`, `spec-review` and the Codex-only `spec-view`) and local workbench. Use Node 22.20 or later. The desktop scenario uses a local project or worktree.
 
 ## Install and bind a worktree
 
@@ -27,7 +27,7 @@ The package includes the inline viewer, project MCP server, review skills and lo
 
 2. For the offline route, run `codex plugin marketplace add .` and `codex plugin add spectorque@spectorque-local --json` from that marketplace root. Either route supplies the skills. The MCP connection comes from the trusted project.
 3. Run `node /path/to/installed/plugin/setup-workspace.mjs /path/to/trusted/worktree [feature-id]`, quoting paths as needed. Merge its MCP block into that worktree’s `.codex/config.toml`. Replace any previous SpecTorque block for this server so the key is declared once. For a linked worktree, run this step with its own path. The script also prints the command to start the corresponding workbench, with `--feature` when you pass a feature; the workbench loads that feature, or the whole work tree when it fits, as soon as it opens.
-4. Open a new local chat in the trusted project in Codex Desktop. Invoke `open_spectorque` from the local `spectorque-workspace` server. The inline viewer opens with **All documents** and supports feature selection and exact source evidence. Testing the opening turn uses disposable documents.
+4. Open a new local chat in the trusted project in Codex Desktop. Type `$spec-view` (optionally `$spec-view specs/001-booking` or `$spec-view changed`); the skill calls `open_spectorque` from the local `spectorque-workspace` server, which you can also ask for directly. Codex has no plugin slash commands, and either route takes one model turn. The inline viewer opens with **All documents** and supports feature selection and exact source evidence. Testing the opening turn uses disposable documents.
 
 ## Review and export
 
