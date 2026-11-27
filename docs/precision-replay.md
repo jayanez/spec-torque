@@ -2417,6 +2417,212 @@ Prediction 3 also allows a removed reference error that names a bare ID which a 
 ID of the same feature makes resolvable. To keep prediction 2 exact, the ID boundary is ASCII, as
 `\b` is in 0.1.20: an ID is not preceded or followed by an ASCII letter, digit or underscore.
 Nothing else changes.
+## Pre-registered hypothesis H52c (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The third bounded hypothesis the
+owner approved (2026-11-27). H52 merged as engine 0.1.20; H52b failed gate 1 and was not retried
+(owner decision).
+
+**Failure.** Label guide v2 ([requirement classification](requirement-classification.md), owner
+decisions of 2026-11-22 and 2026-11-27) makes a scenario step that carries a normative modal a
+`requirement` (`- THEN the system SHALL lock the account`), and a step without one `acceptance`.
+The engine excludes every line that starts with a scenario keyword, modal or not, so these
+obligations are invisible to every requirement practice. A specification written as scenarios with
+`SHALL` steps is `unknown` for E1.4, E1.2, E2.1, I1.2 and I2.2.
+
+**Development data.** Phase 0 counts (engine 0.1.19): 324 such lines in 181 features of the 137
+earlier public roots; 6 lines in 3 features on the pilot.
+
+**Policy.** One change to admission. A line of scope `all`, outside fences, that is not a heading,
+blockquote or fence run, and that starts (after an optional `-` or `*` marker) with `GIVEN`,
+`WHEN`, `THEN`, `DADO`, `CUANDO` or `ENTONCES` (any case, the 0.1.20 scenario test) is a
+requirement line when it has a normative modal (`hasNormativeModal`, as for any line). A scenario
+line without a modal stays excluded, even when it carries a requirement ID. Nothing else changes:
+every practice reads the admitted set exactly as before. A line that 0.1.20 admits is still
+admitted; no line leaves.
+
+**Comparator.** 0.1.20 (`develop` at `297b7ed`). Candidate engine 0.1.21, product 0.3.0.
+
+**Definitions.** An *entering line* is a line the policy admits and 0.1.20 does not: a scenario
+line, as above, with a normative modal.
+
+**Predictions.**
+1. The 716 historical predictions, the minimal pairs and every earlier twin suite do not change,
+   except where an earlier twin contains an entering line; any such twin is listed before the
+   candidate (none is known).
+2. A feature none of whose active documents has an entering line is identical in both engines.
+3. Otherwise:
+   - *findings:* an added finding is an E1.2 unbounded-wording warning, an E1.3 pronoun warning, an
+     E2.1 multiple-obligation warning, an I1.2 "no stable identifier" warning or an I2.3
+     opposite-obligation error, and cites an entering line (the opposite-obligation error may cite
+     an entering line or the earlier line it conflicts with); a removed finding is an I2.3
+     "Reference … has no definition" error whose ID now appears on an entering spec line of the
+     feature; nothing else is added or removed;
+   - *statuses:* E1.4 moves only `unknown` → `supported` (every entering line has a modal); E1.2,
+     E2.1, I1.2 and I2.2 may move in any direction, including from `unknown`; P2.1 and C1.1 may
+     move `missing` → `partial` (the spec now has a requirement) or `partial` → `missing` (an
+     entering line was the only line naming an actor, and requirement lines are not actor
+     context); C1.2 may move `missing` → `partial`; no other practice changes status;
+   - *evidence:* only the practices listed above change evidence;
+   - *traceability:* an edge may change only from unresolved to resolved, for an ID on an
+     entering spec line;
+   - *scores:* only the E1, E2, I1, I2, P2 and C1 dimension scores and the total change.
+4. *Pilot:* nothing outside prediction 3; the counts are reported.
+
+**Gate (all must hold to proceed).**
+1. EN/ES twins committed before the candidate in `fixtures/precision/h52c-pairs.json`, pinning
+   E1.4, E1.2, E2.1, I1.2 and I2.2 and every finding, each with its opposite-outcome twin:
+   - targets: a `THEN … SHALL/MUST` step as the only requirement (`supported` E1.4, I1.2 `missing`
+     with its warning); the same under a defining heading (I1.2 `supported`); a step with `and`
+     before the modal (the E2.1 warning); a step with an unbounded word (the E1.2 warning); a
+     conditional prose sentence (`When a user signs in, the system MUST record the time.`); the
+     Spanish forms (`ENTONCES … DEBE`, `CUANDO … y … DEBE`);
+   - negatives, unchanged: a step without a modal (`- THEN the account is locked.`), a `GIVEN`
+     step, a step with an ID and no modal, a fenced step with a modal, a quoted step;
+   - controls, unchanged: a bold `**Then**` step with a modal (already admitted), a plain
+     requirement line.
+2. The 716 historical predictions are unchanged.
+3. On the 137 earlier roots every prediction holds, judged per feature
+   (`scripts/precision/scenario-units.ts`): 0 items outside predictions 2 and 3.
+4. On a new fresh public set the same holds, and the lines that change admission are labeled blind
+   by two new Sonnet sessions, separately for each direction: **entering** lines (all, or 100
+   drawn with seed 42054, deduplicated by text) and **leaving** lines (predicted none; all if any).
+   Each item is the line with its heading chain and three lines of context on each side.
+   **Proposition:** *this line states a requirement (an obligation, constraint or rule) that the
+   specification itself imposes.* Labels `positive`, `negative`, `unknown`. An entering item passes
+   only when both say `positive`; a leaving item only when both say `negative`. Any disagreement or
+   `unknown` fails, and the author's notes never resolve one. **Threshold, per direction:** at most
+   2 fail, or at most 5% when there are more than 40.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H52c stops, is recorded and reverted, and the owner decides.
+
+**Fresh sources.** Selected before the candidate exists, without reading any file content,
+through the REST code search API, in search order, up to 4 repositories per query:
+`"THEN the system SHALL" filename:spec.md`, `"THEN the system MUST" filename:spec.md`,
+`"ENTONCES el sistema DEBE" filename:spec.md` and `"WHEN" "SHALL" filename:spec.md`; public,
+non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier
+`fixtures/precision/*-sources.json` files (H52 and H52b included), every one of the 137 earlier
+roots, and the pilot repository owner, excluded; one repository per owner; each pinned to its
+default-branch head SHA. Shortfalls are recorded as `unfilled`.
+
+The list is committed in `fixtures/precision/h52c-sources.json` before the candidate commit.
+
+### Amendment H52c-1 (2026-11-27, before the candidate and any measurement)
+
+Prediction 1 asked for the earlier twins with an entering line to be listed before the candidate.
+A mechanical scan of every fixture found them only in the H52 twins and in the example feature
+`fixtures/en-complete` (one step, `- GIVEN … WHEN … THEN the system MUST reject it.`). The
+predicted outcomes, under the unchanged identification rules:
+- unchanged: `gwt-only` and `gwt-plus-unidentified` (EN and ES). The step inherits `REQ-001` from
+  the heading directly above it;
+- changed, I1.2 and I2.2 `unknown` → `missing` with one added "no stable identifier" warning on
+  the step: `heading-without-id`, `id-late-in-title`, `non-family-user-story` and `dotted-sub-id`
+  (EN and ES). The heading above the step defines no ID;
+- changed, I1.2 and I2.2 `supported` → `partial` with one added warning on the step:
+  `content-under-subheading` (EN and ES). The nearest heading is `#### Scenario`, which defines no
+  ID, so the step does not inherit `REQ-001`;
+- `fixtures/en-complete`: the step enters, so any test that pins that feature's E1.2, E2.1, E1.3 or
+  I1.2 results may change; each such change is reported with the twin list.
+
+Gate 1 holds for these suites when exactly these changes occur and nothing else changes.
+
+## Pre-registered hypothesis H52c-a (frozen before sources are chosen or the candidate is rebuilt)
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). H52c failed gate 3: one
+earlier feature moved E1.4 `missing` → `partial`, which its prediction 3 did not allow. The owner
+decided (2026-11-27) to retry once, with the same rule, complete predictions, a scan of every test
+file, a new fresh set and new labelers. If H52c-a misses a gate, it is recorded and the #52
+sequence stops; there is no third attempt.
+
+**Development data.** Everything measured for H52c: the 137 earlier roots, the 15 H52c fresh
+roots and the pilot.
+
+**Policy.** The H52c rule, unchanged: a scenario line (the 0.1.20 scenario test) of scope `all`,
+outside fences, that is not a heading, blockquote or fence run, is a requirement line when it has a
+normative modal; without a modal it stays excluded, even with an ID. No line leaves admission.
+
+**Comparator.** 0.1.20 (`develop` at `597df41`, engine sources identical to `297b7ed`). Candidate
+engine 0.1.21, product 0.3.0.
+
+**Derivation.** Before writing the predictions, every use of the admitted set in
+`src/core/analyze.ts` was traced: the E1.4, E1.2 and E2.1 ratios; I1.2 and I2.2 (identified units);
+P2.1 and C1.1 (a requirement must exist, and requirement lines are not actor context); C1.2 (a
+requirement must exist); the per-line E1.2, E1.3, E2.1 and I1.2 findings; the IDs that resolve
+references; the namespaces H9 counts as the feature's own; and the opposite-obligation rule, which
+compares each obligation with the previous one of the same normalized behavior. Definitions,
+units, H52 headings and decisions do not depend on admission for a line that starts with a scenario
+keyword.
+
+**Predictions.** An *entering line* is a line the policy admits and 0.1.20 does not.
+1. The 716 historical predictions and the minimal pairs do not change. Earlier twin suites and
+   tests change only as listed here, from a scan of every fixture and every string literal in
+   `tests/*.ts` made before the candidate:
+   - the H52 twins, as in Amendment H52c-1 (10 twins change; the rest do not);
+   - `tests/normative.test.ts`: the case "normative recognition still excludes … scenario lines"
+     pins `DADO Los servicios DEBEN responder rápido.` and `GIVEN The service MAY respond quickly.`
+     as excluded; both enter (E1.4 `supported`, findings as for any requirement line), so the test
+     is rewritten to the new rule before the candidate is measured;
+   - no other fixture or test literal has an entering line.
+2. A feature none of whose active documents has an entering line is identical in both engines.
+3. Otherwise:
+   - *added findings:* an E1.2 unbounded-wording, E1.3 pronoun, E2.1 multiple-obligation or I1.2
+     "no stable identifier" warning on an entering line; an I2.3 opposite-obligation error on an
+     entering line or naming one as the conflicting line; an I2.3 "Reference … has no definition"
+     error for a qualified reference whose namespace an entering spec line joins to an ID (H9: the
+     namespace becomes the feature's own);
+   - *removed findings:* an I2.3 "Reference … has no definition" error whose ID now appears on an
+     entering spec line; an I2.3 opposite-obligation error, when an entering line carries a
+     `MUST`, `SHALL` or `DEBE` obligation (it can take the earlier line's place in the comparison);
+   - *statuses:* E1.4 moves only `unknown` → `supported` or, when every admitted spec line was
+     admitted by an ID without a modal, `missing` → `partial`; `partial` and `supported` stay. E1.2,
+     E2.1, I1.2 and I2.2 may move in any direction, including from `unknown`. P2.1 and C1.1 may move
+     `missing` → `partial` or `partial` → `missing`. C1.2 may move `missing` → `partial`. No other
+     practice changes status;
+   - *evidence:* only the practices listed above change evidence;
+   - *traceability:* an edge changes only from unresolved to resolved;
+   - *scores:* only the E1, E2, I1, I2, P2 and C1 dimension scores and the total change.
+4. *Pilot:* nothing outside prediction 3; the counts are reported.
+
+**Gate (all must hold to proceed).**
+1. The H52c twins (`fixtures/precision/h52c-pairs.json`, unchanged) and new twins committed before
+   the candidate in `fixtures/precision/h52ca-pairs.json`, EN and ES, for the new predictions: an
+   ID-only requirement line plus a modal step (E1.4 `partial`); a modal step that joins a
+   namespace to an ID with a task citing another ID of that namespace (the added reference error);
+   an entering step between two opposite obligations (the conflict moves to the step). The
+   candidate meets every twin; earlier suites and tests change only as listed in prediction 1.
+2. The 716 historical predictions are unchanged.
+3. On the 137 earlier roots and the 15 H52c fresh roots every prediction holds, judged per feature
+   (`scripts/precision/scenario-units.ts`, judge updated to these predictions before the
+   candidate): 0 items outside predictions 2 and 3.
+4. On a new fresh public set the same holds, and the entering lines (all, or 100 drawn with seed
+   42055, deduplicated by text) are labeled blind by two new Sonnet sessions that read every item in
+   full, as in the H52c protocol; leaving lines are predicted none and, if any, are all labeled.
+   **Threshold, per direction:** an item passes only when both labelers agree with the change
+   (`positive` for entering, `negative` for leaving); any disagreement or `unknown` fails; at most 2
+   fail, or at most 5% when there are more than 40.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H52c-a stops and is recorded and reverted, and the #52 sequence
+stops.
+
+**Fresh sources.** Selected before the candidate is rebuilt, without reading any file content,
+through the REST code search API, in search order, up to 4 repositories per query:
+`"THEN the system SHOULD" filename:spec.md`, `"WHEN" "MUST" filename:spec.md`,
+`"CUANDO" "DEBE" filename:spec.md` and `"THEN" "SHALL" path:openspec`; public, non-fork, not
+archived, MIT or Apache-2.0; every repository and owner in the earlier
+`fixtures/precision/*-sources.json` files (H52, H52b and H52c included), every one of the 137
+earlier roots, and the pilot repository owner, excluded; one repository per owner; each pinned to
+its default-branch head SHA. The list is committed in `fixtures/precision/h52ca-sources.json`.
+
+### Amendment H52c-a-1 (2026-11-27, before the candidate is rebuilt and any measurement)
+
+Building the twins showed that the opposite-obligation rule keys a behavior by the text before the
+modal, including a leading scenario keyword (`then the system …`), so an entering step never shares
+a key with a line that 0.1.20 admits and never takes an earlier line's place. The twin "an entering
+step between two opposite obligations" therefore pins the earlier conflict as unchanged, and a
+second twin pins two opposite entering steps, which gain the error. The allowance for a removed
+opposite-obligation error in prediction 3 stays (it cannot occur). Nothing else changes.
 
 ## Synthetic minimal pairs
 

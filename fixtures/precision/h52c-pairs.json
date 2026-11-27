@@ -1,0 +1,598 @@
+{
+  "version": 1,
+  "description": "H52c synthetic twins (#52): scenario steps with a modal are requirement lines. Constructed before the H52c candidate; not independent labels. `findings` are every finding the candidate must report.",
+  "cases": [
+    {
+      "id": "step-only-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- GIVEN a user with 4 failed attempts",
+          "- WHEN the user fails again",
+          "- THEN the system MUST lock the account."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|7|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "The THEN step with a modal is the only requirement. 0.1.20: unknown."
+    },
+    {
+      "id": "step-under-heading-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "### REQ-001 — Lock the account",
+          "",
+          "- GIVEN a user with 4 failed attempts",
+          "- WHEN the user fails again",
+          "- THEN the system MUST lock the account."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "The step inherits REQ-001 from its heading. 0.1.20: I1.2 supported through the H52 heading, the rest unknown."
+    },
+    {
+      "id": "step-with-and-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- WHEN the user fails twice and the account is new, THEN the system SHALL lock it."
+        ]
+      },
+      "findings": [
+        "E2.1|specs/001-demo/spec.md|5|This statement may contain independent obligations.",
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "missing",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A step joining conditions with and/y before the modal gets the E2.1 warning."
+    },
+    {
+      "id": "step-unbounded-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- THEN the page MUST load quickly."
+        ]
+      },
+      "findings": [
+        "E1.2|specs/001-demo/spec.md|5|Unbounded wording: “quickly”.",
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "An unbounded word in an admitted step gets the E1.2 warning."
+    },
+    {
+      "id": "conditional-prose-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "When a user signs in, the system MUST record the time."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|3|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A conditional sentence that starts with When/Cuando is a requirement line."
+    },
+    {
+      "id": "step-without-modal-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- GIVEN a user with 4 failed attempts",
+          "- WHEN the user fails again",
+          "- THEN the account is locked."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A step without a modal stays acceptance."
+    },
+    {
+      "id": "given-step-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- GIVEN a user with 4 failed attempts"
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A GIVEN/DADO step without a modal is not a requirement."
+    },
+    {
+      "id": "step-with-id-no-modal-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- THEN REQ-001 holds for the account."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A step with an ID and no modal stays excluded."
+    },
+    {
+      "id": "fenced-step-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "```gherkin",
+          "THEN the system MUST lock the account.",
+          "```"
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A fenced step is not admitted."
+    },
+    {
+      "id": "quoted-step-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "> THEN the system MUST lock the account."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A quoted step is not admitted."
+    },
+    {
+      "id": "bold-step-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- **Then** the system MUST lock the account."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A bold Then step is not a scenario line to 0.1.20 and is already admitted."
+    },
+    {
+      "id": "plain-requirement-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- REQ-001: The system MUST lock the account."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "A plain requirement line, unchanged."
+    },
+    {
+      "id": "step-only-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- DADO un usuario con 4 intentos fallidos",
+          "- CUANDO el usuario vuelve a fallar",
+          "- ENTONCES el sistema DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|7|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "The THEN step with a modal is the only requirement. 0.1.20: unknown."
+    },
+    {
+      "id": "step-under-heading-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "### REQ-001 — Bloquear la cuenta",
+          "",
+          "- DADO un usuario con 4 intentos fallidos",
+          "- CUANDO el usuario vuelve a fallar",
+          "- ENTONCES el sistema DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "The step inherits REQ-001 from its heading. 0.1.20: I1.2 supported through the H52 heading, the rest unknown."
+    },
+    {
+      "id": "step-with-and-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- CUANDO el usuario falla dos veces y la cuenta es nueva, ENTONCES el sistema DEBE bloquearla."
+        ]
+      },
+      "findings": [
+        "E2.1|specs/001-demo/spec.md|5|This statement may contain independent obligations.",
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "missing",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A step joining conditions with and/y before the modal gets the E2.1 warning."
+    },
+    {
+      "id": "step-unbounded-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- ENTONCES la página DEBE cargarse fácilmente."
+        ]
+      },
+      "findings": [
+        "E1.2|specs/001-demo/spec.md|5|Unbounded wording: “fácilmente”.",
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "An unbounded word in an admitted step gets the E1.2 warning."
+    },
+    {
+      "id": "conditional-prose-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "Cuando un usuario inicia sesión, el sistema DEBE registrar la hora."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|3|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A conditional sentence that starts with When/Cuando is a requirement line."
+    },
+    {
+      "id": "step-without-modal-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- DADO un usuario con 4 intentos fallidos",
+          "- CUANDO el usuario vuelve a fallar",
+          "- ENTONCES la cuenta queda bloqueada."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A step without a modal stays acceptance."
+    },
+    {
+      "id": "given-step-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- DADO un usuario con 4 intentos fallidos"
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A GIVEN/DADO step without a modal is not a requirement."
+    },
+    {
+      "id": "step-with-id-no-modal-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- ENTONCES REQ-001 se cumple para la cuenta."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A step with an ID and no modal stays excluded."
+    },
+    {
+      "id": "fenced-step-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "```gherkin",
+          "ENTONCES el sistema DEBE bloquear la cuenta.",
+          "```"
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A fenced step is not admitted."
+    },
+    {
+      "id": "quoted-step-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "> ENTONCES el sistema DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "unknown",
+        "E1.2": "unknown",
+        "E2.1": "unknown",
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A quoted step is not admitted."
+    },
+    {
+      "id": "bold-step-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- **Entonces** el sistema DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A bold Then step is not a scenario line to 0.1.20 and is already admitted."
+    },
+    {
+      "id": "plain-requirement-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- REQ-001: El sistema DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "A plain requirement line, unchanged."
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "description": "H52c-a synthetic twins (#52): the predictions H52c missed. Constructed before the H52c-a candidate; not independent labels. `findings` are every finding the candidate must report.",
+  "cases": [
+    {
+      "id": "e14-missing-to-partial-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- REQ-001: Export drafts nightly.",
+          "- THEN the system MUST export drafts."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "partial",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "partial",
+        "I2.2": "partial"
+      },
+      "note": "Every 0.1.20 requirement was admitted by its ID alone (E1.4 missing); the modal step makes E1.4 partial."
+    },
+    {
+      "id": "namespace-from-step-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- WHEN a plan is checked, THEN the consumer MUST follow VPC-REQ-01."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Wire VPC-REQ-02."
+        ]
+      },
+      "findings": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference REQ-02 has no definition in the supplied specs."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "The step joins VPC to an ID, so VPC becomes the feature's own namespace (H9) and the task's VPC-REQ-02 is read locally and is undefined."
+    },
+    {
+      "id": "conflict-unchanged-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- The system MUST lock the account.",
+          "- THEN the system MUST NOT lock the account.",
+          "- The system MUST NOT lock the account."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|7|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/spec.md|7|Opposite obligations describe the same behavior."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "The step's behavior key keeps its keyword, so the earlier conflict (line 7 against line 5) is unchanged (Amendment H52c-a-1)."
+    },
+    {
+      "id": "opposite-steps-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Lock",
+          "",
+          "## Scenarios",
+          "",
+          "- THEN the system MUST lock the account.",
+          "- THEN the system MUST NOT lock the account."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/spec.md|6|Opposite obligations describe the same behavior."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Two opposite entering steps gain the opposite-obligation error."
+    },
+    {
+      "id": "e14-missing-to-partial-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- REQ-001: Exportar borradores cada noche.",
+          "- ENTONCES el sistema DEBE exportar borradores."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier."
+      ],
+      "status": {
+        "E1.4": "partial",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "partial",
+        "I2.2": "partial"
+      },
+      "note": "Every 0.1.20 requirement was admitted by its ID alone (E1.4 missing); the modal step makes E1.4 partial."
+    },
+    {
+      "id": "namespace-from-step-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- CUANDO se revisa un plan, ENTONCES el consumidor DEBE seguir VPC-REQ-01."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Conectar VPC-REQ-02."
+        ]
+      },
+      "findings": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference REQ-02 has no definition in the supplied specs."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "The step joins VPC to an ID, so VPC becomes the feature's own namespace (H9) and the task's VPC-REQ-02 is read locally and is undefined."
+    },
+    {
+      "id": "conflict-unchanged-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- El sistema DEBE bloquear la cuenta.",
+          "- ENTONCES el sistema NO DEBE bloquear la cuenta.",
+          "- El sistema NO DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|7|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/spec.md|7|Opposite obligations describe the same behavior."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "The step's behavior key keeps its keyword, so the earlier conflict (line 7 against line 5) is unchanged (Amendment H52c-a-1)."
+    },
+    {
+      "id": "opposite-steps-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Bloqueo",
+          "",
+          "## Escenarios",
+          "",
+          "- ENTONCES el sistema DEBE bloquear la cuenta.",
+          "- ENTONCES el sistema NO DEBE bloquear la cuenta."
+        ]
+      },
+      "findings": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I1.2|specs/001-demo/spec.md|6|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/spec.md|6|Opposite obligations describe the same behavior."
+      ],
+      "status": {
+        "E1.4": "supported",
+        "E1.2": "missing",
+        "E2.1": "supported",
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Two opposite entering steps gain the opposite-obligation error."
+    }
+  ]
+}
