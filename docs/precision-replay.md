@@ -2266,6 +2266,35 @@ through the REST code search API, in search order, up to 4 repositories per quer
 
 The list is committed in `fixtures/precision/h52-sources.json` before the candidate commit.
 
+### Amendment H52-1 (2026-11-27, from the branch review, before the final candidate)
+
+The first candidate (`23ade76`) held gates 1 to 5. The branch review then found constructions
+where a defining heading is not a requirement, none of which occurs in the measured natural
+features (35 of 35 labeled `positive`, no `R-` heading among them, none in the pilot):
+- `R-` also numbers risks, releases and revisions (`### R-1 Vendor lock-in` under `## Risks`);
+- a heading that names a range or a removal (`## FR-001 to FR-005 Overview`,
+  `## FR-003 (removed, see FR-004)`);
+- a heading with nothing under it (a list of ID headings).
+
+As in Amendment H106-2, the rule is narrowed and every gate is re-run on the final candidate. A
+defining heading counts as a requirement unit only when all of these hold:
+1. its defining ID is `FR-`, `NFR-` or `REQ-` (not `R-`; H8 already treats `R-n` as a label in
+   plans);
+2. the heading line carries no other `FR`, `NFR`, `REQ` or `R` ID and no removal word (`removed`,
+   `deprecated`, `superseded`, `withdrawn`, `obsolete`, `eliminado`, `obsoleto`, `retirado`,
+   `reemplazado`, with their feminine and plural forms; whole words, any case);
+3. its section, up to the next heading of the same or a higher level in the same document, has at
+   least one line that is not blank, not a heading and not a thematic break.
+
+Duplicates, references and every other rule are unchanged: H3a definitions still include `R-`
+headings and headings with several IDs. `H` in the predictions is the set of such headings, and
+prediction 4 (pilot) becomes prediction 3 applied to the pilot's features; the count is reported.
+New twins for each construction, in EN and ES, are added to `fixtures/precision/h52-pairs.json`
+before the final candidate. Known limits recorded by the review and not changed: units are
+counted over the whole assessed set, as for requirement lines, so a multi-feature set pools them;
+a heading and the lines that inherit its ID are both counted (no status depends on the count); a
+heading and a list item that restate one ID are a duplicate (H3a limit).
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
