@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H106 confirmation set (labeled dependency fields for P1.3, #106). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search (REST API) for \"Dependencies: T001\" path:specs and \"Dependencias: T001\" path:specs in files named tasks.md (Amendment H106-1: the pre-registered \"T0\" prefix matches no token), search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files, and the pilot repository owner, excluded; pinned to the default-branch head SHA.",
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/milos-agathon/forge3d",
+      "commit": "6d2a6f5557e356b9628e167670e3aa6342f6d003",
+      "license": "MIT",
+      "query": "\"Dependencies: T001\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/n23eos/advanced_graph_view",
+      "commit": "9abbe30dc48c70969a924b594081edddc61bf3e7",
+      "license": "MIT",
+      "query": "\"Dependencies: T001\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/davidvasandani/blog",
+      "commit": "90e2870663a652a52ccbda316c30ac6e1616146a",
+      "license": "MIT",
+      "query": "\"Dependencies: T001\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/taoq-ai/wuwei",
+      "commit": "3cf762c355d52465977b010052979a1409611806",
+      "license": "Apache-2.0",
+      "query": "\"Dependencies: T001\" path:specs filename:tasks.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Andres-back/Calificator",
+      "commit": "c20a88bce4ce08e7040364d09f0b3b148e20300c",
+      "license": "MIT",
+      "query": "\"Dependencias: T001\" path:specs filename:tasks.md"
+    }
+  ],
+  "unfilled": {
+    "\"Dependencias: T001\" path:specs filename:tasks.md": "1 of 4: 9 repositories returned; the other 8 have no license"
+  }
+}

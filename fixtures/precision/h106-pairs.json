@@ -1,0 +1,556 @@
+{
+  "version": 1,
+  "description": "H106 synthetic twins (#106): labeled dependency fields for P1.3. Constructed before the H106 candidate from the frozen policy; not independent labels.",
+  "cases": [
+    {
+      "id": "field-single-en",
+      "construct": "labeled",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: T001."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A labeled field with one task ID (0.1.16: missing)."
+    },
+    {
+      "id": "field-single-es",
+      "construct": "labeled",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias: T001."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A labeled field with one task ID (0.1.16: missing)."
+    },
+    {
+      "id": "field-list-en",
+      "construct": "labeled-list",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: T001, T003."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A labeled list of task IDs (0.1.16: missing)."
+    },
+    {
+      "id": "field-list-es",
+      "construct": "labeled-list",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias: T001, T003."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A labeled list of task IDs (0.1.16: missing)."
+    },
+    {
+      "id": "field-blocked-en",
+      "construct": "labeled",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Blocked by: T001."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A blocked-by field (0.1.16: missing)."
+    },
+    {
+      "id": "field-blocked-es",
+      "construct": "labeled",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Bloqueado por: T001."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A blocked-by field (0.1.16: missing)."
+    },
+    {
+      "id": "field-bold-en",
+      "construct": "labeled",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  **Dependencies:** REQ-002"
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A bold label with a requirement ID (0.1.16: missing)."
+    },
+    {
+      "id": "field-range-en",
+      "construct": "labeled-list",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: T001–T004."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "A range of task IDs (0.1.16: missing)."
+    },
+    {
+      "id": "field-none-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: none."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "An explicit absence is not a traced dependency."
+    },
+    {
+      "id": "field-none-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias: ninguna."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "An explicit absence is not a traced dependency."
+    },
+    {
+      "id": "field-dash-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: —"
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "A dash value is an absence."
+    },
+    {
+      "id": "field-dash-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias: —"
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "A dash value is an absence."
+    },
+    {
+      "id": "field-empty-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies:"
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "An empty field traces nothing."
+    },
+    {
+      "id": "field-empty-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias:"
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "An empty field traces nothing."
+    },
+    {
+      "id": "field-no-id-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: the exporter must finish first."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "A value without an ID traces nothing."
+    },
+    {
+      "id": "field-no-id-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias: el exportador debe terminar antes."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "A value without an ID traces nothing."
+    },
+    {
+      "id": "field-id-after-sentence-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies: none. Verified by T009."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "The ID belongs to the next sentence, not to the field."
+    },
+    {
+      "id": "field-id-after-sentence-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Dependencias: ninguna. Verificado por T009."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "The ID belongs to the next sentence, not to the field."
+    },
+    {
+      "id": "prose-mention-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Dependencies between tasks are tracked separately (see T001)."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "Prose that mentions dependencies without a field."
+    },
+    {
+      "id": "prose-mention-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Las dependencias entre tareas se revisan aparte (ver T001)."
+        ]
+      },
+      "expected": {
+        "P1.3": "missing"
+      },
+      "note": "Prose that mentions dependencies without a field."
+    },
+    {
+      "id": "verb-control-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The system MUST export the report."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Write the schema.",
+          "- [ ] T002 (REQ-001): Write the exporter.",
+          "  Depends on T001."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "The verb phrase already counts in 0.1.16 (control)."
+    },
+    {
+      "id": "verb-control-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El sistema DEBE exportar el informe."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 (REQ-001): Escribir el esquema.",
+          "- [ ] T002 (REQ-001): Escribir el exportador.",
+          "  Depende de T001."
+        ]
+      },
+      "expected": {
+        "P1.3": "partial"
+      },
+      "note": "The verb phrase already counts in 0.1.16 (control)."
+    }
+  ]
+}

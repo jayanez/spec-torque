@@ -1535,6 +1535,15 @@ any file content:
 The list is committed in `fixtures/precision/h106-sources.json` before the candidate
 commit.
 
+### Amendment H106-1 (2026-11-27, before any file content was read)
+
+Code search matches whole tokens, so the pre-registered `T0` prefix returned no
+result. The queries use `T001` instead: `"Dependencies: T001" path:specs` and
+`"Dependencias: T001" path:specs`, in files named `tasks.md`, through the REST
+search API. The Spanish query returned 9 repositories, and only 1 is eligible; the
+other 8 have no license. The fresh set therefore holds 4 English roots and 1
+Spanish root.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
