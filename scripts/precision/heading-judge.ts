@@ -42,6 +42,8 @@ export function judge(before: Assessment, after: Assessment, headings: Evidence[
       continue;
     }
     if (!allowed[practice.status].includes(next.status)) violations.push(`${practice.id} ${practice.status}->${next.status}`);
+    // The engine derives the reason from the status, so an unchanged status keeps its reason.
+    if (next.status === practice.status && next.reason !== practice.reason) violations.push(`${practice.id} reason`);
     const expected = practice.evidence.length >= 4 ? practice.evidence : [...practice.evidence, ...headings].slice(0, 4);
     if (!same(next.evidence, expected)) violations.push(`${practice.id} evidence`);
   }
@@ -52,4 +54,27 @@ export function judge(before: Assessment, after: Assessment, headings: Evidence[
   }
   if (!rises(before.summary.score, after.summary.score)) violations.push('total score fell');
   return violations;
+}
+
+const level = (text: string) => /^\s*(#{1,6})[ \t]/.exec(text)?.[1].length;
+/** The enclosing headings and the section of the heading at 1-based `line`, outside fences. */
+export function sectionOf(lines: string[], line: number) {
+  let fenced = false; const chain: string[] = [];
+  for (const text of lines.slice(0, line - 1)) {
+    if (/^\s*(?:```|~~~)/.test(text)) { fenced = !fenced; continue; }
+    const l = !fenced && level(text);
+    if (l) { while (chain.length && level(chain[chain.length - 1])! >= l) chain.pop(); chain.push(text); }
+  }
+  const own = level(lines[line - 1]);
+  if (!own) throw new Error(`Line ${line} is not a heading.`);
+  const section = [lines[line - 1]];
+  fenced = false;
+  for (const text of lines.slice(line)) {
+    if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
+    else if (!fenced && (level(text) ?? 7) <= own) break;
+    if (section.length === 30) break;
+    section.push(text);
+  }
+  while (section.length > 1 && !section[section.length - 1].trim()) section.pop();
+  return { chain, section };
 }

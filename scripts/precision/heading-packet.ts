@@ -11,6 +11,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { sectionOf } from './heading-judge.js';
 import { sample } from './prose.js';
 import { rootSchema, snapshot } from './sources.js';
 
@@ -27,29 +28,6 @@ type Changed = { root: string; repository: string; sha: string; feature: string;
 const changed = (await Promise.all(values.scan.map(async f => JSON.parse(await readFile(f, 'utf8')).changed as Changed[]))).flat();
 if (!changed.length) throw new Error('No changed feature in the scans.');
 const drawn = changed.length > max ? sample(changed, max, seed) : changed;
-
-const level = (text: string) => /^\s*(#{1,6})[ \t]/.exec(text)?.[1].length;
-/** The enclosing headings and the section of the heading at 1-based `line`, outside fences. */
-function sectionOf(lines: string[], line: number) {
-  let fenced = false; const chain: string[] = [];
-  for (const text of lines.slice(0, line - 1)) {
-    if (/^\s*(?:```|~~~)/.test(text)) { fenced = !fenced; continue; }
-    const l = !fenced && level(text);
-    if (l) { while (chain.length && level(chain[chain.length - 1])! >= l) chain.pop(); chain.push(text); }
-  }
-  const own = level(lines[line - 1]);
-  if (!own) throw new Error(`Line ${line} is not a heading.`);
-  const section = [lines[line - 1]];
-  fenced = false;
-  for (const text of lines.slice(line)) {
-    if (/^\s*(?:```|~~~)/.test(text)) fenced = !fenced;
-    else if (!fenced && (level(text) ?? 7) <= own) break;
-    if (section.length === 30) break;
-    section.push(text);
-  }
-  while (section.length > 1 && !section[section.length - 1].trim()) section.pop();
-  return { chain, section };
-}
 
 const snapshots = new Map<string, Map<string, string>>();
 const entries: { item: { repository: string; revision: string; path: string; line: number; chain: string[]; section: string[] }; key: { root: string; feature: string; transitions: Record<string, string> } }[] = [];

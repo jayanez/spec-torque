@@ -50,6 +50,26 @@ function linesOf(artifact: Artifact): Line[] {
 // IDs (traceability), and a dotted sub-ID such as REQ-2.1 does not define its parent REQ-2.
 const definingId = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\*\*|__|`)?[ \t]*((?:FR|NFR|REQ|R)-\d+)(?!\.\d)\b/i;
 const definedId = (text: string) => definingId.exec(text)?.[1]?.toUpperCase();
+// H52 (#52, Amendment H52-1): a spec heading that defines one FR, NFR or REQ requirement and has content
+// under it is an identified requirement unit for I1.2 and I2.2, even when no admitted line follows
+// (scenario steps, prose without a modal). R- also numbers risks and releases; a second ID names a
+// range or a cross-reference; a removal word marks a requirement that no longer applies.
+const removalWord = /(?<!\p{L})(?:removed|deprecated|superseded|withdrawn|obsolete|(?:eliminad|obsolet|retirad|reemplazad)[oa]s?)(?!\p{L})/iu;
+const headingLevel = (text: string) => /^\s*(#{1,6})[ \t]/.exec(text)?.[1].length ?? 0;
+function requirementHeadings(lines: Line[]): Line[] {
+  return lines.filter((line, i) => {
+    if (!line.heading || line.artifact.role !== 'spec' || line.scope !== 'all') return false;
+    const id = definedId(line.text);
+    if (!id || id.startsWith('R-') || (line.text.match(requirementId) ?? []).length !== 1 || removalWord.test(line.text)) return false;
+    const level = headingLevel(line.text);
+    for (let j = i + 1; j < lines.length && lines[j].path === line.path; j++) {
+      const next = lines[j];
+      if (next.heading) { if (headingLevel(next.text) <= level) return false; continue; }
+      if (next.text.trim() !== '' && !thematicBreak.test(next.text)) return true;
+    }
+    return false;
+  });
+}
 /** Spec requirement lines without their own ID that inherit one from the nearest preceding defining heading. */
 function inheritedLines(lines: Line[]): Set<Line> {
   const inherited = new Set<Line>();
@@ -179,9 +199,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[], refere
   }
   if (id === 'I1.2' || id === 'I2.2') {
     const inherited = inheritedLines(lines);
-    // H52 (#52): a spec heading with a defining ID is an identified requirement unit, even when no
-    // admitted line follows it (scenario steps or prose without a modal).
-    const headings = lines.filter(l => l.heading && l.artifact.role === 'spec' && l.scope === 'all' && definedId(l.text));
+    const headings = requirementHeadings(lines);
     const identified = specRequirements.filter(l => identifiedOnLine(l) || inherited.has(l)).length + headings.length;
     const units = specRequirements.length + headings.length;
     const unique = ![...definitionsOf(lines).values()].some(entries => entries.length > 1);

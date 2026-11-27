@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { analyze, classifyArtifact } from '../src/core.js';
 import { archiveEngine, git } from '../scripts/precision/engines.js';
-import { definingHeadings, judge } from '../scripts/precision/heading-judge.js';
+import { definingHeadings, judge, sectionOf } from '../scripts/precision/heading-judge.js';
 
 // H52 (#52): defining ID headings count as identified requirement units for I1.2 and I2.2.
 type Twin = { id: string; files: Record<string, string[]>; expected: string[]; status: Record<string, string> };
@@ -51,5 +51,28 @@ test('the judge accepts every twin against 0.1.19 and counts violations', { skip
     const promoted = { ...after, practices: after.practices.map(p => p.id === 'I1.2' ? { ...p, status: 'supported' as const } : p) };
     assert.deepEqual(judge(before, promoted, headings), ['I1.2 missing->supported']);
     assert.deepEqual(judge(before, after, []), ['assessment changed without a defining heading']);
+    const withPractice = (id: string, patch: object) => ({ ...after, practices: after.practices.map(p => p.id === id ? { ...p, ...patch } : p) });
+    const evidence = after.practices.find(p => p.id === 'I1.2')!.evidence;
+    assert.deepEqual(judge(before, withPractice('I1.2', { evidence: [...evidence].reverse().concat(evidence).slice(0, 2) }), headings), ['I1.2 evidence']);
+    assert.deepEqual(judge(before, withPractice('E1.4', { status: 'missing' }), headings), ['E1.4 changed']);
+    const supported = await baseline.analyze(setOf(cases.find(c => c.id === 'heading-with-modal-body-en')!));
+    assert.deepEqual(judge(supported, { ...supported, practices: supported.practices.map(p => p.id === 'I2.2' ? { ...p, status: 'partial' as const } : p) }, headings), ['I2.2 supported->partial']);
+    assert.deepEqual(judge(supported, { ...supported, practices: supported.practices.map(p => p.id === 'I1.2' ? { ...p, reason: 'other' } : p) }, headings), ['I1.2 reason']);
+    const fell = { ...after, dimensions: after.dimensions.map(d => d.id === 'I1' ? { ...d, score: (d.score ?? 0) - 1 } : d) };
+    assert.ok(judge(before, fell, headings).includes('dimension I1'));
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('identifiers on four or more lines keep their evidence; headings come after them', async () => {
+  const spec = ['# Demo', '', '### REQ-001 — Drafts', '', ...[2, 3, 4, 5].map(n => `- REQ-00${n}: The export MUST hold rule ${n}.`)];
+  const a = await analyze({ name: 'four', artifacts: [classifyArtifact('specs/001-demo/spec.md', spec.join('\n'))] });
+  assert.deepEqual(a.practices.find(p => p.id === 'I1.2')!.evidence.map(e => e.line), [5, 6, 7, 8]);
+});
+
+test('sectionOf: the chain, a same-level stop, fenced headings and the 30-line cap', () => {
+  const lines = ['# Spec', '## Requirements', '### FR-001 — Drafts', 'Body', '#### Detail', '```', '## not a heading', '```', 'tail', '', '### FR-002 — Next'];
+  assert.deepEqual(sectionOf(lines, 3), { chain: ['# Spec', '## Requirements'], section: lines.slice(2, 9) });
+  const long = ['### FR-001 — Long', ...Array.from({ length: 40 }, (_, i) => `line ${i}`)];
+  assert.equal(sectionOf(long, 1).section.length, 30);
+  assert.throws(() => sectionOf(lines, 4), /not a heading/);
 });
