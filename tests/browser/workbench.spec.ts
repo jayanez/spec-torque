@@ -680,6 +680,7 @@ test('Connect agents shows the released install commands for each host in both l
   const card = (host: string) => view.getByRole('article', { name: host, exact: true });
   await expect(card('Claude Code')).toContainText('claude plugin marketplace add jayanez/spec-torque\nclaude plugin install spectorque@spectorque');
   await expect(card('Codex')).toContainText('codex plugin marketplace add jayanez/spec-torque\ncodex plugin add spectorque@spectorque');
+  await expect(card('Codex')).toContainText('Bind a worktree, then $spec-view');
   await expect(card('OpenCode')).toContainText('{"plugins":["opencode-spectorque@' + PRODUCT_VERSION + '"]}');
   await expect(card('OpenCode')).toContainText('~/.config/opencode/cli.json');
   await expect(card('Pi / ThinkRail')).toContainText('pi install npm:pi-spectorque@' + PRODUCT_VERSION);
@@ -690,7 +691,7 @@ test('Connect agents shows the released install commands for each host in both l
   expect((await new AxeBuilder({ page }).include('main:not([hidden]) .integration-grid').analyze()).violations).toEqual([]);
   await page.getByRole('button', { name: 'Switch to Spanish', exact: true }).click();
   await expect(view.getByRole('heading', { level: 1 })).toHaveText('El mismo motor, en tu entorno');
-  await expect(card('Codex')).toContainText('Vincula un worktree confiable');
+  await expect(card('Codex')).toContainText('Vincula un worktree y luego $spec-view');
   await expect(card('VS Code')).toContainText('Extensión + banco de trabajo');
   await expect(page.getByText('Desde npm, en cualquier cliente MCP:', { exact: true })).toBeVisible();
   for (const text of ['From npm, in any MCP client:', 'Run /spectorque', 'Commands + widgets']) await expect(page.getByText(text, { exact: true })).toHaveCount(0);

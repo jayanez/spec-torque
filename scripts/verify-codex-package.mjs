@@ -18,7 +18,8 @@ assert.equal(JSON.parse(Buffer.from(entries['plugin.json'])).version, manifest.v
 assert.ok(!entries['mcp.json'] && !entries['.mcp.json'], 'Only the project config should register the MCP server.');
 for (const path of ['runtime/server.mjs', 'runtime/viewer.html', 'runtime/workbench.mjs', 'web-dist/index.html',
   'skills/spec-author/SKILL.md', 'skills/spec-refine/SKILL.md', 'skills/spec-review/SKILL.md',
-  'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) assert.ok(entries[path], path);
+  'skills/spec-view/SKILL.md', 'skills/spec-view/agents/openai.yaml',
+  'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) assert.ok(entries[path]?.length > 0, path);
 
 const scratch = await realpath(await mkdtemp(join(tmpdir(), 'spectorque codex package ')));
 const install = join(scratch, 'installed plugin');
@@ -86,12 +87,14 @@ async function checkMcp() {
       assert.ok(!response.error, JSON.stringify(response.error));
       return response.result;
     }
-    await request('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'package-check', version: '1' } });
+    const init = await request('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'package-check', version: '1' } });
+    assert.equal(init.serverInfo.name, 'spectorque-workspace', 'spec-view names this server');
     send({ method: 'notifications/initialized' });
     const { tools } = await request('tools/list', {});
     assert.deepEqual(tools.map(tool => tool.name).sort(), ['assess_worktree', 'open_spectorque', 'preview_refinement']);
     assert.ok(tools.every(tool => tool.annotations.readOnlyHint));
     const open = tools.find(tool => tool.name === 'open_spectorque');
+    assert.deepEqual(Object.keys(open.inputSchema.properties).sort(), ['base', 'changed', 'feature'], 'spec-view passes these arguments');
     const { contents } = await request('resources/read', { uri: open._meta.ui.resourceUri });
     assert.equal(contents[0].mimeType, 'text/html;profile=mcp-app');
     assert.equal(contents[0].text, await readFile(join(install, 'runtime/viewer.html'), 'utf8'));
