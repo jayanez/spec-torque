@@ -14,20 +14,11 @@ const { cases } = JSON.parse(readFileSync(new URL('../fixtures/precision/h52-pai
 const setOf = (twin: Twin) => ({ name: twin.id, artifacts: Object.entries(twin.files).map(([path, lines]) => classifyArtifact(path, lines.join('\n') + '\n')) });
 const keyOf = (f: { practiceId: string; message: string; evidence: { path: string; line: number }[] }) => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`;
 
-// H52c (#52, Amendment H52c-1): a scenario step with a modal is now a requirement line, so the steps of these
-// twins enter, and, under no defining heading, are unidentified. Every other H52 twin keeps its pins.
-const afterH52c: Record<string, { status: string; line: number }> = Object.fromEntries(['en', 'es'].flatMap(l => [
-  ...['heading-without-id', 'id-late-in-title', 'non-family-user-story', 'dotted-sub-id'].map(id => [`${id}-${l}`, { status: 'missing', line: 7 }]),
-  [`content-under-subheading-${l}`, { status: 'partial', line: 8 }],
-]));
-test('every H52 twin meets its pinned I1.2/I2.2 status and findings (with the H52c-1 changes)', async () => {
+test('every H52 twin meets its pinned I1.2/I2.2 status and findings', async () => {
   for (const twin of cases) {
     const a = await analyze(setOf(twin));
-    const changed = afterH52c[twin.id];
-    const status = changed ? { 'I1.2': changed.status, 'I2.2': changed.status } : twin.status;
-    const expected = changed ? [...twin.expected, `I1.2|specs/001-demo/spec.md|${changed.line}|Requirement has no stable identifier.`] : twin.expected;
-    for (const [id, value] of Object.entries(status)) assert.equal(a.practices.find(p => p.id === id)?.status, value, `${twin.id} ${id}`);
-    assert.deepEqual(a.findings.filter(f => ['I1.2', 'I2.3'].includes(f.practiceId)).map(keyOf).sort(), [...expected].sort(), twin.id);
+    for (const [id, status] of Object.entries(twin.status)) assert.equal(a.practices.find(p => p.id === id)?.status, status, `${twin.id} ${id}`);
+    assert.deepEqual(a.findings.filter(f => ['I1.2', 'I2.3'].includes(f.practiceId)).map(keyOf).sort(), [...twin.expected].sort(), twin.id);
   }
 });
 
@@ -44,17 +35,14 @@ test('definingHeadings follows the pre-registered definition', () => {
 
 // The 0.1.19 comparator is needed in full. A shallow CI clone lacks it and skips visibly; any other git failure fails.
 const COMPARATOR = 'a4e1d388229a0c48975e526f52a49f47a91c3966';
-// The judge measures H52 itself: its candidate is the engine as merged (0.1.20), before H52c.
-const H52_ENGINE = '297b7ed2c71b38955e9995f696d4e16cad6ee9e5';
 const comparator = (() => {
   if (git('rev-parse', '--is-shallow-repository') !== 'true') return true;
-  try { for (const c of [COMPARATOR, H52_ENGINE]) git('cat-file', '-e', `${c}^{commit}`); return true; } catch { return false; }
+  try { git('cat-file', '-e', `${COMPARATOR}^{commit}`); return true; } catch { return false; }
 })();
 test('the judge accepts every twin against 0.1.19 and counts violations', { skip: comparator ? false : 'comparator 0.1.19 is not in this shallow clone' }, async () => {
   const directory = await mkdtemp(join(tmpdir(), 'spectorque-h52-'));
   try {
     const baseline = await archiveEngine(COMPARATOR, join(directory, 'engine'));
-    const analyze = (await archiveEngine(H52_ENGINE, join(directory, 'h52'))).analyze;
     for (const twin of cases) {
       const set = setOf(twin);
       assert.deepEqual(judge(await baseline.analyze(set), await analyze(set), definingHeadings(set.artifacts)), [], twin.id);

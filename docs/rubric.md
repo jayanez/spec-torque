@@ -1,6 +1,6 @@
 # Rubric reference
 
-Rubric `epic-heuristic-1`, used by engine 0.1.21. Forty EPIC-derived practice concepts, paraphrased and adapted. See NOTICE for CC BY 4.0 attribution and docs/architecture.md for the original heuristic scoring policy. Textual signals are partial evidence; they do not establish complete semantic coverage.
+Rubric `epic-heuristic-1`, used by engine 0.1.20. Forty EPIC-derived practice concepts, paraphrased and adapted. See NOTICE for CC BY 4.0 attribution and docs/architecture.md for the original heuristic scoring policy. Textual signals are partial evidence; they do not establish complete semantic coverage.
 
 | ID | Practice | Review action |
 |---|---|---|

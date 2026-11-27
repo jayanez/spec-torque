@@ -66,23 +66,16 @@ test('embedded mandatory words cannot generate contradictions in ID-labelled req
   }
 });
 
-test('normative recognition still excludes headings, quotes, fenced code and scenario lines without a modal', async () => {
+test('normative recognition still excludes headings, quotes, fenced code and scenario lines', async () => {
   for (const text of [
     '# FR-001: Los servicios DEBEN responder rápido.', '> FR-001: El servicio DEBERÁ responder rápido.',
     '```text\nFR-001: Los servicios DEBEN responder rápido.\n```',
     '~~~text\nFR-001: El servicio DEBERÍA responder rápido.\n~~~',
-    'DADO FR-001 los servicios responden.', 'GIVEN FR-001 the service responds.',
+    'DADO Los servicios DEBEN responder rápido.', 'GIVEN The service MAY respond quickly.',
   ]) {
     const result = await analyze({ name: 'examples', artifacts: [classifyArtifact('spec.md', text)] });
     assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'unknown', text);
     assert.deepEqual(result.findings, [], text);
-  }
-});
-
-test('H52c: a scenario step that carries a modal is a requirement line', async () => {
-  for (const text of ['DADO Los servicios DEBEN responder rápido.', 'GIVEN The service MAY respond quickly.']) {
-    const result = await analyze({ name: 'examples', artifacts: [classifyArtifact('spec.md', text)] });
-    assert.equal(result.practices.find(p => p.id === 'E1.4')?.status, 'supported', text);
   }
 });
 
