@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { classifyArtifact, fitsReadLimit, isFrameworkTemplate, listFeatures, READ_LIMIT } from '../core/artifacts.js';
+import { classifyArtifact, fitsReadLimit, isFrameworkTemplate, listFeatures, READ_LIMIT, TEMPLATES_NOT_ANALYZED } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet, Language } from '../core/types.js';
 import type { FeatureSummary } from '../core/artifacts.js';
 import { api } from './api.js';
@@ -30,7 +30,7 @@ export function SourcePanel({ set, selected, language, local, pending, panels, o
         const path = f.webkitRelativePath || f.name;
         if (!isFrameworkTemplate(path)) artifacts.push(classifyArtifact(path, await f.text()));
       }
-      if (!artifacts.length) throw new Error('Only Spec Kit or Spec Kitty templates were selected; templates are not analyzed.');
+      if (!artifacts.length) throw new Error(`Only templates were selected. ${TEMPLATES_NOT_ANALYZED}`);
       if (new Set(artifacts.map(a => a.path)).size !== artifacts.length) throw new Error('Duplicate filenames: import one feature folder at a time.');
       onLoad({ name: selectedFiles[0].name, artifacts });
     } catch (e) { onError((e as Error).message); }

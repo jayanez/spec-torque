@@ -64,13 +64,15 @@ export const isReviewChecklist = (path: string) => specKitChecklist.test(path.re
 export type LineScope = 'all' | 'validation' | 'context';
 export const lineScope = (path: string): LineScope => isReviewChecklist(path) ? 'context' : isValidationGuide(path) ? 'validation' : 'all';
 
-/** H92 (#92): a framework template file (or, with a trailing `/`, folder) is never discovered: no host lists, reads or scores it. */
-export const isFrameworkTemplate = (path: string) => frameworkTemplate.test(path.replaceAll('\\', '/'));
+/** H92 (#92): whether a file or folder lies in a framework template folder. Such files are never discovered. */
+export const isFrameworkTemplate = (path: string) => frameworkTemplate.test(path.replaceAll('\\', '/').replace(/\/*$/, '/'));
+/** The reason shown when an explicit choice names only framework templates. */
+export const TEMPLATES_NOT_ANALYZED = 'Spec Kit and Spec Kitty templates are not analyzed.';
 
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {
   const normalized = path.replaceAll('\\', '/');
   const legacyPath = basenameOnly ? normalized.slice(normalized.lastIndexOf('/') + 1) : normalized;
-  return /\.md$/i.test(normalized) && !frameworkTemplate.test(normalized) && (byName.test(legacyPath) || kittyWorkPackage.test(normalized) ||
+  return /\.md$/i.test(normalized) && !isFrameworkTemplate(normalized) && (byName.test(legacyPath) || kittyWorkPackage.test(normalized) ||
     openSpecProposal.test(normalized) || bmadTask.test(normalized) || zeeContext.test(normalized) ||
     specKitDataModel.test(normalized) || specKitQuickstart.test(normalized));
 }

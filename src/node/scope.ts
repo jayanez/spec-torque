@@ -81,7 +81,7 @@ export async function loadScopeConfig(root: string): Promise<ScopeConfig> {
   return parseScopeConfig(raw);
 }
 
-const excludedPath = (path: string) => path.split('/').some(segment => excludedNames.has(segment) || segment.startsWith('.env'));
+export const excludedPath = (path: string) => path.split('/').some(segment => excludedNames.has(segment) || segment.startsWith('.env'));
 
 async function listWithGit(root: string, config: ScopeConfig): Promise<string[]> {
   const files = new Set<string>();

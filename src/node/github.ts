@@ -1,5 +1,5 @@
 import { PRODUCT_VERSION } from '../version.js';
-import { classifyArtifact, isFrameworkTemplate, isSpecCandidate } from '../core/artifacts.js';
+import { classifyArtifact, isFrameworkTemplate, isSpecCandidate, TEMPLATES_NOT_ANALYZED } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet } from '../core/types.js';
 import { boundedJson } from './http.js';
 interface Repo { default_branch: string; private: boolean }
@@ -25,16 +25,18 @@ export function parseGitHubSource(input: string): { owner: string; repo: string;
   if (folder.some(p => p === '..' || p === '.' || p.includes('/'))) throw new Error('Invalid GitHub folder.');
   return { owner, repo, ref, folder: folder.join('/') || undefined };
 }
+/** Folders a GitHub import never reads. */
+export const githubExcluded = (path: string) => /(?:^|\/)(?:node_modules|vendor|dist|\.git)\//.test(path);
 export async function importGitHub(input: string): Promise<ArtifactSet> {
   const { owner, repo, ref, folder } = parseGitHubSource(input);
-  if (folder && isFrameworkTemplate(folder + '/')) throw new Error('This folder holds Spec Kit or Spec Kitty templates, which are not analyzed.');
+  if (folder && isFrameworkTemplate(folder)) throw new Error(`${folder} is a template folder. ${TEMPLATES_NOT_ANALYZED}`);
   const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
   const metadata = await request<Repo>(base);
   if (metadata.private) throw new Error('Only public repositories are supported.');
   const commit = await request<{ sha: string }>(`${base}/commits/${encodeURIComponent(ref ?? metadata.default_branch)}`);
   const tree = await request<{ tree: Entry[]; truncated: boolean }>(`${base}/git/trees/${commit.sha}?recursive=1`);
   if (tree.truncated) throw new Error('GitHub returned a truncated tree. Import a local feature folder instead.');
-  const entries = tree.tree.filter(e => e.type === 'blob' && isSpecCandidate(e.path) && (!folder || e.path.startsWith(folder + '/')) && !/(?:^|\/)(?:node_modules|vendor|dist|\.git)\//.test(e.path));
+  const entries = tree.tree.filter(e => e.type === 'blob' && isSpecCandidate(e.path) && (!folder || e.path.startsWith(folder + '/')) && !githubExcluded(e.path));
   if (entries.length > 100) throw new Error('More than 100 candidate files. Use a feature folder URL.');
   if (entries.some(e => (e.size ?? 0) > 1_000_000)) throw new Error('A candidate file exceeds 1 MB. Import a smaller selection.');
   const artifacts: Artifact[] = [];

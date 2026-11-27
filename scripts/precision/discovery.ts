@@ -14,17 +14,15 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { archiveEngine, commit, type Engine } from './engines.js';
 import { rootSchema, snapshot } from './sources.js';
-import { excludedNames } from '../../src/node/scope.js';
+import { excludedPath } from '../../src/node/scope.js';
+import { githubExcluded } from '../../src/node/github.js';
 
 const { values } = parseArgs({ options: { baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' }, roots: { type: 'string' }, out: { type: 'string' } } });
 if (!values.baseline || !values.roots) throw new Error('Use: discovery.ts --baseline <ref> [--candidate <ref>] --roots <roots.json> [--out <file>]');
 
 type Result = Awaited<ReturnType<Engine['analyze']>>;
-type Set = { name: string; artifacts: ReturnType<Engine['classifyArtifact']>[] };
+type Selection = { name: string; artifacts: ReturnType<Engine['classifyArtifact']>[] };
 const LIMIT = 500;
-// The same fixed exclusions as workspace discovery (src/node/scope.ts) and GitHub import (src/node/github.ts).
-const workspaceExcluded = (path: string) => path.split('/').some(segment => excludedNames.has(segment) || segment.startsWith('.env'));
-const githubExcluded = (path: string) => /(?:^|\/)(?:node_modules|vendor|dist|\.git)\//.test(path);
 // A path with a folder named like a template, outside or inside framework folders (negative control).
 const templateNamed = /(?:^|\/)[^/]*templates?[^/]*\//i;
 
@@ -35,11 +33,12 @@ if (typeof (arms.candidate as { isFrameworkTemplate?: unknown }).isFrameworkTemp
 const isTemplate = (arms.candidate as unknown as { isFrameworkTemplate: (path: string) => boolean }).isFrameworkTemplate;
 
 type Keyed = [key: string, paths: string[]];
+// Unlike replay.ts, a finding is keyed by every evidence location, so a cross-document finding that loses a template line counts as changed.
 const findingKey = (f: Result['findings'][number]): Keyed => [`${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`, f.evidence.map(e => e.path)];
 const evidenceKey = (e: { path: string; line: number; text: string }): Keyed => [`${e.path}:${e.line}|${e.text}`, [e.path]];
 const edgeKey = (t: Result['traceability'][number]): Keyed => [`${t.from}>${t.to}|${t.resolved}|${evidenceKey(t.evidence)[0]}`, [t.evidence.path]];
 const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined });
-const overLimit = (set: Set) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
+const overLimit = (set: Selection) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
 
 function diffKeys(beforeKeys: Keyed[], afterKeys: Keyed[]) {
   // An item cites a template when any of its evidence paths is one (from the evidence objects, not the key text).
@@ -67,11 +66,13 @@ function scopeDiff(before: Result, after: Result) {
 }
 
 /** Evidence is valid when its line exists at its path and the line starts with the cited text. */
+const linesOf = new Map<string, string[]>();
 function invalidEvidence(result: Result, files: Map<string, string>) {
   let invalid = 0;
   const all = [...result.findings.flatMap(f => f.evidence), ...result.decisions, ...result.practices.flatMap(p => p.evidence)];
   for (const e of all) {
-    const line = (files.get(e.path) ?? '').replace(/^﻿/, '').split(/\r?\n/)[e.line - 1];
+    if (!linesOf.has(e.path)) linesOf.set(e.path, (files.get(e.path) ?? '').replace(/^\uFEFF/, '').split(/\r?\n/));
+    const line = linesOf.get(e.path)![e.line - 1];
     if (line === undefined || !e.text.trim() || !line.trim().startsWith(e.text.trim().slice(0, 200))) invalid++;
   }
   return invalid;
@@ -95,13 +96,14 @@ const detail: unknown[] = [];
 for (const root of roots) {
   if (root.restricted) throw new Error('Restricted roots are not supported: the detail names paths.');
   const { sha, files } = snapshot(root);
+  linesOf.clear();
   totals.roots++;
   const md = [...files.keys()];
-  const discover = (engine: Engine, basename: boolean) => md.filter(p => engine.isSpecCandidate(p, basename) && !(basename ? workspaceExcluded(p) : githubExcluded(p)));
+  const discover = (engine: Engine, basename: boolean) => md.filter(p => engine.isSpecCandidate(p, basename) && !(basename ? excludedPath(p) : githubExcluded(p)));
   const modes = { workspace: { baseline: discover(arms.baseline, true), candidate: discover(arms.candidate, true) }, github: { baseline: discover(arms.baseline, false), candidate: discover(arms.candidate, false) } };
   const removedPaths: string[] = [];
   for (const mode of ['workspace', 'github'] as const) {
-    const { baseline, candidate } = modes[mode]; const c = new globalThis.Set(candidate); const b = new globalThis.Set(baseline);
+    const { baseline, candidate } = modes[mode]; const c = new Set(candidate); const b = new Set(baseline);
     const removed = baseline.filter(p => !c.has(p));
     const t = totals[mode];
     t.baseline += baseline.length; t.candidate += candidate.length; t.removed += removed.length;
@@ -140,7 +142,7 @@ for (const root of roots) {
   }
 
   // "All documents" plus each template folder's framework folder and the project folder above it.
-  const prefixes = new globalThis.Set<string>(['']);
+  const prefixes = new Set<string>(['']);
   for (const p of removedPaths) {
     const m = /^(.*?)(?:^|\/)\.(?:specify|kittify)\//i.exec(p);
     if (!m) continue; // Not a template: counted in removedNotTemplate, which fails the gate.
@@ -149,7 +151,7 @@ for (const root of roots) {
   }
   const scopes: unknown[] = [];
   if (removedPaths.length) for (const prefix of [...prefixes].sort()) {
-    const pick = (engine: Engine, set: Set) => prefix === '' ? set : { ...set, artifacts: set.artifacts.filter(a => engine.inPathScope(a, [prefix])) };
+    const pick = (engine: Engine, set: Selection) => prefix === '' ? set : { ...set, artifacts: set.artifacts.filter(a => engine.inPathScope(a, [prefix])) };
     const selected = { baseline: pick(arms.baseline, sets.baseline), candidate: pick(arms.candidate, sets.candidate) };
     if (overLimit(selected.baseline) || overLimit(selected.candidate)) { totals.scopes.overLimit++; totals.scopes.overLimitScopes.push(`${root.id}:${prefix || '(all)'}`); scopes.push({ prefix: prefix || '(all)', overLimit: true }); continue; }
     totals.scopes.analyzed++;

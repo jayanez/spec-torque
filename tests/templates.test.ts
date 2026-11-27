@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { classifyPath, isSpecCandidate, listFeatures } from '../src/core/artifacts.js';
+import { importGitHub } from '../src/node/github.js';
+import { indexWorkspace } from '../src/node/scope.js';
+import { readScope } from '../src/node/workspace.js';
 
 // H92 (#92): framework template folders are scaffolding, never discovered; user folders named templates stay.
 const twins = JSON.parse(readFileSync(new URL('../fixtures/precision/h92-paths.json', import.meta.url), 'utf8')) as {
@@ -21,7 +27,6 @@ test('a user templates folder is an ordinary feature, sorted by name', () => {
 });
 
 test('GitHub import neither fetches nor returns framework templates', async () => {
-  const { importGitHub } = await import('../src/node/github.js');
   const tree = ['.specify/templates/spec-template.md', '.kittify/missions/software-dev/templates/spec-template.md', 'specs/001-a/spec.md', 'templates/spec.md']
     .map((path, i) => ({ path, type: 'blob', size: 10, sha: `sha${i}` }));
   const fetched: string[] = [];
@@ -42,11 +47,6 @@ test('GitHub import neither fetches nor returns framework templates', async () =
 });
 
 test('an explicit scope inside a template folder fails with a reason; its parent still reads', async () => {
-  const { mkdtemp, mkdir, rm, writeFile } = await import('node:fs/promises');
-  const { tmpdir } = await import('node:os');
-  const { dirname, join } = await import('node:path');
-  const { indexWorkspace } = await import('../src/node/scope.js');
-  const { readScope } = await import('../src/node/workspace.js');
   const root = await mkdtemp(join(tmpdir(), 'spectorque-h92-'));
   const put = async (path: string, text: string) => { await mkdir(dirname(join(root, path)), { recursive: true }); await writeFile(join(root, path), text); };
   try {
@@ -56,19 +56,18 @@ test('an explicit scope inside a template folder fails with a reason; its parent
     const index = await indexWorkspace(root);
     assert.deepEqual(index.entries.map(e => e.path), ['.specify/memory/constitution.md', '.specify/specs/001-a/templates/spec.md']);
     for (const request of [{ paths: ['.specify/templates'] }, { paths: ['.specify/templates/spec-template.md'] }, { feature: '.specify/templates' }])
-      await assert.rejects(readScope(index, request), /template folder; templates are not analyzed/, JSON.stringify(request));
-    await assert.rejects(readScope({ ...index, focus: '.specify/templates' }), /template folder/);
+      await assert.rejects(readScope(index, request), /is a template folder\. Spec Kit and Spec Kitty templates are not analyzed\./, JSON.stringify(request));
+    await assert.rejects(readScope({ ...index, focus: '.specify/templates' }), /is a template folder/);
     assert.deepEqual((await readScope(index, { paths: ['.specify'] })).artifacts.map(a => a.path), ['.specify/memory/constitution.md', '.specify/specs/001-a/templates/spec.md']);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
 test('a GitHub tree URL to a template folder fails before any request', async () => {
-  const { importGitHub } = await import('../src/node/github.js');
   const original = globalThis.fetch;
   let requests = 0;
   globalThis.fetch = (async () => { requests++; throw new Error('no network'); }) as typeof fetch;
   try {
-    await assert.rejects(importGitHub('https://github.com/demo/repo/tree/main/.specify/templates'), /templates, which are not analyzed/);
+    await assert.rejects(importGitHub('https://github.com/demo/repo/tree/main/.specify/templates'), /is a template folder\. Spec Kit and Spec Kitty templates are not analyzed\./);
     assert.equal(requests, 0);
   } finally { globalThis.fetch = original; }
 });
