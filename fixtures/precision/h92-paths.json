@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "purpose": "H92 (#92) path twins: framework template folders are not discovery candidates; user folders named templates and near names stay. Committed before the candidate. `candidate` holds for both modes: workspace (basename) and GitHub (full path).",
+  "excluded": [
+    ".specify/templates/spec-template.md",
+    ".specify/templates/plan-template.md",
+    ".specify/templates/tasks-template.md",
+    ".specify/templates/commands/specify.md",
+    ".specify/templates/commands/plan.md",
+    ".specify/templates/overrides/spec-template.md",
+    "projects/PROJ-001-demo/.specify/templates/spec-template.md",
+    ".specify/presets/lean/templates/spec-template.md",
+    ".specify/extensions/v-model/templates/requirements-template.md",
+    ".kittify/templates/spec-template.md",
+    ".kittify/templates/command-templates/specify.md",
+    ".kittify/missions/software-dev/templates/spec-template.md",
+    ".kittify/missions/research/templates/plan-template.md",
+    ".kittify/missions/software-dev/command-templates/tasks.md",
+    ".kittify/overrides/missions/documentation/templates/spec-template.md",
+    ".specify\\templates\\spec-template.md",
+    ".Specify/Templates/spec-template.md"
+  ],
+  "kept": [
+    "templates/spec-template.md",
+    "templates/commands/specify.md",
+    "docs/templates/spec.md",
+    "specs/templates/spec.md",
+    "specs/001-booking/templates/spec.md",
+    "specs/091-report-templates/spec.md",
+    "kitty-specs/templates-as-config-01KX/spec.md",
+    "shared/templates/sdd/spec-template.md",
+    ".speckit/templates/spec-template.md",
+    ".specify/specs/001-booking/spec.md",
+    ".specify/memory/constitution.md",
+    ".specify/template/spec.md",
+    ".specify/my-templates/spec.md",
+    ".specify/templates-spec.md",
+    ".kittify/specs/booking/spec.md",
+    ".kittify/missions/software-dev/spec.md",
+    "specify/templates/spec-template.md",
+    "x.specify/templates/spec-template.md"
+  ],
+  "listing": {
+    "paths": ["specs/001-a/spec.md", "templates/spec.md", "zeta/spec.md"],
+    "features": ["specs/001-a", "templates", "zeta"]
+  }
+}
