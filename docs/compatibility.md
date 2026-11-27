@@ -54,8 +54,8 @@ OpenCode was not reinstalled from npm in this pass.
 
 | Family | Main hint | Caveat |
 |---|---|---|
-| Spec Kit | `.specify/`, `specs/<feature>/` | A generic `specs/` directory is not proof of framework ownership. Templates under `.specify/**/templates/` are not discovered. |
-| Spec Kitty | `kitty-specs/<mission>/`, `.kittify/` or explicit header marker | Markdown work packages are grouped by mission. YAML manifests are outside this input path. Templates under `.kittify/**/templates/` and `command-templates/` are not discovered. |
+| Spec Kit | `.specify/`, `specs/<feature>/` | A generic `specs/` directory is not proof of framework ownership. Installed templates (`.specify/templates/`, preset and extension `templates/`) are not discovered. |
+| Spec Kitty | `kitty-specs/<mission>/`, `.kittify/` or explicit header marker | Markdown work packages are grouped by mission. YAML manifests are outside this input path. Installed templates (`.kittify/templates/`, mission and override `templates/` and `command-templates/`) are not discovered. |
 | OpenSpec | `openspec/` and change folders | Change proposals are discovered as context. Dated archives have distinct feature IDs and stay outside active analysis. |
 | Kiro | `.kiro/specs/<feature>/` | Requirement, design and task basenames determine roles. |
 | BMAD | `_bmad/`, `_bmad-output/` | Complex cross-folder story grouping needs explicit selection. |
