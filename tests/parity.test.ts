@@ -47,7 +47,6 @@ test('CLI, MCP, the workbench, Codex and the in-process adapters agree on featur
     }
     await put(root, 'docs/notes/product-spec.md', '# Product\nThe service SHOULD log requests.\n');
     await put(root, '.specify/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
-    await put(root, '.kittify/missions/software-dev/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
     await put(root, '.claude/worktrees/copy/specs/009-copy/spec.md', '# Copy\n- FR-001: Copy.\n');
     await git(root, 'add', '-A'); await git(root, 'commit', '-qm', 'fixture');
     const feature = 'specs/002-payments';
@@ -55,7 +54,7 @@ test('CLI, MCP, the workbench, Codex and the in-process adapters agree on featur
     // OpenCode and Pi read through the shared host index in process.
     const index = await hostIndex(join(root, 'specs'));
     const features = index.features.map(f => f.id);
-    assert.deepEqual(features, ['specs/001-booking', 'specs/002-payments', 'docs/notes']);
+    assert.deepEqual(features, ['specs/001-booking', 'specs/002-payments', 'docs/notes', '.specify/templates']);
     assert.deepEqual(listFeatures(index.entries).map(f => f.id), features);
     const expected: any = withoutTime(await analyze(await readScope(index, scopeRequest({ kind: 'feature', id: feature }))) as any);
     assert.ok(expected.artifacts.some((a: { path: string }) => a.path === 'AGENTS.md'));

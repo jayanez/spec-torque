@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { classifyArtifact, fitsReadLimit, isFrameworkTemplate, listFeatures, READ_LIMIT, TEMPLATES_NOT_ANALYZED } from '../core/artifacts.js';
+import { classifyArtifact, fitsReadLimit, listFeatures, READ_LIMIT } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet, Language } from '../core/types.js';
 import type { FeatureSummary } from '../core/artifacts.js';
 import { api } from './api.js';
@@ -26,11 +26,8 @@ export function SourcePanel({ set, selected, language, local, pending, panels, o
       const artifacts: Artifact[] = [];
       for (const f of selectedFiles) {
         if (f.size > 1_000_000 || !f.name.endsWith('.md')) throw new Error('Use Markdown files smaller than 1 MB.');
-        // H92 (#92): an imported folder drops framework templates, as workspace discovery does.
-        const path = f.webkitRelativePath || f.name;
-        if (!isFrameworkTemplate(path)) artifacts.push(classifyArtifact(path, await f.text()));
+        artifacts.push(classifyArtifact(f.webkitRelativePath || f.name, await f.text()));
       }
-      if (!artifacts.length) throw new Error(`Only templates were selected. ${TEMPLATES_NOT_ANALYZED}`);
       if (new Set(artifacts.map(a => a.path)).size !== artifacts.length) throw new Error('Duplicate filenames: import one feature folder at a time.');
       onLoad({ name: selectedFiles[0].name, artifacts });
     } catch (e) { onError((e as Error).message); }

@@ -1576,7 +1576,7 @@ change; the packet rebuilds identical.
 on gate 4; the known limits above are candidates for a later, separately measured change.
 
 
-### H92: framework template folders are not discovered — **gates 1, 2, 4 and 5 hold; gate 3 misses one prediction (31 findings, one repository); owner decides**
+### H92: framework template folders are not discovered — **fails gate 3 (one missed prediction); reverted, continued as H92a (owner decision)**
 
 Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92).
 - Pre-registered at `c7ae4a1`. Fresh sources frozen at `1d45a06` (12 repositories: 5 Spec Kit,
@@ -1650,6 +1650,7 @@ and an adversarial agent that saw only the diff.
   sandbox. All labelers are agent sessions of one model family.
 
 **Decision.** Gate 3 misses its prediction on 31 findings, all from one mechanism in one
-repository; under the stop rule H92 stops unless the owner accepts this as a recorded
-exception, as for H7a. The candidate stays on the branch, unmerged, for that decision: accept
-(engine 0.1.19) or revert and pre-register an H92a.
+repository. The owner chose the stop rule over an exception (2026-11-27): H92 is reverted on
+the branch (engine stays 0.1.18; the record, fixtures and measurement-script fixes stay), and
+H92a is pre-registered with predictions that cover scopes left without a specification and a
+new fresh set.

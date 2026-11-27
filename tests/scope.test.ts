@@ -40,17 +40,15 @@ test('git boundary skips ignored and nested work trees, keeps unadded drafts and
     }
     await put(root, 'specs/003-draft/spec.md', spec('draft'));
     await unlink(join(root, 'specs/002-feature/tasks.md'));
-    // H92 (#92): framework templates are scaffolding, never indexed; a user `templates` folder is a feature.
+    // Spec Kit templates are scaffolding: listed after every feature, under "Other".
     await put(root, '.specify/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
-    await put(root, '.kittify/missions/software-dev/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
-    await put(root, 'templates/spec.md', spec('user templates'));
     const index = await indexWorkspace(root);
     assert.equal(index.mode, 'git');
     assert.deepEqual(index.entries.map(e => e.path), [
-      'AGENTS.md', 'specs/001-feature/plan.md', 'specs/001-feature/spec.md', 'specs/001-feature/tasks.md',
-      'specs/002-feature/plan.md', 'specs/002-feature/spec.md', 'specs/003-draft/spec.md', 'templates/spec.md',
+      '.specify/templates/spec-template.md', 'AGENTS.md', 'specs/001-feature/plan.md', 'specs/001-feature/spec.md', 'specs/001-feature/tasks.md',
+      'specs/002-feature/plan.md', 'specs/002-feature/spec.md', 'specs/003-draft/spec.md',
     ]);
-    assert.deepEqual(index.features.map(f => [f.id, f.layout]), [['specs/001-feature', true], ['specs/002-feature', true], ['specs/003-draft', true], ['templates', false]]);
+    assert.deepEqual(index.features.map(f => [f.id, f.layout]), [['specs/001-feature', true], ['specs/002-feature', true], ['specs/003-draft', true], ['.specify/templates', false]]);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 

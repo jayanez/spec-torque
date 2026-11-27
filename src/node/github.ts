@@ -1,5 +1,5 @@
 import { PRODUCT_VERSION } from '../version.js';
-import { classifyArtifact, isFrameworkTemplate, isSpecCandidate, TEMPLATES_NOT_ANALYZED } from '../core/artifacts.js';
+import { classifyArtifact, isSpecCandidate } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet } from '../core/types.js';
 import { boundedJson } from './http.js';
 interface Repo { default_branch: string; private: boolean }
@@ -29,7 +29,6 @@ export function parseGitHubSource(input: string): { owner: string; repo: string;
 export const githubExcluded = (path: string) => /(?:^|\/)(?:node_modules|vendor|dist|\.git)\//.test(path);
 export async function importGitHub(input: string): Promise<ArtifactSet> {
   const { owner, repo, ref, folder } = parseGitHubSource(input);
-  if (folder && isFrameworkTemplate(folder)) throw new Error(`${folder} is a template folder. ${TEMPLATES_NOT_ANALYZED}`);
   const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
   const metadata = await request<Repo>(base);
   if (metadata.private) throw new Error('Only public repositories are supported.');
