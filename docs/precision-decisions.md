@@ -1710,3 +1710,60 @@ folders are still discovered. Firefox browser tests cannot launch in this sandbo
 WebKit: 180 passed). All labelers are agent sessions of one model family.
 
 **Decision.** Propose H92a (engine 0.1.19) for merge.
+
+### H52: requirement headings count as identified units for I1.2 and I2.2 — **holds; proposed for merge**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The first of three bounded
+hypotheses the owner approved after the Phase 0 sizing (H52, then H52b and H52c). The general
+requirement classifier stays closed; T2 and T2b stay sealed.
+- Pre-registered at `8bd46a9`. The fresh sources (15 repositories, `"### REQ-001"` and
+  `"### FR-001"` with `Given` or `Dado`; one query found 3) were frozen at `7cdb263`, and 28 EN/ES
+  twins at `17e2b88`, both before the candidate.
+- The first candidate (`23ade76`) held every gate. The branch review then found headings that are
+  not requirements: `R-` risks and releases, ranges, removals and headings with nothing under them.
+  None occurs in the measured natural features. Amendment H52-1 (`db8bf5d`) narrows the rule to a
+  single `FR`/`NFR`/`REQ` ID, no removal word and content in the section, and adds 10 twins
+  (`2caca83`). Every gate below was re-run on the final candidate (`3dc79a0`; engine sources
+  unchanged after it), with the judge tightened by the review.
+- Engine 0.1.20, product 0.3.0. Comparator 0.1.19 (`develop`, `a4e1d38`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (38 EN/ES), earlier twins, minimal pairs | holds: 38 of 38 (0.1.19 meets 28, failing exactly the 10 targets); H3 12/14 and H3a 20/20, H5 16/16, H5a 22/22, H6 16/16, H6a 12/12, H8 10/10, H9 14/14, all as in 0.1.19; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed in 220 groups |
+| 3. Earlier roots (137: the H92 earlier and fresh roots and the H92a fresh roots) | holds: 7874 features, 178 with a requirement heading, 29 change (I1.2 and I2.2 alike: 12 `unknown`→`supported`, 3 `unknown`→`partial`, 14 `missing`→`partial`); **0 items outside predictions 2 and 3**. One feature over the 500-document limit was not compared (listed in the scan) |
+| 4. Fresh set and adjudication | holds: 219 features, 61 with a requirement heading, 6 change (2 `unknown`→`supported`, 2 `unknown`→`partial`, 2 `missing`→`partial`), 0 outside predictions. All 35 changed features (29 + 6) were labeled blind by two new Sonnet sessions: 35/35 `positive` from both, 0 disputes or `unknown` (threshold 2). Labeler B quoted 35/35 last lines exactly; labeler A 33/35, its two misses quote the line before a closing fence and the start of a wrapped last line. The final candidate yields a byte-identical packet, so the labels apply to it |
+| 5. Evidence | holds: every new evidence item is a heading the judge found at its path and line, and the packet builder re-read each drawn one at the scanned revision |
+
+**Pilot repository (development data, 87 features, work tree, counts only).** As predicted,
+exactly the 12 I1.2 `missing` features with a requirement heading move to `partial` (I2.2 the
+same), and nothing else changes (0 judge violations). No pilot spec has an `R-` heading.
+
+**Branch review.** `/code-review high`, `/simplify` (four angles), `pr-test-analyzer`,
+`silent-failure-hunter`, and an adversarial and counterfactual agent that saw only the engine diff.
+- *Fixed through Amendment H52-1:* `R-` risk and release headings, range and removal headings,
+  and empty headings counted as identified requirements (adversarial probes; 0 natural cases).
+- *Fixed in the replay:* the judge now requires the exact predicted status (including
+  `unknown`→`partial` only with a duplicate), every field outside I1.2/I2.2 and I1/I2 identical,
+  practice and dimension sets equal, summary counts consistent, and the reason the engine derives
+  from status and evidence; a violation fails the run; over-limit features are listed; work-tree
+  output is numbered, never named; the packet caches per revision and deduplicates features; the
+  comparator test skips only in a shallow clone. Tests were added for the packet section, evidence,
+  transitions, reasons, summary and score checks, and every twin against the heading definition.
+- *Not changed:* units are counted over the whole assessed set, so a multi-feature set pools them,
+  as it already does for requirement lines; a heading and the lines that inherit its ID both
+  count (no status depends on the count); a heading and a list item that restate one ID are a
+  duplicate (H3a limit); with four 0.1.19 hits the evidence cannot show the headings, so the judge
+  checks only that it is unchanged. Equivalent engine refactors suggested by `/simplify` (heading
+  level on `Line`, computing headings, inherited lines and definitions once per analysis) were left
+  out to keep the measured engine unchanged; `definitionsOf` copies an array per repeated ID
+  (quadratic near 1 MB), which predates H52 and is a follow-up.
+
+**Counterfactual (still missed).** An ID that is not the first token (`### Requirement FR-001:
+Export`), headings without an ID (`### Requirement 1`), and other ID families. Specs written only
+with scenario steps keep E1.4, E1.2 and E2.1 `unknown`; H52c addresses modal scenario steps.
+
+**Known limits.** All four labelers' sessions (two per packet, one packet) are one model family
+(Sonnet); the fresh Spanish power is low (3 repositories from the `Dado` queries).
+
+**Decision.** Propose H52 with Amendment H52-1 (engine 0.1.20) for merge.

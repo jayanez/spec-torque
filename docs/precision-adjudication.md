@@ -382,3 +382,5 @@ and quotes its last section line, which is checked against the packet.
 disagreement or `unknown` counts against the threshold, and the author's notes never resolve one.
 At most 2 items fail, or at most 5% when there are more than 40. Both labelers are one model
 family.
+
+**Result.** 35 items (every changed feature of the earlier and fresh sets): 35/35 `positive` from both labelers, 0 failing. See [precision decisions](precision-decisions.md).
