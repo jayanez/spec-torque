@@ -1,8 +1,8 @@
 import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
-import { isOwnSpec, namespaceOf, qualifierOf, requirementIds, textBefore, type RequirementId } from './references.js';
+import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.21';
+export const ENGINE_VERSION = '0.1.20';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -48,14 +48,8 @@ function linesOf(artifact: Artifact): Line[] {
 // H3a (#83): an ID defines a requirement only in a defining position: first on the line after an
 // optional heading marker, list marker, task checkbox and bold or code markup. Table cells restate
 // IDs (traceability), and a dotted sub-ID such as REQ-2.1 does not define its parent REQ-2.
-// H52b (#52): qualified (`VP-REQ-01`) and group-infixed (`FR-A-001`) IDs define in the same position.
-const definingLead = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\*\*|__|`)?[ \t]*/;
-function definingToken(text: string): RequirementId | undefined {
-  const at = definingLead.exec(text)![0].length;
-  const first = requirementIds(text.slice(0, at + 160))[0];
-  return first && first.index === at && !/^\.\d/.test(text.slice(at + first.raw.length)) ? first : undefined;
-}
-const definedId = (text: string) => definingToken(text)?.id;
+const definingId = /^\s*(?:#{1,6}[ \t]+)?(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\[[ xX]\][ \t]+)?(?:\*\*|__|`)?[ \t]*((?:FR|NFR|REQ|R)-\d+)(?!\.\d)\b/i;
+const definedId = (text: string) => definingId.exec(text)?.[1]?.toUpperCase();
 // H52 (#52, Amendment H52-1): a spec heading that defines one FR, NFR or REQ requirement and has content
 // under it is an identified requirement unit for I1.2 and I2.2, even when no admitted line follows
 // (scenario steps, prose without a modal). R- also numbers risks and releases; a second ID names a
@@ -65,8 +59,8 @@ const headingLevel = (text: string) => /^\s*(#{1,6})[ \t]/.exec(text)?.[1].lengt
 function requirementHeadings(lines: Line[]): Line[] {
   return lines.filter((line, i) => {
     if (!line.heading || line.artifact.role !== 'spec' || line.scope !== 'all') return false;
-    const token = definingToken(line.text);
-    if (!token || token.family === 'R' || requirementIds(line.text).length !== 1 || removalWord.test(line.text)) return false;
+    const id = definedId(line.text);
+    if (!id || id.startsWith('R-') || (line.text.match(requirementId) ?? []).length !== 1 || removalWord.test(line.text)) return false;
     const level = headingLevel(line.text);
     for (let j = i + 1; j < lines.length && lines[j].path === line.path; j++) {
       const next = lines[j];
@@ -89,7 +83,7 @@ function inheritedLines(lines: Line[]): Set<Line> {
   }
   return inherited;
 }
-const requirementIdIn = (text: string) => requirementIds(text).length > 0;
+const requirementIdIn = (text: string) => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(text);
 /** A line's own ID, or (H5a) a defining ID on the first line of the item or paragraph it belongs to. */
 const identifiedOnLine = (line: Line) => requirementIdIn(line.text) || line.unit.defined;
 /** Defining positions per feature-qualified ID, among admitted spec lines and spec headings. */
@@ -108,10 +102,10 @@ function definitionsOf(lines: Line[]): Map<string, Line[]> {
  * Requirement references per plan or tasks line. H8 (#80): a bare R-n is a reference only when the
  * feature's spec documents use the R- family; otherwise it is a label local to that document.
  */
-function referencesOf(lines: Line[]): Map<Line, RequirementId[]> {
+function referencesOf(lines: Line[]): Map<Line, RegExpExecArray[]> {
   const rFamily = new Set(lines.filter(l => l.artifact.role === 'spec' && /\bR-\d+\b/i.test(l.text)).map(l => l.artifact.featureId));
   return new Map(lines.filter(l => ['plan', 'tasks'].includes(l.artifact.role)).map(l => [l,
-    requirementIds(l.text).filter(ref => ref.family !== 'R' || rFamily.has(l.artifact.featureId))]));
+    [...l.text.matchAll(requirementId)].filter(match => !match[0].toUpperCase().startsWith('R-') || rFamily.has(l.artifact.featureId))]));
 }
 const evidenceOf = (line: Evidence): Evidence => ({ path: line.path, line: line.line, text: line.text.slice(0, 300) });
 const vagueTerms = /\b(fast|quickly|easily|user-friendly|scalable|etc\.?|as needed|rápid[oa]s?|fácilmente|amigable|escalable|etcétera|cuando sea necesario)\b/giu;
@@ -190,7 +184,7 @@ function namesActor(line: Line): boolean {
   return !line.fenced && (genericActor.test(line.text) || userStory.test(line.text) || roleActor(line));
 }
 
-function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, RequirementId[]>): { status: Status; hits: Line[] } | undefined {
+function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, RegExpExecArray[]>): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
     const hits = specRequirements.filter(predicate);
@@ -209,7 +203,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[], refere
     const identified = specRequirements.filter(l => identifiedOnLine(l) || inherited.has(l)).length + headings.length;
     const units = specRequirements.length + headings.length;
     const unique = ![...definitionsOf(lines).values()].some(entries => entries.length > 1);
-    return { status: !units ? 'unknown' : identified === units && unique ? 'supported' : identified ? 'partial' : 'missing', hits: [...specRequirements.filter(l => requirementIdIn(l.text)), ...headings] };
+    return { status: !units ? 'unknown' : identified === units && unique ? 'supported' : identified ? 'partial' : 'missing', hits: [...specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)), ...headings] };
   }
   if (['I2.3', 'C1.3', 'C2.3'].includes(id)) {
     const hits = lines.filter(l => references.get(l)?.length);
@@ -270,35 +264,30 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     if (/\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(line.text.replace(/\[NEEDS CLARIFICATION:[^\]]*\]/gi, ''))) add('E2.1', line, 'This statement may contain independent obligations.', 'Check whether the obligations can fail independently; split them if so.');
   }
   const definitions = definitionsOf(lines);
-  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${definingToken(entries[1].text)?.raw}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
-  // References resolve against defining positions and, as before, any ID on an admitted spec line. H52b: by the
-  // full ID; a qualified ID also makes its short form resolvable (`SYS-REQ-01` resolves `REQ-01`).
-  const resolvable = new Set<string>();
-  const resolve = (featureId: string, token: RequirementId | undefined) => {
-    if (!token) return;
-    resolvable.add(featureId + ':' + token.id);
-    if (token.namespace) resolvable.add(featureId + ':' + token.base);
-  };
-  for (const entries of definitions.values()) resolve(entries[0].artifact.featureId, definingToken(entries[0].text));
-  for (const line of requirements.filter(l => l.artifact.role === 'spec')) for (const token of requirementIds(line.text)) resolve(line.artifact.featureId, token);
-  // H9: namespaces that the feature's own spec lines join to an ID (H52b: a qualified ID's own namespace).
+  for (const entries of definitions.values()) if (entries.length > 1) add('I1.2', entries[1], `Duplicate requirement identifier ${definingId.exec(entries[1].text)?.[1]}.`, 'Give distinct obligations distinct IDs within this feature.', 'error');
+  // References resolve against defining positions and, as before, any ID on an admitted spec line.
+  const resolvable = new Set(definitions.keys());
+  for (const line of requirements.filter(l => l.artifact.role === 'spec')) {
+    for (const raw of line.text.match(requirementId) ?? []) resolvable.add(line.artifact.featureId + ':' + raw.toUpperCase());
+  }
+  // H9: namespaces that the feature's own spec lines join to an ID.
   const ownNamespaces = new Set<string>();
   for (const line of lines.filter(l => l.artifact.role === 'spec' && (l.requirement || l.heading))) {
-    for (const token of requirementIds(line.text)) {
-      const namespace = token.namespace ?? namespaceOf(textBefore(line.text, token.index));
+    for (const match of line.text.matchAll(requirementId)) {
+      const namespace = namespaceOf(textBefore(line.text, match.index));
       if (namespace) ownNamespaces.add(line.artifact.featureId + ':' + namespace);
     }
   }
-  const external = (featureId: string, text: string, token: RequirementId) => {
-    const qualifier = token.namespace ?? qualifierOf(textBefore(text, token.index));
+  const external = (featureId: string, prefix: string) => {
+    const qualifier = qualifierOf(prefix);
     return qualifier !== undefined && !ownNamespaces.has(featureId + ':' + qualifier) && !isOwnSpec(qualifier, featureId);
   };
   const traceability: Assessment['traceability'] = [];
-  for (const [line, tokens] of references) {
-    for (const token of tokens) {
-      const id = token.id; const resolved = resolvable.has(line.artifact.featureId + ':' + id);
+  for (const [line, matches] of references) {
+    for (const match of matches) {
+      const id = match[0].toUpperCase(); const resolved = resolvable.has(line.artifact.featureId + ':' + id);
       traceability.push({ from: line.path, to: id, evidence: evidenceOf(line), resolved });
-      if (!resolved && roles.has('spec') && !external(line.artifact.featureId, line.text, token)) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
+      if (!resolved && roles.has('spec') && !external(line.artifact.featureId, textBefore(line.text, match.index))) add('I2.3', line, `Reference ${id} has no definition in the supplied specs.`, 'Correct the reference or include the defining specification.', 'error');
     }
   }
   // Only report contradictions that have explicit opposite obligations on the same normalized behavior.
