@@ -64,7 +64,7 @@ SpecTorque 0.3.0 is a **prerelease**, published on the `next` channel until the 
 | Platform | Install | Then |
 |---|---|---|
 | **Claude Code** (CLI and Desktop Code tab) | `claude plugin marketplace add jayanez/spec-torque`<br>`claude plugin install spectorque@spectorque` | `/spectorque` |
-| **Codex** (CLI and Desktop) | `codex plugin marketplace add jayanez/spec-torque`<br>`codex plugin add spectorque@spectorque` | [Bind a trusted worktree](integrations/codex/README.md#install-and-bind-a-worktree), then `open_spectorque` |
+| **Codex** (CLI and Desktop) | `codex plugin marketplace add jayanez/spec-torque`<br>`codex plugin add spectorque@spectorque` | [Bind a worktree](integrations/codex/README.md#install-and-bind-a-worktree), then `$spec-view` |
 | **OpenCode** | Add `"opencode-spectorque@0.3.0"` to `plugins` in `~/.config/opencode/cli.json` (a terminal-only plugin) | `/spectorque` in a session |
 | **Pi** | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
 | **ThinkRail** (runs Pi) | Install the Pi package `pi-spectorque` from ThinkRail's extensions, or run the Pi command above | `/spectorque` in a trusted project |

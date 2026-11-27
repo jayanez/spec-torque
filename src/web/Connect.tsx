@@ -11,7 +11,7 @@ const hosts: Host[] = [
     then: ['Run /spectorque', 'Ejecuta /spectorque'] },
   { name: 'Codex', surface: ['Plugin + inline viewer', 'Plugin + visor integrado'],
     install: ['codex plugin marketplace add jayanez/spec-torque', 'codex plugin add spectorque@spectorque'],
-    then: ['Bind a trusted worktree, then invoke open_spectorque', 'Vincula un worktree confiable e invoca open_spectorque'] },
+    then: ['Bind a worktree, then $spec-view', 'Vincula un worktree y luego $spec-view'] },
   { name: 'OpenCode', surface: ['Tools + terminal panel', 'Herramientas + panel de terminal'],
     install: [JSON.stringify({ plugins: ['opencode-spectorque@' + PRODUCT_VERSION] })],
     then: ['Add the entry to plugins in ~/.config/opencode/cli.json, restart OpenCode, then /spectorque', 'Añade la entrada a plugins en ~/.config/opencode/cli.json, reinicia OpenCode y luego /spectorque'] },

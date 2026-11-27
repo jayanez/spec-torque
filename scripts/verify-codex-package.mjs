@@ -18,6 +18,7 @@ assert.equal(JSON.parse(Buffer.from(entries['plugin.json'])).version, manifest.v
 assert.ok(!entries['mcp.json'] && !entries['.mcp.json'], 'Only the project config should register the MCP server.');
 for (const path of ['runtime/server.mjs', 'runtime/viewer.html', 'runtime/workbench.mjs', 'web-dist/index.html',
   'skills/spec-author/SKILL.md', 'skills/spec-refine/SKILL.md', 'skills/spec-review/SKILL.md',
+  'skills/spec-view/SKILL.md', 'skills/spec-view/agents/openai.yaml',
   'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) assert.ok(entries[path], path);
 
 const scratch = await realpath(await mkdtemp(join(tmpdir(), 'spectorque codex package ')));

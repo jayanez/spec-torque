@@ -12,7 +12,7 @@ await mkdir(out, { recursive: true });
 export const PACKAGES = {
   '.': ['dist/cli.js', 'dist/mcp.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md'],
   'integrations/claude': ['.claude-plugin/plugin.json', '.mcp.json', 'hooks/register.js', 'dist/mcp.js', 'dist/cli.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md', 'assets/icon.png'],
-  'integrations/codex': ['plugin.json', 'setup-workspace.mjs', 'runtime/server.mjs', 'runtime/workbench.mjs', 'runtime/viewer.html', 'skills/spec-review/SKILL.md', 'assets/icon.png'],
+  'integrations/codex': ['plugin.json', 'setup-workspace.mjs', 'runtime/server.mjs', 'runtime/workbench.mjs', 'runtime/viewer.html', 'skills/spec-review/SKILL.md', 'skills/spec-view/SKILL.md', 'skills/spec-view/agents/openai.yaml', 'assets/icon.png'],
   'integrations/opencode': ['tui.tsx', 'runtime/integration.js', 'web-dist/index.html', 'assets/icon.png'],
   'integrations/pi': ['index.ts', 'runtime/integration.js', 'skills/spec-review/SKILL.md', 'assets/icon.png'],
 };
@@ -23,6 +23,8 @@ for (const [dir, required] of Object.entries(PACKAGES)) {
   const listed = new Set(files.map(f => f.path));
   const missing = required.filter(path => !listed.has(path));
   if (missing.length) throw new Error(`${filename} is missing ${missing.join(', ')}. Run npm run package:integrations first.`);
+  // spec-view calls a tool only the Codex server has; it must not reach the other packages.
+  if (dir !== 'integrations/codex' && files.some(f => f.path.includes('skills/spec-view/'))) throw new Error(filename + ' must not carry the Codex-only spec-view skill.');
   if (dir === '.' && files.some(f => f.path.startsWith('integrations/'))) throw new Error(filename + ' must not bundle host integrations.');
   const scratch = await mkdtemp(join(tmpdir(), 'spectorque-pack-'));
   try {
