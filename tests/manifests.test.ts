@@ -67,11 +67,12 @@ test('listing metadata: icons, links and VS Code identity', async () => {
 });
 
 test('spec-view is a Codex-only skill that opens the viewer through open_spectorque', async () => {
-  const skill = (await readFile('integrations/codex/skill-src/spec-view/SKILL.md', 'utf8')).replace(/\r\n/gu, '\n');
+  const lf = async (path: string) => (await readFile(path, 'utf8')).replace(/\r\n/gu, '\n');
+  const skill = await lf('integrations/codex/skill-src/spec-view/SKILL.md');
   assert.match(skill, /^---\nname: spec-view\n/u);
   assert.match(skill, /^description: \S/mu);
   assert.match(skill, /open_spectorque/u);
-  const metadata = (await readFile('integrations/codex/skill-src/spec-view/agents/openai.yaml', 'utf8')).replace(/\r\n/gu, '\n');
+  const metadata = await lf('integrations/codex/skill-src/spec-view/agents/openai.yaml');
   assert.match(metadata, /^policy:\n  allow_implicit_invocation: false$/mu);
   assert.doesNotMatch(metadata, /display_name/u, 'a display_name drops the "Spectorque:" prefix the other skills show in the $ menu');
   await assert.rejects(readFile('skills/spec-view/SKILL.md', 'utf8'), 'the shared skills reach Claude Code and Pi, which have no open_spectorque tool');

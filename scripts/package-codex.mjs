@@ -10,7 +10,7 @@ const { archive, sha256 } = await packageArchive({
   version: manifest.version,
   files: ['plugin.json', 'setup-workspace.mjs', 'README.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'],
   directories: ['assets', 'runtime', 'web-dist', 'skills'],
-  normalizeText: path => /\.(?:css|html|js|json|md|mjs|txt)$/u.test(path) ||
+  normalizeText: path => /\.(?:css|html|js|json|md|mjs|txt|yaml)$/u.test(path) ||
     ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'].includes(path),
 });
 await writeFile(archive + '.sha256', sha256 + '  ' + basename(archive) + '\n');

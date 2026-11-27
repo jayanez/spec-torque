@@ -2,7 +2,7 @@
 // into artifacts/npm and verifies each tarball from a clean extraction.
 // Run after `npm run package:integrations`: npm run pack:hosts
 import { execFileSync } from 'node:child_process';
-import { access, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -18,13 +18,15 @@ export const PACKAGES = {
 };
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const tarballs = [];
+const codexOnlySkills = await readdir('integrations/codex/skill-src');
 for (const [dir, required] of Object.entries(PACKAGES)) {
   const [{ filename, files }] = JSON.parse(execFileSync(npm, ['pack', '--json', '--ignore-scripts', '--pack-destination', out], { cwd: resolve(dir), encoding: 'utf8', shell: process.platform === 'win32' }));
   const listed = new Set(files.map(f => f.path));
   const missing = required.filter(path => !listed.has(path));
   if (missing.length) throw new Error(`${filename} is missing ${missing.join(', ')}. Run npm run package:integrations first.`);
-  // spec-view calls a tool only the Codex server has; it must not reach the other packages.
-  if (dir !== 'integrations/codex' && files.some(f => f.path.includes('skills/spec-view/'))) throw new Error(filename + ' must not carry the Codex-only spec-view skill.');
+  // Codex-only skills call tools only the Codex server has; they must not reach the other packages.
+  const leaked = dir === 'integrations/codex' ? [] : codexOnlySkills.filter(name => files.some(f => f.path.includes('skills/' + name + '/')));
+  if (leaked.length) throw new Error(`${filename} must not carry the Codex-only skill ${leaked.join(', ')}.`);
   if (dir === '.' && files.some(f => f.path.startsWith('integrations/'))) throw new Error(filename + ' must not bundle host integrations.');
   const scratch = await mkdtemp(join(tmpdir(), 'spectorque-pack-'));
   try {

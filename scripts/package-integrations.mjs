@@ -40,8 +40,8 @@ for (const dir of ['web-dist', 'skills']) {
   await rm(codexRoot + '/' + dir, { recursive: true, force: true });
   await cp(dir, codexRoot + '/' + dir, { recursive: true });
 }
-// The Codex-only skill that opens the viewer; it depends on a tool only the Codex server has.
-await cp(codexRoot + '/skill-src/spec-view', codexRoot + '/skills/spec-view', { recursive: true });
+// Codex-only skills (they call tools only the Codex server has) live in skill-src and join the shared ones.
+await cp(codexRoot + '/skill-src', codexRoot + '/skills', { recursive: true });
 for (const filename of ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) {
   await cp(filename, codexRoot + '/' + filename);
 }

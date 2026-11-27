@@ -16,6 +16,8 @@ Open the viewer with the `open_spectorque` tool of the `spectorque-workspace` MC
 - `changed` or `changed <base>`: call it with `changed: true`, and `base` when a revision is given. This covers features touched on the current branch, including uncommitted edits. Without a base the viewer compares against the remote default branch (`origin/HEAD`): if `git symbolic-ref --quiet --short refs/remotes/origin/HEAD` fails, do not call the tool yet. Ask which base to use (for example `origin/develop`, or `HEAD` for uncommitted edits only).
 - No scope given: call `open_spectorque` with no arguments. The viewer lists the features and waits for a choice in a large work tree.
 
+The tool answers "opened" even for a feature or base that does not exist; the viewer then shows only a generic error. So before calling, check that a feature ID is an existing folder or ID in the work tree and that a base resolves (`git rev-parse --verify --quiet '<base>^{commit}'`). If either fails, ask the user instead of calling.
+
 Use one scope at a time. Do not run a separate review: the viewer assesses locally and shows the findings.
 
 ## If the tool is missing
