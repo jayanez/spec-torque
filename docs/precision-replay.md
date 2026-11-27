@@ -2408,6 +2408,16 @@ through the REST code search API, in search order, up to 2 repositories per quer
 
 The list is committed in `fixtures/precision/h52b-sources.json` before the candidate commit.
 
+### Amendment H52b-1 (2026-11-27, before the candidate and any measurement)
+
+Writing the candidate showed a gap between rule 4 and prediction 3. A qualified ID in a defining
+position that no admitted line carries (`## VP-REQ-01` over prose without a modal) makes its short
+form resolvable by rule 4, so a plan or tasks reference to `REQ-01` loses its 0.1.20 error.
+Prediction 3 also allows a removed reference error that names a bare ID which a qualified defining
+ID of the same feature makes resolvable. To keep prediction 2 exact, the ID boundary is ASCII, as
+`\b` is in 0.1.20: an ID is not preceded or followed by an ASCII letter, digit or underscore.
+Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
