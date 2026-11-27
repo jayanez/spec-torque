@@ -43,30 +43,29 @@ if (roots.some(root => root.restricted)) throw new Error('Packets are built from
 type Detail = { root: string; sha: string; feature: string; changes: { id: string; from: string; to: string }[] };
 const keySchema = z.array(z.object({ root: z.string(), feature: z.string() })).min(1);
 const excluded = new Set((await Promise.all((values.exclude ?? []).map(async f => keySchema.parse(JSON.parse(await readFile(f, 'utf8')))))).flat().map(k => `${k.root}/${k.feature}`));
-const direction = (d: Detail) => d.changes.find(c => c.id === 'P2.1' && c.from === 'missing' && c.to === 'partial') ? 'gain'
-  : h104a && d.changes.find(c => c.id === 'P2.1' && c.from === 'partial' && c.to === 'missing') ? 'loss' : undefined;
+const directionOf = (d: Detail) => d.changes.some(c => c.id === 'P2.1' && c.from === 'missing' && c.to === 'partial') ? 'gain' as const
+  : h104a && d.changes.some(c => c.id === 'P2.1' && c.from === 'partial' && c.to === 'missing') ? 'loss' as const : undefined;
 const details = (await Promise.all(values.detail.map(async f => JSON.parse(await readFile(f, 'utf8')).detail as Detail[]))).flat()
-  .filter(d => direction(d) && !excluded.has(`${d.root}/${d.feature}`))
+  .map(d => ({ ...d, direction: directionOf(d) }))
+  .filter((d): d is Detail & { direction: 'gain' | 'loss' } => Boolean(d.direction) && !excluded.has(`${d.root}/${d.feature}`))
   .filter((d, i, all) => all.findIndex(e => e.root === d.root && e.sha === d.sha && e.feature === d.feature) === i);
 
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h104-'));
 const arms = { baseline: await archiveEngine(commit(values.baseline), join(temp, 'b')), candidate: await archiveEngine(commit(values.candidate), join(temp, 'c')) };
 if (arms.baseline.ENGINE_VERSION === arms.candidate.ENGINE_VERSION) throw new Error(`Baseline and candidate are the same engine (${arms.candidate.ENGINE_VERSION}); name the candidate revision.`);
-const status = async (engine: Engine, line: string) => {
-  const spec = `# Demo\n\n${line}\n\n- REQ-001: The demo MUST hold.\n`;
-  const status = (await engine.analyze({ name: 'h104', artifacts: [engine.classifyArtifact('specs/001-demo/spec.md', spec)] })).practices.find(p => p.id === 'P2.1')?.status;
-  if (!status) throw new Error('P2.1 is missing from the assessment.');
-  return status;
+const p21 = async (engine: Engine, path: string, content: string) => {
+  const result = (await engine.analyze({ name: 'h104', artifacts: [engine.classifyArtifact(path, content)] })).practices.find(p => p.id === 'P2.1')?.status;
+  if (!result) throw new Error('P2.1 is missing from the assessment.');
+  return result;
 };
+const status = (engine: Engine, line: string) => p21(engine, 'specs/001-demo/spec.md', `# Demo\n\n${line}\n\n- REQ-001: The demo MUST hold.\n`);
 const carriesCue = async (line: string) => line.trim() !== '' && !/^\s*#/.test(line) &&
   await status(arms.candidate, line) === 'partial' && await status(arms.baseline, line) === 'missing';
 
 // H104a: the line in its document, other non-heading lines blanked, one requirement prepended.
 const inContext = async (engine: Engine, path: string, text: string[], keep: number[]) => {
   const content = ['- REQ-999: The demo MUST hold.', '', ...text.map((t, i) => keep.includes(i) || /^\s*(?:#{1,6}[ \t]|```|~~~)/.test(t) ? t : '')].join('\n') + '\n';
-  const result = (await engine.analyze({ name: 'h104a', artifacts: [engine.classifyArtifact(path, content)] })).practices.find(p => p.id === 'P2.1')?.status;
-  if (!result) throw new Error('P2.1 is missing from the assessment.');
-  return result;
+  return p21(engine, path, content);
 };
 const cueInContext = async (kind: 'gain' | 'loss', path: string, text: string[], i: number) => {
   if (!text[i].trim() || /^\s*#/.test(text[i])) return false;
@@ -102,14 +101,14 @@ for (const d of drawn) {
     if (lines.length >= 3) break;
     const text = artifact.content.split(/\r?\n/);
     for (let i = 0; i < text.length && lines.length < 3; i++) {
-      if (!(h104a ? await cueInContext(direction(d)!, artifact.path, text, i) : await carriesCue(text[i]))) continue;
+      if (!(h104a ? await cueInContext(d.direction, artifact.path, text, i) : await carriesCue(text[i]))) continue;
       const from = Math.max(0, i - 2);
       lines.push({ path: artifact.path, line: i + 1, ...(h104a ? { section: sectionOf(text, i) } : {}), context: text.slice(from, i + 3).map((t, j) => `${from + j + 1}${from + j === i ? ' >' : '  '} ${t}`) });
     }
   }
   const id = (h104a ? 'B' : 'A') + String(items.length + 1).padStart(3, '0');
   items.push({ id, repository: root.repository, revision: d.sha, proposition: PROPOSITION, lines });
-  key.push({ id, root: d.root, feature: d.feature, ...(h104a ? { direction: direction(d) } : {}) });
+  key.push({ id, root: d.root, feature: d.feature, ...(h104a ? { direction: d.direction } : {}) });
 }
 await mkdir(values.out, { recursive: true, mode: 0o700 });
 await writeFile(join(values.out, 'packet.json'), JSON.stringify({ version: 1, labels: ['positive', 'negative', 'unknown'], guide: h104a ? 'docs/precision-adjudication.md#h104a-product-actors-named-by-role-104' : 'docs/precision-adjudication.md#h104-actors-named-by-role-104', items }, null, 2) + '\n');

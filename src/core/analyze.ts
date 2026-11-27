@@ -128,35 +128,35 @@ function hasObservableCue(text: string): boolean {
 const genericActor = /(?<![\p{L}\p{N}_])(?:users?|visitors?|actors?|customers?|usuarios?|visitantes?|clientes?)(?![\p{L}\p{N}_])/iu;
 const userStory = /\bas\s+an?\s+(?:[\p{L}-]+\s+){0,3}[\p{L}-]+\s*,\s*I\s+(?:want|need|can|would\s+like|should|must)\b|(?<!\p{L})como\s+(?:una?\s+)?(?:[\p{L}-]+\s+){0,3}[\p{L}-]+\s*,\s*(?:quiero|necesito|puedo|deseo|me\s+gustaría)(?!\p{L})/iu;
 const lineStart = String.raw`^\s*(?:>\s*)*(?:(?:[-*+]|\d+[.)])\s+)?(?:\[[ xX]\]\s+)?(?:\*\*|__)?\s*`;
-const roleSubject = (keywords: string, determiners: string, roles: string) => ({
+const roleSubject = (keywords: string, determiners: string, roles: string, verb: RegExp, pluralNoun: boolean) => ({
+  verb, pluralNoun,
   start: new RegExp(String.raw`${lineStart}(?:(?:\*\*|__)?(?:${keywords})(?:\*\*|__)?\s+)?(?:(?:${determiners})\s+)?(?:${roles})\s+([\p{L}'’]+)`, 'iu'),
   inner: new RegExp(String.raw`(?<![\p{L}\p{N}_'’-])(?:${determiners})\s+(?:${roles})\s+([\p{L}'’]+)`, 'giu'),
 });
-const english = roleSubject('given|when|then|and|but', 'the|a|an|each|every|any',
-  '(?:developer|operator|maintainer|reviewer|administrator|admin|owner|engineer|author|contributor|approver|auditor|analyst)s?');
-const spanish = roleSubject('dado(?:\\s+que)?|cuando|entonces|y', 'el|la|los|las|un|una|cada',
-  '(?:desarrollador|operador|mantenedor|revisor|administrador|colaborador|aprobador|autor|auditor)(?:a|es|as)?|(?:propietari|dueñ|ingenier)(?:o|a|os|as)|analistas?');
 // Present forms only (H104a rule 4); H85's -s fragment, less the preposition "as" (H104-2) and "was" (H104a-2).
 const englishVerb = new RegExp(String.raw`^(?:must|shall|should|may|might|can|cannot|could|will|would|is|are|has|have|does|do|\p{L}+n['’]t|(?!(?:as|was)$)${verbFormS})$`, 'iu');
 const spanishVerb = /^(?!(?:a|ante|contra|de|desde|durante|entre|hacia|hasta|mediante|para|sobre)$)(?:debe|deben|deberá|deberán|puede|pueden|podrá|podrán|es|son|está|están|tiene|tienen|ha|han|\p{L}*(?:a|e|an|en))$/iu;
+const english = roleSubject('given|when|then|and|but', 'the|a|an|each|every|any',
+  '(?:developer|operator|maintainer|reviewer|administrator|admin|owner|engineer|author|contributor|approver|auditor|analyst)s?', englishVerb, true);
+const spanish = roleSubject('dado(?:\\s+que)?|cuando|entonces|y', 'el|la|los|las|un|una|cada',
+  '(?:desarrollador|operador|mantenedor|revisor|administrador|colaborador|aprobador|autor|auditor)(?:a|es|as)?|(?:propietari|dueñ|ingenier)(?:o|a|os|as)|analistas?', spanishVerb, false);
 // Rule 7: a word in -s followed by is/are/… is a plural noun ("the operator logs are …").
 const nounBefore = /^(?:is|are|was|were|has|have)$/i;
 const processSection = /(?<![\p{L}])(?:clarifications?|decisions?|status|risks?|assumptions?|notes|changelog|history|revisions?|reviews?|sign-?off|approvals?|open questions?|aclaraciones|aclaración|decisiones|decisión|estado|riesgos?|supuestos?|notas|historial|revisión|revisiones|aprobación|aprobaciones|preguntas)(?![\p{L}])/iu;
 const isoDate = /\b\d{4}-\d{2}-\d{2}\b/;
 const documentObject = /^(?:\s+[\p{L}\p{N}'’-]+){0,5}?\s+(?:specs?|specification|plan|tasks|document|proposal|clarification|especificación|tareas|documento|borrador|propuesta|aclaración)(?![\p{L}\p{N}_])/iu;
-function subjectAt(text: string, match: RegExpExecArray, verb: RegExp): boolean {
+type Language = ReturnType<typeof roleSubject>;
+function subjectAt(text: string, match: RegExpExecArray, language: Language): boolean {
   const rest = text.slice(match.index + match[0].length);
   const after = /^\s+([\p{L}'’]+)/u.exec(rest)?.[1] ?? '';
-  const pluralNoun = verb === englishVerb && /s$/i.test(match[1]) && !/^(?:is|has|does)$/i.test(match[1]) && nounBefore.test(after);
-  return verb.test(match[1]) && !pluralNoun && !documentObject.test(rest);
+  const pluralNoun = language.pluralNoun && /s$/i.test(match[1]) && !/^(?:is|has|does)$/i.test(match[1]) && nounBefore.test(after);
+  return language.verb.test(match[1]) && !pluralNoun && !documentObject.test(rest);
 }
 function roleActor(line: Line): boolean {
   if (processSection.test(line.section) || isoDate.test(line.text)) return false;
-  return [[english, englishVerb], [spanish, spanishVerb]].some(([subject, verb]) => {
-    const { start, inner } = subject as ReturnType<typeof roleSubject>;
-    const first = line.continuation ? null : start.exec(line.text);
-    if (first && subjectAt(line.text, first, verb as RegExp)) return true;
-    return [...line.text.matchAll(inner)].some(m => subjectAt(line.text, m, verb as RegExp));
+  return [english, spanish].some(language => {
+    const first = line.continuation ? null : language.start.exec(line.text);
+    return Boolean(first && subjectAt(line.text, first, language)) || [...line.text.matchAll(language.inner)].some(m => subjectAt(line.text, m, language));
   });
 }
 /** Whether a spec line names who acts: a generic actor word, a user story or a role noun in actor position. */
