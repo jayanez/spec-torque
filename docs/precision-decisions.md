@@ -1797,3 +1797,24 @@ the renamed messages of earlier H9 twins.
 **Decision.** H52b stops and the candidate is reverted; engine stays 0.1.20. The owner decides
 between a pre-registered H52b-a (the two corrections above, a new fresh set and new labelers) and
 stopping. No labels were drawn.
+### H52c: scenario steps with a modal are requirement lines — **fails gate 3 (one prediction missed); reverted, owner decides**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). Third of the approved sequence;
+H52b failed and was not retried.
+- Pre-registered at `fbba64a`. Fresh sources (15 repositories; the Spanish query found 3) frozen
+  at `79b7de3`. 24 EN/ES twins, the replay, the judge and Amendment H52c-1 (the earlier twins with
+  an entering line and their predicted outcomes) at `ee72b15`, all before the candidate.
+- Candidate `a9de2bb` (engine 0.1.21); it, the version commit and the H52c tests were reverted.
+  Comparator 0.1.20 (`develop`, `297b7ed`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins, earlier twins, minimal pairs | holds: 24 of 24 (0.1.20 meets 14, failing exactly the 10 targets); the H52 twins change exactly as Amendment H52c-1 predicts (10 twins, I1.2/I2.2 to `missing` or `partial` with one warning each); every other suite and the minimal pairs unchanged. Not pre-registered: the unit test `tests/normative.test.ts` pinned the old exclusion of scenario lines with a modal (`DADO … DEBEN …`, `GIVEN … MAY …`); the candidate updated it to the new rule |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. 137 earlier roots | **fails**: 7874 features, 480 with an entering line, 186 change, **1 item outside the predictions**: in one feature E1.4 moves `missing` → `partial`. Prediction 3 allowed only `unknown` → `supported`. The reasoning ("every entering line has a modal") missed that E1.4 is already `missing` when every admitted line is admitted by an ID without a modal; adding modal steps then makes it `partial`, which is the right result but was not predicted |
+| 4. Fresh set | not judged for the gate (stop rule). For information: 340 features, 64 change, 0 items outside the predictions, 1498 entering lines; no packet was drawn and nothing was labeled |
+| Pilot (counts only) | for information: 87 features, 5 change (findings only), 0 items outside the predictions |
+
+**Decision.** H52c stops and is reverted; engine stays 0.1.20. The owner decides between a
+pre-registered H52c-a (the same rule, prediction 3 allowing E1.4 `missing` → `partial`, the
+`normative.test.ts` change listed in advance, a new fresh set and new labelers) and stopping.
