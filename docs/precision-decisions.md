@@ -1439,3 +1439,50 @@ would be pre-registered and measured again on a new fresh set:
 **Decision.** H104 stops under its stop rule and is reverted on the branch; engine stays
 0.1.16. The owner decides between H104a and stopping #104.
 
+### H104a: product actors named by role, no process roles — **holds at the threshold; proposed for merge**
+
+Tracking: [#104](https://github.com/jayanez/spec-torque/issues/104). Owner decision after
+H104: retry once, without process roles, with a new fresh set and new blind labels.
+- Pre-registered at `c2bc4e0`. Fresh sources frozen at `dfd91d0` (14 repositories; the
+  Spanish query had only 2 eligible), twins at `d60a544`, both before the candidate.
+- Candidate `46de657`, engine 0.1.17, product 0.3.0 unchanged; measured with amendment `19a7605`.
+  Amendment H104a-1 (whole-word process headings, no `draft` object) after the first
+  twin run, before any natural measurement. Comparator 0.1.16 (`develop`, `0084178`).
+- If #106 (PR #112, also engine 0.1.17) merges first, H104a takes 0.1.18 and every
+  measurement is repeated.
+
+| Gate | Result |
+|---|---|
+| 1. Twins: 29 H104a and 26 H104 (EN/ES), earlier suites, minimal pairs | holds: 29/29 (0.1.16 meets 16, failing exactly the 13 targets) and 26/26; H3a, H5a, H6, H6a, H7, H7a, H8, H85, H9 identical in both arms; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier sets (75 roots, 4018 features) | holds: 295 features change, P2.1 and C1.1 together: 187 gains, 108 losses (rule 10); no finding, decision, artifact or other status changes |
+| 4. New fresh set (14 roots, 542 features) and adjudication | holds at the threshold: 67 features change (54 gains, 13 losses); of 100 drawn (seed 42105, H104's 100 items excluded), 4 agreed wrong and 1 disputed, 5 against a threshold of 5 |
+| 5. Evidence | holds: 0 invalid |
+
+**Adjudication.** 100 items, 54 gains and 46 losses, labeled by two new blind agent
+sessions. Raw agreement 99/100.
+- *Gains:* 53 agreed right, 1 agreed wrong: a reviewer requesting a statistical
+  correction from a research project (a process role in a user story, which rule 4 does
+  not catch because the verb is present).
+- *Losses:* 42 agreed right (substrings such as "refactor", "factor", "superuser", and
+  generic words inside code blocks), 3 agreed wrong: "User …" lines inside fenced
+  diagrams of one repository, which a reader takes as user flows.
+- *Disputed (1):* a fenced "User question" label in the same repository.
+
+**Pilot repository (development data, 32 open features, counts only, both engines on
+the same work tree).** P2.1 and C1.1 `partial` 26 → 29, `missing` 6 → 3: the 3
+owner-adjudicated features gain, as predicted; 048, 050 and 076 stay `missing`; no
+feature drops; nothing else changes.
+
+**Known limits.**
+- Process roles stated in the present ("a reviewer requests that the project …") still
+  count; rule 4 reads tense, not intent.
+- Rule 10 drops generic words in fenced blocks, including user flows drawn as text
+  diagrams; 4 of the 5 adjudication errors are that one construction in one repository.
+- The role cue still reads Spanish adjectives in `-a`/`-e` as verbs ("la revisora
+  técnica decide") outside process sections.
+- Losses of the generic cue are real status drops (108 and 13 features), not only gains.
+
+**Decision.** Propose H104a (engine 0.1.17, or 0.1.18 after #106) for merge. It holds
+every gate, with no margin on gate 4.
+
