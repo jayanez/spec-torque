@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "purpose": "H92a (#92) scope twins: what a scope reports after discovery drops framework templates. Files are discovered with isSpecCandidate (workspace mode) and analyzed as one set. Committed before the candidate (Amendment H92a-1 places the kept-scope template inside the feature folder).",
+  "cases": [
+    {
+      "id": "emptied",
+      "files": {
+        ".specify/templates/spec-template.md": "# Feature Specification: [FEATURE NAME]\n\n## Requirements\n\n[NEEDS CLARIFICATION: requirements]\n",
+        ".specify/memory/task_notes.md": "# Task notes\n\n- [ ] T001 Verify FR-001.\n"
+      },
+      "baseline": { "i23": "unknown", "i23Findings": ["Reference FR-001 has no definition in the supplied specs."], "edges": ["FR-001:false"] },
+      "candidate": { "i23": "unknown", "i23Findings": [], "edges": ["FR-001:false"] }
+    },
+    {
+      "id": "kept-template-defined",
+      "files": {
+        "specs/001-a/.specify/templates/spec-template.md": "# Feature Specification: [FEATURE NAME]\n\n## Requirements\n\n- FR-009: The system MUST [ACTION].\n",
+        "specs/001-a/spec.md": "# A\n\n- FR-001: The system MUST export the report.\n",
+        "specs/001-a/tasks.md": "# Tasks\n\n- [ ] T001 Implement FR-001.\n- [ ] T002 Implement FR-009.\n"
+      },
+      "baseline": { "i23": "unknown", "i23Findings": [], "edges": ["FR-001:true", "FR-009:true"] },
+      "candidate": { "i23": "unknown", "i23Findings": ["Reference FR-009 has no definition in the supplied specs."], "edges": ["FR-001:true", "FR-009:false"] }
+    },
+    {
+      "id": "kept-control",
+      "files": {
+        "specs/001-a/.specify/templates/spec-template.md": "# Feature Specification: [FEATURE NAME]\n\n## Requirements\n\n- FR-009: The system MUST [ACTION].\n",
+        "specs/001-a/spec.md": "# A\n\n- FR-001: The system MUST export the report.\n- FR-009: The system MUST log exports.\n",
+        "specs/001-a/tasks.md": "# Tasks\n\n- [ ] T001 Implement FR-001.\n- [ ] T002 Implement FR-009.\n"
+      },
+      "baseline": { "i23": "unknown", "i23Findings": [], "edges": ["FR-001:true", "FR-009:true"] },
+      "candidate": { "i23": "unknown", "i23Findings": [], "edges": ["FR-001:true", "FR-009:true"] }
+    }
+  ]
+}

@@ -2139,6 +2139,18 @@ through the REST code search API, in search order:
 
 The list is committed in `fixtures/precision/h92a-sources.json` before the candidate commit.
 
+### Amendment H92a-1 (2026-11-27, before the candidate and any measurement)
+
+Building the scope twins on 0.1.18 showed two things the pre-registration did not state.
+References resolve in the referencing document's feature namespace, and a template folder is
+its own feature, so a template defines an ID for another document only when the template sits
+inside that document's feature folder (`specs/001-a/.specify/templates/…`, featureId
+`specs/001-a`). The kept-scope twin uses that layout. And when such an ID loses its only
+definition, its traceability edge changes from resolved to unresolved, which the replay counts
+as one removed and one added edge. Prediction 5 for kept scopes therefore also allows a
+resolved edge to a template-defined ID to be removed when the same edge is added unresolved.
+Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
