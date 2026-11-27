@@ -1547,12 +1547,31 @@ feature drops; nothing else changes.
 **Known limits.**
 - Process roles stated in the present ("a reviewer requests that the project …") still
   count; rule 4 reads tense, not intent.
+- Rule 2 reads only the nearest heading. Spec Kit nests its Q&A under
+  `## Clarifications` / `### Session <date>`, so a present-tense answer there ("A: The
+  owner approves the thresholds") still counts.
+- Rule 2 matches a listed word anywhere in the heading, so product sections such as
+  "Order status", "Product reviews" or "Approval workflow" lose the role cue.
+- Rule 5's document nouns include product objects (`plan`, `tasks`, `document`): "The
+  developer chooses a pricing plan" does not count. Rule 3 drops any line with an ISO
+  date, including product values.
 - Rule 10 drops generic words in fenced blocks, including user flows drawn as text
   diagrams; 4 of the 5 adjudication errors are that one construction in one repository.
 - The role cue still reads Spanish adjectives in `-a`/`-e` as verbs ("la revisora
   técnica decide") outside process sections.
 - Losses of the generic cue are real status drops (108 and 13 features), not only gains.
 
-**Decision.** Propose H104a (engine 0.1.17, or 0.1.18 after #106) for merge. It holds
-every gate, with no margin on gate 4.
+**Amendment H104a-2 and the merge of H106.** The pre-merge review found that `was`
+passed the `-s` verb test against rule 4; it is excluded (`H104a-2`), with 12 opposite
+twins (41 H104a twins, 0.1.16 meets 19). With the fix, every measurement is unchanged:
+the same 295 and 67 changed features, the same pilot result, and the adjudicated packet
+rebuilds byte-identical, so the labels stand. H106 (#106) then merged as engine 0.1.17, so
+H104a ships as **engine 0.1.18**, product 0.3.0. Against `develop` with H106 (`87f3a5b`):
+H104a 41/41, H104 26/26, H106 40/40 and every earlier suite identical in both arms;
+minimal pairs and the 716 predictions unchanged; the scans change only P2.1 and C1.1
+(295 and 67 features, as above); the pilot again goes 26 → 29 `partial` with no other
+change; the packet rebuilds identical.
+
+**Decision.** Propose H104a (engine 0.1.18) for merge. It holds every gate, with no margin
+on gate 4; the known limits above are candidates for a later, separately measured change.
 
