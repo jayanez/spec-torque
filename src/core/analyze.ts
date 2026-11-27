@@ -2,7 +2,7 @@ import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.16';
+export const ENGINE_VERSION = '0.1.17';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -18,7 +18,8 @@ const hasNormativeModal = (text: string) => modal.test(
 );
 /** H5a (#78): a list item or paragraph with its hard-wrapped continuation lines; `defined` when its first line has a defining ID. */
 interface Unit { defined: boolean }
-interface Line extends Evidence { artifact: Artifact; scope: LineScope; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit }
+/** `fenced`: inside a fenced code block or a fence run. `section`: the nearest heading above the line (H104a). */
+interface Line extends Evidence { artifact: Artifact; scope: LineScope; requirement: boolean; heading: boolean; continuation: boolean; unit: Unit; fenced: boolean; section: string }
 // Lines that start a block (or are a fence run), and lines that cannot be continued.
 const blockStart = /^\s*(?:#{1,6}(?:[ \t]|$)|(?:[-*+]|\d+[.)])(?:[ \t]|$)|\||>|<|```|~~~)/;
 const closedBlock = /^\s*(?:#{1,6}(?:[ \t]|$)|\||>|<|```|~~~)/;
@@ -28,6 +29,7 @@ function linesOf(artifact: Artifact): Line[] {
   let fenced = false;
   let continuable = false;
   let unit: Unit = { defined: false };
+  let section = '';
   return artifact.content.split(/\r?\n/).map((text, index) => {
     const fenceRun = /^\s*(?:```|~~~)/.test(text);
     if (fenceRun) fenced = !fenced;
@@ -38,7 +40,9 @@ function linesOf(artifact: Artifact): Line[] {
     const continuation = continuable && textLine && !blockStart.test(text) && !(/^\S/.test(text) && definedId(text));
     if (!continuation) unit = { defined: Boolean(definedId(text)) };
     continuable = textLine && !closedBlock.test(text);
-    return { path: artifact.path, line: index + 1, text, artifact, scope, requirement, heading: !fenced && /^\s*#{1,6}[ \t]/.test(text), continuation, unit };
+    const heading = !fenced && /^\s*#{1,6}[ \t]/.test(text);
+    if (heading) section = text;
+    return { path: artifact.path, line: index + 1, text, artifact, scope, requirement, heading, continuation, unit, fenced: fenced || fenceRun, section };
   });
 }
 // H3a (#83): an ID defines a requirement only in a defining position: first on the line after an
@@ -94,12 +98,14 @@ const unboundedWording = new RegExp(vagueTerms.source, 'iu');
 // pronoun: punctuation, a contraction, a modal or auxiliary, an adverb, a preposition or conjunction,
 // or a verb form. The verb and adverb suffixes err towards keeping the finding.
 const subjectLead = /^\s*(?:[-*]\s+)?(?:[A-Z]+-\d+:?\s*)?(?:(it|esto|eso|ello)|this|that)\b/i;
+// A word in -s that is not -ss, -us or -is: a present verb form (shared by H85 and H104a).
+const verbFormS = String.raw`\w*[^\Wsui]s`;
 const pronounCues = [
   'must|shall|should|may|might|can|cannot|could|will|won|would', // modals (H85, H85-2)
   'is|was|are|were|be|been|being|has|had|have|does|did|do', // auxiliaries
   'also|only|never|always|then|now|still|not|alone|itself|\\w+ly', // adverbs
   'and|or|but|in|on|at|for|with|by|of|to|from|as|if|when|because|so', // prepositions and conjunctions (H85-1)
-  'made|led|meant|became|took|gave|kept|\\w*[^\\Wsui]s|\\w+ed', // verb forms
+  `made|led|meant|became|took|gave|kept|${verbFormS}|\\w+ed`, // verb forms
 ].join('|');
 // Punctuation or no next word, a contraction ('s, 'll, 'd, H85-1; -n't, H85-3), or a listed word.
 const pronounNext = new RegExp(String.raw`^(?:\s*(?:$|[.,;:!?)—–-])|['’](?:s|ll|d)\b|\s+\w+n['’]t\b|\s+(?:${pronounCues})\b)`, 'i');
@@ -114,6 +120,50 @@ function hasObservableCue(text: string): boolean {
     (boundedQuantity.test(clause) || minimumDuration.test(clause) || boundedRate.test(clause) || observableDenial.test(clause));
 }
 
+// H104a (#104): actors named by role. Besides the 0.1.16 words (now whole words), a bounded list
+// of human role nouns counts in actor position: a user story, or a clause subject (after a
+// determiner, or first on a line that is not a continuation) followed directly by a present verb.
+// A role acting on the specification's own process does not count: process sections, dated lines,
+// past forms and document objects. No cue is read inside a fenced block.
+const genericActor = /(?<![\p{L}\p{N}_])(?:users?|visitors?|actors?|customers?|usuarios?|visitantes?|clientes?)(?![\p{L}\p{N}_])/iu;
+const userStory = /\bas\s+an?\s+(?:[\p{L}-]+\s+){0,3}[\p{L}-]+\s*,\s*I\s+(?:want|need|can|would\s+like|should|must)\b|(?<!\p{L})como\s+(?:una?\s+)?(?:[\p{L}-]+\s+){0,3}[\p{L}-]+\s*,\s*(?:quiero|necesito|puedo|deseo|me\s+gustaría)(?!\p{L})/iu;
+const lineStart = String.raw`^\s*(?:>\s*)*(?:(?:[-*+]|\d+[.)])\s+)?(?:\[[ xX]\]\s+)?(?:\*\*|__)?\s*`;
+const roleSubject = (keywords: string, determiners: string, roles: string) => ({
+  start: new RegExp(String.raw`${lineStart}(?:(?:\*\*|__)?(?:${keywords})(?:\*\*|__)?\s+)?(?:(?:${determiners})\s+)?(?:${roles})\s+([\p{L}'’]+)`, 'iu'),
+  inner: new RegExp(String.raw`(?<![\p{L}\p{N}_'’-])(?:${determiners})\s+(?:${roles})\s+([\p{L}'’]+)`, 'giu'),
+});
+const english = roleSubject('given|when|then|and|but', 'the|a|an|each|every|any',
+  '(?:developer|operator|maintainer|reviewer|administrator|admin|owner|engineer|author|contributor|approver|auditor|analyst)s?');
+const spanish = roleSubject('dado(?:\\s+que)?|cuando|entonces|y', 'el|la|los|las|un|una|cada',
+  '(?:desarrollador|operador|mantenedor|revisor|administrador|colaborador|aprobador|autor|auditor)(?:a|es|as)?|(?:propietari|dueñ|ingenier)(?:o|a|os|as)|analistas?');
+// Present forms only (H104a rule 4); H85's -s fragment, less the preposition "as" (H104-2).
+const englishVerb = new RegExp(String.raw`^(?:must|shall|should|may|might|can|cannot|could|will|would|is|are|has|have|does|do|\p{L}+n['’]t|(?!as$)${verbFormS})$`, 'iu');
+const spanishVerb = /^(?!(?:a|ante|contra|de|desde|durante|entre|hacia|hasta|mediante|para|sobre)$)(?:debe|deben|deberá|deberán|puede|pueden|podrá|podrán|es|son|está|están|tiene|tienen|ha|han|\p{L}*(?:a|e|an|en))$/iu;
+// Rule 7: a word in -s followed by is/are/… is a plural noun ("the operator logs are …").
+const nounBefore = /^(?:is|are|was|were|has|have)$/i;
+const processSection = /clarif|decision|status|risk|assumption|note|changelog|history|revision|review|sign-?off|approval|open question|aclaraci|decisi|estado|riesgo|supuesto|nota|historial|revisi|aprobaci|pregunta/i;
+const isoDate = /\b\d{4}-\d{2}-\d{2}\b/;
+const documentObject = /^(?:\s+[\p{L}\p{N}'’-]+){0,5}?\s+(?:specs?|specification|plan|tasks|document|draft|proposal|clarification|especificación|tareas|documento|borrador|propuesta|aclaración)(?![\p{L}\p{N}_])/iu;
+function subjectAt(text: string, match: RegExpExecArray, verb: RegExp): boolean {
+  const rest = text.slice(match.index + match[0].length);
+  const after = /^\s+([\p{L}'’]+)/u.exec(rest)?.[1] ?? '';
+  const pluralNoun = verb === englishVerb && /s$/i.test(match[1]) && !/^(?:is|has|does)$/i.test(match[1]) && nounBefore.test(after);
+  return verb.test(match[1]) && !pluralNoun && !documentObject.test(rest);
+}
+function roleActor(line: Line): boolean {
+  if (processSection.test(line.section) || isoDate.test(line.text)) return false;
+  return [[english, englishVerb], [spanish, spanishVerb]].some(([subject, verb]) => {
+    const { start, inner } = subject as ReturnType<typeof roleSubject>;
+    const first = line.continuation ? null : start.exec(line.text);
+    if (first && subjectAt(line.text, first, verb as RegExp)) return true;
+    return [...line.text.matchAll(inner)].some(m => subjectAt(line.text, m, verb as RegExp));
+  });
+}
+/** Whether a spec line names who acts: a generic actor word, a user story or a role noun in actor position. */
+function namesActor(line: Line): boolean {
+  return !line.fenced && (genericActor.test(line.text) || userStory.test(line.text) || roleActor(line));
+}
+
 function evaluateSpecial(id: string, lines: Line[], requirements: Line[], references: Map<Line, RegExpExecArray[]>): { status: Status; hits: Line[] } | undefined {
   const specRequirements = requirements.filter(l => l.artifact.role === 'spec');
   const ratio = (predicate: (l: Line) => boolean) => {
@@ -124,7 +174,7 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[], refere
   if (id === 'E1.4') return ratio(line => hasNormativeModal(line.text));
   if (id === 'E2.1') return ratio(l => !/;.+\b(?:MUST|SHALL|DEBE)\b|\b(?:and|y)\b.+\b(?:MUST|SHALL|DEBE)\b/i.test(l.text));
   if (id === 'P2.1' || id === 'C1.1') {
-    const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && /user|visitor|actor|customer|usuario|visitante|cliente/i.test(l.text));
+    const context = lines.some(l => !l.requirement && !/^\s*#/.test(l.text) && namesActor(l));
     return { status: specRequirements.length && context ? 'partial' : 'missing', hits: specRequirements.length && context ? specRequirements.slice(0, 3) : [] };
   }
   if (id === 'I1.2' || id === 'I2.2') {
