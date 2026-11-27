@@ -2,7 +2,7 @@ import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.21';
+export const ENGINE_VERSION = '0.1.20';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -34,10 +34,7 @@ function linesOf(artifact: Artifact): Line[] {
     const fenceRun = /^\s*(?:```|~~~)/.test(text);
     if (fenceRun) fenced = !fenced;
     const scenario = /^\s*(?:[-*]\s*)?(?:GIVEN|WHEN|THEN|DADO|CUANDO|ENTONCES)\b/i.test(text);
-    // H52c (#52): a scenario step that carries a normative modal is a requirement (label guide v2); one
-    // without a modal is acceptance, even with an ID.
-    const requirement = scope === 'all' && !fenced && !/^\s*(?:#|>|```|~~~)/.test(text) &&
-      (scenario ? hasNormativeModal(text) : /\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
+    const requirement = scope === 'all' && !fenced && !scenario && !/^\s*(?:#|>|```|~~~)/.test(text) && (/\b(?:FR|NFR|REQ)-\d+\b/i.test(text) || hasNormativeModal(text));
     const textLine = !fenced && !fenceRun && text.trim() !== '' && !thematicBreak.test(text);
     // An unindented line led by a defining ID starts its own unit (one requirement per line).
     const continuation = continuable && textLine && !blockStart.test(text) && !(/^\S/.test(text) && definedId(text));
