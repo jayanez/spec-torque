@@ -315,3 +315,24 @@ the specified product behavior.* `positive` means the gain is right.
 
 **Reviewers.** Two independent agent sessions, with no engine output, key, scan,
 hypothesis or each other's labels.
+
+## H104a: product actors named by role (#104)
+
+H104a raises P2.1 and C1.1 with the narrowed role cue and lowers them where the 0.1.16
+words were not whole words or sat in a fenced block. Threshold as for H104, fixed in the
+pre-registration (`c2bc4e0`): at most 2 items wrong or disputed, or at most 5% when there
+are more than 40. A gain is wrong when agreed `negative`, a loss when agreed `positive`.
+
+**Packet.** `scripts/precision/actor-packet.ts --mode h104a --baseline 0084178
+--candidate <H104a> --exclude <H104 key.json> --seed 42105`, from the scans of the 75
+earlier roots and the 14 H104a fresh roots: every changed feature not labeled for H104,
+or 100 drawn. Up to 3 lines per feature, each tested in its own document (other lines
+blanked), shown with its section heading and two lines of context.
+
+**Proposition.** *This line names a person or role who performs, requests or receives the
+specified product behavior.* Under the owner's policy a role acting on the
+specification's own process (requesting, approving, deciding on or writing the
+document) is `negative`, and the reviewers are told so.
+
+**Reviewers.** Two new independent agent sessions, with no engine output, key, scan,
+hypothesis, direction or each other's labels.
