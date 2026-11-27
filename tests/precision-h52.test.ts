@@ -31,15 +31,20 @@ test('definingHeadings follows the pre-registered definition', () => {
   const found = (id: string) => definingHeadings(setOf(cases.find(c => c.id === id)!).artifacts).map(e => e.line);
   assert.deepEqual(found('gwt-only-en'), [3]);
   assert.deepEqual(found('duplicate-headings-es'), [3, 7]);
-  for (const id of ['heading-without-id-en', 'id-late-in-title-en', 'non-family-user-story-en', 'non-family-document-id-en', 'fenced-heading-en', 'dotted-sub-id-en', 'heading-in-plan-en', 'heading-in-checklist-en']) assert.deepEqual(found(id), [], id);
+  assert.deepEqual(found('content-under-subheading-en'), [3]);
+  for (const id of ['heading-without-id-en', 'id-late-in-title-en', 'non-family-user-story-en', 'non-family-document-id-en', 'fenced-heading-en', 'dotted-sub-id-en', 'heading-in-plan-en', 'heading-in-checklist-en', 'r-family-risk-en', 'range-heading-es', 'removed-heading-en', 'removed-heading-es', 'empty-headings-en']) assert.deepEqual(found(id), [], id);
 });
 
-// The 0.1.19 comparator is needed in full; shallow CI clones skip this test visibly.
-const comparator = (() => { try { git('cat-file', '-e', 'a4e1d38^{commit}'); return true; } catch { return false; } })();
-test('the judge accepts every twin against 0.1.19 and counts violations', { skip: comparator ? false : 'comparator a4e1d38 is not in this clone' }, async () => {
+// The 0.1.19 comparator is needed in full. A shallow CI clone lacks it and skips visibly; any other git failure fails.
+const COMPARATOR = 'a4e1d388229a0c48975e526f52a49f47a91c3966';
+const comparator = (() => {
+  if (git('rev-parse', '--is-shallow-repository') !== 'true') return true;
+  try { git('cat-file', '-e', `${COMPARATOR}^{commit}`); return true; } catch { return false; }
+})();
+test('the judge accepts every twin against 0.1.19 and counts violations', { skip: comparator ? false : 'comparator 0.1.19 is not in this shallow clone' }, async () => {
   const directory = await mkdtemp(join(tmpdir(), 'spectorque-h52-'));
   try {
-    const baseline = await archiveEngine('a4e1d38', join(directory, 'engine'));
+    const baseline = await archiveEngine(COMPARATOR, join(directory, 'engine'));
     for (const twin of cases) {
       const set = setOf(twin);
       assert.deepEqual(judge(await baseline.analyze(set), await analyze(set), definingHeadings(set.artifacts)), [], twin.id);
@@ -49,15 +54,19 @@ test('the judge accepts every twin against 0.1.19 and counts violations', { skip
     const headings = definingHeadings(set.artifacts);
     assert.deepEqual(judge(before, { ...after, findings: [] }, headings), ['findings changed']);
     const promoted = { ...after, practices: after.practices.map(p => p.id === 'I1.2' ? { ...p, status: 'supported' as const } : p) };
-    assert.deepEqual(judge(before, promoted, headings), ['I1.2 missing->supported']);
-    assert.deepEqual(judge(before, after, []), ['assessment changed without a defining heading']);
+    assert.deepEqual(judge(before, promoted, headings), ['I1.2 missing->supported', 'summary counts']);
+    assert.deepEqual(judge(before, after, []), ['assessment changed without a requirement heading']);
     const withPractice = (id: string, patch: object) => ({ ...after, practices: after.practices.map(p => p.id === id ? { ...p, ...patch } : p) });
     const evidence = after.practices.find(p => p.id === 'I1.2')!.evidence;
     assert.deepEqual(judge(before, withPractice('I1.2', { evidence: [...evidence].reverse().concat(evidence).slice(0, 2) }), headings), ['I1.2 evidence']);
-    assert.deepEqual(judge(before, withPractice('E1.4', { status: 'missing' }), headings), ['E1.4 changed']);
-    const supported = await baseline.analyze(setOf(cases.find(c => c.id === 'heading-with-modal-body-en')!));
-    assert.deepEqual(judge(supported, { ...supported, practices: supported.practices.map(p => p.id === 'I2.2' ? { ...p, status: 'partial' as const } : p) }, headings), ['I2.2 supported->partial']);
-    assert.deepEqual(judge(supported, { ...supported, practices: supported.practices.map(p => p.id === 'I1.2' ? { ...p, reason: 'other' } : p) }, headings), ['I1.2 reason']);
+    assert.deepEqual(judge(before, withPractice('E1.4', { status: 'missing' }), headings), ['practices changed', 'summary counts']);
+    const control = setOf(cases.find(c => c.id === 'heading-with-modal-body-en')!);
+    const [was, now, controlHeadings] = [await baseline.analyze(control), await analyze(control), definingHeadings(control.artifacts)];
+    const patched = (id: string, patch: object) => ({ ...now, practices: now.practices.map(p => p.id === id ? { ...p, ...patch } : p) });
+    assert.deepEqual(judge(was, now, controlHeadings), []);
+    assert.ok(judge(was, patched('I2.2', { status: 'partial' }), controlHeadings).includes('I2.2 supported->partial'));
+    assert.deepEqual(judge(was, patched('I1.2', { reason: 'other' }), controlHeadings), ['I1.2 reason']);
+    assert.deepEqual(judge(was, { ...now, summary: { ...now.summary, supported: now.summary.supported + 1 } }, controlHeadings), ['summary counts']);
     const fell = { ...after, dimensions: after.dimensions.map(d => d.id === 'I1' ? { ...d, score: (d.score ?? 0) - 1 } : d) };
     assert.ok(judge(before, fell, headings).includes('dimension I1'));
   } finally { await rm(directory, { recursive: true, force: true }); }

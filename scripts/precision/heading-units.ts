@@ -9,7 +9,7 @@
  * `scan` writes the changed features (with their defining headings) to `<out>/h52-scan.json` for the
  * blind packet. `worktree` prints counts only and stores no document text.
  */
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -35,15 +35,17 @@ const identity = { revisions, engines: { baseline: arms.baseline.ENGINE_VERSION,
 const totals = { roots: 0, features: 0, overLimit: 0, withHeadings: 0, changed: 0, violations: 0, transitions: {} as Record<string, number> };
 const changed: { root: string; repository: string; sha: string; feature: string; transitions: Record<string, string>; headings: { path: string; line: number; text: string }[] }[] = [];
 const violations: { root: string; feature: string; violations: string[] }[] = [];
+const overLimit: { root: string; feature: string }[] = [];
 
 async function compare(root: string, repository: string, sha: string, feature: string, set: ArtifactSet, keepText: boolean) {
-  if (set.artifacts.length > 500 || set.artifacts.some(a => a.content.length > 1_000_000)) { totals.overLimit++; return; }
+  // The engine refuses such sets; they are listed, never silently dropped.
+  if (set.artifacts.length > 500 || set.artifacts.some(a => a.content.length > 1_000_000)) { totals.overLimit++; overLimit.push({ root, feature: keepText ? feature : `(work tree feature ${totals.features + totals.overLimit})` }); return; }
   totals.features++;
   const headings = definingHeadings(set.artifacts);
   if (headings.length) totals.withHeadings++;
   const [before, after] = await Promise.all([arms.baseline.analyze(set), arms.candidate.analyze(set)]);
   const found = judge(before, after, headings);
-  if (found.length) { totals.violations++; violations.push({ root, feature: keepText ? feature : '(work tree)', violations: found }); }
+  if (found.length) { totals.violations++; violations.push({ root, feature: keepText ? feature : `(work tree feature ${totals.features})`, violations: found }); }
   const transitions: Record<string, string> = {};
   for (const id of ['I1.2', 'I2.2']) {
     const b = before.practices.find(p => p.id === id)!.status; const c = after.practices.find(p => p.id === id)!.status;
@@ -68,7 +70,7 @@ if (mode === 'scan') {
       await compare(root.id, root.repository, sha, feature, arms.baseline.selectFeature(set, feature), true);
     }
   }
-  await writeFile(join(values.out!, 'h52-scan.json'), JSON.stringify({ kind: 'h52-scan', ...identity, totals, violations, changed }, null, 2) + '\n', { mode: 0o600 });
+  await writeFile(join(values.out!, 'h52-scan.json'), JSON.stringify({ kind: 'h52-scan', ...identity, totals, violations, overLimit, changed }, null, 2) + '\n', { mode: 0o600 });
 } else {
   const index = await indexWorkspace(values.root!);
   totals.roots = 1;
@@ -76,4 +78,8 @@ if (mode === 'scan') {
     await compare('work tree', '', '', feature.id, await arms.baseline.discoverWorkspace(values.root!, { feature: feature.id }, index), false);
   }
 }
-console.log(JSON.stringify({ kind: `h52-${mode}`, ...identity, totals, violations: violations.slice(0, 20) }, null, 2));
+await rm(temp, { recursive: true, force: true });
+console.log(JSON.stringify({ kind: `h52-${mode}`, ...identity, totals, violations, overLimit }, null, 2));
+if (overLimit.length) console.error(`${overLimit.length} feature(s) over the analysis limit were not judged.`);
+// A violated prediction fails the run.
+if (totals.violations) process.exitCode = 1;

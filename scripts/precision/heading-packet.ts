@@ -25,7 +25,9 @@ if (!Number.isInteger(max) || max < 1 || !Number.isInteger(seed)) throw new Erro
 const roots = (await Promise.all(values.roots.map(async f => rootSchema.parse(JSON.parse(await readFile(f, 'utf8')))))).flat();
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
 type Changed = { root: string; repository: string; sha: string; feature: string; transitions: Record<string, string>; headings: { path: string; line: number; text: string }[] };
-const changed = (await Promise.all(values.scan.map(async f => JSON.parse(await readFile(f, 'utf8')).changed as Changed[]))).flat();
+const changed = (await Promise.all(values.scan.map(async f => JSON.parse(await readFile(f, 'utf8')).changed as Changed[]))).flat()
+  .filter((d, i, all) => all.findIndex(e => e.root === d.root && e.sha === d.sha && e.feature === d.feature) === i);
+if (new Set(roots.map(r => r.id)).size !== roots.length) throw new Error('Root IDs repeat across the --roots files.');
 if (!changed.length) throw new Error('No changed feature in the scans.');
 const drawn = changed.length > max ? sample(changed, max, seed) : changed;
 
@@ -34,13 +36,14 @@ const entries: { item: { repository: string; revision: string; path: string; lin
 drawn.forEach((d, n) => {
   const root = roots.find(r => r.id === d.root);
   if (!root) throw new Error(`No root for ${d.root}.`);
-  if (!snapshots.has(root.id)) {
+  const at = `${root.id}@${d.sha}`;
+  if (!snapshots.has(at)) {
     const { sha, files } = snapshot({ ...root, ref: d.sha });
     if (sha !== d.sha) throw new Error(`${root.id} resolved to ${sha}, not the scanned ${d.sha}.`);
-    snapshots.set(root.id, files);
+    snapshots.set(at, files);
   }
   const heading = sample(d.headings, 1, seed + n)[0];
-  const content = snapshots.get(root.id)!.get(heading.path);
+  const content = snapshots.get(at)!.get(heading.path);
   if (content === undefined) throw new Error(`${heading.path} is not in ${root.id}@${d.sha}.`);
   const lines = content.split(/\r?\n/);
   if (lines[heading.line - 1]?.slice(0, 300) !== heading.text) throw new Error(`${root.id} ${heading.path}:${heading.line} does not match the scan.`);
