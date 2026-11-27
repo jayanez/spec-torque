@@ -35,7 +35,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 const keyOf = (f: Finding) => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`;
 const ADDED = new Set(['E1.2', 'E1.3', 'E2.1', 'I1.2']);
 const FREE = ['E1.2', 'E2.1', 'I1.2', 'I2.2'];
-const MOVES: Record<string, string[]> = { 'E1.4': ['unknown->supported'], 'P2.1': ['missing->partial', 'partial->missing'], 'C1.1': ['missing->partial', 'partial->missing'], 'C1.2': ['missing->partial'] };
+const MOVES: Record<string, string[]> = { 'E1.4': ['unknown->supported', 'missing->partial'], 'P2.1': ['missing->partial', 'partial->missing'], 'C1.1': ['missing->partial', 'partial->missing'], 'C1.2': ['missing->partial'] };
 const SCORED = new Set(['E1', 'E2', 'I1', 'I2', 'P2', 'C1']);
 
 /** Violations of H52c predictions 2 and 3 for one feature; empty when the change is as predicted. */
@@ -46,16 +46,23 @@ export function judge(before: Assessment, after: Assessment, entering: Entering[
   const at = new Set(entering.map(e => `${e.path}|${e.line}`));
   const onEntering = (f: Finding) => at.has(`${f.evidence[0]?.path}|${f.evidence[0]?.line}`);
   const enteringIds = new Set(entering.filter(e => e.spec).flatMap(e => [...e.text.matchAll(/\b(?:FR|NFR|REQ|R)-\d+\b/gi)].map(m => m[0].toUpperCase())));
+  const enteringNamespaces = new Set(entering.filter(e => e.spec).flatMap(e => [...e.text.matchAll(/([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*)-(?:FR|NFR|REQ|R)-\d+\b/g)].map(m => m[1])));
   const [b, c] = [new Map(before.findings.map(f => [keyOf(f), f])), new Map(after.findings.map(f => [keyOf(f), f]))];
   for (const [key, f] of c) if (!b.has(key)) {
     const lineWarning = ADDED.has(f.practiceId) && (f.practiceId !== 'I1.2' || f.message === 'Requirement has no stable identifier.');
     const conflict = f.practiceId === 'I2.3' && f.message === 'Opposite obligations describe the same behavior.';
-    const allowed = (lineWarning && onEntering(f)) || (conflict && (onEntering(f) || entering.some(e => f.suggestion.includes(`${e.path}:${e.line}.`))));
+    // H52c-a: a qualified reference becomes local when an entering spec line joins its namespace to an ID (H9).
+    const reference = /^Reference (\S+) has no definition/.exec(f.message)?.[1];
+    const ownedByStep = reference !== undefined && [...(f.evidence[0]?.text ?? '').matchAll(new RegExp(`([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*)-${reference}\\b`, 'g'))]
+      .some(m => enteringNamespaces.has(m[1]));
+    const allowed = (lineWarning && onEntering(f)) || (conflict && (onEntering(f) || entering.some(e => f.suggestion.includes(`${e.path}:${e.line}.`)))) || (f.practiceId === 'I2.3' && ownedByStep);
     if (!allowed) violations.push(`finding added ${key}`);
   }
   for (const [key, f] of b) if (!c.has(key)) {
     const id = /^Reference (\S+) has no definition/.exec(f.message)?.[1];
-    if (!(f.practiceId === 'I2.3' && id && enteringIds.has(id))) violations.push(`finding removed ${key}`);
+    // A removed conflict is allowed when an entering line carries a MUST/SHALL/DEBE obligation (H52c-a; cannot occur, Amendment H52c-a-1).
+    const conflictReplaced = f.message === 'Opposite obligations describe the same behavior.' && entering.some(e => /\b(?:MUST|SHALL|DEBE)\b/i.test(e.text));
+    if (!(f.practiceId === 'I2.3' && ((id && enteringIds.has(id)) || conflictReplaced))) violations.push(`finding removed ${key}`);
   }
   const ids = (a: Assessment) => [a.practices.map(p => p.id), a.dimensions.map(d => d.id)];
   if (!same(ids(before), ids(after))) return [...violations, 'practice or dimension set changed'];
