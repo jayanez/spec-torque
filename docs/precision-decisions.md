@@ -1575,3 +1575,138 @@ change; the packet rebuilds identical.
 **Decision.** Propose H104a (engine 0.1.18) for merge. It holds every gate, with no margin
 on gate 4; the known limits above are candidates for a later, separately measured change.
 
+
+### H92: framework template folders are not discovered — **fails gate 3 (one missed prediction); reverted, continued as H92a (owner decision)**
+
+Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92).
+- Pre-registered at `c7ae4a1`. Fresh sources frozen at `1d45a06` (12 repositories: 5 Spec Kit,
+  3 Spec Kitty mission, 1 older Spec Kitty, 3 controls with a `templates/` folder outside
+  `.specify/` and `.kittify/`), path twins at `98edd14`, all before the candidate.
+- First candidate `3d8879c`. Amendment H92-1 (`5022a17`, after the fresh set and its labels,
+  from the branch review): installed layouts only, so a `templates` folder inside a feature
+  kept under `.specify/specs/` or `.kittify/specs/` stays; the packet pools both discovery
+  modes; an explicit scope naming a template folder fails with a reason. Final candidate
+  `f388de3` (engine 0.1.19, product 0.3.0). Comparator 0.1.18 (`develop`, `abf1730`).
+- The rule is owned by `isSpecCandidate` (`isFrameworkTemplate`, `src/core/artifacts.ts`):
+  workspace indexing, GitHub import and the precision tooling all go through it, so the CLI,
+  MCP, `serve`, VS Code and the other adapters stop listing, reading and scoring templates
+  together. The workbench folder import, which never used the candidate filter, calls the
+  same predicate. A non-candidate was chosen over a skipped `template` role: a role would
+  have to be skipped by every reader and rule, while a non-candidate is never read. The
+  0.1.18 presentation rule that sorted folders named `template(s)` last is removed.
+
+| Gate | Result |
+|---|---|
+| 1. Path twins, earlier twins, minimal pairs | holds: 19 excluded and 22 kept twins in both modes (0.1.18 meets 0 of the excluded, all of the kept); the listing twin sorts a user `templates` folder by name; every earlier twin suite passes in both arms; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed, 0 metric groups changed, artifact sets and unknown practices identical |
+| 3. Earlier roots (110 repositories, 6315 features) | **misses one prediction.** Discovery removes 3888 workspace and 4893 GitHub-mode paths in 60 roots, every one a template, and adds none; 975 template features leave the list, none with a non-template file; the 5340 common features are identical; order changes in 11 roots, only for user or vendored folders named `template(s)`. In the 1938 analyzed "All documents" and template-parent scopes, every removed decision (19348) and traceability edge (12) cites a template, and nothing is added. Of 7912 removed findings, **31 cite only a non-template file** (see below) |
+| 4. Fresh set (12 roots) and adjudication | holds: 90 workspace and 98 GitHub-mode paths removed in the 9 framework roots, all templates; the 3 control roots lose nothing; 24 template features leave the list; the 96 common features are identical; in 18 scopes 284 findings, 288 decisions and 16 edges are removed, all citing templates, nothing added. All 98 excluded files (pool below 100) were labeled blind: 90 by two sessions, the 8 GitHub-mode additions of H92-1 by two new sessions; 98/98 agreed `positive`, 0 negative or disputed (threshold 2) |
+| 5. Evidence | holds: 0 invalid in either arm |
+
+**The gate-3 miss.** All 31 findings are I2.3 "Reference FR-n has no definition" on
+`.specify/memory/task_verifier_notes.md` in 15 projects of one repository (llmXive, which
+nests one Spec Kit project per folder). The folder scope `projects/<project>/.specify` holds
+the templates, the constitution and that notes file. Without the templates no spec is left in
+the scope, so I2.3 goes `partial → unknown` and stops reporting unresolved references, as it
+does for any scope without a specification (897 other scopes show the same transition with no
+non-template finding involved). The references were "undefined" only against the templates'
+placeholder requirements. In 14 of the 15 projects the project-folder scope, which holds the
+real specs, is unchanged; the 15th project has no spec of its own. The pre-registered
+prediction ("no finding or decision whose evidence lies only outside template paths is
+removed") did not anticipate this; no other prediction is affected.
+
+**Pilot repository (development data, counts only, both engines on the same work tree).** The
+prediction held exactly: features 89 → 87 (the two `.specify/templates` features), index total
+575 → 557, the 87 features unchanged; the `.specify` folder scope goes from 21 to 3 documents,
+its 15 template findings and 4 template edges are removed and nothing is added; the two user
+`templates/m35-*` folders are unchanged. "All documents" stays above the read limit (557).
+
+**Branch review.** `/code-review high`, `/simplify`, `pr-test-analyzer`, `silent-failure-hunter`
+and an adversarial agent that saw only the diff.
+- *Fixed:* the any-depth rule removed `templates/` inside `.specify/specs/` features (H92-1);
+  the browser test still expected `.specify/templates` in the scope picker; the packet pooled
+  one mode only; an explicit `--path`, `--feature`, focus or GitHub tree URL naming a template
+  folder returned an empty set silently (now an error); the replay re-parsed paths from string
+  keys, could crash on a non-template removal and counted over-limit scopes silently (now
+  listed); one rule entry and one shared message; the replay imports the production
+  exclusions; the packet uses the shared seeded `sample`.
+- *Not changed (by design or out of scope):* a single file, a root chosen inside a template
+  folder and caller-supplied text are still analyzed; a mixed folder import drops templates
+  without a count, as discovery does; scopes that are empty for other reasons stay as before.
+
+**Known limits.**
+- Agent command copies that Spec Kit installs outside `.specify/` (`.claude/commands/speckit.*`,
+  `.github/prompts/speckit.*`, `.cursor/commands/…`) and extension or mission `commands/`
+  folders are still discovered.
+- Vendored framework packages (`venv/…/site-packages/specify_cli/templates/`) are still
+  discovered; `venv`, `env` and `.tox` are not fixed exclusions, and GitHub import excludes only
+  `node_modules`, `vendor`, `dist` and `.git`. Without the 0.1.18 demotion such folders now sort
+  by name (one vendored folder in the fresh set).
+- Other tools' template folders (`.speckit/`, `.aod/`, `get-shit-done/templates/`) and a
+  framework's own source repository (`templates/` at the root) are project content.
+- 8 "All documents" scopes exceed the read limit and were not compared (their template-parent
+  folder scopes were).
+- Browser tests ran on Chromium and WebKit (180 passed); Firefox could not launch in this
+  sandbox. All labelers are agent sessions of one model family.
+
+**Decision.** Gate 3 misses its prediction on 31 findings, all from one mechanism in one
+repository. The owner chose the stop rule over an exception (2026-11-27): H92 is reverted on
+the branch (engine stays 0.1.18; the record, fixtures and measurement-script fixes stay), and
+H92a is pre-registered with predictions that cover scopes left without a specification and a
+new fresh set.
+
+### H92a: framework template folders are not discovered, with scopes left without a specification — **holds; proposed for merge**
+
+Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92). Owner decision after H92:
+revert and retry once, with predictions for scopes left without a specification, a new fresh
+set and new blind labelers.
+- Pre-registered at `a3b2cb7`. Fresh sources frozen at `4265cdb` (15 repositories: 6 Spec Kit,
+  3 Spec Kit presets, 3 controls with features under `.specify/specs/`, 3 controls with a
+  `templates/` folder elsewhere; the Spec Kitty mission and Spec Kit extension queries had no
+  eligible repository). Amendment H92a-1 and the scope twins at `17efefd`, both before the
+  candidate: a template defines an ID for another document only inside that document's feature
+  folder, and an edge to such an ID may turn from resolved to unresolved.
+- Candidate `fa19304` (the H92-1 rule, unchanged), final `2d966b9` after the review (the
+  template check rewritten as an equivalent linear test; no discovery change: the fresh-set
+  totals are identical). Engine 0.1.19, product 0.3.0. Comparator 0.1.18 (`develop`, `abf1730`).
+
+| Gate | Result |
+|---|---|
+| 1. Path and scope twins, earlier twins, minimal pairs | holds: 19 excluded and 22 kept path twins in both modes, the listing twin, and the 3 scope twins (emptied, kept with a template-defined ID, kept control) as registered; every earlier twin suite passes; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed, 0 metric groups changed |
+| 3. Earlier roots (122: the 110 H92 earlier roots and the 12 H92 fresh roots) | holds: 3978 workspace and 4991 GitHub-mode paths removed in 69 roots, all templates, none added; 999 template features leave the list, none with a non-template file; the 5436 common features are identical; order changes in 14 roots, only for folders named `template(s)`. 1964 scopes compared (1041 kept, 923 emptied, including all 8 "All documents" scopes over the host limit with the guard lifted): 11885 findings, 28844 decisions and 32 edges removed, nothing added, **0 items outside prediction 5**. The 31 H92 findings are now predicted: their scopes are emptied and I2.3 is `unknown` |
+| 4. New fresh set (15 roots) and adjudication | holds: 45 workspace and 59 GitHub-mode paths removed in 11 roots, all templates; the `.specify/specs/` and `templates/` controls keep every other candidate; 17 template features leave the list; the 2437 common features are identical; 21 scopes (16 kept, 5 emptied): 97 findings and 142 decisions removed, nothing added, 0 items outside prediction 5; one `.specify` folder scope over the host limit was not compared (its "All documents" scope was). All 59 excluded files were labeled blind from their full text by new sessions: 59/59 agreed `positive` (threshold 2). One session typed every last line and a second-half detail by hand (59/59 last lines exact, 56/59 details found); a second one copied its last lines by script, and a third session, run in its place, agrees as well |
+| 5. Evidence | holds: 0 invalid in either arm |
+
+**Hosts.** No root over the 500-document read limit falls within it after the change (prediction
+6: the list is empty).
+
+**Pilot repository (development data, counts only, both engines on the same work tree).** The
+prediction held: features 89 → 87, index total 575 → 557, the 87 features unchanged; the
+`.specify` folder scope is emptied (21 → 3 documents) and "All documents" (557, compared with the
+guard lifted) is kept, each losing 15 template findings and 4 template edges with nothing
+outside prediction 5; `templates/m35-*` unchanged.
+
+**Branch review (final diff).** `/code-review high`, `/simplify` (four angles), `pr-test-analyzer`,
+`silent-failure-hunter` and an adversarial agent that saw only the diff.
+- *Fixed:* a working directory inside a template folder blocked an explicit `--feature` or
+  `--path`; the replay's scope judgement moved to `scripts/precision/scope-judge.ts` with tests
+  (twins, counted violations) and a test of the lifted guard; the packet seed is now required
+  and the packet holds full files; the template check was quadratic on paths with many slashes
+  (now linear); template-defined IDs are memoized; small replay cleanups.
+- *Prediction gap found by the review, after measurement began (not amended):* a template inside
+  a feature folder that redefines one of the spec's IDs makes I1.2 report a duplicate on the
+  spec line alone; its removal is outside prediction 5. The judge stays strict and its test
+  records the case. No natural scope showed it (0 items outside prediction 5).
+- *Not changed:* an explicit root at or inside `.specify/` or a template folder (`analyze
+  .specify`, `--root`) analyzes paths relative to that root, so its templates are read, as for
+  any explicit input; the replay judges I2.3 by message text and template-defined IDs by
+  occurrence (scope-wide, which can only add breaks); scopes are compared for workspace mode only;
+  the replay reuses HEAD's exclusion helpers for both arms.
+
+**Known limits.** Those recorded for H92 still apply: agent command copies outside `.specify/`,
+extension and mission `commands/` folders, vendored framework packages and other tools' template
+folders are still discovered. Firefox browser tests cannot launch in this sandbox (Chromium and
+WebKit: 180 passed). All labelers are agent sessions of one model family.
+
+**Decision.** Propose H92a (engine 0.1.19) for merge.

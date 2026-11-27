@@ -1891,6 +1891,266 @@ missing (no date, a product object, a line after a fence, a whole generic word b
 substring, a product subheading under a process heading, `Notes` against `Draft note`,
 and `was` against `is`). Nothing else changes.
 
+## Pre-registered hypothesis H92 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92). Named after its
+issue, as H106 was.
+
+**Failure.** Discovery treats spec-framework scaffolding as project content. Spec Kit
+installs `.specify/templates/spec-template.md`, `plan-template.md`, `tasks-template.md`
+and command templates; Spec Kitty installs mission templates such as
+`.kittify/missions/software-dev/templates/spec-template.md`. Their basenames make them
+candidates, and `spec-template.md` gets role `spec`. Their placeholder text (`[FEATURE
+NAME]`, sample `[NEEDS CLARIFICATION]` markers, example requirements `FR-001`) then
+adds findings, open decisions and requirement IDs in the "All documents" and folder
+scopes, and each template folder is listed as a feature. Engine 0.1.18 only sorts
+folders named `template`/`templates` last in feature lists (presentation); scoring
+still includes them.
+
+**Development data.** The #8 pilot repository and the union of the roots measured for
+H104, H104a and H106 (110 repositories at their pinned refs). Paths only, no content:
+on 60 of the 110 roots, 3888 workspace candidates lie under a framework template
+folder, and 975 of 6316 listed features are template folders. No other feature holds
+a template file. 100 candidates in 21 roots sit in user folders named `template` or
+`templates` outside `.specify/` and `.kittify/` (`templates/`, `specs/templates/`,
+`shared/templates/sdd/`, other tools' folders such as `.speckit/` and `.aod/`). The
+pilot has 20 files under `.specify/templates/` (18 candidates, listed as two
+features) and two user folders `templates/m35-*`. GitHub code search shows the
+installed layouts `.specify/templates/**` (with `overrides/` and `commands/`),
+`.kittify/templates/**` (with `command-templates/`), `.kittify/missions/<mission>/
+{templates,command-templates}/**` and `.kittify/overrides/missions/<mission>/templates/**`;
+Spec Kit presets and extensions ship `templates/` folders that install under
+`.specify/presets/<name>/` and `.specify/extensions/<name>/`.
+
+**Policy.** One path rule, owned by discovery (`isSpecCandidate`). A Markdown path is
+not a candidate when, after a path segment `.specify` or `.kittify`, a later folder
+segment is exactly `templates` or `command-templates` (case-insensitive, either
+separator). Nothing is read from those files, so no host lists, reads or scores them.
+Everything else is unchanged:
+- A folder named `templates` elsewhere stays a candidate: `templates/`,
+  `docs/templates/`, `specs/templates/`, `specs/001-x/templates/`, and other tools'
+  folders (`.speckit/templates/`). So do `.specify/specs/…`, `.specify/memory/…` and
+  `.kittify/specs/…`, and folders whose name only contains the word
+  (`specs/091-…-templates/`, `kitty-specs/templates-as-config-…/`, `.specify/template/`).
+- The presentation rule of 0.1.18 is removed: a user folder named `template(s)` is a
+  generic feature like any other and sorts by name, not last.
+- An explicitly chosen input is still read: a single file given to `analyze`, a
+  workspace root chosen inside a template folder, and artifact text supplied by the
+  caller (`analyze_specs` with `set`, `/api/analyze`). The workbench's folder import
+  applies the same rule, so an imported repository drops its templates as discovery
+  does.
+
+**Comparator.** 0.1.18 (`develop` at `abf1730`). Candidate engine 0.1.19, product
+0.3.0 unchanged (owner decision: engine-only bumps until the next release).
+
+**Endpoints.** Per root: the candidate paths in workspace mode (basename names) and
+GitHub mode (full paths); the feature list (IDs, order, artifact counts); the result of
+every common feature (practices, evidence, findings, decisions, traceability,
+dimension scores); and the "All documents" scope and the folder scope of each
+template folder's parent (`.specify`, `.kittify`, and the project folder that holds a
+nested one), when within the read limit: findings, open decisions and traceability
+entries, with whether each cites a template path, plus practice statuses and the score.
+
+**Predictions.**
+- The 716 historical predictions do not change, and no earlier twin suite or minimal
+  pair changes: corpus and twin paths are not template paths.
+- Discovery removes exactly the paths that match the rule, in both modes; it adds none.
+- The feature list loses exactly the template-folder feature IDs (975 on the earlier
+  roots); no remaining feature changes its artifact count. Order changes only where a
+  user folder named `template(s)` no longer sorts last.
+- Every common feature's result is identical in both engines.
+- In the "All documents" and folder scopes, every removed finding, open decision and
+  traceability entry cites a template path. No finding or decision whose evidence lies
+  only outside template paths is added or removed. Practice statuses and scores of
+  those scopes may move either way (the templates' headings and sample lines can satisfy
+  or mask practices); every such change is reported.
+- On the pilot: the feature list goes from 89 to 87 (the two `.specify/templates`
+  features); the index total from 575 to 557; the 87 features are unchanged; the
+  `.specify` folder scope loses every template finding and decision; `templates/m35-*`
+  stays as it was.
+
+**Gate (all must hold to proceed).**
+1. Path twins are committed before the candidate in `fixtures/precision/h92-paths.json`,
+   each with an expected `candidate` value for both modes: excluded templates
+   (`.specify/templates/{spec,plan,tasks}-template.md`, `.specify/templates/commands/`,
+   `.specify/templates/overrides/`, a nested `projects/a/.specify/templates/`, preset and
+   extension `templates/`, `.kittify/templates/` and `command-templates/`, mission and
+   override mission templates, a backslash path and an upper-case path) and kept twins
+   (the user folders and near names listed under Policy). 0.1.18 fails exactly the
+   excluded twins; the candidate meets all. A listing twin checks that a user
+   `templates` folder sorts by name. The H3a, H5a, H6, H6a, H7, H7a, H8, H85, H9,
+   H104, H104a and H106 twins and the minimal pairs are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report --
+   --baseline origin/develop`).
+3. On the earlier roots, every prediction above holds.
+4. On a fresh public set the same holds, and excluded files are adjudicated blind by
+   two agent sessions: up to 100 excluded paths drawn with seed 42092 (one per
+   repository and path). **Proposition:** *this file is reusable scaffolding that a
+   spec framework installs or ships (a template, a command template, or an override of
+   one), not a specification, plan or task list of this project's own work.* Labels
+   are `positive`, `negative` and `unknown`. **Threshold, fixed here before any source
+   is chosen:** at most 2 items agreed `negative` or left disputed. Control
+   repositories with a `templates` folder outside `.specify/` and `.kittify/` keep
+   every one of those candidates.
+5. No evidence becomes invalid: every finding and decision of the candidate exists at
+   its path and line.
+
+**Stop rule.** If a gate fails, H92 stops and is reverted. The owner decides between a
+narrowed H92a and stopping.
+
+**Fresh sources.** Selected before the candidate exists, without reading any file
+content, through the REST code search API:
+- `filename:spec-template.md path:.specify/templates` (Spec Kit), up to 5 repositories;
+- `filename:spec-template.md path:.kittify/missions` (Spec Kitty missions), up to 5;
+- `filename:spec-template.md path:.kittify/templates` (older Spec Kitty), up to 3;
+- controls: `filename:spec-template.md path:templates -path:.specify -path:.kittify`,
+  up to 3;
+- public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in
+  the earlier `fixtures/precision/*-sources.json` files and the pilot repository owner
+  excluded; one repository per owner; each pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h92-sources.json` before the candidate
+commit. The language of the documents is irrelevant to a path rule, so no Spanish
+query is made.
+
+### Amendment H92-1 (2026-11-27, after the fresh set and its labels; branch review)
+
+The branch review found that the policy's "any depth below `.specify/` or `.kittify/`"
+also removes a user folder named `templates` inside a feature kept there
+(`.specify/specs/001-x/templates/spec.md`, `.kittify/specs/booking/templates/spec.md`;
+`.kittify/specs/` is a documented Spec Kitty feature location). The rule is narrowed to
+the installed layouts named in the development data:
+`.specify/templates/**`, `.specify/presets/<name>/templates/**`,
+`.specify/extensions/<name>/templates/**`, `.kittify/templates/**`,
+`.kittify/missions/<mission>/{templates,command-templates}/**` and
+`.kittify/overrides/missions/<mission>/{templates,command-templates}/**`, each at any
+depth of the repository (nested projects). Kept twins are added for features under
+`.specify/specs/` and `.kittify/specs/` with a `templates` subfolder.
+
+The review also found that the adjudication pool used workspace mode only; GitHub mode
+removes more files (a full path containing `.specify` matches the name test), so the
+pool becomes the union of both modes. Labels already given to an unchanged file
+(same repository, path and text hash) stand; new items are labeled by two new blind
+sessions under the same proposition and threshold. An explicit scope that names a
+template folder (`--path`, a focus inside one, `--feature`, a GitHub tree URL) now fails
+with a message instead of returning an empty set. Every gate is re-run on the amended
+candidate.
+
+## Pre-registered hypothesis H92a (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92). H92 failed gate 3: in 15
+folder scopes of one repository, removing the templates left no specification in the scope,
+so I2.3 went to `unknown` and 31 "Reference FR-n has no definition" findings on a
+non-template file disappeared, which the H92 predictions did not allow. The owner decided
+(2026-11-27) to revert and retry once with predictions that cover scopes left without a
+specification, a new fresh set and new blind labelers, under the same stop rule.
+
+**Development data.** Everything measured for H92: the pilot repository, the 110 earlier
+roots, the 12 H92 fresh roots and their 98 labeled files.
+
+**Policy.** The H92-1 rule, unchanged: a Markdown path is not a discovery candidate when it
+lies in `.specify/templates/`, `.specify/presets/<name>/templates/`,
+`.specify/extensions/<name>/templates/`, `.kittify/templates/`,
+`.kittify/missions/<mission>/{templates,command-templates}/` or
+`.kittify/overrides/missions/<mission>/{templates,command-templates}/` (any subfolder, any
+depth of the repository, case-insensitive, either separator). The presentation rule that sorted
+folders named `template(s)` last is removed. The workbench folder import drops the same files;
+an explicit `--path`, `--feature`, focus or GitHub tree URL that names a template folder fails
+with a reason; a single file, a root inside a template folder and caller-supplied text are
+still analyzed. No other engine rule changes.
+
+**Comparator.** 0.1.18 (`develop` at `abf1730`). Candidate engine 0.1.19, product 0.3.0.
+
+**Scope kinds.** Every compared scope ("All documents", each template folder's framework
+folder, and the project folder above a nested one) is one of:
+- *kept*: the candidate scope still holds a non-template, non-archived `spec`-role document;
+- *emptied*: the candidate scope holds no `spec`-role document (its only specifications were
+  templates).
+
+A finding, decision or traceability edge *cites only non-template files* when none of its
+evidence paths is a template. An ID is *template-defined* in a scope when it occurs in a
+template file of the scope and in no non-template `spec`-role document of the scope.
+
+**Predictions.**
+1. The 716 historical predictions, the minimal pairs and every earlier twin suite do not
+   change.
+2. Discovery removes exactly the paths that match the rule, in workspace and GitHub mode, and
+   adds none.
+3. The feature list loses exactly the template-folder feature IDs and no remaining feature
+   changes its artifact count. Order changes only for features with a folder segment whose name
+   contains `template`.
+4. Every common feature's result is identical in both engines.
+5. Every removed finding, decision or edge that cites a template is allowed. Beyond those:
+   - *kept scopes:* no item that cites only non-template files is removed. Such an item may be
+     added only when it is an I2.3 "Reference … has no definition" finding, or an unresolved
+     edge, for a template-defined ID.
+   - *emptied scopes:* an item that cites only non-template files may be removed only when it
+     is a finding of a practice whose candidate status is `unknown` (every check that needs a
+     specification, such as I2.3 references, stops reporting), or an edge whose target ID is
+     template-defined. Nothing that cites only non-template files is added. Decisions that cite
+     only non-template files are unchanged.
+   - Practice statuses and scores of these scopes may move either way; every move is reported,
+     and in emptied scopes the spec-only practices are expected to become `unknown` or
+     `missing`.
+6. *All-documents scopes over the 500-document limit.* The replay lifts the engine's
+   500-document guard in both archived arms for the "All documents" comparison only
+   (measurement, not product), so these scopes are compared under prediction 5. For hosts:
+   a work tree over the limit in 0.1.18 becomes readable at once exactly when its candidate
+   index has at most 500 documents; every such root is listed.
+7. *Pilot:* features 89 → 87, index total 575 → 557, the 87 features unchanged, the `.specify`
+   folder scope emptied with every removed item citing a template, `templates/m35-*` unchanged,
+   and "All documents" (557, measured with the guard lifted) under prediction 5.
+
+**Gate (all must hold to proceed).**
+1. The H92 path twins (`fixtures/precision/h92-paths.json`: 19 excluded, 22 kept, the listing
+   twin) and scope twins committed before the candidate in `fixtures/precision/h92a-scopes.json`:
+   an emptied scope (a template spec plus a notes file citing `FR-001`: I2.3 `unknown`, no
+   finding in the candidate; 0.1.18 reports it), a kept scope with a template-defined ID (a real
+   spec, a template defining `FR-009`, tasks citing `FR-009`: the candidate adds the undefined
+   reference), and a kept control (the reference defined in the real spec: unchanged). The
+   candidate meets every twin; earlier suites and minimal pairs are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report -- --baseline
+   origin/develop`).
+3. On the earlier roots (the 110 H92 earlier roots plus the 12 H92 fresh roots) every
+   prediction above holds.
+4. On a new fresh public set every prediction holds, and the excluded files (all, or 100 drawn
+   with seed 42093, one per repository and path) are labeled blind by two new agent sessions,
+   each required to read every file in full and to quote each file's last non-empty line,
+   checked against the file. **Proposition** and labels as for H92. **Threshold:** at most 2
+   items agreed `negative` or left disputed. Control roots keep every candidate outside the
+   rule.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H92a stops and is recorded; no third attempt is made without a
+new owner decision.
+
+**Fresh sources.** Selected before the candidate exists, without reading any file content,
+through the REST code search API, in search order:
+- `filename:plan-template.md path:.specify/templates` (Spec Kit), up to 6 repositories;
+- `filename:tasks-template.md path:.kittify/missions` (Spec Kitty missions), up to 5;
+- `filename:spec-template.md path:.specify/presets` and `path:.specify/extensions
+  filename:template` (Spec Kit presets and extensions), up to 3 together;
+- controls: `filename:spec.md path:.specify/specs` (features kept under `.specify/`), up to 3,
+  and `filename:plan-template.md path:templates -path:.specify -path:.kittify`, up to 3;
+- public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier
+  `fixtures/precision/*-sources.json` files (H92 included), every earlier H92 root, and the
+  pilot repository owner, excluded; one repository per owner; each pinned to its
+  default-branch head SHA.
+
+The list is committed in `fixtures/precision/h92a-sources.json` before the candidate commit.
+
+### Amendment H92a-1 (2026-11-27, before the candidate and any measurement)
+
+Building the scope twins on 0.1.18 showed two things the pre-registration did not state.
+References resolve in the referencing document's feature namespace, and a template folder is
+its own feature, so a template defines an ID for another document only when the template sits
+inside that document's feature folder (`specs/001-a/.specify/templates/…`, featureId
+`specs/001-a`). The kept-scope twin uses that layout. And when such an ID loses its only
+definition, its traceability edge changes from resolved to unresolved, which the replay counts
+as one removed and one added edge. Prediction 5 for kept scopes therefore also allows a
+resolved edge to a template-defined ID to be removed when the same edge is added unresolved.
+Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H92 confirmation set (framework template folders are not discovered, #92). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub REST code search, search order: filename:spec-template.md under path:.specify/templates (up to 5), path:.kittify/missions (up to 5), path:.kittify/templates (up to 3), and controls under path:templates outside .specify and .kittify (up to 3); public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "filename:spec-template.md path:.kittify/missions": "only 3 eligible repositories in the search results",
+    "filename:spec-template.md path:.kittify/templates": "only 1 eligible repository in the search results"
+  },
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/TanStack/time",
+      "commit": "27ff3984bf880831a54ee5d6ba80e4687b38fa34",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/ThibautBaissac/rails_ai_agents",
+      "commit": "03622f23b4c6c6934b7c4862a5b5895a9cfd4b2d",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/mesosphere/mindthegap",
+      "commit": "f5a8c81a9282dbb42dd7e2133005e4e13f2f0949",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:spec-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/CGI-FR/IoT-Hub-Portal",
+      "commit": "a1999679f3f1e92d52eabaf3600c1ce39755ba59",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/mlebreuil/netbox-contract",
+      "commit": "037fd578b63551a3dcc4480e432f61932d1841a6",
+      "branch": "develop",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/rothnic/opencode-teams",
+      "commit": "cf3089ad09519cfd25be9e40e13db306d697e68b",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.kittify/missions"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/doveaia/agentdx",
+      "commit": "78e0d49aa8045f77f577511cc86f6d44a3d1cb94",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.kittify/missions"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/kameas-ai/kenaz-ml",
+      "commit": "4c530fa6b120671862e4d8572f983f8b3db11099",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:spec-template.md path:.kittify/missions"
+    },
+    {
+      "family": "spec-kitty",
+      "repository": "github.com/TeamReel/django-core-app-archief",
+      "commit": "06a8c1824318ba6f5788945c072a66185ee4ab9f",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.kittify/templates"
+    },
+    {
+      "family": "control",
+      "repository": "github.com/Michael-A-Kuykendall/shimmy",
+      "commit": "9f6d996ec038a9cc1a41b70e79feee4d7c7e349e",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:spec-template.md path:templates -path:.specify -path:.kittify"
+    },
+    {
+      "family": "control",
+      "repository": "github.com/Linfee/spec-kit-cn",
+      "commit": "a118e621ae8f11a4672c840037fd5ab9f30a7f9b",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:templates -path:.specify -path:.kittify"
+    },
+    {
+      "family": "control",
+      "repository": "github.com/doggy8088/spec-kit",
+      "commit": "7f780fd44a71088149032bda1f4feffdfa0cefe1",
+      "branch": "zh-tw",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:templates -path:.specify -path:.kittify"
+    }
+  ]
+}
