@@ -2,7 +2,7 @@ import { contentHash, lineScope, type LineScope } from './artifacts.js';
 import { DIMENSIONS, PRACTICES } from './catalog.js';
 import { isOwnSpec, namespaceOf, qualifierOf, textBefore } from './references.js';
 import type { AnalyzeOptions, Artifact, ArtifactSet, Assessment, Evidence, Finding, PracticeResult, Status } from './types.js';
-export const ENGINE_VERSION = '0.1.19';
+export const ENGINE_VERSION = '0.1.20';
 export const RUBRIC_VERSION = 'epic-heuristic-1';
 const requirementId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 // Match complete Unicode words, including accented Spanish and plural forms.
@@ -179,9 +179,13 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[], refere
   }
   if (id === 'I1.2' || id === 'I2.2') {
     const inherited = inheritedLines(lines);
-    const identified = specRequirements.filter(l => identifiedOnLine(l) || inherited.has(l)).length;
+    // H52 (#52): a spec heading with a defining ID is an identified requirement unit, even when no
+    // admitted line follows it (scenario steps or prose without a modal).
+    const headings = lines.filter(l => l.heading && l.artifact.role === 'spec' && l.scope === 'all' && definedId(l.text));
+    const identified = specRequirements.filter(l => identifiedOnLine(l) || inherited.has(l)).length + headings.length;
+    const units = specRequirements.length + headings.length;
     const unique = ![...definitionsOf(lines).values()].some(entries => entries.length > 1);
-    return { status: !specRequirements.length ? 'unknown' : identified === specRequirements.length && unique ? 'supported' : identified ? 'partial' : 'missing', hits: specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)) };
+    return { status: !units ? 'unknown' : identified === units && unique ? 'supported' : identified ? 'partial' : 'missing', hits: [...specRequirements.filter(l => /\b(?:FR|NFR|REQ|R)-\d+\b/i.test(l.text)), ...headings] };
   }
   if (['I2.3', 'C1.3', 'C2.3'].includes(id)) {
     const hits = lines.filter(l => references.get(l)?.length);
