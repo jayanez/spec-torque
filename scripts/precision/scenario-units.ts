@@ -10,7 +10,8 @@
  * `scan` writes the entering lines of every changed feature to `<out>/h52c-scan.json` for the blind
  * packet. `worktree` prints counts only and stores no document text.
  */
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { rmSync } from 'node:fs';
+import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -18,22 +19,22 @@ import { z } from 'zod';
 import { indexWorkspace } from '../../src/node/scope.js';
 import type { Assessment, ArtifactSet } from '../../src/core/types.js';
 import { archiveEngine, commit, repository } from './engines.js';
-import { enteringLines, judge } from './scenario-judge.js';
+import { enteringLines, judge, keyOf } from './scenario-judge.js';
 import { classifyAll, rootSchema, snapshot, statusSchema } from './sources.js';
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: {
   baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' }, fixture: { type: 'string', default: 'fixtures/precision/h52c-pairs.json' },
-  roots: { type: 'string' }, out: { type: 'string' }, root: { type: 'string' },
+  roots: { type: 'string' }, out: { type: 'string' }, root: { type: 'string' }, 'allow-over-limit': { type: 'boolean', default: false },
 } });
 const mode = positionals[0];
 if (!values.baseline || !(mode === 'synthetic' || (mode === 'scan' && values.roots && values.out) || (mode === 'worktree' && values.root))) {
   throw new Error('Use: scenario-units.ts synthetic|scan|worktree --baseline <ref> [--candidate <ref>] (scan: --roots <roots.json> --out <dir>; worktree: --root <dir>)');
 }
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-h52c-'));
+process.on('exit', () => { try { rmSync(temp, { recursive: true, force: true }); } catch { /* best effort */ } });
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
 const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'b')), candidate: await archiveEngine(revisions.candidate, join(temp, 'c')) };
 const identity = { revisions, engines: { baseline: arms.baseline.ENGINE_VERSION, candidate: arms.candidate.ENGINE_VERSION } };
-const keyOf = (f: Assessment['findings'][number]) => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`;
 let failed = false;
 
 if (mode === 'synthetic') {
@@ -48,12 +49,15 @@ if (mode === 'synthetic') {
       return { findings: a.findings.map(keyOf).sort(), status: Object.fromEntries(Object.keys(entry.status).map(id => [id, a.practices.find(p => p.id === id)?.status])) };
     };
     const [b, c] = [await run(arms.baseline), await run(arms.candidate)];
+    // The twins are also judged: nothing outside the predictions may change on them either.
+    const set = { name: entry.id, artifacts: Object.entries(entry.files).map(([path, lines]) => arms.baseline.classifyArtifact(path, lines.join('\n') + '\n')) };
+    const judged = judge(await arms.baseline.analyze(set), await arms.candidate.analyze(set), enteringLines(set.artifacts));
     const meets = (arm: typeof b) => JSON.stringify(arm.findings) === JSON.stringify([...entry.findings].sort()) && JSON.stringify(arm.status) === JSON.stringify(entry.status);
-    rows.push({ id: entry.id, construct: entry.construct, baseline: b, candidate: c, baselineMeets: meets(b), candidateMeets: meets(c) });
+    rows.push({ id: entry.id, construct: entry.construct, baseline: b, candidate: c, baselineMeets: meets(b), candidateMeets: meets(c), violations: judged });
   }
   const summary = { cases: rows.length, baselineMeets: rows.filter(r => r.baselineMeets).length, candidateMeets: rows.filter(r => r.candidateMeets).length,
     regressions: rows.filter(r => r.baselineMeets && !r.candidateMeets).map(r => r.id), unmet: rows.filter(r => !r.candidateMeets).map(r => r.id) };
-  failed = summary.unmet.length > 0;
+  failed = summary.unmet.length > 0 || rows.some(r => r.violations.length);
   console.log(JSON.stringify({ kind: 'h52c-synthetic', ...identity, summary, rows }, null, 2));
 } else {
   const totals = { roots: 0, features: 0, withEntering: 0, changed: 0, transitions: {} as Record<string, number> };
@@ -89,6 +93,8 @@ if (mode === 'synthetic') {
       const { sha, files } = snapshot(root);
       totals.roots++;
       const artifacts = classifyAll(arms.baseline, files);
+      // The replay classifies with the baseline; a candidate that classified differently would go unjudged.
+      if (JSON.stringify(artifacts) !== JSON.stringify(classifyAll(arms.candidate, files))) throw new Error(`${root.id}: the engines classify the documents differently.`);
       const set = { name: root.id, artifacts };
       for (const feature of [...new Set(artifacts.filter(a => !a.archived && a.role === 'spec').map(a => a.featureId))].sort()) {
         await compare(root.id, root.repository, sha, feature, arms.baseline.selectFeature(set, feature), true);
@@ -100,9 +106,9 @@ if (mode === 'synthetic') {
     totals.roots = 1;
     for (const feature of index.features) await compare('work tree', '', '', feature.id, await arms.baseline.discoverWorkspace(values.root!, { feature: feature.id }, index), false);
   }
-  failed = violations.length > 0;
+  // A feature over the analysis limit is not judged; it fails the run unless the operator allows and records it.
+  failed = violations.length > 0 || (overLimit.length > 0 && !values['allow-over-limit']);
   console.log(JSON.stringify({ kind: `h52c-${mode}`, ...identity, totals, violations, overLimit }, null, 2));
   if (overLimit.length) console.error(`${overLimit.length} feature(s) over the analysis limit were not judged.`);
 }
-await rm(temp, { recursive: true, force: true });
 if (failed) process.exitCode = 1;

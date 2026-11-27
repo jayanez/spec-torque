@@ -17,7 +17,9 @@ const comparator = (() => {
 
 // H52c (#52): scenario steps that carry a modal are requirement lines.
 type Twin = { id: string; files: Record<string, string[]>; findings: string[]; status: Record<string, string> };
-const { cases } = JSON.parse(readFileSync(new URL('../fixtures/precision/h52c-pairs.json', import.meta.url), 'utf8')) as { cases: Twin[] };
+const load = (name: string) => (JSON.parse(readFileSync(new URL(`../fixtures/precision/${name}`, import.meta.url), 'utf8')) as { cases: Twin[] }).cases;
+// The H52c twins and the H52c-a twins for the predictions H52c missed.
+const cases = [...load('h52c-pairs.json'), ...load('h52ca-pairs.json')];
 const setOf = (twin: Twin) => ({ name: twin.id, artifacts: Object.entries(twin.files).map(([path, lines]) => classifyArtifact(path, lines.join('\n') + '\n')) });
 const twin = (id: string) => setOf(cases.find(c => c.id === id)!);
 const keyOf = (f: { practiceId: string; message: string; evidence: { path: string; line: number }[] }) => `${f.practiceId}|${f.evidence[0]?.path}|${f.evidence[0]?.line}|${f.message}`;
@@ -59,5 +61,29 @@ test('the judge accepts every twin against 0.1.20 and counts violations', { skip
   assert.ok(judge(after, p13, entering).some(v => v.startsWith('P1.3')));
   assert.deepEqual(judge(before, after, []), ['assessment changed without an entering line']);
   assert.deepEqual(judge(before, after, entering), []);
+  // H52c-a allowances: each holds only for its own construct.
+  const ns = twin('namespace-from-step-en');
+  const [nsBefore, nsAfter, nsEntering] = [await baseline.analyze(ns), await analyze(ns), enteringLines(ns.artifacts)];
+  assert.deepEqual(judge(nsBefore, nsAfter, nsEntering), []);
+  const foreign = { ...nsAfter.findings[0], evidence: [{ ...nsAfter.findings[0].evidence[0], text: '- [ ] T001 Wire OTHER-REQ-02.' }] };
+  assert.ok(judge(nsBefore, { ...nsAfter, findings: [foreign] }, nsEntering).some(v => v.startsWith('finding added')));
+  const duplicated = { ...after, findings: [...after.findings, after.findings[0]] };
+  assert.ok(judge(before, duplicated, entering).some(v => v.startsWith('finding duplicated')));
+  const severity = { ...after, findings: after.findings.map((f, i) => i === 0 ? { ...f, severity: 'error' as const } : f) };
+  assert.ok(judge(before, severity, entering).some(v => v.startsWith('finding added')));
+  const conflict = twin('conflict-unchanged-en');
+  const [cBefore, cAfter] = [await baseline.analyze(conflict), await analyze(conflict)];
+  assert.ok(judge(cBefore, { ...cAfter, findings: cAfter.findings.filter(f => f.practiceId !== 'I2.3') }, enteringLines(conflict.artifacts)).some(v => v.startsWith('finding removed I2.3')));
+  const toPartial = twin('e14-missing-to-partial-en');
+  assert.deepEqual(judge(await baseline.analyze(toPartial), await analyze(toPartial), enteringLines(toPartial.artifacts)), []);
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('a scenario step with an ID and a modal is an identified requirement that resolves its reference', async () => {
+  const a = await analyze({ name: 'id-step', artifacts: [
+    classifyArtifact('specs/001-demo/spec.md', '# Demo\n\n- GIVEN FR-001 the service MUST respond.\n'),
+    classifyArtifact('specs/001-demo/tasks.md', '# Tasks\n\n- [ ] T001 Implement FR-001.\n'),
+  ] });
+  assert.deepEqual(a.findings.filter(f => f.practiceId === 'I1.2' || f.practiceId === 'I2.3').map(f => f.message), []);
+  assert.deepEqual(a.traceability.map(e => [e.to, e.resolved]), [['FR-001', true]]);
 });
