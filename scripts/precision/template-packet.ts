@@ -1,7 +1,7 @@
 /**
  * H92 (#92) adjudication packet: draws excluded paths (framework templates in the candidate, candidates
  * in the baseline) from public roots, one per repository and path, with a fixed seed, and writes them
- * with their committed text for blind labeling. Labels never see the engine, the rule or the path rule's name.
+ * with their full committed text for blind labeling. Labels never see the engine, the rule or the path rule's name.
  *
  *   node --import tsx scripts/precision/template-packet.ts --baseline <ref> --candidate <ref> --roots <roots.json> --out <dir> [--seed 42092] [--size 100]
  */
@@ -37,8 +37,8 @@ await rm(temp, { recursive: true, force: true });
 pool.sort((a, b) => (a.repository + a.path < b.repository + b.path ? -1 : 1));
 const drawn = sample(pool, Number(values.size), Number(values.seed));
 await mkdir(values.out, { recursive: true });
-const items = drawn.map((item, index) => ({ id: `T${String(index + 1).padStart(3, '0')}`, ...item, textHash: sha256(item.text), text: item.text.slice(0, 6000), truncated: item.text.length > 6000 }));
+const items = drawn.map((item, index) => ({ id: `T${String(index + 1).padStart(3, '0')}`, ...item, textHash: sha256(item.text), lines: item.text.split(/\r?\n/).length }));
 await writeFile(join(values.out, 'packet.json'), JSON.stringify({ seed: Number(values.seed), pool: pool.length, revisions, items }, null, 2) + '\n');
 // The labeling copy has no revision, engine or rule information.
-await writeFile(join(values.out, 'labeling.json'), JSON.stringify(items.map(({ id, repository, path, text, truncated }) => ({ id, repository, path, text, truncated })), null, 2) + '\n');
+await writeFile(join(values.out, 'labeling.json'), JSON.stringify(items.map(({ id, repository, path, text }) => ({ id, repository, path, text })), null, 2) + '\n');
 console.log(JSON.stringify({ pool: pool.length, drawn: items.length, repositories: new Set(items.map(i => i.repository)).size }));
