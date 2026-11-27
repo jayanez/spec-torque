@@ -2508,6 +2508,25 @@ default-branch head SHA. Shortfalls are recorded as `unfilled`.
 
 The list is committed in `fixtures/precision/h52c-sources.json` before the candidate commit.
 
+### Amendment H52c-1 (2026-11-27, before the candidate and any measurement)
+
+Prediction 1 asked for the earlier twins with an entering line to be listed before the candidate.
+A mechanical scan of every fixture found them only in the H52 twins and in the example feature
+`fixtures/en-complete` (one step, `- GIVEN … WHEN … THEN the system MUST reject it.`). The
+predicted outcomes, under the unchanged identification rules:
+- unchanged: `gwt-only` and `gwt-plus-unidentified` (EN and ES). The step inherits `REQ-001` from
+  the heading directly above it;
+- changed, I1.2 and I2.2 `unknown` → `missing` with one added "no stable identifier" warning on
+  the step: `heading-without-id`, `id-late-in-title`, `non-family-user-story` and `dotted-sub-id`
+  (EN and ES). The heading above the step defines no ID;
+- changed, I1.2 and I2.2 `supported` → `partial` with one added warning on the step:
+  `content-under-subheading` (EN and ES). The nearest heading is `#### Scenario`, which defines no
+  ID, so the step does not inherit `REQ-001`;
+- `fixtures/en-complete`: the step enters, so any test that pins that feature's E1.2, E2.1, E1.3 or
+  I1.2 results may change; each such change is reported with the twin list.
+
+Gate 1 holds for these suites when exactly these changes occur and nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
