@@ -1,9 +1,8 @@
 /** H92a (#92) prediction 5: judges one scope's changes after discovery drops framework templates. */
 import type { Assessment, Artifact } from '../../src/core/types.js';
 
-type Result = Assessment;
 type Selection = { name: string; artifacts: Artifact[] };
-type Finding = Result['findings'][number]; type Edge = Result['traceability'][number]; type Mark = Result['decisions'][number];
+type Finding = Assessment['findings'][number]; type Edge = Assessment['traceability'][number]; type Mark = Assessment['decisions'][number];
 // Unlike replay.ts, a finding is keyed by every evidence location, so a cross-document finding that loses a template line counts as changed.
 export const findingKey = (f: Finding) => `${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`;
 const markKey = (e: Mark) => `${e.path}:${e.line}|${e.text}`;
@@ -21,19 +20,20 @@ function diff<T>(before: T[], after: T[], key: (item: T) => string) {
  * a finding may go only when its practice is `unknown` in the candidate, an edge only when its target is
  * template-defined, and nothing is added. Returns every item that breaks the prediction.
  */
-export function scopeDiff(before: Result, after: Result, selected: { baseline: Selection; candidate: Selection }, isTemplate: (path: string) => boolean) {
+export function scopeDiff(before: Assessment, after: Assessment, selected: { baseline: Selection; candidate: Selection }, isTemplate: (path: string) => boolean) {
   const hasSpec = (set: Selection) => set.artifacts.some(a => a.role === 'spec' && !a.archived && !isTemplate(a.path));
   const statuses: Record<string, number> = {};
   for (const id of new Set([...before.practices, ...after.practices].map(p => p.id))) {
     const [b, a] = [before.practices.find(q => q.id === id)?.status ?? 'absent', after.practices.find(q => q.id === id)?.status ?? 'absent'];
-    if (b !== a) statuses[`${id}:${b}->${a}`] = (statuses[`${id}:${b}->${a}`] ?? 0) + 1;
+    if (b !== a) statuses[`${id}:${b}->${a}`] = 1; // practice IDs are unique
   }
-  const kind = hasSpec(selected.candidate) ? 'kept' : 'emptied';
+  const kind: 'kept' | 'emptied' = hasSpec(selected.candidate) ? 'kept' : 'emptied';
   const templateText = selected.baseline.artifacts.filter(a => isTemplate(a.path)).map(a => a.content).join('\n');
   const specText = selected.baseline.artifacts.filter(a => a.role === 'spec' && !isTemplate(a.path)).map(a => a.content).join('\n');
   const word = (id: string) => new RegExp(`(?<![\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`);
+  const memo = new Map<string, boolean>();
   // Scope-wide, not per feature namespace: an ID defined in another feature's spec only adds breaks (conservative).
-  const templateDefined = (id: string) => word(id).test(templateText) && !word(id).test(specText);
+  const templateDefined = (id: string) => memo.get(id) ?? memo.set(id, word(id).test(templateText) && !word(id).test(specText)).get(id)!;
   const undefinedRef = (f: Finding) => /^Reference (\S+) has no definition/.exec(f.message)?.[1];
   const status = (id: string) => after.practices.find(p => p.id === id)?.status;
   const cites = (paths: string[]) => paths.some(isTemplate);
@@ -51,7 +51,7 @@ export function scopeDiff(before: Result, after: Result, selected: { baseline: S
   for (const e of decisions.added) if (!cites([e.path])) breaks.push(`decision-added ${markKey(e)}`);
   for (const t of edges.removed) if (!cites([t.evidence.path])) {
     const back = t.resolved && addedEdge.has(`${t.from}>${t.to}|${markKey(t.evidence)}`);
-    if (!(templateDefined(t.to) && (kind === 'emptied' || back))) breaks.push(`edge-removed ${edgeKey(t)}`);
+    if (!((kind === 'emptied' || back) && templateDefined(t.to))) breaks.push(`edge-removed ${edgeKey(t)}`);
   }
   for (const t of edges.added) if (!cites([t.evidence.path]) && !(kind === 'kept' && !t.resolved && templateDefined(t.to))) breaks.push(`edge-added ${edgeKey(t)}`);
   const count = <T>(d: { removed: T[]; added: T[] }) => ({ removed: d.removed.length, added: d.added.length });

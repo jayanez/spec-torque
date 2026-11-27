@@ -65,7 +65,7 @@ export type LineScope = 'all' | 'validation' | 'context';
 export const lineScope = (path: string): LineScope => isReviewChecklist(path) ? 'context' : isValidationGuide(path) ? 'validation' : 'all';
 
 /** H92 (#92): whether a file or folder lies in a framework template folder. Such files are never discovered. */
-export const isFrameworkTemplate = (path: string) => frameworkTemplate.test(path.replaceAll('\\', '/').replace(/\/*$/, '/'));
+export const isFrameworkTemplate = (path: string) => { const p = path.replaceAll('\\', '/'); return frameworkTemplate.test(p.endsWith('/') ? p : p + '/'); };
 /** The reason shown when an explicit choice names only framework templates. */
 export const TEMPLATES_NOT_ANALYZED = 'Spec Kit and Spec Kitty templates are not analyzed.';
 

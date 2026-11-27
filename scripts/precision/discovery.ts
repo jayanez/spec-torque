@@ -138,12 +138,13 @@ for (const root of roots) {
     totals.evidenceInvalid.baseline += invalidEvidence(b, files); totals.evidenceInvalid.candidate += invalidEvidence(c, files);
     const d = scopeDiff(b, c, selected, isTemplate);
     const s = totals.scopes;
-    s[d.kind as 'kept' | 'emptied']++;
+    s[d.kind]++;
     if (comparable(b) !== comparable(c)) s.changed++;
     for (const k of ['findings', 'decisions', 'traceability'] as const) { s[k].removed += d[k].removed; s[k].added += d[k].added; }
     s.breaks += d.breaks.length;
     for (const [k, n] of Object.entries(d.statuses)) s.statusChanges[k] = (s.statusChanges[k] ?? 0) + n;
-    if ((c.summary.score ?? -1) > (b.summary.score ?? -1)) s.scoreUp++; else if ((c.summary.score ?? -1) < (b.summary.score ?? -1)) s.scoreDown++;
+    const move = Math.sign((c.summary.score ?? -1) - (b.summary.score ?? -1));
+    if (move > 0) s.scoreUp++; else if (move < 0) s.scoreDown++;
     scopes.push({ prefix: prefix || '(all)', artifacts: [selected.baseline.artifacts.length, selected.candidate.artifacts.length], ...d });
   }
   detail.push({ root: root.id, repository: root.repository, revision: sha, removedPaths, removedFeatures: removedFeatures.map(f => f.id),
