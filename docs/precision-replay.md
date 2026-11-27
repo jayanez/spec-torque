@@ -2013,6 +2013,29 @@ The list is committed in `fixtures/precision/h92-sources.json` before the candid
 commit. The language of the documents is irrelevant to a path rule, so no Spanish
 query is made.
 
+### Amendment H92-1 (2026-11-27, after the fresh set and its labels; branch review)
+
+The branch review found that the policy's "any depth below `.specify/` or `.kittify/`"
+also removes a user folder named `templates` inside a feature kept there
+(`.specify/specs/001-x/templates/spec.md`, `.kittify/specs/booking/templates/spec.md`;
+`.kittify/specs/` is a documented Spec Kitty feature location). The rule is narrowed to
+the installed layouts named in the development data:
+`.specify/templates/**`, `.specify/presets/<name>/templates/**`,
+`.specify/extensions/<name>/templates/**`, `.kittify/templates/**`,
+`.kittify/missions/<mission>/{templates,command-templates}/**` and
+`.kittify/overrides/missions/<mission>/{templates,command-templates}/**`, each at any
+depth of the repository (nested projects). Kept twins are added for features under
+`.specify/specs/` and `.kittify/specs/` with a `templates` subfolder.
+
+The review also found that the adjudication pool used workspace mode only; GitHub mode
+removes more files (a full path containing `.specify` matches the name test), so the
+pool becomes the union of both modes. Labels already given to an unchanged file
+(same repository, path and text hash) stand; new items are labeled by two new blind
+sessions under the same proposition and threshold. An explicit scope that names a
+template folder (`--path`, a focus inside one, `--feature`, a GitHub tree URL) now fails
+with a message instead of returning an empty set. Every gate is re-run on the amended
+candidate.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

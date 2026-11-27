@@ -18,7 +18,9 @@
     ".kittify/missions/software-dev/command-templates/tasks.md",
     ".kittify/overrides/missions/documentation/templates/spec-template.md",
     ".specify\\templates\\spec-template.md",
-    ".Specify/Templates/spec-template.md"
+    ".Specify/Templates/spec-template.md",
+    ".kittify/missions/research/templates/research/spec-template.md",
+    ".kittify/overrides/missions/software-dev/command-templates/specify.md"
   ],
   "kept": [
     "templates/spec-template.md",
@@ -38,10 +40,23 @@
     ".kittify/specs/booking/spec.md",
     ".kittify/missions/software-dev/spec.md",
     "specify/templates/spec-template.md",
-    "x.specify/templates/spec-template.md"
+    "x.specify/templates/spec-template.md",
+    ".specify/specs/001-booking/templates/spec.md",
+    ".kittify/specs/booking/templates/spec.md",
+    ".specify/specs/templates/spec.md",
+    ".kittify/missions/software-dev/specs/templates/spec.md"
   ],
   "listing": {
-    "paths": ["specs/001-a/spec.md", "templates/spec.md", "zeta/spec.md"],
-    "features": ["specs/001-a", "templates", "zeta"]
-  }
+    "paths": [
+      "specs/001-a/spec.md",
+      "templates/spec.md",
+      "zeta/spec.md"
+    ],
+    "features": [
+      "specs/001-a",
+      "templates",
+      "zeta"
+    ]
+  },
+  "amendment": "H92-1: kept twins for features under .specify/specs/ and .kittify/specs/ with a templates subfolder; two more installed layouts."
 }
