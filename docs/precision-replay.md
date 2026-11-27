@@ -2151,6 +2151,121 @@ as one removed and one added edge. Prediction 5 for kept scopes therefore also a
 resolved edge to a template-defined ID to be removed when the same edge is added unresolved.
 Nothing else changes.
 
+## Pre-registered hypothesis H52 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The first of three bounded
+hypotheses that the owner approved on 2026-11-27, after the Phase 0 sizing, in the order H52,
+H52b (qualified family IDs) and H52c (scenario steps with a modal). Each has its own
+pre-registration, measurement and stop rule. The general requirement-sentence classifier (H3 and
+H4 of #52, [requirement classification](requirement-classification.md)) stays closed, and T2 and
+T2b stay sealed.
+
+**Failure.** A specification can state each requirement as the title of a heading that carries
+its ID in the defining position (`### REQ-001 — Keep the export a draft`) and follow it only with
+scenario steps or prose without a modal. The heading is already a definition (H3a, #83): it
+counts for duplicates and resolves references. But I1.2 and I2.2 count only admitted lines, so
+such a requirement is invisible to them. A specification written only this way gets I1.2 and
+I2.2 `unknown`. When it also has an admitted line without an ID elsewhere, it gets `missing`,
+although every heading requirement has a stable ID. The owner adjudicated this as an engine
+defect (pilot re-triage, engine 0.1.16).
+
+**Development data.** Phase 0 sizing (counts only), engine 0.1.19:
+- the pilot repository: 87 features, 347 specification headings with a defining family ID, 279
+  of them without an admitted line in their section; 12 features with such headings are I1.2
+  `missing`, and none is `unknown`;
+- 137 earlier public roots (the 110 H92 earlier roots, the 12 H92 fresh roots and the 15 H92a
+  fresh roots): 7874 features, 1673 such headings, 503 without an admitted line; 15 features with
+  them are I1.2 `unknown` and 14 `missing`.
+
+**Definitions.** A *defining heading* is a line of a non-archived `spec`-role document that:
+- has line scope `all` (not a review checklist or a quickstart; H6a, H7a);
+- is a Markdown heading outside a fence;
+- carries a family ID in the H3a defining position (`definedId`: `FR`, `NFR`, `REQ` or `R`
+  followed by `-<n>`, first after the heading marker and optional markup, not followed by
+  `.<digit>`).
+
+**Policy.** For I1.2 and I2.2 only, each defining heading counts as one requirement unit that is
+identified. With `R` the admitted spec requirement lines (unchanged) and `H` the defining
+headings of the assessed set:
+- the status is `unknown` when `R` and `H` are both empty;
+- otherwise `supported` when every line of `R` is identified (as in 0.1.19: an ID on the line,
+  on the first line of its unit, or inherited from the nearest defining heading) and every
+  defining ID is unique; `partial` when at least one unit of `R ∪ H` is identified; `missing`
+  otherwise (which cannot happen when `H` is not empty);
+- the evidence lists the 0.1.19 hits (admitted spec lines with an ID) followed by the defining
+  headings, in document order, first four shown.
+
+Nothing else changes. Admission is unchanged: a defining heading is not a requirement line, so
+E1.2, E1.3, E1.4, E2.1, P2.1, C1.1, C1.2, the per-line I1.2 warnings, duplicates and I2.3 do not
+see it. The label guide v2 definition (owner decision 2026-11-27) applies: scenario steps and
+success criteria without a modal are `acceptance` and never enter the admitted set.
+
+**Comparator.** 0.1.19 (`develop` at `a4e1d38`). Candidate engine 0.1.20, product 0.3.0.
+
+**Predictions.** For every assessed feature, with `H` as defined above:
+1. The 716 historical predictions, the minimal pairs and every earlier twin suite do not change.
+2. When `H` is empty, the assessment is identical in both engines (apart from `engineVersion`,
+   `id` and `createdAt`).
+3. When `H` is not empty:
+   - I1.2 and I2.2 move only `unknown` → `supported` (all defining IDs unique) or `partial`
+     (some duplicate), and `missing` → `partial`; `partial` and `supported` do not change;
+   - their evidence changes only by appending defining headings after the 0.1.19 hits, up to
+     four items;
+   - no other practice status or evidence, finding, open decision or traceability edge changes;
+   - only the I1 and I2 dimension scores and the total change: each rises, or goes from not
+     assessed to a value.
+4. *Pilot:* exactly the 12 I1.2 `missing` features with a defining heading move to `partial`
+   (I2.2 the same); nothing else changes beyond prediction 3.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins committed before the candidate in `fixtures/precision/h52-pairs.json`,
+   pinning I1.2 and I2.2 and the I1.2/I2.3 findings, each construct with its opposite-outcome
+   twin:
+   - targets (0.1.19 `unknown` or `missing`): a defining heading followed only by
+     Given/When/Then bullets (`supported`); the same plus an admitted line without an ID under
+     another heading (`partial`); a defining heading with prose without a modal (`supported`); two
+     defining headings with the same ID and no admitted line (`partial`, with the duplicate
+     error in both engines);
+   - negatives, unchanged in both engines: a heading without an ID; an ID later in the title
+     (`### Export rules (REQ-001)`); a non-family ID (`### US-001 — …`, `### SPEC-028 — …`); a
+     heading inside a fence; a dotted sub-ID (`### REQ-2.1 — …`); a defining heading in a plan;
+     a defining heading in a Spec Kit review checklist;
+   - controls, unchanged: a defining heading with a modal body line (`supported`); a table row
+     with an ID (`supported`).
+
+   The candidate meets every twin; earlier suites and minimal pairs are unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report -- --baseline
+   origin/develop`).
+3. On the 137 earlier roots every prediction holds, judged mechanically per feature
+   (`scripts/precision/heading-units.ts`): 0 items outside predictions 2 and 3.
+4. On a new fresh public set every prediction holds, and the changed features are labeled
+   blind. **Packet:** every feature of the earlier and fresh sets whose I1.2 or I2.2 status
+   changes (all, or 100 drawn with seed 42052), one item each: one of its defining headings drawn
+   with the same seed, with its heading chain and its section up to the next heading of the same
+   or a higher level (at most 30 lines). **Proposition:** *this heading names a requirement that
+   the specification itself imposes, and the ID in it identifies that requirement.* Labels
+   `positive`, `negative` and `unknown`. **Labelers:** two new Sonnet agent sessions that did not
+   write the rule, see no engine output, key, hypothesis or each other's labels, read every item
+   in full and quote each item's last line, checked against the packet. **Threshold (owner
+   decision 2026-11-27):** an item passes only when both labelers say `positive`; any
+   `negative`, disagreement or `unknown` counts against the threshold, and the author's notes
+   never resolve one. At most 2 items fail, or at most 5% when there are more than 40.
+5. No evidence becomes invalid: every new evidence line exists at its path and line.
+
+**Stop rule.** If a gate fails, H52 stops, is recorded and reverted, and the owner decides
+between a narrowed H52-a and stopping. No exception is accepted without the owner.
+
+**Fresh sources.** Selected before the candidate exists, without reading any file content,
+through the REST code search API, in search order, up to 4 repositories per query:
+- `"### REQ-001" Given filename:spec.md` and `"### FR-001" Given filename:spec.md`;
+- `"### REQ-001" Dado filename:spec.md` and `"### FR-001" Dado filename:spec.md`;
+- public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier
+  `fixtures/precision/*-sources.json` files, every one of the 137 earlier roots, and the pilot
+  repository owner, excluded; one repository per owner; each pinned to its default-branch head
+  SHA.
+
+The list is committed in `fixtures/precision/h52-sources.json` before the candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
