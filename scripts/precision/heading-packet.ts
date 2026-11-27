@@ -26,7 +26,7 @@ const roots = (await Promise.all(values.roots.map(async f => rootSchema.parse(JS
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
 type Changed = { root: string; repository: string; sha: string; feature: string; transitions: Record<string, string>; headings: { path: string; line: number; text: string }[] };
 const changed = (await Promise.all(values.scan.map(async f => JSON.parse(await readFile(f, 'utf8')).changed as Changed[]))).flat()
-  .filter((d, i, all) => all.findIndex(e => e.root === d.root && e.sha === d.sha && e.feature === d.feature) === i);
+  .filter((seen => (d: Changed) => !seen.has(`${d.root}@${d.sha}/${d.feature}`) && Boolean(seen.add(`${d.root}@${d.sha}/${d.feature}`)))(new Set<string>()));
 if (new Set(roots.map(r => r.id)).size !== roots.length) throw new Error('Root IDs repeat across the --roots files.');
 if (!changed.length) throw new Error('No changed feature in the scans.');
 const drawn = changed.length > max ? sample(changed, max, seed) : changed;

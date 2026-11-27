@@ -28,11 +28,9 @@ test('a defining heading is cited as I1.2 evidence when no admitted line carries
 });
 
 test('definingHeadings follows the pre-registered definition', () => {
-  const found = (id: string) => definingHeadings(setOf(cases.find(c => c.id === id)!).artifacts).map(e => e.line);
-  assert.deepEqual(found('gwt-only-en'), [3]);
-  assert.deepEqual(found('duplicate-headings-es'), [3, 7]);
-  assert.deepEqual(found('content-under-subheading-en'), [3]);
-  for (const id of ['heading-without-id-en', 'id-late-in-title-en', 'non-family-user-story-en', 'non-family-document-id-en', 'fenced-heading-en', 'dotted-sub-id-en', 'heading-in-plan-en', 'heading-in-checklist-en', 'r-family-risk-en', 'range-heading-es', 'removed-heading-en', 'removed-heading-es', 'empty-headings-en']) assert.deepEqual(found(id), [], id);
+  // Every twin is checked: the targets and controls with a requirement heading, and nothing elsewhere.
+  const expected: Record<string, number[]> = { 'gwt-plus-unidentified': [3], 'gwt-only': [3], 'prose-without-modal': [3], 'duplicate-headings': [3, 7], 'content-under-subheading': [3], 'heading-with-modal-body': [3] };
+  for (const twin of cases) assert.deepEqual(definingHeadings(setOf(twin).artifacts).map(e => e.line), expected[twin.id.replace(/-(?:en|es)$/, '')] ?? [], twin.id);
 });
 
 // The 0.1.19 comparator is needed in full. A shallow CI clone lacks it and skips visibly; any other git failure fails.

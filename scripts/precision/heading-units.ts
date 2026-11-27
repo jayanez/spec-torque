@@ -17,7 +17,7 @@ import { indexWorkspace } from '../../src/node/scope.js';
 import type { ArtifactSet } from '../../src/core/types.js';
 import { archiveEngine, commit } from './engines.js';
 import { definingHeadings, judge } from './heading-judge.js';
-import { rootSchema, snapshot } from './sources.js';
+import { classifyAll, rootSchema, snapshot } from './sources.js';
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: {
   baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' },
@@ -37,15 +37,18 @@ const changed: { root: string; repository: string; sha: string; feature: string;
 const violations: { root: string; feature: string; violations: string[] }[] = [];
 const overLimit: { root: string; feature: string }[] = [];
 
+let ordinal = 0;
 async function compare(root: string, repository: string, sha: string, feature: string, set: ArtifactSet, keepText: boolean) {
+  // Work-tree features are numbered, never named: no restricted text is printed.
+  const label = keepText ? feature : `(work tree feature ${++ordinal})`;
   // The engine refuses such sets; they are listed, never silently dropped.
-  if (set.artifacts.length > 500 || set.artifacts.some(a => a.content.length > 1_000_000)) { totals.overLimit++; overLimit.push({ root, feature: keepText ? feature : `(work tree feature ${totals.features + totals.overLimit})` }); return; }
+  if (set.artifacts.length > 500 || set.artifacts.some(a => a.content.length > 1_000_000)) { totals.overLimit++; overLimit.push({ root, feature: label }); return; }
   totals.features++;
   const headings = definingHeadings(set.artifacts);
   if (headings.length) totals.withHeadings++;
   const [before, after] = await Promise.all([arms.baseline.analyze(set), arms.candidate.analyze(set)]);
   const found = judge(before, after, headings);
-  if (found.length) { totals.violations++; violations.push({ root, feature: keepText ? feature : `(work tree feature ${totals.features})`, violations: found }); }
+  if (found.length) { totals.violations++; violations.push({ root, feature: label, violations: found }); }
   const transitions: Record<string, string> = {};
   for (const id of ['I1.2', 'I2.2']) {
     const b = before.practices.find(p => p.id === id)!.status; const c = after.practices.find(p => p.id === id)!.status;
@@ -64,7 +67,7 @@ if (mode === 'scan') {
   for (const root of roots) {
     const { sha, files } = snapshot(root);
     totals.roots++;
-    const artifacts = [...files].filter(([path]) => arms.baseline.isSpecCandidate(path)).map(([path, content]) => arms.baseline.classifyArtifact(path, content));
+    const artifacts = classifyAll(arms.baseline, files);
     const set = { name: root.id, artifacts };
     for (const feature of [...new Set(artifacts.filter(a => !a.archived && a.role === 'spec').map(a => a.featureId))].sort()) {
       await compare(root.id, root.repository, sha, feature, arms.baseline.selectFeature(set, feature), true);

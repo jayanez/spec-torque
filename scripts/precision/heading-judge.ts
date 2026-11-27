@@ -4,6 +4,7 @@
  * of the engine's rule, so the replay does not trust the rule it measures. `sectionOf` is shared
  * with the packet builder.
  */
+import { lineScope } from '../../src/core/artifacts.js';
 import type { Artifact, Assessment, Evidence, Status } from '../../src/core/types.js';
 
 const IDENTIFICATION = ['I1.2', 'I2.2'];
@@ -13,15 +14,13 @@ const anyId = /\b(?:FR|NFR|REQ|R)-\d+\b/gi;
 const removal = /(?<!\p{L})(?:removed|deprecated|superseded|withdrawn|obsolete|(?:eliminad|obsolet|retirad|reemplazad)[oa]s?)(?!\p{L})/iu;
 const fenceRun = /^\s*(?:```|~~~)/;
 const thematic = /^\s*(?:[-*_=][ \t]*){3,}$/;
-// Review checklists and the Spec Kit quickstart are not `all`-scope lines (H6a, H7a); same paths as src/core/artifacts.ts.
-const contextPath = /(?:^|\/)specs\/\d{3}-[^/]+\/(?:checklists\/[^/]+|quickstart)\.md$/i;
 const level = (text: string) => /^\s*(#{1,6})[ \t]/.exec(text)?.[1].length;
 
 /** H52-1 requirement headings of the set's non-archived spec documents, in set order. */
 export function definingHeadings(artifacts: Pick<Artifact, 'path' | 'content' | 'role' | 'archived'>[]): Evidence[] {
   const found: Evidence[] = [];
   for (const artifact of artifacts) {
-    if (artifact.archived || artifact.role !== 'spec' || contextPath.test(artifact.path.replaceAll('\\', '/'))) continue;
+    if (artifact.archived || artifact.role !== 'spec' || lineScope(artifact.path) !== 'all') continue;
     const lines = artifact.content.split(/\r?\n/);
     let fenced = false;
     // Headings outside fences, with their levels, and whether each line is content.
@@ -76,8 +75,8 @@ export function judge(before: Assessment, after: Assessment, headings: Evidence[
     if (now.status !== expectedStatus(was.status, duplicated)) violations.push(`${id} ${was.status}->${now.status}`);
     // The engine's reason follows the status and whether there is evidence (analyze.ts).
     if (now.reason !== reasonFor(now.status, now.evidence.length > 0)) violations.push(`${id} reason`);
-    // Known limit: with four 0.1.19 hits the evidence cannot show the headings, so it must stay as it was.
-    if (!same(now.evidence, was.evidence.length >= 4 ? was.evidence : [...was.evidence, ...headings].slice(0, 4))) violations.push(`${id} evidence`);
+    // The engine shows four items, so with four 0.1.19 hits the headings cannot be checked (known limit).
+    if (!same(now.evidence, [...was.evidence, ...headings].slice(0, 4))) violations.push(`${id} evidence`);
   }
   for (const id of ['I1', 'I2']) {
     const [was, now] = [before.dimensions.find(d => d.id === id)!, after.dimensions.find(d => d.id === id)!];
