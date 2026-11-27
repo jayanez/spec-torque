@@ -1,6 +1,6 @@
 {
   "name": "spectorque-claude",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "SpecTorque plugin for Claude Code: native review pane, author/review/refine skills and read-only MCP tools.",
   "type": "module",
   "author": {

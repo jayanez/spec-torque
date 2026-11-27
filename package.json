@@ -1,6 +1,6 @@
 {
   "name": "spectorque",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Create, inspect and refine agent-ready specifications with traceable evidence.",
   "mcpName": "io.github.jayanez/spectorque",
   "type": "module",

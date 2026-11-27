@@ -1,6 +1,6 @@
 {
   "name": "spectorque-codex",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "SpecTorque plugin for Codex: inline viewer, workspace MCP server, review skills and local workbench.",
   "type": "module",
   "author": {
