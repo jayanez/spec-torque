@@ -137,6 +137,30 @@ test('month enumeration suppression preserves independent modal and identifier e
     '> Operators may stop. The options are Apr, May, Jun.\n\n```md\nOperators may stop.\n```')] });
   assert.equal(example.practices.find(row => row.id === 'E1.4')?.status, 'unknown');
 });
+test('H106: a labeled dependency field with an ID counts for P1.3, an absent value does not', async () => {
+  const status = async (line: string, language: 'en' | 'es') => (await analyze({ name: 'h106', artifacts: [
+    classifyArtifact('specs/001-demo/spec.md', language === 'en' ? '# Demo\n\n- REQ-001: The system MUST export the report.\n' : '# Demo\n\n- REQ-001: El sistema DEBE exportar el informe.\n'),
+    classifyArtifact('specs/001-demo/tasks.md', `# Tasks\n\n- [ ] T001 (REQ-001): Write the schema.\n- [ ] T002 (REQ-001): Write the exporter.\n  ${line}\n`),
+  ] })).practices.find(p => p.id === 'P1.3')?.status;
+  const twins: Array<[string, string, 'partial' | 'missing']> = [
+    ['Dependencies: T001. Target files: `src/export.py`.', 'Dependencias: T001. Archivos: `src/export.py`.', 'partial'],
+    ['Dependencies: T001, T003.', 'Dependencias: T001, T003.', 'partial'],
+    ['Blocked by: T001.', 'Bloqueado por: T001.', 'partial'],
+    ['**Dependencies:** REQ-001', '**Dependencias:** REQ-001', 'partial'],
+    ['Dependencies: T001–T004.', 'Dependencias: SPEC-028/T001.', 'partial'],
+    ['Depends on T001.', 'Depende de T001.', 'partial'],
+    ['Dependencies: none.', 'Dependencias: ninguna.', 'missing'],
+    ['Dependencies: —', 'Dependencias: —', 'missing'],
+    ['Dependencies:', 'Dependencias:', 'missing'],
+    ['Dependencies: the exporter must finish first.', 'Dependencias: el exportador debe terminar antes.', 'missing'],
+    ['Dependencies: none. Verified by T009.', 'Dependencias: ninguna. Verificado por T009.', 'missing'],
+    ['Dependencies between tasks are tracked separately (see T001).', 'Las dependencias entre tareas se revisan aparte (ver T001).', 'missing'],
+  ];
+  for (const [en, es, expected] of twins) {
+    assert.equal(await status(en, 'en'), expected, en);
+    assert.equal(await status(es, 'es'), expected, es);
+  }
+});
 test('H85: a demonstrative that leads a noun phrase is not a pronoun subject (E1.3)', async () => {
   const flagged = async (line: string) => (await analyze({ name: 'h85', artifacts: [classifyArtifact('specs/001-demo/spec.md', `# Demo\n\n${line}\n`)] }))
     .findings.some(f => f.practiceId === 'E1.3');
