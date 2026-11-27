@@ -1763,7 +1763,7 @@ same), and nothing else changes (0 judge violations). No pilot spec has an `R-` 
 Export`), headings without an ID (`### Requirement 1`), and other ID families. Specs written only
 with scenario steps keep E1.4, E1.2 and E2.1 `unknown`; H52c addresses modal scenario steps.
 
-**Known limits.** All four labelers' sessions (two per packet, one packet) are one model family
+**Known limits.** Both labelers are sessions of one model family
 (Sonnet); the fresh Spanish power is low (3 repositories from the `Dado` queries).
 
 **Decision.** Propose H52 with Amendment H52-1 (engine 0.1.20) for merge.
