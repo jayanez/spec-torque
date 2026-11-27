@@ -409,3 +409,5 @@ checked against the packet.
 **Threshold.** An item passes only when both say `positive`; any `negative`, disagreement or
 `unknown` fails, and the author's notes never resolve one. At most 2 fail, or at most 5% when there
 are more than 40.
+
+**H52c-a result.** The retry used the same protocol with seed 42055 on its new fresh set: 100 items drawn from 582 distinct entering lines, 96 agreed `positive`, 4 failing (threshold 5). See [precision decisions](precision-decisions.md).

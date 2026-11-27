@@ -1819,3 +1819,52 @@ H52b failed and was not retried.
 **Decision.** H52c stops and is reverted; engine stays 0.1.20. The owner decides between a
 pre-registered H52c-a (the same rule, prediction 3 allowing E1.4 `missing` → `partial`, the
 `normative.test.ts` change listed in advance, a new fresh set and new labelers) and stopping.
+
+### H52c-a: scenario steps with a modal are requirement lines (retry) — **holds; proposed for merge**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The owner's single retry of H52c
+(2026-11-27): the same rule, complete predictions, every test scanned, a new fresh set and new
+labelers; a miss would have stopped the #52 sequence.
+- Pre-registered at `161976e` (with a traced derivation of every use of the admitted set). Fresh
+  sources (16 repositories) frozen at `33bc9cd`. Amendment H52c-a-1 (`ba7e23c`, opposite-obligation
+  twins as the rule keys them) and 8 EN/ES twins, the judge for the complete predictions and the
+  rewritten `tests/normative.test.ts` (`97d8182`), all before the candidate.
+- Candidate `93cb1a5` (the H52c rule; engine 0.1.21, product 0.3.0). Comparator 0.1.20 (`develop`,
+  `597df41`). Every gate below was re-run with the judge as hardened by the review (`190eca6`); the
+  engine is unchanged after the candidate.
+
+| Gate | Result |
+|---|---|
+| 1. Twins, earlier twins, tests, minimal pairs | holds: H52c twins 24/24 (0.1.20 meets 14) and H52c-a twins 8/8 (0.1.20 meets 0), each also judged with 0 violations; the H52 twins change exactly as Amendment H52c-1 lists (10); `tests/normative.test.ts` changes as listed; H3 12/14, H3a 20/20, H5 16/16, H5a 22/22, H8 10/10, H9 14/14, H6 16/16 and H6a 12/12 as in 0.1.20; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed in 220 groups |
+| 3. 137 earlier roots and the 15 H52c fresh roots | holds: 8214 features, 544 with an entering line, 250 change, **0 items outside the predictions** (the H52c miss, E1.4 `missing` → `partial`, is now predicted and occurs once). One feature over the 500-document limit was not compared (listed) |
+| 4. New fresh set (16 roots) and adjudication | holds: 979 features, 280 with an entering line, 249 change, 0 items outside the predictions. 582 distinct entering lines; 100 drawn (seed 42055) and labeled blind by two new Sonnet sessions, both quoting 100/100 lines exactly. 96 agreed `positive`; 4 fail (2 agreed `negative`: a `MAY` permission and a purpose statement; 2 with one `unknown`: a design-note sentence and a hedged draft note), threshold 5 (5% of 100). No line leaves admission (the rule only adds), so there is no leaving direction |
+| 5. Evidence | holds: every new finding and evidence item cites a line the judge found entering, at its path and line |
+
+**Pilot repository (development data, 87 features, counts only).** 12 features have an entering
+line; 5 change (findings only, no status), 0 items outside the predictions.
+
+**Branch review.** `/code-review high`, `/simplify` (four angles), `pr-test-analyzer`,
+`silent-failure-hunter`, and an adversarial and counterfactual agent that saw only the engine diff.
+- *Fixed in the replay (no engine change):* findings are compared whole and as multisets, so a
+  changed severity, suggestion or later evidence, or a duplicated finding, is a violation; added
+  findings must carry their rule's severity; the allowance for a removed opposite-obligation error
+  (predicted impossible) is now a violation; free status moves of E1.2, E2.1, I1.2 and I2.2 need an
+  entering spec line; name, schema and rubric versions are compared; synthetic mode also judges
+  the twins; the scan fails if the engines classify documents differently or (without an explicit
+  flag) if a feature is over the limit; the H52c-a twins and every judge allowance are tested; small
+  simplifications (dead structure test, shared key helper).
+- *Not changed (known limits, from the adversarial pass):* modals are matched in any case, as for
+  every requirement line, so a descriptive step with a lowercase `may`, `should` or `puede`, a step
+  that quotes a modal, a template step (`THEN [outcome] SHOULD …`) or a modal in the precondition
+  clause (`WHEN a user MUST re-authenticate, THEN …`) is admitted; the natural rate is in gate 4 (4
+  of 100 fail, 2 of them permissive or descriptive). `AND`, `BUT`, `Y`, numbered, `+` and bold
+  scenario forms were never scenario lines to the engine and are unchanged; a scenario line with an
+  ID and no modal stays excluded while its bold or numbered form is admitted (inconsistency that
+  predates H52c-a). Narrowing scenario steps to uppercase modals, or widening the step forms, would
+  each need a new hypothesis.
+
+**Known limits.** Both labelers are sessions of one model family (Sonnet). The fresh Spanish
+power is one query (4 repositories).
+
+**Decision.** Propose H52c-a (engine 0.1.21) for merge.
