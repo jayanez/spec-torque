@@ -54,7 +54,7 @@ test('the judge accepts every twin against 0.1.19 and counts violations', { skip
     const headings = definingHeadings(set.artifacts);
     assert.deepEqual(judge(before, { ...after, findings: [] }, headings), ['findings changed']);
     const promoted = { ...after, practices: after.practices.map(p => p.id === 'I1.2' ? { ...p, status: 'supported' as const } : p) };
-    assert.deepEqual(judge(before, promoted, headings), ['I1.2 missing->supported', 'summary counts']);
+    assert.deepEqual(judge(before, promoted, headings), ['I1.2 missing->supported', 'I1.2 reason', 'summary counts']);
     assert.deepEqual(judge(before, after, []), ['assessment changed without a requirement heading']);
     const withPractice = (id: string, patch: object) => ({ ...after, practices: after.practices.map(p => p.id === id ? { ...p, ...patch } : p) });
     const evidence = after.practices.find(p => p.id === 'I1.2')!.evidence;
