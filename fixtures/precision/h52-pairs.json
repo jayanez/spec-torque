@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "H52 synthetic twins (#52): defining ID headings count as identified requirement units for I1.2 and I2.2. Constructed before the H52 candidate; not independent labels. Findings are unchanged by the policy, so `expected` holds the findings both engines report.",
+  "description": "H52 synthetic twins (#52): defining ID headings count as identified requirement units for I1.2 and I2.2. Constructed before the H52 candidate; not independent labels. Findings are unchanged by the policy, so `expected` holds the findings both engines report. Amendment H52-1 adds the r-family-risk, range-heading, removed-heading, empty-headings and content-under-subheading twins.",
   "cases": [
     {
       "id": "gwt-only-en",
@@ -651,6 +651,226 @@
         "I2.2": "supported"
       },
       "note": "A table row with an ID is admitted and identified in both engines."
+    },
+    {
+      "id": "r-family-risk-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## Risks",
+          "",
+          "### R-1 — Vendor lock-in",
+          "",
+          "Mitigation: keep the client behind an adapter."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "R- also numbers risks; it does not count as a heading unit. (Amendment H52-1)"
+    },
+    {
+      "id": "range-heading-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## FR-001 to FR-005 — Overview",
+          "",
+          "These requirements cover the export flow."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading with a second ID names a range, not one requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "removed-heading-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### FR-003 — Removed",
+          "",
+          "Export to PDF was dropped from scope."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading marked removed is not a requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "empty-headings-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft",
+          "### REQ-002 — Show the draft banner",
+          "",
+          "## Notes",
+          "",
+          "The system MUST log every export."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|8|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Headings with nothing under them do not count. (Amendment H52-1)"
+    },
+    {
+      "id": "content-under-subheading-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft",
+          "",
+          "#### Scenario",
+          "",
+          "- Given a reviewer opens the export,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "Content under a deeper heading belongs to the section. (Amendment H52-1)"
+    },
+    {
+      "id": "r-family-risk-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## Riesgos",
+          "",
+          "### R-1 — Dependencia del proveedor",
+          "",
+          "Mitigación: mantener el cliente detrás de un adaptador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "R- also numbers risks; it does not count as a heading unit. (Amendment H52-1)"
+    },
+    {
+      "id": "range-heading-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## FR-001 a FR-005 — Resumen",
+          "",
+          "Estos requisitos cubren el flujo de exportación."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading with a second ID names a range, not one requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "removed-heading-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### FR-003 — Eliminado",
+          "",
+          "La exportación a PDF quedó fuera del alcance."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading marked removed is not a requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "empty-headings-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador",
+          "### REQ-002 — Mostrar el aviso de borrador",
+          "",
+          "## Notas",
+          "",
+          "El sistema DEBE registrar cada exportación."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|8|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Headings with nothing under them do not count. (Amendment H52-1)"
+    },
+    {
+      "id": "content-under-subheading-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador",
+          "",
+          "#### Escenario",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "Content under a deeper heading belongs to the section. (Amendment H52-1)"
     }
   ]
 }
