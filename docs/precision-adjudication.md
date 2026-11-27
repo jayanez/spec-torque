@@ -384,3 +384,28 @@ At most 2 items fail, or at most 5% when there are more than 40. Both labelers a
 family.
 
 **Result.** 35 items (every changed feature of the earlier and fresh sets): 35/35 `positive` from both labelers, 0 failing. See [precision decisions](precision-decisions.md).
+
+## H52c: scenario steps with a modal (#52)
+
+H52c admits scenario steps that carry a normative modal as requirement lines. The threshold was
+fixed in the pre-registration (`fbba64a`), before any packet was built.
+
+**Packet.** `scripts/precision/scenario-packet.ts --scan <earlier h52c-scan.json> --scan <fresh
+h52c-scan.json> --roots … --seed 42054`: the entering lines of every changed feature, deduplicated
+by text, all or 100 drawn. Each item shows the line, its heading chain and three lines of context
+on each side, read at the scanned revision. Items are shuffled and then numbered; `key.json` is not
+opened by labelers. No line leaves admission under H52c (the rule only adds scenario steps with a
+modal), so there is no leaving direction.
+
+**Proposition.** *This line states a requirement (an obligation, constraint or rule) that the
+specification itself imposes.* `positive` means the admission is right. A line that only
+describes an outcome, quotes or names a modal word, or belongs to an example, template or
+instruction about writing is `negative`.
+
+**Labelers.** Two new Sonnet agent sessions that did not write the rule, with no engine output,
+key, scan, hypothesis or each other's labels. Each reads every item in full and quotes its line,
+checked against the packet.
+
+**Threshold.** An item passes only when both say `positive`; any `negative`, disagreement or
+`unknown` fails, and the author's notes never resolve one. At most 2 fail, or at most 5% when there
+are more than 40.
