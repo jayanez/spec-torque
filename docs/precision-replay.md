@@ -1567,6 +1567,16 @@ any file content:
 The list is committed in `fixtures/precision/h104-sources.json` before the
 candidate commit.
 
+### Amendment H104-1 (2026-11-27, before the twins and the candidate)
+
+The issue's synthetic example defines its requirement in a heading
+(`### REQ-001 — Draft note`) and states its obligation in a `then` scenario line.
+Neither is admitted as a requirement (headings and scenario lines never are), so the
+spec has no admitted requirement, and P2.1 and C1.1 stay `missing` for that reason,
+with or without H104. The gate-1 twin adds one admitted requirement line
+(`- REQ-001: The release note MUST list every merged change.`). Scenario-only
+requirements are a separate gap and are not addressed here. Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
