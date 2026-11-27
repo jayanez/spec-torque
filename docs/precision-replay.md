@@ -1427,6 +1427,162 @@ that it acts on none of 103 natural "not adopted" lines. Under the stop rule it 
 reverted at `d58628e`, and rule 1 proceeds alone. The details are in
 [precision decisions](precision-decisions.md).
 
+## Pre-registered hypothesis H106 (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#106](https://github.com/jayanez/spec-torque/issues/106). Named after its
+issue, as H85 was.
+
+**Failure.** P1.3 (requirement-level dependency traceability) is pattern-based. It
+accepts a plan or tasks line only when a verb phrase (`depends on`, `depende de`,
+`requires`, `requiere`) precedes a requirement or task ID. A task that declares its
+dependencies as a labeled field, `Dependencies: T001`, is not recognized. A tasks file
+whose every task lists its dependencies that way therefore gets `missing`, and
+rewording the field to `Depends on T001` gives `partial`. The specification should not
+change its wording to satisfy the analyzer; the owner adjudicated this case as an
+engine defect.
+
+**Development data.** The #8 pilot repository. On its 81 features with a P1.3 result,
+engine 0.1.16 reports 63 `missing` and 18 `partial`. The labeled field is the only
+dependency form its tasks files use (`Dependencies: T###`, lists, ranges such as
+`T001–T004`, `SPEC-n/T###`, and `none`). A grep-level estimate of the policy below
+moves about 42 of the 63 to `partial`. Of the other 21, 15 have no dependency line
+at all, and 6 have only `none` or ID-less values.
+
+**Policy.** One addition to the P1.3 pattern; nothing else changes. A plan or tasks
+line also counts as P1.3 evidence when it contains a labeled dependency field:
+1. The label is `Dependencies`, `Depends on`, `Blocked by`, `Dependencias`,
+   `Depende de` or `Bloqueado por` (any case, whole word), optionally wrapped in `**`,
+   followed by a colon.
+2. The value does not start with `none`, `ninguna`, `ninguno`, `nada`, `n/a` or a dash
+   (`—`, `–`, `-`), after optional `**` and spaces.
+3. A requirement or task ID (`[A-Z]{1,8}-\d+` or `T\d+`, as in the existing pattern)
+   occurs after the colon and before the next `.` or the end of the line. A list
+   (`T001, T003`), a range (`T001–T004`) or a qualified ID (`SPEC-028/T001`) qualifies
+   through its first ID.
+
+The existing verb-phrase alternative is unchanged. A label without a colon
+("Dependencies between tasks …"), an empty or `none` value, and a value whose first ID
+comes only after the sentence ends (`Dependencies: none. Verified by T009.`) do not
+count. P1.3 status stays `partial` at most: presence is not completeness.
+
+**Comparator.** 0.1.16 (`develop` at `0084178`). Candidate engine 0.1.17, product
+0.3.1. If another track (#104) merges first, the candidate takes the next patch
+versions and every measurement is repeated against the new `develop`.
+
+**Endpoints.** P1.3 status and evidence per feature. Also every other practice
+status, finding, open decision, dimension score and artifact set.
+
+**Predictions.**
+- The 716 historical predictions do not change: the corpus rules (E1.2, E1.4, I1.2,
+  I2.3) do not include P1.3. The minimal pairs and the H3a, H5a, H6, H6a, H8, H85,
+  H7a and H9 twins do not change.
+- On natural sources P1.3 only gains evidence. A status can only move from `missing`
+  to `partial`; none moves back. Every new evidence line matches the labeled field
+  and not the verb phrase. No other practice status, finding or open decision
+  changes; only the P1 dimension score and the total can rise.
+- On the pilot, about 42 of the 63 `missing` features become `partial` (a grep-level
+  estimate; the engine's role classification decides the exact count), and the 18
+  `partial` features stay `partial`.
+
+**Gate (all must hold to proceed).**
+1. EN/ES synthetic twins are committed before the candidate, in
+   `fixtures/precision/h106-pairs.json`, each with a twin of the opposite expected
+   outcome:
+   - `Dependencies: T001.` and `Dependencias: T001.` (`partial`; 0.1.16 `missing`);
+   - lists `Dependencies: T001, T003.` and `Dependencias: T001, T003.` (`partial`);
+   - `**Dependencies:** REQ-002`, a range `Dependencies: T001–T004`, and
+     `Blocked by: T001` / `Bloqueado por: T001` (`partial`);
+   - negatives, `missing` in both engines: `Dependencies: none.` /
+     `Dependencias: ninguna.`, `Dependencies: —` / `Dependencias: —`, an empty
+     `Dependencies:` / `Dependencias:`, an ID-less value (`Dependencies: the exporter
+     must finish first.` / `Dependencias: el exportador debe terminar antes.`), an ID
+     only after the sentence ends (`Dependencies: none. Verified by T009.` /
+     `Dependencias: ninguna. Verificado por T009.`), and prose that mentions
+     dependencies without a field (`Dependencies between tasks are tracked
+     separately (see T001).` / `Las dependencias entre tareas se revisan aparte (ver
+     T001).`);
+   - controls, `partial` in both engines: `Depends on T001` and `Depende de T001`.
+
+   The candidate meets every twin. The minimal pairs and the earlier twins are
+   unchanged.
+2. The 716 historical predictions are unchanged (`npm run corpus:report --
+   --baseline origin/develop`).
+3. On the earlier development and fresh sets (H3a, H5a, H6, H6a, H6a-2, H8, H85, H9
+   and H9-2 roots): only P1.3 and the P1/total scores change, statuses move only
+   `missing` → `partial`, and every new P1.3 evidence line matches the labeled field.
+4. On a fresh public set the same holds, and the new P1.3 evidence lines (all of
+   them, or 100 drawn with seed 42039, deduplicated by line text) are adjudicated
+   blind by two agent sessions. **Proposition:** *this line states that the task or
+   item it belongs to depends on, or is blocked by, the identified task or
+   requirement.* Labels are `positive`, `negative` and `unknown`. **Threshold, fixed
+   here before any source is chosen:** at most 2 items agreed `negative` or left
+   disputed. The owner may tighten it before the packet is drawn.
+5. No evidence becomes invalid: every new evidence line exists at its path and line.
+
+**Stop rule.** If a gate fails, H106 stops and is reverted. The owner decides between
+a narrowed H106a and stopping.
+
+**Fresh sources.** They are selected before the candidate exists, without reading
+any file content:
+- GitHub code search, once each for `"Dependencies: T0" path:specs` and
+  `"Dependencias: T0" path:specs`, limited to Markdown files named `tasks.md`;
+- up to 4 repositories per query, public, non-fork, not archived, MIT or
+  Apache-2.0;
+- every repository and owner in the earlier `fixtures/precision/*-sources.json`
+  files, and the pilot repository owner, excluded;
+- each repository pinned to its default-branch head SHA.
+
+The list is committed in `fixtures/precision/h106-sources.json` before the candidate
+commit.
+
+### Amendment H106-1 (2026-11-27, before any file content was read)
+
+Code search matches whole tokens, so the pre-registered `T0` prefix returned no
+result. The queries use `T001` instead: `"Dependencies: T001" path:specs` and
+`"Dependencias: T001" path:specs`, in files named `tasks.md`, through the REST
+search API. The Spanish query returned 9 repositories, and only 1 is eligible; the
+other 8 have no license. The fresh set therefore holds 4 English roots and 1
+Spanish root.
+
+### Amendment H106-2 (2026-11-27, after the first candidate, from branch review; owner request)
+
+The owner asked for a full branch review before reporting. Three independent reviews
+of the first candidate (`60c25f5`) found inputs that break the frozen policy or the
+engine, each probed through the P1.3 pattern:
+- the combined `i` flag reads lowercase tokens as IDs, and the label is matched
+  anywhere, so the Spec Kit plan field `**Primary Dependencies**: …, ISO-8601 parsing`,
+  `Dependencies: utf-8 encoding` and `AWS t3` count;
+- the absence guard is bypassed by emphasis (`*none*`, `_none_`) and misses `nothing`,
+  `no`, `sin`;
+- `Dependencies:` followed by a long run of stars or spaces takes seconds
+  (`'*'.repeat(50000)`: 7.9 s), because the padding after the colon overlaps the lazy
+  value.
+
+The policy is narrowed and hardened before any gate is re-run:
+1. The label starts the line (after an optional list marker and `**` or `_`) or follows
+   `.`, `;`, `|` or `(`. `Primary Dependencies:` and `External dependencies:` are not
+   fields. The singular `Dependency:` / `Dependencia:` is added. `Depends on:` and
+   `Depende de:` are dropped from the field labels: the unchanged verb phrase already
+   accepts every line they would.
+2. Labels and absence words are case-insensitive; the ID is case-sensitive
+   (`[A-Z]{1,8}-\d+` or `T\d+`). The 0.1.16 verb phrase keeps its case-insensitive IDs
+   unchanged.
+3. Absence words: `none`, `nothing`, `no`, `n/a`, `not applicable`, `ninguna`,
+   `ninguno`, `ningún`, `nada`, `sin`, or a dash, after optional spaces, `*`, `_`, a
+   backtick or `(`.
+4. The value ends at a `.` followed by a space or the end of the line (a dot inside a
+   file name does not end it), and the ID must come within 200 characters of the colon.
+   The padding after the colon is matched once.
+
+The twins grow to 40 (18 added for H106-2, including the cases above and the known
+limit below). Every gate is re-run against the new candidate. The first fresh-set
+adjudication covered the first candidate's new lines; lines the narrowed candidate
+still accepts are a subset of them unless the scan shows otherwise, and any line
+outside that set is adjudicated the same way.
+
+**Known limit (not changed).** The unchanged verb phrase still counts a labeled
+`Depends on: none. Verified by T009.`; a twin pins that outcome.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
