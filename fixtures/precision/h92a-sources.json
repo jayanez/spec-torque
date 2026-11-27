@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H92a confirmation set (framework template folders are not discovered; scopes left without a specification, #92). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub REST code search, search order: filename:plan-template.md path:.specify/templates (up to 6), filename:tasks-template.md path:.kittify/missions (up to 5), filename:spec-template.md path:.specify/presets and path:.specify/extensions filename:template (up to 3 together), controls filename:spec.md path:.specify/specs (up to 3) and filename:plan-template.md path:templates -path:.specify -path:.kittify (up to 3); public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files, every earlier H92 root, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": {
+    "filename:tasks-template.md path:.kittify/missions": "0 eligible of 36 repositories in the results (excluded owners, forks or no MIT/Apache-2.0 license)",
+    "path:.specify/extensions filename:template": "0 eligible of 32 repositories in the results"
+  },
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/unoplatform/Uno.Themes",
+      "commit": "45b8e2ab8fe250b45987acbd8c7e370c52285ee9",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "query": "filename:plan-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/yanivam/react-svg-worldmap",
+      "commit": "59c887c01335533986aec1906036e75bcd93d0a4",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:plan-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/GerardPaligot/Confily",
+      "commit": "61ad38fc8f0f7a7919c52ca48316bbfd0ca67a47",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:plan-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/alibaba/neug",
+      "commit": "52c9357d4c3bdd75c93d1b18a7ef67ab734c487e",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:plan-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/WeihanLi/dotnet-exec",
+      "commit": "a7c1a9756f1b15845d4665215725984f46d58273",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:plan-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/codemilestones/TinyCodeBase",
+      "commit": "713886e6fca14ecec656621c2d06e709d044d83a",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "query": "filename:plan-template.md path:.specify/templates"
+    },
+    {
+      "family": "spec-kit-preset",
+      "repository": "github.com/kitokoh/leopardo-hr",
+      "commit": "a73974d1a1ef61d4c2d28294e93a2f2b29aead78",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.specify/presets"
+    },
+    {
+      "family": "spec-kit-preset",
+      "repository": "github.com/thinkmorestupidless/ankka",
+      "commit": "48df78473759ca51a042b6ea3fe0625d5193542b",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:spec-template.md path:.specify/presets"
+    },
+    {
+      "family": "spec-kit-preset",
+      "repository": "github.com/ayaiayorg/agentic-devtools",
+      "commit": "7c922d5bf86017c99fb6d8ee9c924e48a15929da",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec-template.md path:.specify/presets"
+    },
+    {
+      "family": "control-specify-specs",
+      "repository": "github.com/jcfischer/supertag-cli",
+      "commit": "c8f42bf62115f533884da01bcc4d817f35bbf9ae",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:spec.md path:.specify/specs"
+    },
+    {
+      "family": "control-specify-specs",
+      "repository": "github.com/ever-co/ever-jobs",
+      "commit": "d8f09db2c4e6f80d346a0258bcbb4d83734b2dee",
+      "branch": "develop",
+      "license": "MIT",
+      "query": "filename:spec.md path:.specify/specs"
+    },
+    {
+      "family": "control-specify-specs",
+      "repository": "github.com/kbrdn1/gwm-cli",
+      "commit": "ab9955e8b57e6f026c346b8d74a40da7eb785cd1",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:spec.md path:.specify/specs"
+    },
+    {
+      "family": "control-templates",
+      "repository": "github.com/foryourhealth111-pixel/Vibe-Skills",
+      "commit": "8af6e230d3db0f3022236e67632be6d8b9323bf0",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "query": "filename:plan-template.md path:templates -path:.specify -path:.kittify"
+    },
+    {
+      "family": "control-templates",
+      "repository": "github.com/infinri/Writ",
+      "commit": "475382e13b9bfd372b8eb5528d9b7d390a329907",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:plan-template.md path:templates -path:.specify -path:.kittify"
+    },
+    {
+      "family": "control-templates",
+      "repository": "github.com/IBM/iac-spec-kit",
+      "commit": "fd05d00c2b254abbddf20e70abccbc8e311a52ca",
+      "branch": "main",
+      "license": "MIT",
+      "query": "filename:plan-template.md path:templates -path:.specify -path:.kittify"
+    }
+  ]
+}
