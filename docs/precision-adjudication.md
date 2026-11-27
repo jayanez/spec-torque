@@ -296,3 +296,22 @@ count against the threshold until the owner resolves them.
 
 The packet held one removed finding, from rule 1. Rule 2 removed nothing and was
 later reverted, so the packet builder no longer records a rule in `key.json`.
+
+## H104: actors named by role (#104)
+
+H104 raises P2.1 and C1.1 from `missing` to `partial`. The threshold was fixed in the
+pre-registration (`ef900b6`), before any packet was built: at most 2 items agreed
+`negative` or disputed, or at most 5% when there are more than 40 items. Disputed
+and `unknown` items count against it.
+
+**Packet.** Built with `scripts/precision/actor-packet.ts` from the scans of the
+earlier sets and the H104 fresh set: all changed features, or 100 drawn with seed
+42104. For each feature, up to 3 spec lines that carry the new cue (found by
+analyzing each line alone with both engines), with two lines of context on each side.
+`key.json` holds the root and feature and is not opened by reviewers.
+
+**Proposition.** *This line names a person or role who performs, requests or receives
+the specified product behavior.* `positive` means the gain is right.
+
+**Reviewers.** Two independent agent sessions, with no engine output, key, scan,
+hypothesis or each other's labels.

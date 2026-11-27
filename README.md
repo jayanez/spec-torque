@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="docs/releases.md#versioning-and-releases"><img src="https://img.shields.io/badge/product-0.3.0-173f4f" alt="Product version 0.3.0"></a>
-  <a href="#how-the-engine-works"><img src="https://img.shields.io/badge/engine-0.1.17-196d83" alt="Engine version 0.1.17"></a>
+  <a href="#how-the-engine-works"><img src="https://img.shields.io/badge/engine-0.1.16-196d83" alt="Engine version 0.1.16"></a>
   <a href="docs/rubric.md"><img src="https://img.shields.io/badge/rubric-epic--heuristic--1-196d83" alt="Rubric epic-heuristic-1"></a>
   <a href=".nvmrc"><img src="https://img.shields.io/badge/node-%E2%89%A522.20-339933?logo=nodedotjs&amp;logoColor=white" alt="Node.js 22.20 or later"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>

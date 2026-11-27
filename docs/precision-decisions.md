@@ -1370,3 +1370,53 @@ pilot.
 within the threshold on low fresh power and on the pilot. Rule 2 stops; it is
 reconsidered only if a fresh, pre-registered set shows the construction in natural
 plan or tasks text.
+
+### H104: role nouns in actor position for P2.1 and C1.1 — **fails gate 4 (adjudication); reverted, owner decides H104a**
+
+Tracking: [#104](https://github.com/jayanez/spec-torque/issues/104).
+- Pre-registered at `ef900b6`. Fresh sources frozen at `e19a563` (16 repositories),
+  twins and amendment H104-1 (the issue's example has no admitted requirement) at
+  `3fa704e`, amendment H104-2 (prepositions `as`, `a`, `de`, … are not verbs) at
+  `fc548f3`, both before the candidate.
+- Candidate `fb8fd53`, engine 0.1.17. Comparator 0.1.16 (`develop`, `0084178`).
+  Amendment H104-3 (`b20b831`) corrected one twin after the first twin run: `pueden`
+  is a normative modal, so that line is a requirement and outside the cue by policy.
+- Reverted under the stop rule after gate 4. The product version is not bumped
+  (owner decision: engine-only bumps until the next release).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (26 EN/ES), H3a, H5a, H6, H6a, H7, H7a, H8, H85 and H9 twins, minimal pairs | holds: 26 of 26 (0.1.16 meets 18, failing exactly the 8 targets); every earlier suite has the same result in both arms; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier sets (59 roots, 3742 Spec Kit features) | holds: 189 features change, each P2.1 and C1.1 `missing` → `partial` together; 117 dimension scores rise; no finding, decision, artifact or other status changes |
+| 4. Fresh set (16 roots, 276 features) and adjudication | structure holds (20 features change, the same way); **adjudication fails**: of 100 drawn items, 2 agreed `negative` and 5 disputed, 7 against a threshold of 5 |
+| 5. Evidence | holds: 0 invalid |
+
+**Adjudication.** 100 of the 209 changed features (seed 42104). Raw agreement 95/100;
+93 agreed `positive`.
+- *Agreed negative (2).* `member` naming a system node ("A member stores the hub
+  certificate …"), and `owner` first on a wrapped continuation line, where it modifies
+  the next noun ("owner columns, not also reported …"; `columns` passes the `-s` verb
+  test).
+- *Disputed (5).* All are a project role in the spec's own process rather than the
+  product ("the owner changed that …", "the operator asked for the spec and the
+  plan", "the maintainer requested …", "only the maintainer can decide"). One
+  reviewer read them as actors, the other as process notes.
+
+**Pilot repository (development data, 32 open features, work tree, counts only).** The
+prediction held exactly: P2.1 and C1.1 `partial` 26 → 29, `missing` 6 → 3. The 3
+owner-adjudicated features move to `partial` on both practices, the other 3 stay
+`missing`, and no finding, decision or artifact changes.
+
+**Possible H104a (for the owner).** Each change below addresses one observed class and
+would be pre-registered and measured again on a new fresh set:
+- drop `member` from the role nouns (system nodes in distributed specs);
+- do not read a role noun first on a wrapped continuation line;
+- decide whether a project-process role (owner, maintainer, operator acting on the
+  specification itself) should count. The 5 disputed items, and the pilot's own
+  features, use this construction; excluding it by rule would likely also exclude
+  the pilot gains, so this is a policy choice, not a detector fix.
+
+**Decision.** H104 stops under its stop rule and is reverted on the branch; engine stays
+0.1.16. The owner decides between H104a and stopping #104.
+
