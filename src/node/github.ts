@@ -1,5 +1,5 @@
 import { PRODUCT_VERSION } from '../version.js';
-import { classifyArtifact, isSpecCandidate } from '../core/artifacts.js';
+import { classifyArtifact, isFrameworkTemplate, isSpecCandidate } from '../core/artifacts.js';
 import type { Artifact, ArtifactSet } from '../core/types.js';
 import { boundedJson } from './http.js';
 interface Repo { default_branch: string; private: boolean }
@@ -27,6 +27,7 @@ export function parseGitHubSource(input: string): { owner: string; repo: string;
 }
 export async function importGitHub(input: string): Promise<ArtifactSet> {
   const { owner, repo, ref, folder } = parseGitHubSource(input);
+  if (folder && isFrameworkTemplate(folder + '/')) throw new Error('This folder holds Spec Kit or Spec Kitty templates, which are not analyzed.');
   const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
   const metadata = await request<Repo>(base);
   if (metadata.private) throw new Error('Only public repositories are supported.');

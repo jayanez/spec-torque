@@ -13,9 +13,10 @@ const specKitQuickstart = /(?:^|\/)specs\/\d{3}-[^/]+\/quickstart\.md$/i;
 // H7 (#79): a Spec Kit checklist reviews the feature's specification and cites its IDs.
 const specKitChecklist = /(?:^|\/)specs\/\d{3}-[^/]+\/checklists\/[^/]+\.md$/i;
 const byName = /spec|requirement|prd|plan|design|task|todo|agents|claude|gemini|constitution|architecture|what|where|when|who|why|how/i;
-// H92 (#92): scaffolding that Spec Kit (`.specify/`) and Spec Kitty (`.kittify/`) install or ship: a `templates` or
-// `command-templates` folder anywhere below their own folder. A `templates` folder elsewhere is project content.
-const frameworkTemplate = /(?:^|\/)\.(?:specify|kittify)\/(?:[^/]+\/)*(?:command-)?templates\//i;
+// H92 (#92): the template folders that Spec Kit (`.specify/`, with presets and extensions) and Spec Kitty (`.kittify/`,
+// with missions and their overrides) install, at any depth of the repository. Only these layouts: a `templates` folder
+// elsewhere, including one inside a feature kept under `.specify/specs/` or `.kittify/specs/`, is project content.
+const frameworkTemplate = /(?:^|\/)(?:\.specify\/(?:(?:presets|extensions)\/[^/]+\/)?templates|\.kittify\/(?:templates|(?:overrides\/)?missions\/[^/]+\/(?:command-)?templates))\//i;
 
 /** Path-derived classification. Content can only refine the framework label (Spec Kitty banner). */
 export interface PathClassification { path: string; role: Role; framework: Framework; featureId: string; archived: boolean }
@@ -63,7 +64,7 @@ export const isReviewChecklist = (path: string) => specKitChecklist.test(path.re
 export type LineScope = 'all' | 'validation' | 'context';
 export const lineScope = (path: string): LineScope => isReviewChecklist(path) ? 'context' : isValidationGuide(path) ? 'validation' : 'all';
 
-/** H92 (#92): a framework template file is never discovered, so no host lists, reads or scores it. */
+/** H92 (#92): a framework template file (or, with a trailing `/`, folder) is never discovered: no host lists, reads or scores it. */
 export const isFrameworkTemplate = (path: string) => frameworkTemplate.test(path.replaceAll('\\', '/'));
 
 export function isSpecCandidate(path: string, basenameOnly = false): boolean {

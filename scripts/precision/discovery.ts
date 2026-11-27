@@ -34,31 +34,34 @@ const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'bas
 if (typeof (arms.candidate as { isFrameworkTemplate?: unknown }).isFrameworkTemplate !== 'function') throw new Error('The candidate does not export isFrameworkTemplate.');
 const isTemplate = (arms.candidate as unknown as { isFrameworkTemplate: (path: string) => boolean }).isFrameworkTemplate;
 
-const findingKey = (f: Result['findings'][number]) => `${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`;
-const evidenceKey = (e: { path: string; line: number; text: string }) => `${e.path}:${e.line}|${e.text}`;
-const edgeKey = (t: Result['traceability'][number]) => `${t.from}>${t.to}|${t.resolved}|${evidenceKey(t.evidence)}`;
+type Keyed = [key: string, paths: string[]];
+const findingKey = (f: Result['findings'][number]): Keyed => [`${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`, f.evidence.map(e => e.path)];
+const evidenceKey = (e: { path: string; line: number; text: string }): Keyed => [`${e.path}:${e.line}|${e.text}`, [e.path]];
+const edgeKey = (t: Result['traceability'][number]): Keyed => [`${t.from}>${t.to}|${t.resolved}|${evidenceKey(t.evidence)[0]}`, [t.evidence.path]];
 const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined });
 const overLimit = (set: Set) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
 
-function diffKeys(before: string[], after: string[], cites: (key: string) => boolean) {
-  const [b, a] = [new Set(before), new Set(after)];
+function diffKeys(beforeKeys: Keyed[], afterKeys: Keyed[]) {
+  // An item cites a template when any of its evidence paths is one (from the evidence objects, not the key text).
+  const paths = new Map([...beforeKeys, ...afterKeys]);
+  const cites = (key: string) => paths.get(key)!.some(isTemplate);
+  const [b, a] = [new Set(beforeKeys.map(([k]) => k)), new Set(afterKeys.map(([k]) => k))];
   const removed = [...b].filter(k => !a.has(k)); const added = [...a].filter(k => !b.has(k));
   return { removed: removed.length, removedCitingTemplate: removed.filter(cites).length, added: added.length, addedCitingTemplate: added.filter(cites).length,
     removedOutside: removed.filter(k => !cites(k)), addedOutside: added.filter(k => !cites(k)) };
 }
-const citesTemplate = (key: string) => [...key.matchAll(/([^|,>]+?\.md):\d+/gi)].some(m => isTemplate(m[1]));
 
 /** Compares one scope: findings, decisions and traceability by whether they cite a template, plus statuses and score. */
 function scopeDiff(before: Result, after: Result) {
   const statuses: Record<string, number> = {};
-  for (const p of before.practices) {
-    const next = after.practices.find(q => q.id === p.id)!;
-    if (p.status !== next.status) statuses[`${p.id}:${p.status}->${next.status}`] = (statuses[`${p.id}:${p.status}->${next.status}`] ?? 0) + 1;
+  for (const id of new Set([...before.practices, ...after.practices].map(p => p.id))) {
+    const [b, a] = [before.practices.find(q => q.id === id)?.status ?? 'absent', after.practices.find(q => q.id === id)?.status ?? 'absent'];
+    if (b !== a) statuses[`${id}:${b}->${a}`] = (statuses[`${id}:${b}->${a}`] ?? 0) + 1;
   }
   return {
-    findings: diffKeys(before.findings.map(findingKey), after.findings.map(findingKey), citesTemplate),
-    decisions: diffKeys(before.decisions.map(evidenceKey), after.decisions.map(evidenceKey), citesTemplate),
-    traceability: diffKeys(before.traceability.map(edgeKey), after.traceability.map(edgeKey), citesTemplate),
+    findings: diffKeys(before.findings.map(findingKey), after.findings.map(findingKey)),
+    decisions: diffKeys(before.decisions.map(evidenceKey), after.decisions.map(evidenceKey)),
+    traceability: diffKeys(before.traceability.map(edgeKey), after.traceability.map(edgeKey)),
     statuses, score: [before.summary.score, after.summary.score] as const,
   };
 }
@@ -69,19 +72,20 @@ function invalidEvidence(result: Result, files: Map<string, string>) {
   const all = [...result.findings.flatMap(f => f.evidence), ...result.decisions, ...result.practices.flatMap(p => p.evidence)];
   for (const e of all) {
     const line = (files.get(e.path) ?? '').replace(/^﻿/, '').split(/\r?\n/)[e.line - 1];
-    if (line === undefined || !line.trim().startsWith(e.text.trim().slice(0, 200))) invalid++;
+    if (line === undefined || !e.text.trim() || !line.trim().startsWith(e.text.trim().slice(0, 200))) invalid++;
   }
   return invalid;
 }
 
 const roots = rootSchema.parse(JSON.parse((await readFile(values.roots)).toString()));
+if (!roots.length) throw new Error('No roots.');
 const totals = {
   roots: 0, rootsWithTemplates: 0,
   workspace: { baseline: 0, candidate: 0, removed: 0, removedNotTemplate: 0, added: 0 },
   github: { baseline: 0, candidate: 0, removed: 0, removedNotTemplate: 0, added: 0 },
   features: { baseline: 0, candidate: 0, removed: 0, removedWithNonTemplateFile: 0, added: 0, countChanged: 0, orderChangedRoots: 0 },
   commonFeatures: { analyzed: 0, overLimit: 0, changed: 0 },
-  scopes: { analyzed: 0, overLimit: 0, changed: 0, findingsRemoved: 0, findingsRemovedOutside: 0, findingsAdded: 0, findingsAddedOutside: 0,
+  scopes: { analyzed: 0, overLimit: 0, overLimitScopes: [] as string[], changed: 0, findingsRemoved: 0, findingsRemovedOutside: 0, findingsAdded: 0, findingsAddedOutside: 0,
     decisionsRemoved: 0, decisionsRemovedOutside: 0, decisionsAdded: 0, traceabilityRemoved: 0, traceabilityRemovedOutside: 0, traceabilityAdded: 0, traceabilityAddedOutside: 0,
     statusChanges: {} as Record<string, number>, scoreUp: 0, scoreDown: 0 },
   keptTemplateNamed: 0, keptTemplateNamedRoots: 0,
@@ -138,7 +142,8 @@ for (const root of roots) {
   // "All documents" plus each template folder's framework folder and the project folder above it.
   const prefixes = new globalThis.Set<string>(['']);
   for (const p of removedPaths) {
-    const m = /^(.*?)(?:^|\/)\.(?:specify|kittify)\//i.exec(p)!;
+    const m = /^(.*?)(?:^|\/)\.(?:specify|kittify)\//i.exec(p);
+    if (!m) continue; // Not a template: counted in removedNotTemplate, which fails the gate.
     const framework = p.slice(0, m[0].length - 1);
     prefixes.add(framework); if (m[1]) prefixes.add(m[1]);
   }
@@ -146,7 +151,7 @@ for (const root of roots) {
   if (removedPaths.length) for (const prefix of [...prefixes].sort()) {
     const pick = (engine: Engine, set: Set) => prefix === '' ? set : { ...set, artifacts: set.artifacts.filter(a => engine.inPathScope(a, [prefix])) };
     const selected = { baseline: pick(arms.baseline, sets.baseline), candidate: pick(arms.candidate, sets.candidate) };
-    if (overLimit(selected.baseline) || overLimit(selected.candidate)) { totals.scopes.overLimit++; scopes.push({ prefix: prefix || '(all)', overLimit: true }); continue; }
+    if (overLimit(selected.baseline) || overLimit(selected.candidate)) { totals.scopes.overLimit++; totals.scopes.overLimitScopes.push(`${root.id}:${prefix || '(all)'}`); scopes.push({ prefix: prefix || '(all)', overLimit: true }); continue; }
     totals.scopes.analyzed++;
     const [b, c] = await Promise.all([arms.baseline.analyze(selected.baseline), arms.candidate.analyze(selected.candidate)]);
     totals.evidenceInvalid.baseline += invalidEvidence(b, files); totals.evidenceInvalid.candidate += invalidEvidence(c, files);

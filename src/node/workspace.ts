@@ -1,7 +1,7 @@
 import { readFile, realpath, stat, mkdir, writeFile, rename, unlink, open } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, dirname, basename, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { classifyArtifact, contentHash, inFeatureScope, inPathScope } from '../core/artifacts.js';
+import { classifyArtifact, contentHash, inFeatureScope, inPathScope, isFrameworkTemplate } from '../core/artifacts.js';
 import { changedFeatures, indexWorkspace, type WorkspaceIndex } from './scope.js';
 import { applyProposal } from '../core/refine.js';
 import type { Artifact, ArtifactSet, PatchProposal } from '../core/types.js';
@@ -61,6 +61,9 @@ export async function readScope(index: WorkspaceIndex, request: ScopeRequest = {
   if ([feature !== null, Boolean(paths), Boolean(request.changed)].filter(Boolean).length > 1) throw new Error('Use only one of feature, paths or changed.');
   if (request.base !== undefined && !request.changed) throw new Error('A base revision requires changed.');
   if (paths?.some(p => isAbsolute(p) || p.replaceAll('\\', '/').split('/').includes('..'))) throw new Error('Paths must be relative to the workspace.');
+  // H92 (#92): an explicit scope inside a framework template folder would read nothing; say why.
+  const template = [feature, ...(paths ?? []), request.changed ? null : index.focus].find(p => p && isFrameworkTemplate(p.replace(/[\\/]+$/, '') + '/'));
+  if (template) throw new Error(`${template} is a Spec Kit or Spec Kitty template folder; templates are not analyzed.`);
   if (feature !== null) {
     if (!index.entries.some(a => a.featureId === feature && a.role !== 'instructions')) throw new Error(`Unknown feature: ${feature}`);
     return discoverWorkspace(index.root, { feature }, index);

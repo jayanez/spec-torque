@@ -504,13 +504,13 @@ test('the artifact set selector appears only when the loaded set has several fea
   await expect(editor).toHaveValue('FR-001: The first system MUST be fast.\n');
   await expect(page.getByRole('combobox', { name: 'Artifact set' })).toHaveCount(0);
   await writeFeature(workspace.root, 'specs/002-second', 'FR-002: The second system MUST be fast.\n');
-  // A Spec Kit template sorts first by path, but the set opens on the first feature's spec.
+  // H92 (#92): a Spec Kit template is never listed; the set opens on the first feature's spec.
   await mkdir(join(workspace.root, '.specify', 'templates'), { recursive: true });
   await writeFile(join(workspace.root, '.specify', 'templates', 'spec-template.md'), '# Feature Specification: [FEATURE NAME]\n');
   await page.getByRole('button', { name: 'Reload local workspace', exact: true }).click();
   const scope = page.getByRole('combobox', { name: 'Artifact set' });
   await expect(scope).toBeVisible();
-  await expect(scope.locator('option')).toHaveText(['All documents', 'specs/001-first', 'specs/002-second', '.specify/templates']);
+  await expect(scope.locator('option')).toHaveText(['All documents', 'specs/001-first', 'specs/002-second']);
   await expect(page.getByTitle('specs/001-first/spec.md')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('combobox', { name: 'Local workspace feature' })).toHaveCount(0);
   await scope.selectOption('specs/002-second');

@@ -47,6 +47,7 @@ test('CLI, MCP, the workbench, Codex and the in-process adapters agree on featur
     }
     await put(root, 'docs/notes/product-spec.md', '# Product\nThe service SHOULD log requests.\n');
     await put(root, '.specify/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
+    await put(root, '.kittify/missions/software-dev/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
     await put(root, '.claude/worktrees/copy/specs/009-copy/spec.md', '# Copy\n- FR-001: Copy.\n');
     await git(root, 'add', '-A'); await git(root, 'commit', '-qm', 'fixture');
     const feature = 'specs/002-payments';

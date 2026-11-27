@@ -28,11 +28,14 @@ function random(seed: number) {
 }
 
 const roots = rootSchema.parse(JSON.parse((await readFile(values.roots)).toString()));
+if (!roots.length) throw new Error('No roots.');
 const pool: { repository: string; revision: string; path: string; text: string }[] = [];
 for (const root of roots) {
   if (root.restricted) throw new Error('Restricted roots are not supported.');
   const { sha, files } = snapshot(root);
-  for (const [path, text] of files) if (baseline.isSpecCandidate(path, true) && !candidate.isSpecCandidate(path, true)) pool.push({ repository: root.repository, revision: sha, path, text });
+  // A path counts once when either mode (workspace basename, GitHub full path) stops discovering it.
+  const dropped = (basename: boolean) => (path: string) => baseline.isSpecCandidate(path, basename) && !candidate.isSpecCandidate(path, basename);
+  for (const [path, text] of files) if (dropped(true)(path) || dropped(false)(path)) pool.push({ repository: root.repository, revision: sha, path, text });
 }
 await rm(temp, { recursive: true, force: true });
 pool.sort((a, b) => (a.repository + a.path < b.repository + b.path ? -1 : 1));
