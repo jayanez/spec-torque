@@ -16,6 +16,7 @@ import { archiveEngine, commit, type Engine } from './engines.js';
 import { rootSchema, snapshot } from './sources.js';
 import { excludedPath } from '../../src/node/scope.js';
 import { githubExcluded } from '../../src/node/github.js';
+import { scopeDiff } from './scope-judge.js';
 
 const { values } = parseArgs({ options: { baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' }, roots: { type: 'string' }, out: { type: 'string' } } });
 if (!values.baseline || !values.roots) throw new Error('Use: discovery.ts --baseline <ref> [--candidate <ref>] --roots <roots.json> [--out <file>]');
@@ -33,62 +34,8 @@ const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'bas
 if (typeof (arms.candidate as { isFrameworkTemplate?: unknown }).isFrameworkTemplate !== 'function') throw new Error('The candidate does not export isFrameworkTemplate.');
 const isTemplate = (arms.candidate as unknown as { isFrameworkTemplate: (path: string) => boolean }).isFrameworkTemplate;
 
-type Finding = Result['findings'][number]; type Edge = Result['traceability'][number]; type Mark = Result['decisions'][number];
-// Unlike replay.ts, a finding is keyed by every evidence location, so a cross-document finding that loses a template line counts as changed.
-const findingKey = (f: Finding) => `${f.practiceId}|${f.evidence.map(e => `${e.path}:${e.line}`).join(',')}|${f.message}`;
-const markKey = (e: Mark) => `${e.path}:${e.line}|${e.text}`;
-const edgeKey = (t: Edge) => `${t.from}>${t.to}|${t.resolved}|${markKey(t.evidence)}`;
 const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined });
 const overLimit = (set: Selection) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
-const hasSpec = (set: Selection) => set.artifacts.some(a => a.role === 'spec' && !a.archived && !isTemplate(a.path));
-
-function diff<T>(before: T[], after: T[], key: (item: T) => string) {
-  const [b, a] = [new Map(before.map(i => [key(i), i])), new Map(after.map(i => [key(i), i]))];
-  return { removed: [...b].filter(([k]) => !a.has(k)).map(([, i]) => i), added: [...a].filter(([k]) => !b.has(k)).map(([, i]) => i) };
-}
-
-/**
- * H92a prediction 5. Items citing a template may go. Otherwise, in a *kept* scope (a non-template spec remains)
- * nothing is removed, except a resolved edge to a template-defined ID that comes back unresolved, and only an
- * undefined-reference finding or unresolved edge for a template-defined ID may be added. In an *emptied* scope
- * a finding may go only when its practice is `unknown` in the candidate, an edge only when its target is
- * template-defined, and nothing is added. Returns every item that breaks the prediction.
- */
-function scopeDiff(before: Result, after: Result, selected: { baseline: Selection; candidate: Selection }) {
-  const statuses: Record<string, number> = {};
-  for (const id of new Set([...before.practices, ...after.practices].map(p => p.id))) {
-    const [b, a] = [before.practices.find(q => q.id === id)?.status ?? 'absent', after.practices.find(q => q.id === id)?.status ?? 'absent'];
-    if (b !== a) statuses[`${id}:${b}->${a}`] = (statuses[`${id}:${b}->${a}`] ?? 0) + 1;
-  }
-  const kind = hasSpec(selected.candidate) ? 'kept' : 'emptied';
-  const templateText = selected.baseline.artifacts.filter(a => isTemplate(a.path)).map(a => a.content).join('\n');
-  const specText = selected.baseline.artifacts.filter(a => a.role === 'spec' && !isTemplate(a.path)).map(a => a.content).join('\n');
-  const word = (id: string) => new RegExp(`(?<![\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`);
-  // Scope-wide, not per feature namespace: an ID defined in another feature's spec only adds breaks (conservative).
-  const templateDefined = (id: string) => word(id).test(templateText) && !word(id).test(specText);
-  const undefinedRef = (f: Finding) => /^Reference (\S+) has no definition/.exec(f.message)?.[1];
-  const status = (id: string) => after.practices.find(p => p.id === id)?.status;
-  const cites = (paths: string[]) => paths.some(isTemplate);
-  const findings = diff(before.findings, after.findings, findingKey);
-  const decisions = diff(before.decisions, after.decisions, markKey);
-  const edges = diff(before.traceability, after.traceability, edgeKey);
-  const addedEdge = new Set(edges.added.map(t => `${t.from}>${t.to}|${markKey(t.evidence)}`));
-  const breaks: string[] = [];
-  for (const f of findings.removed) if (!cites(f.evidence.map(e => e.path)) && !(kind === 'emptied' && status(f.practiceId) === 'unknown')) breaks.push(`finding-removed ${findingKey(f)}`);
-  for (const f of findings.added) if (!cites(f.evidence.map(e => e.path))) {
-    const id = undefinedRef(f);
-    if (!(kind === 'kept' && f.practiceId === 'I2.3' && id && templateDefined(id))) breaks.push(`finding-added ${findingKey(f)}`);
-  }
-  for (const e of decisions.removed) if (!cites([e.path])) breaks.push(`decision-removed ${markKey(e)}`);
-  for (const e of decisions.added) if (!cites([e.path])) breaks.push(`decision-added ${markKey(e)}`);
-  for (const t of edges.removed) if (!cites([t.evidence.path])) {
-    const back = t.resolved && addedEdge.has(`${t.from}>${t.to}|${markKey(t.evidence)}`);
-    if (!(templateDefined(t.to) && (kind === 'emptied' || back))) breaks.push(`edge-removed ${edgeKey(t)}`);
-  }
-  for (const t of edges.added) if (!cites([t.evidence.path]) && !(kind === 'kept' && !t.resolved && templateDefined(t.to))) breaks.push(`edge-added ${edgeKey(t)}`);
-  const count = <T>(d: { removed: T[]; added: T[] }) => ({ removed: d.removed.length, added: d.added.length });
-  return { kind, findings: count(findings), decisions: count(decisions), traceability: count(edges), breaks, statuses, score: [before.summary.score, after.summary.score] as const };
-}
 
 /** Evidence is valid when its line exists at its path and the line starts with the cited text. */
 const linesOf = new Map<string, string[]>();
@@ -189,7 +136,7 @@ for (const root of roots) {
     totals.scopes.analyzed++;
     const [b, c] = await Promise.all([arms.baseline.analyze(selected.baseline), arms.candidate.analyze(selected.candidate)]);
     totals.evidenceInvalid.baseline += invalidEvidence(b, files); totals.evidenceInvalid.candidate += invalidEvidence(c, files);
-    const d = scopeDiff(b, c, selected);
+    const d = scopeDiff(b, c, selected, isTemplate);
     const s = totals.scopes;
     s[d.kind as 'kept' | 'emptied']++;
     if (comparable(b) !== comparable(c)) s.changed++;

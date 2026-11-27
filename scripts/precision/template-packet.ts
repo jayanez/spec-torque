@@ -3,7 +3,7 @@
  * in the baseline) from public roots, one per repository and path, with a fixed seed, and writes them
  * with their full committed text for blind labeling. Labels never see the engine, the rule or the path rule's name.
  *
- *   node --import tsx scripts/precision/template-packet.ts --baseline <ref> --candidate <ref> --roots <roots.json> --out <dir> [--seed 42092] [--size 100]
+ *   node --import tsx scripts/precision/template-packet.ts --baseline <ref> --candidate <ref> --roots <roots.json> --out <dir> --seed <n> [--size 100]
  */
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -15,8 +15,9 @@ import { sha256 } from './probe.js';
 import { sample } from './prose.js';
 
 const { values } = parseArgs({ options: { baseline: { type: 'string' }, candidate: { type: 'string', default: 'HEAD' }, roots: { type: 'string' }, out: { type: 'string' },
-  seed: { type: 'string', default: '42092' }, size: { type: 'string', default: '100' } } });
-if (!values.baseline || !values.roots || !values.out) throw new Error('Use: template-packet.ts --baseline <ref> [--candidate <ref>] --roots <roots.json> --out <dir>');
+  seed: { type: 'string' }, size: { type: 'string', default: '100' } } });
+// The seed is per hypothesis (H92 42092, H92a 42093), so it is never defaulted.
+if (!values.baseline || !values.roots || !values.out || !values.seed) throw new Error('Use: template-packet.ts --baseline <ref> [--candidate <ref>] --roots <roots.json> --out <dir> --seed <n> [--size 100]');
 const revisions = { baseline: commit(values.baseline), candidate: commit(values.candidate!) };
 if (revisions.baseline === revisions.candidate) throw new Error('Both arms are the same revision.');
 const temp = await mkdtemp(join(tmpdir(), 'spectorque-template-packet-'));
