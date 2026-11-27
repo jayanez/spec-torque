@@ -1370,3 +1370,50 @@ pilot.
 within the threshold on low fresh power and on the pilot. Rule 2 stops; it is
 reconsidered only if a fresh, pre-registered set shows the construction in natural
 plan or tasks text.
+
+### H106: labeled dependency fields count for P1.3 — **holds; proposed for merge**
+
+Tracking: [#106](https://github.com/jayanez/spec-torque/issues/106).
+- Pre-registered at `2523c73`. The twins and the fresh sources were frozen at
+  `4afe056`, with Amendment H106-1 (query `T001` instead of the `T0` prefix, which
+  code search does not match).
+- The first candidate (`60c25f5`) passed every gate. The owner then asked for a full
+  branch review. Three independent reviews found false matches (technology lists such
+  as `**Primary Dependencies**: …, ISO-8601`, lowercase tokens such as `utf-8` and
+  `t3`, emphasized `*none*`), and quadratic backtracking on long runs of stars or
+  spaces after the colon (`'*'.repeat(50000)`: 7.9 s). Amendment H106-2 (`5aaba12`)
+  anchors the label, makes the ID case-sensitive, widens the absence words, bounds
+  the value to 200 characters and adds 18 twins. Every gate below was re-run on the
+  final candidate, `7b171f4`.
+- Engine 0.1.17. The product version stays at 0.3.0 (owner decision: the product bump
+  belongs to the next release). Comparator: 0.1.16 (`develop`, `0084178`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (40 EN/ES), earlier twins, minimal pairs | holds: 40 of 40 (0.1.16 meets 26, failing exactly the 14 targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12, H7 and H7a unchanged, H8 10/10, H85 13/13, H9 14/14; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed, 0 metric groups changed |
+| 3. Earlier development and fresh sets (75 roots, 4685 features) | holds: 54 features move P1.3 `missing` → `partial`, in 9 roots; nothing else changes (no other status, finding or open decision; 41 dimension scores rise, none falls). Every new evidence line is a labeled field (`**Dependency**: T013, T016.`, `Dependencies: T001→T002…`, `**Dependencies:** ENV-3`) |
+| 4. Fresh set and adjudication | holds: 316 features in 5 roots (4 EN, 1 ES); 6 move `missing` → `partial`, nothing else changes. The 40 newly accepted lines (35 distinct) were labeled blind by two agent sessions: 35/35 `positive` each, 0 disputes (threshold: at most 2 negative or disputed). The final candidate accepts exactly the same 40 lines |
+| 5. Evidence | holds: 238 pilot P1.3 evidence lines, 0 invalid |
+
+**Pilot repository (development data, 81 features with a P1.3 result, work tree,
+counts only).** P1.3 goes from 63 `missing` / 18 `partial` to 21 / 60: the
+predicted 42 features move to `partial`, and none moves back. Of the 21 still
+`missing`, 15 have no dependency line and 6 only `none` or ID-less values. No other
+practice status, finding, open decision or non-P1 dimension changes. 21 features gain
+1 point (P1); the mean score goes from 12.90 to 13.16.
+
+**Known limits.**
+- The unchanged 0.1.16 verb phrase still counts `Depends on: none. Verified by T009.`
+  and reads lowercase tokens as IDs after `depends on` or `requires`; its `.*` is
+  also quadratic on adversarial lines. That branch is outside H106.
+- An uppercase standard name that starts a field still counts
+  (`Dependencies: UTF-8 locale`).
+- A field whose IDs are on the following list lines (`**Dependencies**:` then
+  `  - T001`), a table column, and a value whose first ID comes more than 200
+  characters after the colon are not recognized.
+- Absence words are matched in ASCII case only (`NINGÚN` is not one).
+- The Spanish fresh power is low: 1 eligible root.
+- Both reviewers are agent sessions of one model family.
+
+**Decision.** Propose H106 (engine 0.1.17) for merge.
