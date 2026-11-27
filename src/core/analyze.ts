@@ -136,8 +136,8 @@ const english = roleSubject('given|when|then|and|but', 'the|a|an|each|every|any'
   '(?:developer|operator|maintainer|reviewer|administrator|admin|owner|engineer|author|contributor|approver|auditor|analyst)s?');
 const spanish = roleSubject('dado(?:\\s+que)?|cuando|entonces|y', 'el|la|los|las|un|una|cada',
   '(?:desarrollador|operador|mantenedor|revisor|administrador|colaborador|aprobador|autor|auditor)(?:a|es|as)?|(?:propietari|dueñ|ingenier)(?:o|a|os|as)|analistas?');
-// Present forms only (H104a rule 4); H85's -s fragment, less the preposition "as" (H104-2).
-const englishVerb = new RegExp(String.raw`^(?:must|shall|should|may|might|can|cannot|could|will|would|is|are|has|have|does|do|\p{L}+n['’]t|(?!as$)${verbFormS})$`, 'iu');
+// Present forms only (H104a rule 4); H85's -s fragment, less the preposition "as" (H104-2) and "was" (H104a-2).
+const englishVerb = new RegExp(String.raw`^(?:must|shall|should|may|might|can|cannot|could|will|would|is|are|has|have|does|do|\p{L}+n['’]t|(?!(?:as|was)$)${verbFormS})$`, 'iu');
 const spanishVerb = /^(?!(?:a|ante|contra|de|desde|durante|entre|hacia|hasta|mediante|para|sobre)$)(?:debe|deben|deberá|deberán|puede|pueden|podrá|podrán|es|son|está|están|tiene|tienen|ha|han|\p{L}*(?:a|e|an|en))$/iu;
 // Rule 7: a word in -s followed by is/are/… is a plural noun ("the operator logs are …").
 const nounBefore = /^(?:is|are|was|were|has|have)$/i;

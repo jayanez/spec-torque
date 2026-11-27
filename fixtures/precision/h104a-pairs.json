@@ -686,6 +686,296 @@
         "C1.1": "partial"
       },
       "note": "Control, Spanish."
+    },
+    {
+      "id": "past-was-en",
+      "construct": "process",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The operator was notified of the outage.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104a-2 (added after review): \"was\" is a past form (rule 4)."
+    },
+    {
+      "id": "present-is-en",
+      "construct": "product",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The operator is notified of the outage.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Twin: \"is\" is present."
+    },
+    {
+      "id": "undated-en",
+      "construct": "product",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The owner moves the release order.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Opposite of dated-en."
+    },
+    {
+      "id": "undated-es",
+      "construct": "product",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "El propietario cambia el orden de entrega.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Opposite of dated-es."
+    },
+    {
+      "id": "product-object-en",
+      "construct": "product",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The reviewer reads the dashboard before each release.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Opposite of document-object-en."
+    },
+    {
+      "id": "product-object-es",
+      "construct": "product",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "El revisor lee el panel antes de cada versión.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Opposite of document-object-es."
+    },
+    {
+      "id": "after-fence-en",
+      "construct": "fence",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "```text",
+          "echo build",
+          "```",
+          "The operator approves the release.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Fence state resets after the closing fence."
+    },
+    {
+      "id": "after-fence-es",
+      "construct": "fence",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "```text",
+          "echo build",
+          "```",
+          "El operador aprueba la versión.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Spanish."
+    },
+    {
+      "id": "substring-and-word-en",
+      "construct": "generic",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The refactor keeps the user's factor table.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Opposite of substring-en: a whole generic word on the same line."
+    },
+    {
+      "id": "nested-product-heading-en",
+      "construct": "section",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "## Risks",
+          "",
+          "### Behaviour",
+          "",
+          "The operator restarts the node.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): Rule 2 reads the nearest heading only."
+    },
+    {
+      "id": "notes-heading-en",
+      "construct": "section",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "## Notes",
+          "",
+          "- The owner approves the thresholds.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104a-2 (added after review): Rule 2: \"Notes\" is a process heading."
+    },
+    {
+      "id": "draft-note-heading-en",
+      "construct": "section",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "## Draft note",
+          "",
+          "- The owner approves the thresholds.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104a-2 (added after review): H104a-1: singular \"note\" is not a process heading."
     }
   ]
 }

@@ -25,6 +25,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { archiveEngine, commit, type Engine } from './engines.js';
 import { sample } from './prose.js';
+import { z } from 'zod';
 import { rootSchema, snapshot, type Root } from './sources.js';
 
 const { values } = parseArgs({ options: {
@@ -40,7 +41,8 @@ if (!Number.isInteger(max) || max < 1 || !Number.isInteger(seed)) throw new Erro
 const roots: Root[] = (await Promise.all(values.roots.map(async f => rootSchema.parse(JSON.parse(await readFile(f, 'utf8')))))).flat();
 if (roots.some(root => root.restricted)) throw new Error('Packets are built from public roots only.');
 type Detail = { root: string; sha: string; feature: string; changes: { id: string; from: string; to: string }[] };
-const excluded = new Set((await Promise.all((values.exclude ?? []).map(async f => JSON.parse(await readFile(f, 'utf8')) as { root: string; feature: string }[]))).flat().map(k => `${k.root}/${k.feature}`));
+const keySchema = z.array(z.object({ root: z.string(), feature: z.string() })).min(1);
+const excluded = new Set((await Promise.all((values.exclude ?? []).map(async f => keySchema.parse(JSON.parse(await readFile(f, 'utf8')))))).flat().map(k => `${k.root}/${k.feature}`));
 const direction = (d: Detail) => d.changes.find(c => c.id === 'P2.1' && c.from === 'missing' && c.to === 'partial') ? 'gain'
   : h104a && d.changes.find(c => c.id === 'P2.1' && c.from === 'partial' && c.to === 'missing') ? 'loss' : undefined;
 const details = (await Promise.all(values.detail.map(async f => JSON.parse(await readFile(f, 'utf8')).detail as Detail[]))).flat()
@@ -68,11 +70,16 @@ const inContext = async (engine: Engine, path: string, text: string[], keep: num
 };
 const cueInContext = async (kind: 'gain' | 'loss', path: string, text: string[], i: number) => {
   if (!text[i].trim() || /^\s*#/.test(text[i])) return false;
-  if (kind === 'loss') return await inContext(arms.baseline, path, text, [i]) === 'partial' && await inContext(arms.candidate, path, text, [i]) === 'missing';
+  if (kind === 'loss') return await inContext(arms.baseline, path, text, [i]) === 'partial' && await inContext(arms.candidate, path, text, [i - 1, i]) === 'missing';
   return await inContext(arms.candidate, path, text, [i - 1, i]) === 'partial' && await inContext(arms.candidate, path, text, [i - 1]) === 'missing' &&
     await inContext(arms.baseline, path, text, [i - 1, i]) === 'missing';
 };
-const sectionOf = (text: string[], i: number) => text.slice(0, i).reverse().find(t => /^\s*#{1,6}[ \t]/.test(t)) ?? '';
+/** The nearest heading above line i, outside fenced blocks, as the engine reads it. */
+const sectionOf = (text: string[], i: number) => {
+  let fenced = false; let section = '';
+  for (const t of text.slice(0, i)) { if (/^\s*(?:```|~~~)/.test(t)) fenced = !fenced; else if (!fenced && /^\s*#{1,6}[ \t]/.test(t)) section = t; }
+  return section;
+};
 
 const PROPOSITION = 'This line names a person or role who performs, requests or receives the specified product behavior.';
 type Cue = { path: string; line: number; section?: string; context: string[] };

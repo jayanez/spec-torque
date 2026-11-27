@@ -1725,6 +1725,16 @@ were wider than intended:
 
 The twins are unchanged.
 
+### Amendment H104a-2 (2026-11-27, after adjudication; code review)
+
+The pre-merge review found that `was` passes H85's `-s` verb-form fragment, so "The
+operator was notified" counted although rule 4 drops `was`. The verb test now excludes
+`was`, as frozen. The change only removes gains. The adjudicated packet, rebuilt with the
+fix, is checked below. Twelve twins are added for the opposite cases the review found
+missing (no date, a product object, a line after a fence, a whole generic word beside a
+substring, a product subheading under a process heading, `Notes` against `Draft note`,
+and `was` against `is`). Nothing else changes.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
