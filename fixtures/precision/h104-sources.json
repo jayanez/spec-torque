@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H104 confirmation set (role nouns in actor position for P2.1 and C1.1, #104). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"When the operator\", \"As a developer\", \"operator precedence\" (negative control) and \"el operador\" in Markdown files named spec.md under specs/, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, #52 and H3-H9, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": {},
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/raphaelmansuy/edgequake",
+      "commit": "139f492f830329fceac9de9501b723f25ec4d22e",
+      "license": "Apache-2.0",
+      "query": "\"When the operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/panaversity/ksor",
+      "commit": "b50f28926fae942d891f77c59fff42086312191e",
+      "license": "Apache-2.0",
+      "query": "\"When the operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/francordel/myrtia",
+      "commit": "a5340affbfabd624740f101dbc1df9454d3874bc",
+      "license": "Apache-2.0",
+      "query": "\"When the operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/tykeal/homeassistant-rental-control",
+      "commit": "5a62772776d130bb8a7957484127996caf04cec0",
+      "license": "Apache-2.0",
+      "query": "\"When the operator\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/S2thend/cursor-history",
+      "commit": "b40612e7666b9ce7ad462e9dcaec9468e7431495",
+      "license": "MIT",
+      "query": "\"As a developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/finos/traderX",
+      "commit": "0578f015b61d38c95d1ca5fbbc7a02cadbef1959",
+      "license": "Apache-2.0",
+      "query": "\"As a developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/easyops-cn/a2ui-sdk",
+      "commit": "ec372f9a967497f24fe5513b75b3e25e0f23f70e",
+      "license": "Apache-2.0",
+      "query": "\"As a developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/fsprojects/FSharp.Data.JsonSchema",
+      "commit": "a55d7874f6c89f350f8ec95dc30ae02ceda7abef",
+      "license": "MIT",
+      "query": "\"As a developer\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Puchaczov/Musoq",
+      "commit": "995196ba6cd5ab083f5d4160b8894bb9f2435e29",
+      "license": "MIT",
+      "query": "\"operator precedence\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/hcholm/makrell-omni",
+      "commit": "50b375c298990249617191ba99aca7232d399ea2",
+      "license": "MIT",
+      "query": "\"operator precedence\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/Akanoa/Rustviz",
+      "commit": "9fcc40ceca0d7edd4b479e68b1dfae00342abe89",
+      "license": "Apache-2.0",
+      "query": "\"operator precedence\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/tracedown/lacelang",
+      "commit": "f8374095252099b49dd258fd334cf621fa400ed4",
+      "license": "Apache-2.0",
+      "query": "\"operator precedence\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/kevinrivm/vocero-crm",
+      "commit": "aa90a8146f05c836d0e1e242cb7f137e07b06e32",
+      "license": "MIT",
+      "query": "\"el operador\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/tactical-mind/tfe_muia_unir_188",
+      "commit": "3001490a2c6684593d64c49f8fc2243f27b71c79",
+      "license": "MIT",
+      "query": "\"el operador\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/KarlSlim7k/StreamCtrl.app",
+      "commit": "8ce6a6e6fe3e23d0de66bc1f2123cdaf8867b331",
+      "license": "MIT",
+      "query": "\"el operador\" path:specs filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/gsosa7829-beep/sideseguate-vms",
+      "commit": "e524c84ba3009cf874d8d824c290ab30a8e48c4a",
+      "license": "MIT",
+      "query": "\"el operador\" path:specs filename:spec.md"
+    }
+  ]
+}
