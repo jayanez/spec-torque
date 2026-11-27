@@ -1445,7 +1445,7 @@ the word, and this gap alone decides the status.
 0.1.16 reports P2.1 and C1.1 `partial` in 26 features and `missing` in 6, the same 6
 for both practices. The owner adjudicated 3 of the 6 as an engine defect: the spec
 states its actor by role in a scenario or narrative line. In the other 3, role
-nouns occur only as modifiers ("owner decision", "operator grant") or in
+nouns occur only as modifiers of another noun (synthetic: "the reviewer queue") or in
 constructions this rule does not read (a relative clause, a subjunctive).
 
 **Why a position rule and not a wider word list.** The current cue is a bare

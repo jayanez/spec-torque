@@ -1417,6 +1417,25 @@ would be pre-registered and measured again on a new fresh set:
   features, use this construction; excluding it by rule would likely also exclude
   the pilot gains, so this is a policy choice, not a detector fix.
 
+**Review inputs for H104a (pre-merge review of this branch).**
+- *Altitude.* Read the cue on the engine's own lines rather than physical lines:
+  skip the line-start branch on `Line.continuation` (the agreed-negative "owner
+  columns"), or test the joined unit. Share one verb-form fragment with H85 instead of
+  retyping it. Scoping the cue to product-narrative units (user stories, scenario
+  lines, the user-scenario section) would remove both the system-node `member` and
+  the process roles without a noun list; it is the policy choice above.
+- *Uncovered misreads, found by probing the reverted regexes.* A plural noun after a
+  role noun passes the `-s` test ("the operator logs are retained"); a Spanish
+  adjective in `-a` or `-e` passes the Spanish test ("la revisora técnica decide",
+  "el operador responsable"); Spec Kit's `**Given**` bold scenario keyword reaches
+  the rule only through the determiner branch. Each needs a twin in H104a.
+- *Carried over from 0.1.16.* The generic cue has no word boundaries, so "refactor",
+  "factor" and "superuser" count as actor words, and fenced lines can carry it. Both
+  change 0.1.16 behaviour and need their own pre-registration.
+- *Packet.* The packet script reads the files at the scan's revision, fails when
+  both arms are the same engine or an item has no cue line, and skips archived
+  specs. Rebuilt with these checks, the adjudicated packet is byte-identical.
+
 **Decision.** H104 stops under its stop rule and is reverted on the branch; engine stays
 0.1.16. The owner decides between H104a and stopping #104.
 

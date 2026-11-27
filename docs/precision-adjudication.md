@@ -304,8 +304,8 @@ pre-registration (`ef900b6`), before any packet was built: at most 2 items agree
 `negative` or disputed, or at most 5% when there are more than 40 items. Disputed
 and `unknown` items count against it.
 
-**Packet.** Built with `scripts/precision/actor-packet.ts` from the scans of the
-earlier sets and the H104 fresh set: all changed features, or 100 drawn with seed
+**Packet.** Built with `scripts/precision/actor-packet.ts --baseline 0084178
+--candidate fb8fd53` from the scans of the earlier sets and the H104 fresh set: all changed features, or 100 drawn with seed
 42104. For each feature, up to 3 spec lines that carry the new cue (found by
 analyzing each line alone with both engines), with two lines of context on each side.
 `key.json` holds the root and feature and is not opened by reviewers.

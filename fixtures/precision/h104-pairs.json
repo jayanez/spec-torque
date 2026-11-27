@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "H104 synthetic twins (#104): role nouns in actor position for P2.1 and C1.1. Constructed before the H104 candidate from the frozen policy; not independent labels.",
+  "description": "H104 synthetic twins (#104): role nouns in actor position for P2.1 and C1.1. Constructed before the H104 candidate from the frozen policy; not independent labels. The candidate and its test (tests/actors.test.ts) were reverted after gate 4; the twins remain as the pre-registration record and run with scripts/precision/verification.ts.",
   "cases": [
     {
       "id": "issue-example-en",
