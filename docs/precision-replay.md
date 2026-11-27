@@ -2295,6 +2295,119 @@ counted over the whole assessed set, as for requirement lines, so a multi-featur
 a heading and the lines that inherit its ID are both counted (no status depends on the count); a
 heading and a list item that restate one ID are a duplicate (H3a limit).
 
+## Pre-registered hypothesis H52b (frozen before sources are chosen or the candidate is built)
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The second bounded hypothesis
+the owner approved (2026-11-27), after H52 merged (engine 0.1.20, `297b7ed`). H52c follows.
+
+**Failure.** Requirement IDs are read with `\b(?:FR|NFR|REQ|R)-\d+\b`. Two forms that projects use
+for one requirement ID are therefore misread:
+- *qualified* IDs, a namespace joined by hyphens before the family (`VP-REQ-01`, `SYS-FR-001`,
+  `AIOPS-FR-012`): only the embedded `REQ-01` is read. A line or heading that defines `VP-REQ-01`
+  defines nothing, and two namespaces with the same number are one ID;
+- *group-infixed* IDs, a group between the family and the number (`FR-A-001`, `FR-P1-001`,
+  `NFR-SEC-01`): nothing is read, so every such requirement line gets "Requirement has no stable
+  identifier".
+
+**Development data.** Phase 0 counts (engine 0.1.19): on the 137 earlier public roots, 399 spec,
+11 plan and 78 context lines carry a qualified ID in 9 features (230 spec lines are admitted only
+through the embedded ID), and about 125 I1.2 warnings lead with a group-infixed `FR` ID. On the
+pilot, 23 plan lines in 2 features carry a qualified ID and no I2.3 error involves one (H9 rule 1
+already reads them as external); no infixed ID.
+
+**Policy.** One ID grammar for identification, definitions and references:
+1. A requirement ID is, in this order:
+   - *qualified*: one or more namespace segments, each an uppercase letter followed by uppercase
+     letters or digits, joined by hyphens, then `-` and `FR`, `NFR` or `REQ`, `-` and digits
+     (`VP-REQ-01`, `T001-FR-001`). A namespace in other case is not read, and the ID is read
+     without it;
+   - *group-infixed*: `FR` or `NFR`, `-`, a group of uppercase letters or digits with at least one
+     letter, `-` and digits (`FR-A-001`, `FR-1B-01`, `NFR-SEC-01`);
+   - *bare*: `FR`, `NFR`, `REQ` or `R`, `-` and digits, as in 0.1.20.
+   The family is matched in any case, as in 0.1.20. An ID is not preceded by a letter, digit or
+   underscore and not followed by one; a hyphen before it is allowed, so a range
+   (`FR-001-FR-003`) still reads both IDs. An ID is upper-cased.
+2. *Identification* (an ID on the line or on its unit's first line, I1.2 and I2.2), *defining
+   positions* (H3a, with the same markup prefixes and the `.digit` exclusion), H5a units, heading
+   inheritance and H52 requirement headings use this grammar. An H52 heading counts when its
+   defining ID's family is `FR`, `NFR` or `REQ` (qualified IDs always are) and it carries one ID.
+3. *References* (plan and tasks lines, I2.3, C1.3, C2.3, traceability) use this grammar. A
+   qualified reference is external, as in H9 rule 1, when its namespace is not one that the
+   feature's own spec lines or headings use with an ID; the H8 `R-` gate and the H9 `SPEC-<n>`
+   and textual qualifiers are unchanged.
+4. *Resolution*: a reference resolves against the defining positions and the IDs on admitted
+   spec lines, by the full ID. A qualified ID on an admitted spec line or in a defining position
+   also makes its unqualified form resolvable (`SYS-REQ-01` resolves a plan's `REQ-01`), as the
+   embedded match did in 0.1.20.
+
+Admission (which lines are requirement lines), E1.2, the contradiction rule and every other check
+keep the 0.1.20 expression. A group-infixed ID therefore does not admit a line by itself.
+
+**Comparator.** 0.1.20 (`develop` at `297b7ed`). Candidate engine 0.1.21, product 0.3.0.
+
+**Predictions.** A token is *new-form* when it is a qualified or group-infixed ID under rule 1.
+1. The 716 historical predictions, the minimal pairs and every earlier twin suite do not change.
+2. A feature none of whose active spec, plan or tasks documents contains a new-form token is
+   identical in both engines.
+3. Otherwise only I1.2 and I2.3 findings, the I1.2, I2.2, I2.3, C1.3 and C2.3 statuses and
+   evidence, traceability edges, and the I1, I2, C1 and C2 dimension scores and total may change,
+   and:
+   - a removed "no stable identifier" warning is on a line with a new-form ID, or in a unit or
+     under a defining heading whose ID is new-form;
+   - an added or removed duplicate error names a new-form ID, or is the 0.1.20 duplicate of the
+     bare ID embedded in a qualified one;
+   - an added "Reference … has no definition" error names a new-form ID. **The flagged risk:** a
+     plan or tasks line that cites the short form (`REQ-01`) of a spec's qualified ID
+     (`SYS-REQ-01`) gains no error (rule 4); predicted count 0;
+   - a removed reference error names a bare ID that was embedded in a new-form token on its line
+     (the 0.1.20 misreading), or a new-form ID that is now defined;
+   - a traceability edge changes only when it names a new-form ID or the bare ID inside one.
+4. *Pilot:* nothing outside prediction 3; the counts are reported.
+
+**Gate (all must hold to proceed).**
+1. EN/ES twins committed before the candidate in `fixtures/precision/h52b-pairs.json`, pinning
+   I1.2, I2.2 and I2.3 and the I1.2/I2.3 findings, each with its opposite-outcome twin:
+   - targets: an infixed requirement line (`- FR-A-001: … MUST …`: identified); an infixed
+     defining heading with a modal body (inherits); a qualified defining heading referenced by its
+     own plan (`## VP-REQ-01`, plan `VP-REQ-01`: resolved, no I1.2 warning); two namespaces with
+     one number (`VP-REQ-01`, `AV-REQ-01` list items: no duplicate); a duplicated qualified ID (a
+     duplicate error); a plan reference to an undefined qualified ID in an own namespace (an error
+     naming `VP-REQ-02`);
+   - the flagged risk: spec `- SYS-REQ-01: …`, plan `REQ-01` (resolved in both engines);
+   - negatives, unchanged: a lowercase namespace (`vp-REQ-01`), a group without a letter
+     (`FR-001-002`), a range (`FR-001-FR-003` in a plan, both resolved), `REQ-UI-01` (no infix
+     for REQ), an external qualified reference (H9);
+   - controls: bare IDs as in 0.1.20.
+2. The 716 historical predictions are unchanged.
+3. On the 137 earlier roots every prediction holds, judged per feature
+   (`scripts/precision/qualified-units.ts`): 0 items outside predictions 2 and 3.
+4. On a new fresh set the same holds, and the changed findings are labeled blind by two new
+   Sonnet sessions: **every** added finding, and 100 removed findings drawn with seed 42053 (all,
+   if fewer), each with its line, three lines of context and every line of the feature's spec,
+   plan and tasks documents that contains the same ID (at most 8), from the earlier and fresh
+   sets. **Proposition:** *the finding states a real problem in these documents.* Labels
+   `positive`, `negative`, `unknown`. An added item passes only when both say `positive`; a removed
+   item passes only when both say `negative`. Any disagreement or `unknown` fails, and the
+   author's notes never resolve one. **Threshold:** for added and removed items separately, at
+   most 2 fail, or at most 5% when there are more than 40.
+5. No evidence becomes invalid.
+
+**Stop rule.** If a gate fails, H52b stops, is recorded and reverted, and the owner decides.
+
+**Fresh sources.** Selected before the candidate exists, without reading any file content,
+through the REST code search API, in search order, up to 2 repositories per query:
+- qualified: `"SEC-REQ-001" filename:spec.md`, `"UI-FR-001" filename:spec.md`,
+  `"API-FR-001" filename:spec.md`, `"SYS-REQ-001" filename:plan.md`;
+- group-infixed: `"FR-A-001" filename:spec.md`, `"NFR-SEC-001" filename:spec.md`,
+  `"FR-UI-001" filename:spec.md`, `"FR-P1-001" filename:spec.md`;
+- public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier
+  `fixtures/precision/*-sources.json` files (H52 included), every one of the 137 earlier roots, and
+  the pilot repository owner, excluded; one repository per owner; each pinned to its
+  default-branch head SHA. Code search may split hyphenated tokens, so a selected repository need
+  not contain the form; shortfalls are recorded as `unfilled`.
+
+The list is committed in `fixtures/precision/h52b-sources.json` before the candidate commit.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98
