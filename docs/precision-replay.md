@@ -1544,6 +1544,45 @@ search API. The Spanish query returned 9 repositories, and only 1 is eligible; t
 other 8 have no license. The fresh set therefore holds 4 English roots and 1
 Spanish root.
 
+### Amendment H106-2 (2026-11-27, after the first candidate, from branch review; owner request)
+
+The owner asked for a full branch review before reporting. Three independent reviews
+of the first candidate (`60c25f5`) found inputs that break the frozen policy or the
+engine, each probed through the P1.3 pattern:
+- the combined `i` flag reads lowercase tokens as IDs, and the label is matched
+  anywhere, so the Spec Kit plan field `**Primary Dependencies**: …, ISO-8601 parsing`,
+  `Dependencies: utf-8 encoding` and `AWS t3` count;
+- the absence guard is bypassed by emphasis (`*none*`, `_none_`) and misses `nothing`,
+  `no`, `sin`;
+- `Dependencies:` followed by a long run of stars or spaces takes seconds
+  (`'*'.repeat(50000)`: 7.9 s), because the padding after the colon overlaps the lazy
+  value.
+
+The policy is narrowed and hardened before any gate is re-run:
+1. The label starts the line (after an optional list marker and `**` or `_`) or follows
+   `.`, `;`, `|` or `(`. `Primary Dependencies:` and `External dependencies:` are not
+   fields. The singular `Dependency:` / `Dependencia:` is added. `Depends on:` and
+   `Depende de:` are dropped from the field labels: the unchanged verb phrase already
+   accepts every line they would.
+2. Labels and absence words are case-insensitive; the ID is case-sensitive
+   (`[A-Z]{1,8}-\d+` or `T\d+`). The 0.1.16 verb phrase keeps its case-insensitive IDs
+   unchanged.
+3. Absence words: `none`, `nothing`, `no`, `n/a`, `not applicable`, `ninguna`,
+   `ninguno`, `ningún`, `nada`, `sin`, or a dash, after optional spaces, `*`, `_`, a
+   backtick or `(`.
+4. The value ends at a `.` followed by a space or the end of the line (a dot inside a
+   file name does not end it), and the ID must come within 200 characters of the colon.
+   The padding after the colon is matched once.
+
+The twins grow to 40 (18 added for H106-2, including the cases above and the known
+limit below). Every gate is re-run against the new candidate. The first fresh-set
+adjudication covered the first candidate's new lines; lines the narrowed candidate
+still accepts are a subset of them unless the scan shows otherwise, and any line
+outside that set is adjudicated the same way.
+
+**Known limit (not changed).** The unchanged verb phrase still counts a labeled
+`Depends on: none. Verified by T009.`; a twin pins that outcome.
+
 ## Synthetic minimal pairs
 
 `fixtures/precision/minimal-pairs.json` has 43 original EN/ES cases with 98

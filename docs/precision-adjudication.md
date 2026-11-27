@@ -296,3 +296,22 @@ count against the threshold until the owner resolves them.
 
 The packet held one removed finding, from rule 1. Rule 2 removed nothing and was
 later reverted, so the packet builder no longer records a rule in `key.json`.
+
+## H106: labeled dependency fields for P1.3 (#106)
+
+H106 only adds P1.3 evidence. The threshold was fixed in the pre-registration, before
+any source was chosen; the owner had not tightened it when the packet was drawn.
+
+**Packet.** Every plan or tasks line of the fresh roots that the candidate P1.3
+pattern accepts and the 0.1.16 pattern does not (40 lines, 35 distinct after
+deduplication by text), in source order, with three lines of context on each side.
+Reviewers see no engine output, rule or direction.
+
+**Proposition.** *This line states that the task or item it belongs to depends on, or
+is blocked by, the identified task or requirement.* `negative` means evidence that
+H106 accepts wrongly.
+
+**Reviewers.** Two independent agent sessions of one model family (a smaller and a
+larger model), with the same limits as earlier tracks.
+
+**Threshold.** At most 2 items agreed `negative` or left disputed.
