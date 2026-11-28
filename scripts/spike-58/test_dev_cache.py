@@ -232,6 +232,21 @@ class DevCacheTests(unittest.TestCase):
                 with directory(trusted):
                     self.fail('accepted symlink to a directory')
 
+    @unittest.skipIf(os.geteuid() == 0, 'root can read a search-only directory')
+    def test_cache_root_is_accessible_through_a_search_only_ancestor(self):
+        with tempfile.TemporaryDirectory() as temp:
+            ancestor = Path(temp) / 'search-only'
+            root = ancestor / 'cache'
+            root.mkdir(parents=True)
+            (root / 'index.json').write_text('[]')
+            ancestor.chmod(0o111)
+            try:
+                with self.assertRaises(PermissionError):
+                    list(ancestor.iterdir())
+                self.assertEqual(list(documents(root)), [])
+            finally:
+                ancestor.chmod(0o700)
+
     def test_bounded_http_read_rejects_short_body(self):
         body = io.BytesIO(b'short')
         body.headers = {'Content-Length': '100'}

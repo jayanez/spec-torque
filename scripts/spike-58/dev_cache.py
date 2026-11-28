@@ -16,6 +16,10 @@ GENERATION = re.compile(r'run-[0-9a-f]{32}')
 BLOB_ID = re.compile(r'[0-9a-f]{40}')
 
 
+class BlobVerificationError(ValueError):
+    pass
+
+
 def matches(path, family):
     if '\\' in path or any(part in ('', '.', '..') for part in path.split('/')):
         return False
@@ -34,20 +38,12 @@ def matches(path, family):
 @contextmanager
 def directory(path, parent=None):
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
-    if parent is not None:
-        fd = os.open(path, flags, dir_fd=parent)
-    else:
+    if parent is None:
         absolute = Path(path).absolute()
-        root, *components = (absolute.parent.resolve() / absolute.name).parts
-        fd = os.open(root, flags)
-        try:
-            for component in components:
-                child = os.open(component, flags, dir_fd=fd)
-                os.close(fd)
-                fd = child
-        except BaseException:
-            os.close(fd)
-            raise
+        # Let the kernel traverse the caller's ancestors with search permission.
+        # O_NOFOLLOW still applies at the cache root and to all relative opens.
+        path = absolute.parent.resolve(strict=True) / absolute.name
+    fd = os.open(path, flags, dir_fd=parent)
     try:
         yield fd
     finally:
@@ -113,7 +109,7 @@ def read_document(cache, source, document):
     if expected is None:
         return data, 'unverified-legacy'
     if git_blob(data) != expected:
-        raise ValueError('Cached bytes disagree with recorded Git blob')
+        raise BlobVerificationError('Cached bytes disagree with recorded Git blob')
     return data, 'matches-recorded-blob'
 
 
@@ -137,6 +133,8 @@ def stream_cache(root):
                 try:
                     data, _ = read_document(cache, source, document)
                     record = {'data': base64.b64encode(data).decode('ascii')}
+                except BlobVerificationError as error:
+                    record = {'error': str(error), 'verificationFailed': True}
                 except (OSError, ValueError) as error:
                     record = {'error': str(error)}
                 print(json.dumps(record), flush=True)

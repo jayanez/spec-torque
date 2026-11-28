@@ -23,10 +23,14 @@ const gitBlob = (data: Buffer) => createHash('sha1').update(`blob ${data.length}
 const treeSchema = z.object({ truncated: z.boolean(), tree: z.array(z.object({
   type: z.string(), mode: z.string(), path: z.string(), sha: z.string().regex(/^[a-f0-9]{40}$/u),
 })) });
+const { GH_TOKEN, GITHUB_TOKEN, ...cacheEnvironment } = process.env;
+const token = GH_TOKEN?.trim() || GITHUB_TOKEN?.trim();
 
 async function pinnedBlobs(repository: string, revision: string) {
+  if (token && !/^[a-z0-9._~+\/-]+=*$/iu.test(token)) throw new Error('Invalid GitHub token format');
   const response = await fetch(`https://api.github.com/repos/${repository}/git/trees/${revision}?recursive=1`, {
     signal: AbortSignal.timeout(25_000), redirect: 'error',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   if (!response.ok) throw new Error(`Cannot verify pinned tree: HTTP ${response.status}`);
   const { tree, truncated } = treeSchema.parse(await response.json());
@@ -39,7 +43,7 @@ async function pinnedBlobs(repository: string, revision: string) {
 // already-open directory and validate index paths before sending any bytes.
 const root = process.argv[2] ?? '/private/tmp/spec58-natural';
 const reader = spawn('python3', ['-B', fileURLToPath(new URL('./dev_cache.py', import.meta.url)), root],
-  { stdio: ['ignore', 'pipe', 'inherit'] });
+  { stdio: ['ignore', 'pipe', 'inherit'], env: cacheEnvironment });
 const exit = new Promise<number>(resolve => {
   reader.once('close', code => resolve(code ?? 1));
   reader.once('error', error => {
@@ -53,13 +57,16 @@ const readRecord = async () => {
   if (entry.done) throw new Error(`DEV cache reader ended before completing (exit ${await exit})`);
   return JSON.parse(entry.value) as unknown;
 };
-const recordSchema = z.union([z.object({ data: z.string() }), z.object({ error: z.string() })]);
+const recordSchema = z.union([z.object({ data: z.string() }), z.object({
+  error: z.string(), verificationFailed: z.literal(true).optional(),
+})]);
 const index = indexSchema.parse(await readRecord());
 const manifest = z.object({ sources: z.array(sourceSchema) }).parse(JSON.parse(await readFile(
   new URL('../../fixtures/precision/r52-dev-sources.json', import.meta.url), 'utf8')));
 
 const counts: Record<string, number> = {};
 const coverage = [];
+let verificationFailed = false;
 const fragments = new Map<string, { repository: string; revision: string; path: string; start: number; end: number }[]>();
 for (const source of index) {
   const repo = source.repository.replace(/^github\.com\//u, '');
@@ -76,11 +83,20 @@ for (const source of index) {
     let data: Buffer;
     try {
       const record = recordSchema.parse(await readRecord());
-      if ('error' in record) throw new Error(record.error);
+      if ('error' in record) {
+        verificationFailed ||= record.verificationFailed === true;
+        throw new Error(record.error);
+      }
       data = Buffer.from(record.data, 'base64');
+    } catch (error) {
+      ledger.skipped.push({ path: document.path, reason: String(error) });
+      continue;
+    }
+    try {
       blobs ??= pinnedBlobs(repo, source.commit);
       if ((await blobs).get(document.path) !== gitBlob(data)) throw new Error('Git blob mismatch for pinned path');
     } catch (error) {
+      verificationFailed = true;
       ledger.skipped.push({ path: document.path, reason: String(error) });
       continue;
     }
@@ -139,3 +155,4 @@ console.error(JSON.stringify({
     new Set(entries.map(entry => entry.repository)).size > 1).map(([fragmentHash, occurrences]) => ({ fragmentHash, occurrences })),
   unassessed: { 'C2.3': 'The authorized download index contains specs only. This check needs a task companion.' },
 }, null, 2));
+if (verificationFailed && coverage.every(source => source.scanned === 0)) process.exitCode = 1;

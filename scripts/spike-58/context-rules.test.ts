@@ -149,28 +149,48 @@ test('cached bytes must be the Git blob at the pinned path, even for an old inde
   const mock = join(root, 'mock.mjs');
   const tree = [{ type: 'blob', mode: '100644', path, sha }];
   const doc = join(root, 'kcalvelli/cairn/0.md');
-  async function run(pathInIndex: string, data: Buffer | string) {
+  async function run(pathInIndex: string, data: Buffer | string, {
+    status = 0, http = 200, gh = '', github = '', expectedToken = '',
+  } = {}) {
     await writeFile(doc, data);
     await writeFile(join(root, 'index.json'), JSON.stringify([
       { repository, commit, license: 'MIT', documents: [{ path: pathInIndex, local: '0.md' }] },
     ]));
-    const result = spawnSync(process.execPath, ['--import', 'tsx', '--import', mock, 'scripts/spike-58/scan-context.ts', root], { encoding: 'utf8' });
-    assert.equal(result.status, 0, result.stderr);
+    const result = spawnSync(process.execPath, ['--import', 'tsx', '--import', mock, 'scripts/spike-58/scan-context.ts', root], {
+      encoding: 'utf8', env: { ...process.env, GH_TOKEN: gh, GITHUB_TOKEN: github,
+        MOCK_TREE_HTTP_STATUS: String(http), MOCK_EXPECTED_TOKEN: expectedToken, PYTHONPATH: root },
+    });
+    assert.equal(result.status, status, result.stderr);
+    if (expectedToken) assert.ok(!result.stderr.includes(expectedToken));
     return { coverage: JSON.parse(result.stderr).coverage[0], stdout: result.stdout };
   }
   try {
     await mkdir(join(root, 'kcalvelli/cairn'), { recursive: true });
-    await writeFile(mock, `globalThis.fetch = async url => {
+    await writeFile(join(root, 'sitecustomize.py'), 'import os\nif "GH_TOKEN" in os.environ or "GITHUB_TOKEN" in os.environ:\n    os._exit(97)\n');
+    await writeFile(mock, `globalThis.fetch = async (url, options) => {
       if (url !== 'https://api.github.com/repos/kcalvelli/cairn/git/trees/${commit}?recursive=1') throw new Error(url);
+      const expected = process.env.MOCK_EXPECTED_TOKEN;
+      const header = new Headers(options.headers).get('Authorization');
+      if (header !== (expected ? 'Bearer ' + expected : null) || options.redirect !== 'error') throw new Error('Unexpected GitHub request options');
+      const status = Number(process.env.MOCK_TREE_HTTP_STATUS);
+      if (status !== 200) return new Response(null, {status});
       return Response.json(${JSON.stringify({ tree, truncated: false })});
     };`);
     const valid = await run(path, text);
     assert.equal(valid.coverage.scanned, 1);
     assert.match(valid.stdout, /empty-condition-and-outcome/u);
-    for (const result of [await run(path, 'altered bytes'), await run('openspec/specs/other/spec.md', text)]) {
+    for (const result of [await run(path, 'altered bytes', { status: 1 }),
+      await run('openspec/specs/other/spec.md', text, { status: 1 })]) {
       assert.equal(result.stdout, '');
       assert.match(result.coverage.skipped[0].reason, /Git blob mismatch/u);
     }
+    const rateLimited = await run(path, text, { status: 1, http: 403 });
+    assert.equal(rateLimited.stdout, '');
+    assert.equal(rateLimited.coverage.scanned, 0);
+    assert.match(rateLimited.coverage.skipped[0].reason, /HTTP 403/u);
+    assert.equal((await run(path, text, { gh: 'fake-gh-token', github: 'other-token', expectedToken: 'fake-gh-token' })).coverage.scanned, 1);
+    const denied = await run(path, text, { status: 1, http: 401, github: 'fake-github-token', expectedToken: 'fake-github-token' });
+    assert.match(denied.coverage.skipped[0].reason, /HTTP 401/u);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
