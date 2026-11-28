@@ -1,19 +1,29 @@
 import { access, lstat, realpath, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { configureWorkspace } from './workspace-config.mjs';
+import { configureWorkspace, tomlValue } from './workspace-config.mjs';
 
 const [major, minor] = process.versions.node.split('.').map(Number);
 if (major < 22 || (major === 22 && minor < 20)) throw new Error('SpecTorque requires Node 22.20 or later.');
-const operands = process.argv.slice(2);
-const mode = operands[0]?.startsWith('--') ? operands.shift() : undefined;
-const [input, second, revision, ...extra] = operands;
-const feature = mode === '--write' ? undefined : second;
-if (!input || input.startsWith('-') || extra.length || ![undefined, '--check', '--write'].includes(mode) ||
-    (mode === '--write' ? second !== '--expect' || !/^[a-f0-9]{64}$/u.test(revision ?? '') : revision || feature?.startsWith('-'))) {
+function usage() {
   throw new Error('Usage: node setup-workspace.mjs [--check] <trusted-worktree> [feature-id]\n' +
     '       node setup-workspace.mjs --write <trusted-worktree> --expect <revision from --check>');
 }
+
+function parseArgs(args) {
+  if (args[0] === '--write') {
+    const [, input, flag, revision] = args;
+    if (args.length !== 4 || !input || input.startsWith('-') || flag !== '--expect' || !/^[a-f0-9]{64}$/u.test(revision)) usage();
+    return { mode: '--write', input, revision };
+  }
+  const checking = args[0] === '--check';
+  const operands = checking ? args.slice(1) : args;
+  const [input, feature] = operands;
+  if (!input || input.startsWith('-') || operands.length > 2 || feature?.startsWith('-')) usage();
+  return { mode: checking ? '--check' : undefined, input, feature };
+}
+
+const { mode, input, feature, revision } = parseArgs(process.argv.slice(2));
 const root = await realpath(resolve(input));
 if (!(await stat(root)).isDirectory()) throw new Error('The worktree must be a directory.');
 const node = await realpath(process.execPath);
@@ -21,7 +31,7 @@ const server = fileURLToPath(new URL('./runtime/server.mjs', import.meta.url));
 const workbench = fileURLToPath(new URL('./runtime/workbench.mjs', import.meta.url));
 const assets = fileURLToPath(new URL('./web-dist/index.html', import.meta.url));
 await Promise.all([server, workbench, assets].map(path => access(path)));
-const toml = JSON.stringify;
+const toml = tomlValue;
 const fields = { command: node, args: [server], cwd: root, 'env.SPECTORQUE_ROOT': root };
 const config = [
   '[mcp_servers.spectorque-workspace]',

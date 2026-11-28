@@ -9,13 +9,15 @@ const manual = 'Cannot safely merge .codex/config.toml. Merge the printed SpecTo
 const sameKey = (left, right) => left.length === right.length && left.every((part, i) => part === right[i]);
 const prefix = (left, right) => left.length <= right.length && sameKey(left, right.slice(0, left.length));
 
+export const tomlValue = value => JSON.stringify(value).replaceAll('\u007f', '\\u007f');
+
 function fail() {
   throw new Error(manual);
 }
 
-// Scan statement boundaries and TOML keys. Values outside the managed block
-// are opaque; their original bytes are used in the resulting file.
+// Locate statement boundaries without rewriting unrelated TOML.
 function statements(source) {
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/u.test(source)) fail();
   const tokens = /"""(?:\\[\s\S]|"(?!")|""(?!")|[^"\\])*"""{1,3}|'''(?:'(?!')|''(?!')|[^'])*'''{1,3}|"(?:\\[^\r\n]|[^"\\\r\n])*"|'[^'\r\n]*'|#[^\r\n]*|\r?\n|[ \t]+|[.[\]{}=]|[A-Za-z0-9_-]+|[^\r\n]/gy;
   const result = [];
   let parts = [];
@@ -50,8 +52,12 @@ function keys(parts) {
     return index % 2 === 0;
   }).map(({ value }) => {
     if (/^[A-Za-z0-9_-]+$/u.test(value)) return value;
-    if (value.startsWith("'") && !value.startsWith("'''")) return value.slice(1, -1);
+    if (value.startsWith("'") && !value.startsWith("'''")) {
+      validateString(value);
+      return value.slice(1, -1);
+    }
     if (value.startsWith('"') && !value.startsWith('"""')) {
+      validateString(value);
       try {
         return JSON.parse(value.replace(/\\(?:U([0-9a-fA-F]{8})|.)/gu, (match, hex) =>
           hex ? JSON.stringify(String.fromCodePoint(Number.parseInt(hex, 16))).slice(1, -1) : match));
@@ -63,17 +69,147 @@ function keys(parts) {
   });
 }
 
+// Validate the layout before reusing any byte spans. Unfamiliar syntax falls
+// back to manual setup instead of reporting success on an unusable config.
+function validateString(value) {
+  const multiline = value.startsWith('"""') || value.startsWith("'''");
+  const delimiter = multiline ? 3 : 1;
+  const body = value.slice(delimiter, -delimiter);
+  const controls = multiline ? /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|\r(?!\n)/u : /[\x00-\x08\x0a-\x1f\x7f]/u;
+  if (controls.test(body)) fail();
+  if (value[0] === "'") return;
+  const escapes = /\\(?:[btnfr"\\]|u([a-fA-F0-9]{4})|U([a-fA-F0-9]{8})|([ \t]*\r?\n)|([\s\S]|$))/gu;
+  for (const [, shortHex, longHex, newline, invalid] of body.matchAll(escapes)) {
+    const code = Number.parseInt(shortHex ?? longHex ?? '', 16);
+    if (invalid !== undefined || (newline && !multiline) || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) fail();
+  }
+}
+
+const digits = '[0-9](?:_?[0-9])*';
+const decimal = '(?:0|[1-9](?:_?[0-9])*)';
+const exponent = '[eE][+-]?' + digits;
+const float = new RegExp('^[+-]?' + decimal + '(?:\\.' + digits + '(?:' + exponent + ')?|' + exponent + ')$', 'u');
+const integer = new RegExp('^(?:[+-]?' + decimal + '|0x[\\da-fA-F](?:_?[\\da-fA-F])*|0o[0-7](?:_?[0-7])*|0b[01](?:_?[01])*)$', 'u');
+
+function validateScalar(raw) {
+  if (/^(?:true|false|[+-]?(?:inf|nan))$/u.test(raw)) return;
+  if (float.test(raw) && Number.isFinite(Number(raw.replaceAll('_', '')))) return;
+  if (integer.test(raw)) {
+    const value = BigInt(raw.replaceAll('_', ''));
+    if (value >= -(2n ** 63n) && value < 2n ** 63n) return;
+  }
+  const dateTime = /^(?:(\d{4})-(\d{2})-(\d{2})(?:([Tt ])|$))?(?:(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:([Zz])|[+-](\d{2}):(\d{2}))?)?$/u.exec(raw);
+  if (dateTime) {
+    const [, year, month, day, separator, hour, minute, second, utc, offsetHour, offsetMinute] = dateTime;
+    const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    const monthDays = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const validDate = Number(day) >= 1 && Number(day) <= monthDays[Number(month) - 1];
+    const validTime = Number(hour) < 24 && Number(minute) < 60 && Number(second) < 60;
+    const validOffset = offsetHour === undefined || (Number(offsetHour) < 24 && Number(offsetMinute) < 60);
+    if ((!separator && validDate && !hour) ||
+        (validTime && (year ? validDate && validOffset : !utc && offsetHour === undefined))) return;
+  }
+  fail();
+}
+
+// A dotted assignment can extend another dotted assignment, but cannot turn
+// a declared table or a terminal value into a dotted key. An array-of-tables
+// header always descends into its most recent member.
+function define(namespace, path, kind) {
+  for (const part of path.slice(0, -1)) {
+    let entry = namespace.get(part);
+    if (!entry) {
+      entry = { kind: kind === 'value' ? 'dotted' : 'implicit', children: new Map() };
+      namespace.set(part, entry);
+    }
+    if (!entry.children || (kind === 'value' && entry.kind !== 'dotted')) fail();
+    namespace = entry.children;
+  }
+  const key = path.at(-1);
+  const previous = namespace.get(key);
+  if (kind === 'value') {
+    if (previous) fail();
+    namespace.set(key, { kind });
+    return;
+  }
+  if (previous && (kind === 'array' ? previous.kind !== 'array' : previous.kind !== 'implicit')) fail();
+  const children = kind === 'table' && previous ? previous.children : new Map();
+  namespace.set(key, { kind, children });
+  return children;
+}
+
+function validateValue(source, parts) {
+  let i = 0;
+  const peek = () => parts[i]?.value;
+  function expect(token) {
+    if (peek() !== token) fail();
+    i++;
+  }
+  function value(depth) {
+    const token = peek();
+    if (!token || depth > 64) fail();
+    if (token.startsWith('"') || token.startsWith("'")) {
+      validateString(token);
+      i++;
+      return;
+    }
+    if (token === '[') {
+      i++;
+      while (peek() !== ']') {
+        value(depth + 1);
+        if (peek() === ']') break;
+        expect(',');
+      }
+      expect(']');
+      return;
+    }
+    if (token === '{') {
+      let separator = parts[i++];
+      const table = new Map();
+      while (peek() !== '}') {
+        const start = i;
+        while (peek() && !['=', ',', '}'].includes(peek())) i++;
+        const key = keys(parts.slice(start, i));
+        expect('=');
+        if (!parts[i] || source.slice(separator.end, parts[i].start).includes('\n')) fail();
+        value(depth + 1);
+        define(table, key, 'value');
+        if (!parts[i] || source.slice(parts[i - 1].end, parts[i].start).includes('\n')) fail();
+        if (peek() === '}') break;
+        separator = parts[i];
+        expect(',');
+        if (peek() === '}') fail();
+      }
+      if (!table.size && source.slice(separator.end, parts[i].start).includes('\n')) fail();
+      expect('}');
+      return;
+    }
+    const start = i;
+    while (peek() && ![',', ']', '}'].includes(peek())) i++;
+    if (start === i) fail();
+    validateScalar(source.slice(parts[start].start, parts[i - 1].end));
+  }
+
+  value(0);
+  if (i !== parts.length) fail();
+}
+
 function patchConfig(source, binding) {
   const found = new Map();
   const tables = new Set();
   let table = [];
+  const tablesByKey = new Map();
+  let namespace = tablesByKey;
   for (const parts of statements(source)) {
     const first = parts[0].value;
     if (first === '[') {
       const array = parts[1]?.value === '[';
       const brackets = array ? 2 : 1;
       if (parts.slice(-brackets).some(part => part.value !== ']')) fail();
+      if (source.slice(parts[0].start, parts.at(-1).end).includes('\n')) fail();
+      if (array && (parts[0].end !== parts[1].start || parts.at(-2).end !== parts.at(-1).start)) fail();
       table = keys(parts.slice(brackets, -brackets));
+      namespace = define(tablesByKey, table, array ? 'array' : 'table');
       if (!prefix(serverKey, table)) {
         if (array && prefix(table, serverKey)) fail();
         continue;
@@ -86,7 +222,10 @@ function patchConfig(source, binding) {
 
     const equal = parts.findIndex(part => part.value === '=');
     if (equal < 1 || equal === parts.length - 1) fail();
-    const path = [...table, ...keys(parts.slice(0, equal))];
+    const relative = keys(parts.slice(0, equal));
+    define(namespace, relative, 'value');
+    validateValue(source, parts.slice(equal + 1));
+    const path = [...table, ...relative];
     if (prefix(path, serverKey)) fail();
     if (!prefix(serverKey, path)) continue;
     const field = path.slice(serverKey.length);
@@ -118,7 +257,7 @@ function patchConfig(source, binding) {
   if (!changes.length) return { status: 'configured', next: source };
   let next = source;
   for (const [key, { start, end }] of changes.sort((a, b) => b[1].start - a[1].start)) {
-    next = next.slice(0, start) + JSON.stringify(binding.fields[key]) + next.slice(end);
+    next = next.slice(0, start) + tomlValue(binding.fields[key]) + next.slice(end);
   }
   return { status: 'stale', next };
 }
@@ -159,6 +298,7 @@ export async function configureWorkspace(root, binding, mode, expectedRevision) 
   }
   const source = before.bytes ? new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(before.bytes) : '';
   const proposal = patchConfig(source, binding);
+  if (proposal.status !== 'configured' && patchConfig(proposal.next, binding).status !== 'configured') fail();
   if (mode === '--check') return { path, status: proposal.status, revision: before.revision };
   if (proposal.status === 'configured') return { path, status: 'configured' };
 

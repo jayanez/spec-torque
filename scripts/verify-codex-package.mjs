@@ -26,7 +26,7 @@ for (const path of ['setup-workspace.mjs', 'workspace-config.mjs', 'runtime/serv
   'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) assert.ok(entries[path]?.length > 0, path);
 
 const scratch = await realpath(await mkdtemp(join(tmpdir(), 'spectorque codex package ')));
-const install = join(scratch, 'installed plugin');
+const install = join(scratch, process.platform === 'win32' ? 'installed plugin' : 'installed plugin \u007f');
 const worktree = join(scratch, "trusted project's worktree");
 const env = { ...process.env };
 delete env.OPENAI_API_KEY;
@@ -47,7 +47,9 @@ try {
   const runtime = join(install, 'runtime');
   const beforeSetup = await readdir(worktree, { recursive: true });
   const setup = execFileSync(process.execPath, [join(install, 'setup-workspace.mjs'), worktree], { cwd: scratch, env, encoding: 'utf8' });
-  assert.ok(setup.includes('args = [' + JSON.stringify(join(runtime, 'server.mjs')) + ']'));
+  const serverArgs = /^args = (.+)$/mu.exec(setup)?.[1];
+  assert.doesNotMatch(serverArgs, /\u007f/u);
+  assert.deepEqual(JSON.parse(serverArgs), [join(runtime, 'server.mjs')]);
   assert.ok(setup.includes('SPECTORQUE_ROOT = ' + JSON.stringify(root)));
   assert.match(setup, /add --feature <feature-id>/);
   assert.deepEqual((await readdir(worktree, { recursive: true })).sort(), beforeSetup.sort(), 'Setup must not create files or directories.');
@@ -95,10 +97,11 @@ async function checkProjectSetup() {
   const target = join(scratch, 'setup target');
   const configDir = join(target, '.codex');
   const path = join(configDir, 'config.toml');
-  const run = (mode, ...args) => spawnSync(process.execPath, [join(install, 'setup-workspace.mjs'), mode, target, ...args],
+  const runAt = (root, mode, ...args) => spawnSync(process.execPath, [join(install, 'setup-workspace.mjs'), mode, root, ...args],
     { cwd: scratch, env, encoding: 'utf8' });
-  const check = status => {
-    const result = run('--check');
+  const run = (mode, ...args) => runAt(target, mode, ...args);
+  const check = (status, root = target) => {
+    const result = runAt(root, '--check');
     assert.equal(result.status, 0, result.stderr);
     assert.ok(result.stdout.includes('Project configuration: ' + status + '\n'), result.stdout);
     return /^Config revision: (\S+)$/mu.exec(result.stdout)?.[1];
@@ -110,9 +113,7 @@ async function checkProjectSetup() {
   assert.deepEqual(await readdir(target), [], 'Check must not create the protected directory.');
   const otherTarget = join(scratch, 'different setup target');
   await mkdir(otherTarget);
-  const crossRoot = spawnSync(process.execPath,
-    [join(install, 'setup-workspace.mjs'), '--write', otherTarget, '--expect', newRevision],
-    { cwd: scratch, env, encoding: 'utf8' });
+  const crossRoot = runAt(otherTarget, '--write', '--expect', newRevision);
   assert.notEqual(crossRoot.status, 0);
   assert.match(crossRoot.stderr, /configuration changed/u);
   assert.deepEqual(await readdir(otherTarget), [], 'A revision from another worktree must not authorize setup here.');
@@ -126,6 +127,9 @@ async function checkProjectSetup() {
   const old = generated.replace(/^command = .*$/mu, 'command = ' + JSON.stringify(join(target, 'missing-node')) + ' # keep this comment')
     .replace(/^args = .*$/mu, 'args = ' + JSON.stringify([join(target, 'old-plugin', 'server.mjs')]));
   const foreign = '# keep this section\nnotes = """\n[mcp_servers.spectorque-workspace]\nquotes"""""\n\n' +
+    'options = { paths = [\n  "one", "two",\n], enabled = true }\n' +
+    'values = [42, -2.7e+2, 0xff, 0o755, 0b1010, 2024-02-29T10:08:30Z, 10:08:30]\n' +
+    '[[skills.config]]\npath = "one"\nenabled = true\n[[skills.config]]\npath = "two"\nenabled = false\n\n' +
     '[mcp_servers.other]\ncommand = "other"\n\n';
   await writeFile(path, foreign);
   const appended = write(check('missing'));
@@ -144,11 +148,16 @@ async function checkProjectSetup() {
   const repaired = write(check('stale'));
   assert.equal(repaired.status, 0, repaired.stderr);
   const expected = foreign + generated.replace(/^command = .*$/mu, '$& # keep this comment') + '# concurrent edit\n';
-  assert.equal(await readFile(path, 'utf8'), expected.replaceAll('\n', '\r\n'));
+  const repairedConfig = await readFile(path, 'utf8');
+  assert.equal(repairedConfig, expected.replaceAll('\n', '\r\n'));
+  assert.doesNotMatch(repairedConfig, /\u007f/u, 'Stale repair must escape DEL in the installed runtime path.');
   assert.equal(await readFile(environment, 'utf8'), '# existing workbench action\n');
   check('configured');
 
   for (const custom of ['mcp_servers = { "spectorque-workspace" = { enabled = false } }\n', 'value = "text"\rignored = true\n',
+    'x = true false\n', 'x = 1garbage\n', 'x = [1 2]\n', 'x = { a = 1, a = 2 }\n',
+    'x = { a = 1,\n b = 2 }\n', '[other]\nx = 1\nx = 2\n',
+    'x = "\\q"\n', 'x = 2025-02-29\n',
     generated.replace('\nargs', '\nenabled = false\nargs'),
     generated.replace('[mcp_servers.spectorque-workspace.env]\nSPECTORQUE_ROOT', '"env.SPECTORQUE_ROOT"')]) {
     await writeFile(path, custom);
@@ -158,6 +167,18 @@ async function checkProjectSetup() {
     assert.equal(await readFile(path, 'utf8'), custom);
   }
   if (process.platform !== 'win32') {
+    const delTarget = join(scratch, 'worktree with \u007f in its name');
+    await mkdir(delTarget);
+    const checked = runAt(delTarget, '--check');
+    assert.equal(checked.status, 0, checked.stderr);
+    assert.ok(!checked.stdout.match(/^command = .*\u007f/mu), 'TOML command values must escape DEL.');
+    const written = runAt(delTarget, '--write', '--expect', check('missing', delTarget));
+    assert.equal(written.status, 0, written.stderr);
+    const config = await readFile(join(delTarget, '.codex/config.toml'), 'utf8');
+    assert.doesNotMatch(config, /\u007f/u);
+    const cwd = /^cwd = (.+)$/mu.exec(config)?.[1];
+    assert.equal(JSON.parse(cwd), await realpath(delTarget));
+    check('configured', delTarget);
     const outside = join(scratch, 'outside.toml');
     await writeFile(outside, 'private = true\n');
     await rm(path);

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Codex Desktop (#117): run plugin Setup or invoke `$spec-setup` to bind a trusted worktree without a terminal step. Review and approve the project MCP block before the skill writes it. Setup also checks and repairs obsolete paths after an update. The workbench environment action remains a separate opt-in.
+- Codex Desktop (#117): invoke `$spec-setup` to bind a trusted worktree without a terminal step. The plugin also registers the documented Setup entry point, pending native qualification. Review and approve the project MCP block before the skill writes it. Setup also checks and repairs obsolete paths after an update. The workbench environment action remains a separate opt-in.
 
 - Codex Desktop (#116): open the local workbench from the **Project** command palette without a model turn, or use the optional `$spec-workbench` skill. Worktree setup prints the environment action without editing files. [Desktop observations](docs/codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
 
