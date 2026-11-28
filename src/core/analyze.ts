@@ -218,6 +218,18 @@ function evaluateSpecial(id: string, lines: Line[], requirements: Line[], refere
   }
   return undefined;
 }
+const credit = (status: Status) => status === 'supported' ? 1 : status === 'partial' ? 0.5 : 0;
+/** A dimension's 0–3 score: supported = 1, partial = 0.5, missing = 0, averaged and rounded. */
+const dimensionScore = (statuses: Status[]) => Math.round(3 * statuses.reduce((n, status) => n + credit(status), 0) / statuses.length);
+const SUPPORTABLE = new Set(PRACTICES.filter(p => p.supportable).map(p => p.id));
+/**
+ * #125: the highest total a scope can reach, with each applicable practice at its best status (supported when the
+ * catalog marks it supportable, partial otherwise). Null when a dimension has no applicable practice: no total exists then.
+ */
+export function reachableTotal(applicable: readonly { id: string }[] = PRACTICES): number | null {
+  const scores = DIMENSIONS.map(([dimension]) => applicable.filter(p => p.id.startsWith(dimension + '.')).map(p => SUPPORTABLE.has(p.id) ? 'supported' as const : 'partial' as const));
+  return scores.some(rows => !rows.length) ? null : scores.reduce((n, rows) => n + dimensionScore(rows), 0);
+}
 export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): Promise<Assessment> {
   if (set.artifacts.length > 500 || set.artifacts.some(a => a.content.length > 1_000_000)) throw new Error('Analysis limit: 500 documents, 1 MB per document.');
   if (new Set(set.artifacts.map(a => a.path)).size !== set.artifacts.length) throw new Error('Artifact paths must be unique.');
@@ -253,6 +265,7 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
       return true;
     });
     const status = special?.status ?? (hits.length ? 'partial' : 'missing');
+    if (status === 'supported' && !def.supportable) throw new Error(`Practice ${def.id} reported supported but is not marked supportable in the catalog (#125).`);
     return { ...base, status, evidence: hits.slice(0, 4).map(evidenceOf), reason: special?.status === 'supported' ? 'The deterministic check is satisfied; semantic review may still find gaps.' : hits.length ? 'Textual signals found. Presence does not establish completeness or correctness.' : 'No evidence found by this check in the supplied artifacts.' };
   });
   const findings: Finding[] = [];
@@ -305,18 +318,20 @@ export async function analyze(set: ArtifactSet, options: AnalyzeOptions = {}): P
     if (previous && negative !== previous.negative) add('I2.3', line, 'Opposite obligations describe the same behavior.', `Resolve the conflict with ${previous.line.path}:${previous.line.line}.`, 'error');
     behaviors.set(key, { line, negative });
   }
+  const applicable = practices.filter(p => p.status !== 'not_applicable');
   const dimensions = DIMENSIONS.map(([id, title, category]) => {
-    const rows = practices.filter(p => p.dimension === id && p.status !== 'not_applicable');
+    const rows = applicable.filter(p => p.dimension === id);
     const evaluated = rows.filter(p => p.status !== 'unknown');
-    const score = !rows.length || evaluated.length !== rows.length ? null : Math.round(3 * rows.reduce((n, p) => n + (p.status === 'supported' ? 1 : p.status === 'partial' ? 0.5 : 0), 0) / rows.length);
+    const score = !rows.length || evaluated.length !== rows.length ? null : dimensionScore(rows.map(p => p.status));
     return { id, title, category, score, evaluated: evaluated.length, applicable: rows.length };
   });
+  const reachable = reachableTotal(applicable);
   const artifacts = await Promise.all(set.artifacts.map(async ({ content, ...a }) => ({ ...a, hash: await contentHash(content) })));
   const id = await contentHash(JSON.stringify(artifacts.map(a => [a.path, a.hash])) + JSON.stringify(options));
   return {
     schemaVersion: '1.0', engineVersion: ENGINE_VERSION, rubricVersion: RUBRIC_VERSION, id, createdAt: new Date().toISOString(), name: set.name,
     artifacts, practices, findings, dimensions,
-    summary: { score: dimensions.every(d => d.score !== null) ? dimensions.reduce((n, d) => n + (d.score ?? 0), 0) : null, maximum: 30, assessedDimensions: dimensions.filter(d => d.score !== null).length, supported: practices.filter(p => p.status === 'supported').length, partial: practices.filter(p => p.status === 'partial').length, missing: practices.filter(p => p.status === 'missing').length, unknown: practices.filter(p => p.status === 'unknown').length, notApplicable: practices.filter(p => p.status === 'not_applicable').length },
+    summary: { score: dimensions.every(d => d.score !== null) ? dimensions.reduce((n, d) => n + (d.score ?? 0), 0) : null, maximum: 30, reachable, assessedDimensions: dimensions.filter(d => d.score !== null).length, supported: practices.filter(p => p.status === 'supported').length, partial: practices.filter(p => p.status === 'partial').length, missing: practices.filter(p => p.status === 'missing').length, unknown: practices.filter(p => p.status === 'unknown').length, notApplicable: practices.filter(p => p.status === 'not_applicable').length },
     decisions: lines.filter(l => l.scope === 'all' && /NEEDS CLARIFICATION|PENDIENTE DE ACLARAR/i.test(l.text)).map(evidenceOf), traceability,
   };
 }

@@ -4,14 +4,17 @@ import { analyze, classifyArtifact } from '../src/core.js';
 import { DISCLAIMER, findingCard, findingChoice, summaryLine, titleLine, workbenchLine, workbenchUrl } from '../src/core/presentation.js';
 import { choiceScope, scopeChoices, scopeValue, terminalSummary, type HostScope } from '../src/integration.js';
 import { listFeatures } from '../src/core/artifacts.js';
+import { markdownReport } from '../src/core/report.js';
 
 const sample = () => analyze({ name: 'Sample', artifacts: [classifyArtifact('specs/001-a/spec.md', '# A\n\n- FR-001: The system MUST be fast.\n- FR-002: The system MUST respond as needed.\n')] });
 
 test('summaryLine uses the summary maximum, singular counts and the engine version', async () => {
   const a = await sample();
-  assert.equal(summaryLine(a), `${a.summary.score === null ? 'Incomplete assessment' : `${a.summary.score}/${a.summary.maximum}`} · ${a.findings.length} findings · ${a.decisions.length} open decisions · engine ${a.engineVersion}`);
+  assert.equal(summaryLine(a), `${a.summary.score === null ? 'Incomplete assessment' : `${a.summary.score}/${a.summary.maximum} (highest reachable ${a.summary.reachable})`} · ${a.findings.length} findings · ${a.decisions.length} open decisions · engine ${a.engineVersion}`);
   const one = { ...a, summary: { ...a.summary, score: 12 }, findings: a.findings.slice(0, 1), decisions: [a.findings[0].evidence[0]] };
-  assert.equal(summaryLine(one), `12/30 · 1 finding · 1 open decision · engine ${a.engineVersion}`);
+  assert.equal(summaryLine(one), `12/30 (highest reachable 20) · 1 finding · 1 open decision · engine ${a.engineVersion}`);
+  // #125: the Markdown report states the reachable maximum next to the score.
+  assert.match(markdownReport(one), /^Score: 12\/30 · highest reachable for this scope: 20$/m);
 });
 
 test('findingCard labels the position, practice, severity, location, evidence and fix', async () => {

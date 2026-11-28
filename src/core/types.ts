@@ -12,7 +12,7 @@ export interface Assessment {
   schemaVersion: '1.0'; engineVersion: string; rubricVersion: string; id: string; createdAt: string; name: string;
   artifacts: (Omit<Artifact, 'content'> & { hash: string })[];
   practices: PracticeResult[]; findings: Finding[]; dimensions: DimensionResult[];
-  summary: { score: number | null; maximum: 30; assessedDimensions: number; supported: number; partial: number; missing: number; unknown: number; notApplicable: number };
+  summary: { score: number | null; maximum: 30; reachable: number | null; assessedDimensions: number; supported: number; partial: number; missing: number; unknown: number; notApplicable: number };
   decisions: Evidence[];
   traceability: { from: string; to: string; evidence: Evidence; resolved: boolean }[];
 }

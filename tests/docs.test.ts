@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { ENGINE_VERSION, RUBRIC_VERSION } from '../src/core/analyze.js';
+import { ENGINE_VERSION, RUBRIC_VERSION, reachableTotal } from '../src/core/analyze.js';
 
 const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
 const markdown = ['README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', ...readdirSync('docs').filter(f => f.endsWith('.md')).map(f => 'docs/' + f),
@@ -47,4 +47,12 @@ test('README version badges match the product, engine and rubric', () => {
   assert.ok(readme.includes(`badge/rubric-${RUBRIC_VERSION.replaceAll('-', '--')}-`), 'rubric badge');
   assert.ok(readFileSync('docs/rubric.md', 'utf8').includes(`Rubric \`${RUBRIC_VERSION}\`, used by engine ${ENGINE_VERSION}`), 'rubric reference');
   assert.ok(readFileSync('CHANGELOG.md', 'utf8').includes(`## ${version}`), 'changelog section');
+});
+
+test('documented --min examples can pass: they are at or below the reachable maximum (#125)', () => {
+  for (const file of ['README.md', 'docs/es.md']) {
+    const values = [...readFileSync(file, 'utf8').matchAll(/--min[ =](\d+)/g)].map(m => Number(m[1]));
+    assert.ok(values.length, file);
+    for (const value of values) assert.ok(value <= reachableTotal()!, `${file}: --min ${value}`);
+  }
 });

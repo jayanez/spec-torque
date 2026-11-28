@@ -6,7 +6,7 @@ export const CHANGED = 'Changed on this branch';
 
 export const titleLine = (version, name) => 'SpecTorque' + (version ? ' ' + version : '') + (name ? ' · ' + name : '');
 const count = (n, one, many) => n + ' ' + (n === 1 ? one : many);
-export const scoreText = a => a.summary.score === null ? 'Incomplete assessment' : a.summary.score + '/' + a.summary.maximum;
+export const scoreText = a => a.summary.score === null ? 'Incomplete assessment' : a.summary.score + '/' + a.summary.maximum + ' (highest reachable ' + a.summary.reachable + ')';
 export const summaryLine = a => [scoreText(a), count(a.findings.length, 'finding', 'findings'),
   count(a.decisions.length, 'open decision', 'open decisions'), 'engine ' + a.engineVersion].join(' · ');
 export const dimensionsLine = a => a.dimensions.map(d => d.id + ' ' + (d.score === null ? '—' : d.score + '/3')).join('   ');

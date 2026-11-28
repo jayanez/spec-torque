@@ -38,7 +38,7 @@ Los recursos de cada versión para instalaciones sin conexión y la política de
 4. Revisa la diferencia antes de aceptar. Las cifras, obligaciones e identificadores existentes se conservan y los cambios concurrentes se rechazan.
 5. Exporta los documentos y el informe. La edición directa y el historial viven en memoria durante la sesión. Guarda o exporta antes de cerrar.
 
-Las puntuaciones son una ayuda heurística: no certifican la corrección de la spec ni predicen defectos. «Desconocido» indica evidencia insuficiente; «no aplicable» requiere justificación. Consulta [el estado real de las integraciones](compatibility.md) y [su instalación](integrations.md).
+Las puntuaciones son una ayuda heurística: no certifican la corrección de la spec ni predicen defectos. La escala llega a 30, pero solo cinco prácticas pueden quedar «cubiertas» y las demás llegan como mucho a «parcial», así que el máximo alcanzable con el alcance completo es **20/30** ([motivo](rubric.md#scoring-and-the-reachable-maximum)). El informe y los resúmenes lo muestran junto a la puntuación, y marcar prácticas como no aplicables lo cambia. Con `--min`, elige un valor igual o inferior a 20, por ejemplo `--min 18`. «Desconocido» indica evidencia insuficiente; «no aplicable» requiere justificación. Consulta [el estado real de las integraciones](compatibility.md) y [su instalación](integrations.md).
 
 ## Secuencia de revisión con modelo
 

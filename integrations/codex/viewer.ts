@@ -40,7 +40,7 @@ function label(en: string, es: string) { return isSpanish ? es : en; }
 // The shared English presentation text, with its fixed prefixes translated for the Spanish view.
 const spanishLine = (line: string) => line
   .replace(/^Finding (\d+) of (\d+)/, 'Hallazgo $1 de $2').replace(/^Evidence: /, 'Evidencia: ').replace(/^Fix: /, 'Corrección: ')
-  .replace(/^Incomplete assessment/, 'Evaluación incompleta').replace(/ (\d+) findings?/, (_, n) => ` ${n} hallazgo${n === '1' ? '' : 's'}`)
+  .replace(/^Incomplete assessment/, 'Evaluación incompleta').replace(/ \(highest reachable (\d+)\)/, ' (máximo alcanzable $1)').replace(/ (\d+) findings?/, (_, n) => ` ${n} hallazgo${n === '1' ? '' : 's'}`)
   .replace(/ (\d+) open decisions?/, (_, n) => ` ${n} decisi${n === '1' ? 'ón pendiente' : 'ones pendientes'}`).replace(/ · engine /, ' · motor ');
 const localized = (line: string) => isSpanish ? spanishLine(line) : line;
 

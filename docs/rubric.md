@@ -44,3 +44,11 @@ Rubric `epic-heuristic-1`, used by engine 0.1.21. Forty EPIC-derived practice co
 | C2.2 | Task organization | Break delivery into individually checkable tasks. |
 | C2.3 | Requirements-to-implementation traceability | Record the requirement IDs served by each task; links alone do not prove implementation. |
 | C2.4 | Data models and evolution | Describe relevant data or interface contracts and evolution requirements. |
+
+## Scoring and the reachable maximum
+
+A dimension scores `round(3 × mean)` over its applicable practices, with supported = 1, partial = 0.5 and missing = 0. The total adds the ten dimensions and is out of 30.
+
+Only five practices have a deterministic check that can report supported: E1.2, E1.4, E2.1, I1.2 and I2.2 (`supportable` in `src/core/catalog.ts`). The other 35 report partial at most, because a textual signal shows presence, not completeness. With every practice at its best status, each dimension rounds to 2, so the highest reachable total for a full scope is **20/30**. With every practice partial the total is also 20, so at the ceiling a supported status moves the counts but not the total.
+
+The Markdown report, terminal summaries, host panels and the workbench show this reachable maximum next to the score. It is computed from the catalog for the assessed scope (`summary.reachable` in the assessment, null when a dimension has no applicable practice), so a practice marked not applicable can raise it. Choose a CI `--min` at or below it. Changing the formula or the rounding would be a rubric change with its own version.

@@ -30,10 +30,11 @@ export const featureLabel = (feature: { id: string; layout: boolean }) => (featu
 export const titleLine = (version: string, name?: string) => `SpecTorque ${version}` + (name ? ` · ${name}` : '');
 
 type Summarized = Pick<Assessment, 'summary' | 'findings' | 'decisions' | 'engineVersion'>;
-export const scoreText = (a: Pick<Assessment, 'summary'>) => a.summary.score === null ? 'Incomplete assessment' : `${a.summary.score}/${a.summary.maximum}`;
+/** "20/30 (highest reachable 20)" (#125). */
+export const scoreText = (a: Pick<Assessment, 'summary'>) => a.summary.score === null ? 'Incomplete assessment' : `${a.summary.score}/${a.summary.maximum} (highest reachable ${a.summary.reachable})`;
 const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** "15/30 · 13 findings · 0 open decisions · engine 0.1.9". */
+/** "15/30 (highest reachable 20) · 13 findings · 0 open decisions · engine 0.1.9". */
 export function summaryLine(a: Summarized): string {
   return [scoreText(a), count(a.findings.length, 'finding', 'findings'), count(a.decisions.length, 'open decision', 'open decisions'), `engine ${a.engineVersion}`].join(' · ');
 }

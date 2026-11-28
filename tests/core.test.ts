@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { classifyArtifact, contentHash } from '../src/core/artifacts.js';
-import { analyze } from '../src/core/analyze.js';
+import { analyze, reachableTotal } from '../src/core/analyze.js';
 import { PRACTICES } from '../src/core/catalog.js';
 import { createProposal, applyProposal } from '../src/core/refine.js';
 import { buildArtifacts } from '../src/core/builder.js';
@@ -187,4 +187,27 @@ test('H85: a demonstrative that leads a noun phrase is not a pronoun subject (E1
     'It MUST include the date.', 'This allowed the export to fail; the service MUST retry.', 'That cannot happen; the export MUST retry.', "That won't happen; the export MUST retry.", "This can't fail; the export MUST retry.", "This isn't optional: the export MUST retry.", 'This doesn’t change; the export MUST retry.', '- REQ-001: Esto DEBE conservar el formato.']) {
     assert.equal(await flagged(line), true, line);
   }
+});
+
+test('the reachable maximum is 20/30 for a full scope and follows non-applicability (#125)', async () => {
+  // Only five practices have a deterministic check that can report supported; every other one stops at partial.
+  assert.deepEqual(PRACTICES.filter(p => p.supportable).map(p => p.id), ['E1.2', 'E1.4', 'E2.1', 'I1.2', 'I2.2']);
+  assert.equal(reachableTotal(), 20);
+  const spec = classifyArtifact('spec.md', '# Booking\nFR-001: The system MUST confirm a booking within 2 seconds.');
+  const full = await analyze({ name: 'full', artifacts: [spec] });
+  assert.equal(full.summary.maximum, 30);
+  assert.equal(full.summary.reachable, 20);
+  // The flags match the engine: this fixture makes exactly the supportable practices supported.
+  assert.deepEqual(full.practices.filter(p => p.status === 'supported').map(p => p.id), ['E1.2', 'E1.4', 'E2.1', 'I1.2', 'I2.2']);
+  // With the three partial-only E1 practices not applicable, E1 can reach 3, so the total can reach 21.
+  const reason = 'Not relevant to this single-requirement fixture.';
+  const scoped = await analyze({ name: 'scoped', artifacts: [spec] }, { notApplicable: { 'E1.1': reason, 'E1.3': reason, 'E1.5': reason } });
+  assert.equal(scoped.summary.reachable, 21);
+  // A dimension with no applicable practice can never be scored, so no total is reachable.
+  const c2 = Object.fromEntries(['C2.1', 'C2.2', 'C2.3', 'C2.4'].map(id => [id, reason]));
+  assert.equal((await analyze({ name: 'no C2', artifacts: [spec] }, { notApplicable: c2 })).summary.reachable, null);
+  // A supported status from a practice the catalog does not mark supportable fails loudly.
+  const e12 = PRACTICES.find(p => p.id === 'E1.2')!;
+  delete e12.supportable;
+  try { await assert.rejects(analyze({ name: 'unmarked', artifacts: [spec] }), /E1\.2 reported supported but is not marked supportable/); } finally { e12.supportable = true; }
 });

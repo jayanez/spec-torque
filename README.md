@@ -255,7 +255,7 @@ One deterministic TypeScript engine (`src/core`) runs in Node and the browser. T
 3. **Recognize requirements.** Normative words are recognized as whole words in English and Spanish (`MUST`, `SHALL`, `DEBE`, `DEBERÁ`…), keeping obligation, recommendation and permission apart. An ID defines a requirement only in a defining position; a hard-wrapped line belongs to the item it continues. [Normative recognition](docs/normative-recognition.md) · [Requirement classification](docs/requirement-classification.md)
 4. **Resolve references.** Plan and task references resolve inside the selected feature's ID namespace. Plan-local labels and references qualified by another specification are not reported as undefined.
 5. **Check 40 practices.** Explainable line and document rules for the 40 EPIC practices produce findings with the exact path, line and text as evidence. Each practice is supported, partial, missing, not applicable or unknown.
-6. **Score ten dimensions.** Supported = 1, partial = 0.5, missing = 0, averaged per dimension and rounded to 0–3. An unknown practice leaves its dimension unscored, and the /30 total appears only when every dimension is known. The assessment carries the engine and rubric versions and a SHA-256 revision of its inputs.
+6. **Score ten dimensions.** Supported = 1, partial = 0.5, missing = 0, averaged per dimension and rounded to 0–3. An unknown practice leaves its dimension unscored, and the /30 total appears only when every dimension is known. Most practices stop at partial, so the highest reachable total for a full scope is **20/30**; reports and summaries show it next to the score ([why](docs/rubric.md#scoring-and-the-reachable-maximum)). The assessment carries the engine and rubric versions and a SHA-256 revision of its inputs.
 7. **Refine with review.** A clarification question is offered only when the cited wording identifies a decision. A proposal changes one line, must preserve requirement IDs, quantities, obligations and negative clauses, is bound to the source hash, and is written only after explicit human approval. MCP never writes files.
 
 Precision changes follow a pre-registered replay against a frozen comparator and a labeled EN/ES corpus before they ship. [Architecture](docs/architecture.md) · [Rubric](docs/rubric.md) · [Precision method](docs/research.md#precision-method)
@@ -282,7 +282,7 @@ node dist/cli.js create --answers fixtures/builder-en.json
 node dist/cli.js mcp
 ```
 
-For CI, opt into policies such as `--require-complete`, `--fail-on-open` or `--min 23`. An unknown total fails the minimum-score check. Use `npm run check` and `npm run package:integrations` to verify a source checkout.
+For CI, opt into policies such as `--require-complete`, `--fail-on-open` or `--min 18`. Choose a minimum at or below the reachable 20; a higher one can never pass. An unknown total fails the minimum-score check. Use `npm run check` and `npm run package:integrations` to verify a source checkout.
 
 [Architecture](docs/architecture.md) · [Requirements](docs/requirements.md) · [Roadmap](docs/roadmap.md) · [Contributing](CONTRIBUTING.md) · [Español](docs/es.md)
 

@@ -59,7 +59,8 @@ const reasonFor = (status: Status, evidence: boolean) => status === 'supported' 
 
 /** Violations of H52 predictions 2 and 3 for one feature; empty when the change is as predicted. */
 export function judge(before: Assessment, after: Assessment, headings: Evidence[]): string[] {
-  const strip = ({ engineVersion: _v, id: _i, createdAt: _c, ...rest }: Assessment) => rest;
+  // `summary.reachable` (#125) is disclosure only and postdates the frozen comparators, so it is not compared.
+  const strip = ({ engineVersion: _v, id: _i, createdAt: _c, ...rest }: Assessment) => ({ ...rest, summary: { ...rest.summary, reachable: undefined } });
   if (!headings.length) return same(strip(before), strip(after)) ? [] : ['assessment changed without a requirement heading'];
   const ids = (a: Assessment) => [a.practices.map(p => p.id), a.dimensions.map(d => d.id)];
   if (!same(ids(before), ids(after))) return ['practice or dimension set changed'];

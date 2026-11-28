@@ -41,7 +41,8 @@ const SCORED = new Set(['E1', 'E2', 'I1', 'I2', 'P2', 'C1']);
 
 /** Violations of H52c predictions 2 and 3 for one feature; empty when the change is as predicted. */
 export function judge(before: Assessment, after: Assessment, entering: Entering[]): string[] {
-  const strip = ({ engineVersion: _v, id: _i, createdAt: _c, ...rest }: Assessment) => rest;
+  // `summary.reachable` (#125) is disclosure only and postdates the frozen comparators, so it is not compared.
+  const strip = ({ engineVersion: _v, id: _i, createdAt: _c, ...rest }: Assessment) => ({ ...rest, summary: { ...rest.summary, reachable: undefined } });
   if (!entering.length) return same(strip(before), strip(after)) ? [] : ['assessment changed without an entering line'];
   const violations: string[] = [];
   const at = new Set(entering.map(e => `${e.path}|${e.line}`));
