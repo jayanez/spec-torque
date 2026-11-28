@@ -35,7 +35,7 @@ test('portable collision detection covers Windows Unicode uppercase equivalence'
   assert.throws(() => artifactArchive({ name: 'Turkish paths', artifacts: [classifyArtifact('specs/I.md', 'one'), classifyArtifact('specs/ı.md', 'two')] }), /Duplicate/);
 });
 
-test('Markdown report has no trailing whitespace while the JSON evidence keeps the source text (#126)', async () => {
+test('Markdown report has no trailing whitespace while the JSON evidence keeps the source text (#126)', { timeout: 10_000 }, async () => {
   const cut = 'FR-001: The system MUST record each booking. ' + 'x'.repeat(254) + ' tail';
   const padded = 'FR-002: The system MUST be fast.  ';
   const tabbed = 'FR-003: The system MUST log each booking.\t';
