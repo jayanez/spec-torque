@@ -29,7 +29,9 @@ node --import tsx --test scripts/spike-58/context-rules.test.ts
 
 The expanded scanner groups wrapped prose and indented list continuations. A heading, list item, table row, blank line or code fence bounds a passage. A row can inherit the table header and its Markdown headings. A lead includes all matching cues for its practice in one record. Document evidence and passage evidence are separate fields. The coverage ledger lists duplicate normalized fragments across repositories with every location. The scanner checks repository, revision, manifest license, allowed document paths and cache paths before opening content. Root license text is checked at the pinned revision. Reviewers should still account for any document-level license exceptions before redistributing material.
 
-| Practice | Leads | Whole-document missing | Unknown | Decision |
+The table records the expanded run before the two retrieval refinements below. Each lead is one passage × practice record; several cues for that practice share one record. The status columns count lead records whose parent spec has that whole-document status. One document can contribute multiple records to the same column. Uncaught samples are a separate queue, with at most one sample per scanned spec. A cross-repository fragment group counts one normalized hash observed in multiple repositories.
+
+| Practice | Lead records | Records in `missing` specs | Records in `unknown` specs | Decision |
 | --- | ---: | ---: | ---: | --- |
 | P2.2 | 690 | 0 | 0 | No standalone Boundary or Spanish plural lead in the allowed inventory. The scanner does not establish whether paraphrased cases in otherwise partial documents are missed. |
 | P1.4 | 161 | 86 | 0 | A sync timeout with retry behavior in Spec Kitty is a strong lead. Other repositories yielded ambiguous triggers or rejection behavior in different contexts. Same-failure recurrence pending. |
@@ -40,7 +42,15 @@ The expanded scanner groups wrapped prose and indented list continuations. A hea
 | I1.2 | 2,153 | 0 | 9 | Spanish-form IDs remain informational under H2c. The observed unknowns came from Portuguese material. Multiple IDs per passage need proof of a concrete coverage defect. |
 | C2.3 | N/A | N/A | N/A | The authorized spec-only inventory contains no task companion. |
 
-The download enumerated all 17 pinned trees without truncation. It fetched and scanned all 974 matching specs from 16 repositories. The remaining tree contained no path matching the manifest's filter. The root license text matched the manifest for all 17 repositories. The scan yielded 6,167 lead records and 974 uncaught samples, with three exact fragment groups crossing repository boundaries. One repository accounts for 851 of 974 documents, so the counts are search workload rather than prevalence. Record counts also depend on the search cues and the per-document evidence limit. The first section of this document records an earlier, smaller execution.
+The download enumerated all 17 pinned trees without truncation. It fetched and scanned all 974 matching specs from 16 repositories. The remaining tree contained no path matching the manifest's filter. The root license text matched the manifest for all 17 repositories. The first expanded run yielded 6,167 lead records and 974 uncaught samples, with three exact fragment groups crossing repository boundaries. One repository accounts for 851 of 974 documents, so the counts describe search workload. Compare the runs by unit:
+
+| Run | Scanned specs | Repositories with scanned specs | Lead records | Uncaught samples |
+| --- | ---: | ---: | ---: | ---: |
+| Initial capped inventory (historical) | 223 | 16 of 17 | 691 | 223 |
+| First expanded inventory (historical) | 974 | 16 of 17 | 6,167 | 974 |
+| Expanded inventory after both cue refinements | 974 | 16 of 17 | 6,170 | 974 |
+
+The lead columns differ in retrieval rules and coverage. In the final run P2.2 has 691 lead records and E3.3 has 1,928, of which 502 are from `missing` specs. The R52 DEV input and engine scope are described above. The number of admitted lineages comes from examination of the pinned sources, separately from these scanner counts.
 
 Development review inspected candidate groups and one uncaught sample per repository with documents, selecting the lowest fragment hash from that repository's uncaught queue. For example, the md2confl sample describes what the tool does with an empty page even though it missed the current P2.2 condition-and-response cues. This is a scanner blind spot. It is not an adjudication of the engine for that passage. The uncaught review was a spot-check, not full adjudication. Keep the remaining hypotheses open where the evidence is insufficient.
 

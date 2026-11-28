@@ -11,6 +11,6 @@ The report keeps C2.3 pending because the authorized documents contain only spec
 ## Verification
 
 - Seven focused tests, strict script type checking, all 51 synthetic controls, the build and integration packaging passed under Node 22.20.0.
-- Two executions on the same 974-spec cache produced byte-identical results and coverage reports. The historical comparator and the spike engine agreed on all 716 predictions. Any corrective candidate requires its own replay and independent precision evaluation.
+- Two executions on a fresh 974-spec download produced byte-identical results and coverage reports. Both pinned E3.3 admission records reproduced. The historical comparator and the spike engine agreed on all 716 predictions in the repeated unlabelled comparison. Any corrective candidate requires its own replay and independent precision evaluation.
 - An earlier full `npm run check` passed 154 tests but loaded committed E1.2 clarification fixtures. Their relationship to the excluded #57/#60 material could not be established, so the full check was not repeated.
 - Exact-commit Luna Latest review with access restricted to this spike remains required before merge.

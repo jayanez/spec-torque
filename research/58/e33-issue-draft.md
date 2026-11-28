@@ -13,7 +13,23 @@ Run the #58 contextual scan on the authorized, pinned DEV copies. Both original 
 | EN | [kcalvelli/cairn, syncthing-xdg-sync, lines 61–64](https://github.com/kcalvelli/cairn/blob/712dc76d47efd44f2affc5a07865cd26231ef3e6/openspec/specs/syncthing-xdg-sync/spec.md#L61-L64) | MIT | An unsupported folder name produces a NixOS module evaluation type error. |
 | ES | [ElPitagoras14/aniseek, anime-catalog, lines 40–44](https://github.com/ElPitagoras14/aniseek/blob/8010a757eab11db7fca993b88b97901cd426569b/openspec/specs/anime-catalog/spec.md#L40-L44) | Apache-2.0 | A failed write during synchronization leaves the previous persisted state intact. |
 
-Raw document SHA-256 values are `80337b80d4a8973b681c553d85aecaf4dd655152dc7037f1e90ae634a7c239e2` and `2e876515a900c7f0337aeba257797f663759ea433aff95ff997d4b9caf7d4e72` respectively. Root license text matched both manifests at the pinned revisions. The projects have distinct owners and feature lineages. They share a scenario scaffold, but the conditions, actions, domain and expected results are distinct authored material. Count one lineage per project. These sightings support intake. They do not establish prevalence, detector precision or independent test performance.
+Raw document SHA-256 values are `80337b80d4a8973b681c553d85aecaf4dd655152dc7037f1e90ae634a7c239e2` and `2e876515a900c7f0337aeba257797f663759ea433aff95ff997d4b9caf7d4e72` respectively. The root license text matched the DEV manifest at both revisions. See [cairn's MIT license](https://github.com/kcalvelli/cairn/blob/712dc76d47efd44f2affc5a07865cd26231ef3e6/LICENSE) and [aniseek's Apache-2.0 license](https://github.com/ElPitagoras14/aniseek/blob/8010a757eab11db7fca993b88b97901cd426569b/LICENSE).
+
+After the [expanded scan](context-scan.md#expanded-scan), extract the two admission records from its JSONL output:
+
+```sh
+jq -c 'select(.practice == "E3.3" and
+  ((.repository == "github.com/kcalvelli/cairn" and
+    .path == "openspec/specs/syncthing-xdg-sync/spec.md" and .start == 61) or
+   (.repository == "github.com/ElPitagoras14/aniseek" and
+    .path == "openspec/specs/anime-catalog/spec.md" and .start == 40))) |
+  {repository, revision, path, start, end, documentHash, licenseCheck,
+   cues, observation}' /tmp/spec58-leads.jsonl
+```
+
+This selects one `test-and-exception` lead at the scenario heading in each document. The pinned links above show the full condition and outcome below each heading. Both scanner records show `documentStatus: "missing"`, `documentEvidence: []`, `passageEvidence: []` and `findings: []`. The analyzer reason is `No evidence found by this check in the supplied artifacts.` Read the full pinned document for this comparison because the status is computed across the entire spec.
+
+The projects have distinct owners and feature lineages. They share a scenario scaffold, but the conditions, actions, domain and expected results are distinct authored material. Count one lineage per project. These sightings support intake. They do not establish prevalence, detector precision or independent test performance.
 
 Two additional development passages corroborate the same omission. In [cairn remote-desktop, lines 125–127](https://github.com/kcalvelli/cairn/blob/712dc76d47efd44f2affc5a07865cd26231ef3e6/openspec/specs/remote-desktop/spec.md#L125-L127), the command exits nonzero when neither lookup resolves the user's port and no port is supplied. In [aniseek frontend-runtime-config, lines 24–27](https://github.com/ElPitagoras14/aniseek/blob/8010a757eab11db7fca993b88b97901cd426569b/openspec/specs/frontend-runtime-config/spec.md#L24-L27), an unconfigured key uses its declared default. Both documents returned `missing` with no E3.3 evidence. They remain development examples in the original two repositories.
 
