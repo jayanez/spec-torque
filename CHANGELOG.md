@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Markdown report (#126): no report line ends in spaces or tabs, so a committed report passes a host's whitespace check. Evidence still quotes the source line cut at 300 characters; quoted lines are trimmed only in the report, and the JSON assessment keeps the text as cut. Engine and product versions unchanged (0.1.21, 0.3.0): findings and scores do not move.
+
 - `spec-review` skill (#129): a review sequence for model reviews of a specification set. Run the engine first; then one full review with two independent lenses (adversarial and counterfactual), keeping a finding only when both report it or a fresh-context check cannot refute it; apply the findings in one pass; verify on the difference from the reviewed commit with the `changed` scope, the diff and one yes/no question per unchanged line that cites a changed definition; and review in full again only when a fix changes a decision rule, a threshold, the open decisions or the task order. The score is never an acceptance signal. The sequence is a recommendation without a controlled evaluation behind it. Mirrored in the Spanish guide; no new skill, so host packaging is unchanged.
 
 - Codex Desktop (#117): invoke `$spec-setup` to bind a trusted worktree without a terminal step. Choose it from the `$` menu, confirm the root, and approve the protected MCP write. Then open a new local chat for `$spec-view`. Setup also checks and repairs obsolete paths after an update. The workbench environment action remains a separate opt-in.
