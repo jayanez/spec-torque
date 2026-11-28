@@ -34,7 +34,8 @@ const arms = { baseline: await archiveEngine(revisions.baseline, join(temp, 'bas
 if (typeof (arms.candidate as { isFrameworkTemplate?: unknown }).isFrameworkTemplate !== 'function') throw new Error('The candidate does not export isFrameworkTemplate.');
 const isTemplate = (arms.candidate as unknown as { isFrameworkTemplate: (path: string) => boolean }).isFrameworkTemplate;
 
-const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined });
+// `summary.reachable` (#125) is disclosure only and absent from earlier engines, so it is not compared.
+const comparable = (r: Result) => JSON.stringify({ ...r, id: undefined, createdAt: undefined, engineVersion: undefined, summary: { ...r.summary, reachable: undefined } });
 const overLimit = (set: Selection) => set.artifacts.length > LIMIT || set.artifacts.some(a => a.content.length > 1_000_000);
 
 /** Evidence is valid when its line exists at its path and the line starts with the cited text. */

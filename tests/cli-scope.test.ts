@@ -36,3 +36,8 @@ test('CLI refine --expect-hash rejects a source changed since the assessment', a
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('CLI help states the reachable maximum (#125)', async () => {
+  const { stdout } = await cli('help');
+  assert.match(stdout, /highest reachable total for a full scope is 20\. Choose --min at or below it\./);
+});

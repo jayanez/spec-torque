@@ -35,7 +35,7 @@ Types live in `src/core/types.ts`; runtime boundary schemas in `src/node/schemas
 
 ## Scoring and limits
 
-Signals map to supported=1, partial=0.5 and missing=0 within each dimension, then round to 0–3. Unknowns prevent that dimension receiving a score; explicit non-applicability removes the practice from the denominator. No total is produced while a dimension is unknown. This is an original heuristic, not the paper's calibrated scoring method. Multi-feature ID/reference checks are scoped; companion completeness needs a single selected feature.
+Signals map to supported=1, partial=0.5 and missing=0 within each dimension, then round to 0–3. Unknowns prevent that dimension receiving a score; explicit non-applicability removes the practice from the denominator. No total is produced while a dimension is unknown. Only catalog-marked practices can be supported, so the assessment also carries the highest total its scope can reach (`summary.reachable`, 20/30 for a full scope); see [the rubric](rubric.md#scoring-and-the-reachable-maximum). This is an original heuristic, not the paper's calibrated scoring method. Multi-feature ID/reference checks are scoped; companion completeness needs a single selected feature.
 
 Layout classification is a hint, not proof of framework ownership. Regex signals do not establish semantic consistency, stakeholder coverage or complete traceability. Only explicit opposite obligations are flagged as contradictions. Code/test implementation checking is outside V1.
 

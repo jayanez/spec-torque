@@ -5,7 +5,11 @@ export const DIMENSIONS = [
   ['I1', 'Conformance', 'Interpretable'], ['I2', 'Consistency', 'Interpretable'], ['I3', 'Comprehensibility', 'Interpretable'],
   ['C1', 'Scope discipline', 'Compartmentalized'], ['C2', 'Implementation planning', 'Compartmentalized'],
 ] as const;
-export interface PracticeDefinition { id: string; title: string; roles: Role[]; pattern?: RegExp; fix: string }
+export interface PracticeDefinition {
+  id: string; title: string; roles: Role[]; pattern?: RegExp; fix: string;
+  /** The deterministic check can report `supported`; every other practice reports `partial` at most (#125). */
+  supportable?: true;
+}
 // H6 (#88): a validation-plan table row with an identifier cell and a test-file reference.
 const testFile = /(?:^|[\s|\x60(/])(?:tests?|__tests__)\/[^\s|\x60]+|\btest_[\w-]+\.py\b|\b[\w.-]+(?:_test|_spec|\.test|\.spec)\.\w+\b|\b\w+Tests?\.(?:cs|java|kt|swift)\b/;
 const validationRow = new RegExp(String.raw`^(?=\s*\|)(?=.*\|\s*(?:\*\*|\x60)?[A-Z]{1,8}-\d+(?:\*\*|\x60)?\s*\|)(?=.*(?:${testFile.source}))`);
@@ -28,11 +32,11 @@ const s: Role[] = ['spec']; const p: Role[] = ['plan']; const t: Role[] = ['task
 const all: Role[] = ['spec', 'plan', 'tasks', 'instructions', 'context'];
 export const PRACTICES: PracticeDefinition[] = [
   { id: 'E1.1', title: 'Explicit clarification-seeking', roles: all, pattern: /NEEDS CLARIFICATION|PENDIENTE DE ACLARAR|open questions|decisiones pendientes|no unresolved|sin decisiones pendientes/i, fix: 'Record unresolved decisions as specific questions, or explicitly state that none remain.' },
-  { id: 'E1.2', title: 'Quantified and measurable requirements', roles: s, fix: 'State the measurable outcome and operating conditions; ask for unknown values.' },
+  { id: 'E1.2', title: 'Quantified and measurable requirements', supportable: true, roles: s, fix: 'State the measurable outcome and operating conditions; ask for unknown values.' },
   { id: 'E1.3', title: 'Bounded vocabulary and enumerations', roles: s, pattern: /glossary|glosario|allowed values|valores permitidos|(?:means|significa):|(?:types|tipos|states|estados):.+[,|]/i, fix: 'Define domain terms and enumerate supported values.' },
-  { id: 'E1.4', title: 'Normative and structural consistency', roles: s, fix: 'Use intentional MUST, SHOULD or MAY wording consistently; preserve the chosen obligation.' },
+  { id: 'E1.4', title: 'Normative and structural consistency', supportable: true, roles: s, fix: 'Use intentional MUST, SHOULD or MAY wording consistently; preserve the chosen obligation.' },
   { id: 'E1.5', title: 'Scope and verification boundaries', roles: s, pattern: /out of scope|non-goals|fuera de alcance|exclusions|exclusiones|MUST NOT|NO DEBE/i, fix: 'State explicit exclusions and the boundaries of verification.' },
-  { id: 'E2.1', title: 'Atomic behavioral statements', roles: s, fix: 'Split independent obligations while keeping conditions of the same obligation together.' },
+  { id: 'E2.1', title: 'Atomic behavioral statements', supportable: true, roles: s, fix: 'Split independent obligations while keeping conditions of the same obligation together.' },
   { id: 'E2.2', title: 'Singular architecture and design facts', roles: p, pattern: /^\s*(?:[-*]|[A-Z]+-\d+|\d+[.)]).*(?:component|module|service|módulo|componente|servicio)/i, fix: 'Record each design fact as a separate statement in the plan.' },
   { id: 'E2.3', title: 'Isolated risks, assumptions and edge cases', roles: all, pattern: /^\s*(?:[-*]|[A-Z]+-\d+).*\b(?:risk|assumption|edge case|riesgo|supuesto|caso límite)\b/i, fix: 'Give each risk, assumption or edge case its own entry.' },
   { id: 'E2.4', title: 'Singular definitions and scenarios', roles: s, pattern: /(?:GIVEN|DADO).+(?:WHEN|CUANDO).+(?:THEN|ENTONCES)|(?:Scenario|Escenario):/i, fix: 'Define one behavior per scenario and one concept per definition.' },
@@ -51,10 +55,10 @@ export const PRACTICES: PracticeDefinition[] = [
   { id: 'P2.4', title: 'Dependency and delivery planning', roles: ['plan', 'tasks'], pattern: /milestone|release|delivery|hito|entrega|phase|fase/i, fix: 'Describe a delivery order and its prerequisites.' },
   { id: 'P2.5', title: 'Completeness management', roles: all, pattern: /open questions|decisiones pendientes|NEEDS CLARIFICATION|PENDIENTE DE ACLARAR|no unresolved|sin decisiones pendientes/i, fix: 'Track unanswered questions until a decision and owner are recorded.' },
   { id: 'I1.1', title: 'Standardized document structure', roles: all, pattern: /^#{1,3}\s+\S+/i, fix: 'Organize documents by purpose using recognizable headings.' },
-  { id: 'I1.2', title: 'Stable unique requirement identifiers', roles: s, fix: 'Give each requirement a stable, unique identifier.' },
+  { id: 'I1.2', title: 'Stable unique requirement identifiers', supportable: true, roles: s, fix: 'Give each requirement a stable, unique identifier.' },
   { id: 'I1.3', title: 'Explicit template declaration', roles: all, pattern: /(?:schema|template|format|plantilla|formato|esquema)\s*[:=]\s*\S+/i, fix: 'Declare the document convention and validate it.' },
   { id: 'I2.1', title: 'Shared terminology', roles: all, pattern: /glossary|glosario|terminology|terminología|domain terms|términos del dominio/i, fix: 'Use a shared glossary and consistent domain names.' },
-  { id: 'I2.2', title: 'Uniform identifiers and notation', roles: s, fix: 'Keep identifier syntax and references consistent.' },
+  { id: 'I2.2', title: 'Uniform identifiers and notation', supportable: true, roles: s, fix: 'Keep identifier syntax and references consistent.' },
   { id: 'I2.3', title: 'Cross-artifact alignment', roles: ['spec', 'plan', 'tasks'], fix: 'Reference requirement identifiers from plans and tasks, then inspect semantic agreement.' },
   { id: 'I2.4', title: 'Consistent organization', roles: ['spec', 'plan', 'tasks'], pattern: /^#{1,3}\s+(?:Overview|Purpose|Requirements|Verification|Resumen|Objetivo|Requisitos|Verificación)/i, fix: 'Use a predictable organization across related artifacts.' },
   { id: 'I3.1', title: 'Structured document organization', roles: all, pattern: /^#{1,3}\s+\S+/i, fix: 'Group information in navigable sections with meaningful headings.' },

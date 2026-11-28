@@ -96,6 +96,9 @@ test('the Claude pane text matches the shared presentation helpers', async () =>
   assert.ok(assessment.findings.length >= 2);
   for (const at of [0, assessment.findings.length - 1]) assert.deepEqual(pane.findingCard(assessment, at), findingCard(assessment, at));
   assert.equal(pane.summaryLine(assessment), summaryLine(assessment));
+  const scored = { ...assessment, summary: { ...assessment.summary, score: 12 } };
+  assert.equal(pane.summaryLine(scored), summaryLine(scored));
+  assert.match(pane.summaryLine(scored), /^12\/30 \(highest reachable 20\) · /);
   assert.equal(pane.dimensionsLine(assessment), dimensionsLine(assessment));
   assert.equal(pane.titleLine('0.2.2', assessment.name), titleLine('0.2.2', assessment.name));
   assert.equal(pane.DISCLAIMER, DISCLAIMER);
