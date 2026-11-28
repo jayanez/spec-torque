@@ -14,7 +14,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { ITEM_COUNT, LABELS, LANGUAGES, packetProblems, RUNS, sha256 } from './protocol.mjs';
+import { ITEM_COUNT, LABELS, LANGUAGES, packetProblems, PHASES, RUNS, runOf, sha256 } from './protocol.mjs';
 
 export { RUNS, LABELS };
 export const GATES = { kappa: 0.80, accuracy: 0.90, instability: 0.10, undefinedKappaAgreement: 0.90 };
@@ -89,10 +89,17 @@ export function seal(results) {
   const target = join(results, 'frozen.json');
   if (existsSync(target)) throw new Error(`${target} exists; a seal is never overwritten.`);
   const files = {};
-  for (const run of RUNS) for (const f of ['raw.jsonl', 'done.json']) {
-    const p = join(results, run, f);
-    if (!existsSync(p)) throw new Error(`Missing ${run}/${f}: every run must finish before sealing.`);
-    files[`${run}/${f}`] = sha256(readFileSync(p));
+  for (const run of RUNS) {
+    const read = file => {
+      const path = join(results, run, file);
+      if (!existsSync(path)) throw new Error(`Missing ${run}/${file}: every run must finish before sealing.`);
+      return readFileSync(path);
+    };
+    const doneBytes = read('done.json');
+    const rawBytes = read('raw.jsonl');
+    const { rawSha256 } = checkedDone(run, rawBytes, doneBytes);
+    files[`${run}/raw.jsonl`] = rawSha256;
+    files[`${run}/done.json`] = sha256(doneBytes);
   }
   const body = { sealedAt: new Date().toISOString(), files };
   writeFileSync(target, JSON.stringify(body, null, 2) + '\n', { flag: 'wx' });
@@ -119,10 +126,15 @@ export const verifySeal = results => { readSealed(results); };
 
 // ---------------------------------------------------------------- runs and population
 
+function checkedDone(run, rawBytes, doneBytes) {
+  const done = JSON.parse(doneBytes.toString('utf8'));
+  if (done?.rawSha256 !== sha256(rawBytes)) throw new Error(`${run}: raw.jsonl does not match done.json.`);
+  return done;
+}
+
 /** Final records of one run, bound to its packet: one final record per packet item and nothing else. */
 export function parseRun(run, rawBytes, doneBytes, packet, packetSha) {
-  const done = JSON.parse(doneBytes.toString('utf8'));
-  if (done.rawSha256 !== sha256(rawBytes)) throw new Error(`${run}: raw.jsonl does not match done.json.`);
+  const done = checkedDone(run, rawBytes, doneBytes);
   const reviewer = run.slice(0, 2), n = Number(run.slice(-1));
   if (done.reviewer !== reviewer) throw new Error(`${run}: done.json is for ${done.reviewer}.`);
   if (done.screen) throw new Error(`${run}: is an exploratory screening run.`);
@@ -244,8 +256,9 @@ function main() {
     phase: { type: 'string' }, results: { type: 'string' }, packets: { type: 'string' }, fixture: { type: 'string' }, out: { type: 'string' },
   } });
   if (mode === 'seal') { console.log(JSON.stringify(seal(values.results), null, 2)); return; }
-  if (mode !== 'score' || !['calibration', 'reserve', 'calibration-run2', 'reserve-run2'].includes(values.phase)) {
-    console.error('Usage: seal --results <dir> | score --phase calibration|reserve|calibration-run2|reserve-run2 --results <dir> --packets <dir> --fixture <calibration*.json> [--out report.json]');
+  const phases = PHASES.filter(p => p !== 'live');
+  if (mode !== 'score' || !phases.includes(values.phase)) {
+    console.error(`Usage: seal --results <dir> | score --phase ${phases.join('|')} --results <dir> --packets <dir> --fixture <calibration*.json> [--out report.json]`);
     process.exit(2);
   }
   const sealed = readSealed(values.results);
@@ -259,7 +272,8 @@ function main() {
   // Keys and the item map are read only after the seal, packets and runs are verified.
   const map = JSON.parse(readFileSync(join(values.packets, 'operator', 'item-map.json'), 'utf8'));
   const fixture = JSON.parse(readFileSync(values.fixture, 'utf8'));
-  const expectedFixture = values.phase.endsWith('-run2') ? 'e12-calibration-run2/1' : 'e12-calibration/1';
+  const n = runOf(values.phase);
+  const expectedFixture = n === 1 ? 'e12-calibration/1' : `e12-calibration-run${n}/1`;
   if (fixture.version !== expectedFixture) throw new Error(`Fixture ${fixture.version} does not match phase ${values.phase}.`);
   const items = bindKeys(packets['R1-run1'].items, map, values.phase.startsWith('calibration') ? fixture.items : fixture.reserve);
   const runs = Object.fromEntries(RUNS.map(run => [run, parsed[run].records]));

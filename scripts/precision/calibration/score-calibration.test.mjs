@@ -1,12 +1,12 @@
 // Synthetic tests only: no keys, packets or responses from the rehearsal.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, appendFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync, appendFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bindKeys, checkPopulation, evaluate, kappa, kappaPasses, labelsOf, majority, parseRun, readSealed, seal,
   spanVerified, stripQuotes, unverifiedYes, RUNS } from './score-calibration.mjs';
-import { classifyR1, classifyR2, codexHeader, loadRecords, material, minimalEnv, nextAttempt, wellFormed } from './run-reviewer.mjs';
+import { checkResumeClient, classifyR1, classifyR2, clientVersion, codexHeader, inspectImage, SCREEN_IMAGE, loadRecords, material, minimalEnv, nextAttempt, wellFormed } from './run-reviewer.mjs';
 import { FROZEN_PROTOCOL_SHA256, PROMPT_SHA256, RUN2_PROTOCOL_SHA256, orderKey, packetProblems, seedFor, sha256 } from './protocol.mjs';
 
 const edit = { action: 'edit', scope: 'target line', text: 'X MUST refresh within 500 ms.', note: null };
@@ -84,7 +84,14 @@ test('seal: needs all runs, never overwrites, rejects empty or partial seals and
   assert.throws(() => readSealed(dir), /not sealed/);
   for (const run of RUNS) { mkdirSync(join(dir, run)); writeFileSync(join(dir, run, 'raw.jsonl'), '{}\n'); }
   assert.throws(() => seal(dir), /Missing/);
-  for (const run of RUNS) writeFileSync(join(dir, run, 'done.json'), '{}\n');
+  const complete = JSON.stringify({ rawSha256: sha256('{}\n') });
+  for (const run of RUNS) writeFileSync(join(dir, run, 'done.json'), complete);
+  const lastRun = RUNS.at(-1);
+  const lastRaw = join(dir, lastRun, 'raw.jsonl');
+  appendFileSync(lastRaw, '{"late":true}\n');
+  assert.throws(() => seal(dir), /raw.jsonl does not match done.json/);
+  assert.equal(existsSync(join(dir, 'frozen.json')), false);
+  writeFileSync(lastRaw, '{}\n');
   seal(dir);
   assert.throws(() => seal(dir), /never overwritten/);
   assert.equal(Object.keys(readSealed(dir)).length, 12);
@@ -177,6 +184,22 @@ test('a torn final line is dropped on resume; corruption elsewhere stops', () =>
   assert.throws(() => loadRecords(f), /corrupt record on line 1/);
 });
 
+test('recovering a torn UTF-8 append preserves the complete prefix byte for byte', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'st65-utf8-'));
+  try {
+    const raw = join(dir, 'raw.jsonl');
+    const first = { id: 'acción 🧪', final: true };
+    const prefix = Buffer.from(`${JSON.stringify(first)}\r\n\n`);
+    const torn = Buffer.from('{"id":"café 🧪');
+    writeFileSync(raw, Buffer.concat([prefix, torn.subarray(0, -1)]));
+    assert.deepEqual(loadRecords(raw), [first]);
+    assert.deepEqual(readFileSync(raw), prefix);
+    assert.deepEqual(loadRecords(raw), [first]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('client results: blank output is transport; pins are enforced on every call', () => {
   const env = r => JSON.stringify({ is_error: false, result: r, modelUsage: { 'claude-sonnet-5-5': {} } });
   assert.equal(classifyR1(env('{"a":1}'), 0).raw, '{"a":1}');
@@ -188,6 +211,13 @@ test('client results: blank output is transport; pins are enforced on every call
   assert.match(classifyR2(head, 0, '').error, /blank/);
   assert.match(classifyR2('model: gpt-6-luna\n', 0, 'x').error, /incomplete/);
   assert.match(classifyR2(head.replace('medium', 'high'), 0, 'x').fatal, /effort high/);
+});
+
+test('R1 error envelopes remain transport failures even when the result is blank', () => {
+  for (const result of ['', '   ', undefined, null]) {
+    assert.match(classifyR1(JSON.stringify({ is_error: true, result }), 0).error, /without a message/);
+  }
+  assert.deepEqual(classifyR1(JSON.stringify({ is_error: true, result: 'upstream error' }), 0), { error: 'upstream error' });
 });
 
 test('codex header, minimal environment, well-formed output and prompt material order', () => {
@@ -218,4 +248,70 @@ test('exploratory screening runs never enter a gated score', () => {
   assert.throws(() => parseRun('R2-run1', raw, done, packet, pSha), /exploratory/);
   const done2 = Buffer.from(JSON.stringify({ reviewer: 'R2', run: 1, packetSha256: pSha, rawSha256: sha256(raw) }));
   assert.throws(() => parseRun('R2-run1', raw, done2, packet, pSha), /exploratory/);
+});
+
+test('run-3 phases: live prompt unchanged, seeds wait for the run-3 freeze', async () => {
+  const { runOf, RUN3_PROTOCOL_SHA256, ITEM_COUNT } = await import('./protocol.mjs');
+  assert.equal(PROMPT_SHA256['calibration-run3'], PROMPT_SHA256.live, 'run 3 calibrates the live prompt');
+  assert.deepEqual([runOf('calibration'), runOf('live'), runOf('reserve-run2'), runOf('calibration-run3')], [1, 1, 2, 3]);
+  assert.equal(ITEM_COUNT['calibration-run3'], 96);
+  const p = { phase: 'calibration-run3', reviewer: 'R1', run: 1, seed: 'x', protocolSha256: FROZEN_PROTOCOL_SHA256,
+    runProtocolSha256: 'y', prompt: '', items: [] };
+  if (RUN3_PROTOCOL_SHA256 === null) assert.ok(packetProblems(p).some(m => /run 3 is not frozen/.test(m)));
+});
+
+test('R2 verifies the client in the resolved screening image without pulling or using the network', () => {
+  const id = `sha256:${'a'.repeat(64)}`;
+  const commands = [];
+  const spawn = (name, args) => {
+    commands.push([name, ...args]);
+    return { status: 0, stdout: args[0] === 'image' ? `${id}\n` : 'codex-cli 0.170.0\n' };
+  };
+  const image = inspectImage(SCREEN_IMAGE, spawn);
+  assert.equal(image, id);
+  assert.equal(clientVersion('R2', image, spawn), 'codex-cli 0.170.0');
+  assert.deepEqual(commands, [
+    ['docker', 'image', 'inspect', SCREEN_IMAGE, '--format', '{{.Id}}'],
+    ['docker', 'run', '--rm', '--pull=never', '--network', 'none', '--entrypoint', 'codex', id, '--version'],
+  ]);
+});
+
+test('R2 refuses an unresolved image or a failed version probe', () => {
+  assert.throws(() => inspectImage(SCREEN_IMAGE, () => ({ status: 0, stdout: '' })), /missing or invalid image ID/);
+  assert.throws(() => inspectImage(SCREEN_IMAGE, () => ({ status: 1, stderr: 'image absent' })), /image absent/);
+  const id = `sha256:${'b'.repeat(64)}`;
+  assert.throws(() => clientVersion('R2', id, () => ({ status: 1, stdout: 'codex-cli 0.170.0', stderr: 'container failed' })), /container failed/);
+});
+
+test('Docker probe failures include the terminating signal', () => {
+  const spawn = () => ({ status: null, signal: 'SIGTERM', stderr: 'interrupted' });
+  assert.throws(() => inspectImage(SCREEN_IMAGE, spawn), /signal SIGTERM: interrupted/);
+  assert.throws(() => clientVersion('R2', `sha256:${'a'.repeat(64)}`, spawn), /signal SIGTERM: interrupted/);
+});
+
+test('R2 preserves legacy records on refusal and resumes only records pinned to the same client', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'st65-resume-'));
+  try {
+    const raw = join(dir, 'raw.jsonl');
+    const image = `sha256:${'a'.repeat(64)}`;
+    const version = 'codex-cli 0.170.0';
+    const record = { reviewer: 'R2', image, clientVersion: version };
+    const verify = records => checkResumeClient(records, raw, 'R2', version, image);
+    const legacy = `${JSON.stringify(record)}\n{`;
+    writeFileSync(raw, legacy);
+    assert.throws(() => loadRecords(raw, verify), /legacy R2 records without verified image pinning/);
+    assert.equal(readFileSync(raw, 'utf8'), legacy);
+
+    const pinned = { ...record, imagePinnedById: true };
+    const resumable = `${JSON.stringify(pinned)}\n{`;
+    writeFileSync(raw, resumable);
+    assert.throws(() => loadRecords(raw, records =>
+      checkResumeClient(records, raw, 'R2', version, `sha256:${'b'.repeat(64)}`)), /different client version or image/);
+    assert.equal(readFileSync(raw, 'utf8'), resumable);
+    assert.deepEqual(loadRecords(raw, verify), [pinned]);
+    assert.equal(readFileSync(raw, 'utf8'), `${JSON.stringify(pinned)}\n`);
+    assert.doesNotThrow(() => checkResumeClient([{ image: null, clientVersion: version }], raw, 'R1', version, null));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

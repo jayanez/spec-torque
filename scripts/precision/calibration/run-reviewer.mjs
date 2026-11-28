@@ -19,12 +19,12 @@
  * - R2: the pinned docker image; mounts only the item, read-only credentials and an output directory.
  */
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, truncateSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { LABELS, packetProblems, sha256 } from './protocol.mjs';
+import { LABELS, packetProblems, runOf, sha256 } from './protocol.mjs';
 
 export const PINS = {
   R1: { client: /^2\.1\.311 \(Claude Code\)$/, model: 'claude-sonnet-5-5', effort: 'medium' },
@@ -34,6 +34,12 @@ export const IMAGE = 'spectorque-r2:codex-0.170.0';
 /** Exploratory screening of second-reviewer candidates (#57 follow-up). Never used for a gated run. */
 export const SCREEN_IMAGE = 'spectorque-screen:codex-0.170.0';
 export const SCREEN_CANDIDATES = { 'gpt-6-luna:high': { model: 'gpt-6-luna', effort: 'high' }, 'gpt-6.2-astra:medium': { model: 'gpt-6.2-astra', effort: 'medium' } };
+/**
+ * R2 for calibration run 3 (#65): the screening candidate chosen by the selection rule in
+ * docs/clarification-actionability-run3.md, run in the screening image. Null until pinned at the run-3 freeze;
+ * run-3 R2 calls are refused while it is null.
+ */
+export const RUN3_R2 = null;
 
 /** Serialises one item with the names and order the prompt uses. */
 export function material(item) {
@@ -72,7 +78,7 @@ export function classifyR1(stdout, status) {
   if (status !== 0) return { error: `exit ${status}` };
   let envelope;
   try { envelope = JSON.parse(stdout); } catch { return { error: 'unparseable client envelope' }; }
-  if (envelope.is_error) return { error: String(envelope.result).slice(0, 300) };
+  if (envelope.is_error) return { error: String(envelope.result ?? '').trim().slice(0, 300) || 'client reported an error without a message' };
   const models = Object.keys(envelope.modelUsage ?? {});
   if (models.length !== 1 || models[0] !== PINS.R1.model) return { fatal: `R1 model usage ${models.join(',') || 'empty'}, expected only ${PINS.R1.model}` };
   if (typeof envelope.result !== 'string' || !envelope.result.trim()) return { error: 'blank output' };
@@ -87,18 +93,33 @@ export function classifyR2(stderr, status, answer, pins = PINS.R2) {
   return { raw: answer, model: header.model, meta: header };
 }
 
-function imageId() {
-  const p = spawnSync('docker', ['image', 'inspect', IMAGE, '--format', '{{.Id}}'], { encoding: 'utf8' });
-  return (p.stdout || '').trim();
-}
-function clientVersion(reviewer) {
-  const p = reviewer === 'R1'
-    ? spawnSync('claude', ['--version'], { encoding: 'utf8', env: minimalEnv(process.env) })
-    : spawnSync('docker', ['run', '--rm', '--entrypoint', 'codex', IMAGE, '--version'], { encoding: 'utf8' });
-  return (p.stdout || '').trim();
+function probeFailure(result) {
+  const detail = result.error?.message || result.stderr?.trim();
+  const termination = result.signal ? `signal ${result.signal}` : `exit ${result.status}`;
+  return detail ? `${termination}: ${detail}` : termination;
 }
 
-function call(reviewer, input, authPath, screen = null) {
+export function inspectImage(tag, spawn = spawnSync) {
+  const p = spawn('docker', ['image', 'inspect', tag, '--format', '{{.Id}}'], { encoding: 'utf8' });
+  const id = p.stdout?.trim();
+  if (p.status !== 0 || !/^sha256:[a-f0-9]{64}$/.test(id ?? '')) {
+    const detail = p.status === 0 ? 'missing or invalid image ID' : probeFailure(p);
+    throw new Error(`Cannot resolve Docker image ${tag}: ${detail}.`);
+  }
+  return id;
+}
+
+export function clientVersion(reviewer, image, spawn = spawnSync) {
+  const p = reviewer === 'R1'
+    ? spawn('claude', ['--version'], { encoding: 'utf8', env: minimalEnv(process.env) })
+    : spawn('docker', ['run', '--rm', '--pull=never', '--network', 'none', '--entrypoint', 'codex', image, '--version'], { encoding: 'utf8' });
+  if (p.status !== 0) {
+    throw new Error(`Cannot check ${reviewer} client version${image ? ` in ${image}` : ''}: ${probeFailure(p)}.`);
+  }
+  return p.stdout?.trim() ?? '';
+}
+
+function call(reviewer, input, authPath, image, screen) {
   const work = mkdtempSync(join(tmpdir(), `st57-${reviewer}-`));
   try {
     if (reviewer === 'R1') {
@@ -109,10 +130,10 @@ function call(reviewer, input, authPath, screen = null) {
     }
     mkdirSync(join(work, 'out'));
     writeFileSync(join(work, 'item.txt'), input);
-    const p = spawnSync('docker', ['run', '--rm', '--network', 'bridge', '--read-only',
+    const p = spawnSync('docker', ['run', '--rm', '--pull=never', '--network', 'bridge', '--read-only',
       '--tmpfs', '/tmp', '--tmpfs', '/home/reviewer:uid=1001,gid=1001', '-e', 'CODEX_HOME=/home/reviewer/.codex',
       '-v', `${join(work, 'item.txt')}:/in/item.txt:ro`, '-v', `${authPath}:/secrets/auth.json:ro`, '-v', `${join(work, 'out')}:/out`,
-      ...(screen ? ['-e', `SCREEN_MODEL=${screen.model}`, '-e', `SCREEN_EFFORT=${screen.effort}`, SCREEN_IMAGE] : [IMAGE])],
+      ...(screen ? ['-e', `SCREEN_MODEL=${screen.model}`, '-e', `SCREEN_EFFORT=${screen.effort}`] : []), image],
     { encoding: 'utf8', timeout: 1_800_000 });
     const answerFile = join(work, 'out', 'answer.txt');
     return classifyR2(p.stderr || '', p.status, existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : null,
@@ -121,9 +142,10 @@ function call(reviewer, input, authPath, screen = null) {
 }
 
 /** Loads existing records, dropping a torn final line from an interrupted append. */
-export function loadRecords(rawFile) {
+export function loadRecords(rawFile, validate = () => {}) {
   if (!existsSync(rawFile)) return [];
-  const text = readFileSync(rawFile, 'utf8');
+  const bytes = readFileSync(rawFile);
+  const text = bytes.toString('utf8');
   const lines = text.split('\n');
   const records = [];
   for (const [i, line] of lines.entries()) {
@@ -132,14 +154,26 @@ export function loadRecords(rawFile) {
     catch {
       if (i === lines.length - 1) {
         // Torn final line from an interrupted append: drop it; the call it recorded is redone.
-        writeFileSync(rawFile, lines.slice(0, i).join('\n') + (i ? '\n' : ''));
+        validate(records);
+        truncateSync(rawFile, bytes.lastIndexOf(0x0a) + 1);
         return records;
       }
       throw new Error(`${rawFile}: corrupt record on line ${i + 1}.`);
     }
   }
+  validate(records);
   if (text && !text.endsWith('\n')) appendFileSync(rawFile, '\n');
   return records;
+}
+
+/** Refuses to mix records whose executed clients cannot be matched to this run. */
+export function checkResumeClient(records, rawFile, reviewer, version, image) {
+  if (reviewer === 'R2' && records.some(r => r.imagePinnedById !== true)) {
+    throw new Error(`${rawFile} contains legacy R2 records without verified image pinning. Preserve them for independent verification; use a separate directory for a new run.`);
+  }
+  if (records.some(r => r.image !== image || r.clientVersion !== version)) {
+    throw new Error(`${rawFile} belongs to a different client version or image. Restore the recorded client and image before resuming.`);
+  }
 }
 
 /** Next reviewer attempt for an item from its records: 1, 2, or null when it already has a final record. */
@@ -171,6 +205,11 @@ function main() {
     const problems = packetProblems(packet, { reviewer, run });
     if (problems.length) throw new Error(`Packet rejected: ${problems.join('; ')}.`);
   } else if (packet.reviewer !== reviewer) throw new Error(`Packet is for ${packet.reviewer}, not ${reviewer}.`);
+  // Run 3 replaces R2's model and effort with the pinned candidate; it is a gated run, not a screening one.
+  const run3 = reviewer === 'R2' && runOf(packet.phase) === 3;
+  if (run3 && values.screen) throw new Error('--screen is for exploratory runs; run-3 packets use the pinned RUN3_R2.');
+  if (run3 && !SCREEN_CANDIDATES[RUN3_R2]) throw new Error('Run 3 is not frozen: RUN3_R2 is not pinned.');
+  const r2 = screen ?? (run3 ? SCREEN_CANDIDATES[RUN3_R2] : null);
   const out = resolve(values.out);
   mkdirSync(out, { recursive: true });
   const lockFile = join(out, '.lock');
@@ -183,17 +222,19 @@ function main() {
 
   const authPath = reviewer === 'R2' ? resolve(values.auth ?? `${process.env.HOME}/.codex/auth.json`) : null;
   if (authPath && !existsSync(authPath)) throw new Error(`No credentials at ${authPath}.`);
-  const version = clientVersion(reviewer);
+  const image = reviewer === 'R2' ? inspectImage(r2 ? SCREEN_IMAGE : IMAGE) : null;
+  const version = clientVersion(reviewer, image);
   if (!PINS[reviewer].client.test(version)) throw new Error(`Pinned client not available (got "${version}"). The run waits, per the protocol.`);
-  const image = reviewer === 'R2' ? (screen ? spawnSync('docker', ['image', 'inspect', SCREEN_IMAGE, '--format', '{{.Id}}'], { encoding: 'utf8' }).stdout.trim() : imageId()) : null;
 
   const rawFile = join(out, 'raw.jsonl');
   const doneFile = join(out, 'done.json');
   if (existsSync(doneFile)) throw new Error(`${out} already holds a finished run; it is never overwritten.`);
-  const records = loadRecords(rawFile);
-  if (records.some(r => Boolean(r.dryRun) !== dry)) throw new Error(`${rawFile} mixes dry and official records; use a separate directory.`);
-  if (records.some(r => (r.screen ?? null) !== (values.screen ?? null))) throw new Error(`${rawFile} mixes screening and other records; use a separate directory.`);
-  if (records.some(r => r.packetSha256 !== packetSha || r.reviewer !== reviewer)) throw new Error(`${rawFile} belongs to a different packet or reviewer.`);
+  const records = loadRecords(rawFile, records => {
+    if (records.some(r => Boolean(r.dryRun) !== dry)) throw new Error(`${rawFile} mixes dry and official records; use a separate directory.`);
+    if (records.some(r => (r.screen ?? null) !== (values.screen ?? null))) throw new Error(`${rawFile} mixes screening and other records; use a separate directory.`);
+    if (records.some(r => r.packetSha256 !== packetSha || r.reviewer !== reviewer)) throw new Error(`${rawFile} belongs to a different packet or reviewer.`);
+    checkResumeClient(records, rawFile, reviewer, version, image);
+  });
   const items = dry ? packet.items.slice(0, 2) : packet.items;
   const promptSha = sha256(packet.prompt);
   const done = items.filter(i => nextAttempt(records, i.id) === null).length;
@@ -208,7 +249,7 @@ function main() {
     for (; attempt <= 2; attempt++) {
       let result, transportFailures = 0;
       for (;;) {
-        result = call(reviewer, input, authPath, screen);
+        result = call(reviewer, input, authPath, image, r2);
         if (result.fatal) { console.error(`Stopping: ${result.fatal}. Nothing recorded for ${item.id}.`); process.exit(1); }
         if (!result.error || ++transportFailures >= 3) break;
         spawnSync('sleep', ['15']);
@@ -218,7 +259,7 @@ function main() {
         process.exit(1);
       }
       const record = { id: item.id, index, attempt, reviewer, run, dryRun: dry || undefined, screen: values.screen ?? undefined, packetSha256: packetSha,
-        promptSha256: promptSha, inputSha256: sha256(input), clientVersion: version, image, model: result.model,
+        promptSha256: promptSha, inputSha256: sha256(input), clientVersion: version, image, imagePinnedById: reviewer === 'R2' ? true : undefined, model: result.model,
         meta: result.meta, transportFailures, raw: result.raw, wellFormed: wellFormed(result.raw), at: new Date().toISOString() };
       record.final = record.wellFormed || attempt === 2;
       appendFileSync(rawFile, JSON.stringify(record) + '\n');
