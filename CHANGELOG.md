@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `spec-review` skill (#129): a review sequence for model reviews of a specification set. Run the engine first; then one full review with two independent lenses (adversarial and counterfactual), keeping a finding only when both report it or a fresh-context check cannot refute it; apply the findings in one pass; verify on the difference from the reviewed commit with the `changed` scope, the diff and one yes/no question per unchanged line that cites a changed definition; and review in full again only when a fix changes a decision rule, a threshold, the open decisions or the task order. The score is never an acceptance signal. The sequence is a recommendation without a controlled evaluation behind it. Mirrored in the Spanish guide; no new skill, so host packaging is unchanged.
+
 - Codex Desktop (#117): invoke `$spec-setup` to bind a trusted worktree without a terminal step. Choose it from the `$` menu, confirm the root, and approve the protected MCP write. Then open a new local chat for `$spec-view`. Setup also checks and repairs obsolete paths after an update. The workbench environment action remains a separate opt-in.
 
 - Codex Desktop (#116): open the local workbench from the **Project** command palette without a model turn, or use the optional `$spec-workbench` skill. Worktree setup prints the environment action without editing files. [Desktop observations](docs/codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
