@@ -4,7 +4,9 @@ const conditionalStart = /[.!?;]\s+(?=(?:if|when|si|cuando)\s+)/u;
 const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/gu;
 const indirectQuestion = /\b(?:where|when|how|what|why|whether|donde|cuando|como|que|por que)\s*$/u;
 const loggingAction = /^(?:then\s+)?(?:log|record|note|report)\s+/u;
-const temporalDetail = /^when\s+(?:it|they|he|she)\s+last\b[^,]+,\s*then\b/u;
+// Recognize a short logging complement such as "when it last synced".
+// Longer predicates stay eligible as separate conditions.
+const temporalDetail = /^when\s+(?:it|they|he|she)\s+last\s+[\p{L}-]+\s*,\s*then\b/u;
 const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
