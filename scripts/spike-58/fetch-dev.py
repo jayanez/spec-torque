@@ -1,5 +1,6 @@
 """Fetch only the pinned DEV specification population for spike #58."""
 from concurrent.futures import ThreadPoolExecutor
+import fcntl
 from http.client import IncompleteRead
 import json
 import os
@@ -7,10 +8,9 @@ from pathlib import Path
 import sys
 from urllib.parse import quote
 from urllib.request import Request, urlopen
+from uuid import uuid4
 
-from dev_cache import DEFAULT_ROOT, MANIFEST, cache_file, directory, matches
-
-LIMIT = 1_000_000
+from dev_cache import DEFAULT_ROOT, GENERATION, LIMIT, MANIFEST, cache_file, directory, git_blob, matches
 
 
 def read(url, limit=None):
@@ -37,7 +37,10 @@ def fetch(source, pool, cache_fd):
     with directory(owner, cache_fd) as owner_fd:
         os.mkdir(name, mode=0o700, dir_fd=owner_fd)
         with directory(name, owner_fd) as repo_fd:
-            return fetch_documents(source, pool, repo_fd, tree, blobs, paths)
+            result = fetch_documents(source, pool, repo_fd, tree, blobs, paths)
+            os.fsync(repo_fd)
+        os.fsync(owner_fd)
+        return result
 
 
 def fetch_documents(source, pool, repo_fd, tree, blobs, paths):
@@ -52,9 +55,14 @@ def fetch_documents(source, pool, repo_fd, tree, blobs, paths):
             data = read(raw + quote(path), LIMIT)
             if len(data) > LIMIT:
                 return {'path': path, 'error': 'document exceeds 1 MB'}
+            expected = blobs[path]['sha']
+            if git_blob(data) != expected:
+                return {'path': path, 'error': 'Git blob mismatch for pinned path'}
             with cache_file(local, repo_fd, write=True) as stream:
                 stream.write(data)
-            return {'path': path, 'local': local}
+                stream.flush()
+                os.fsync(stream.fileno())
+            return {'path': path, 'local': local, 'gitBlob': expected}
         except (OSError, ValueError, IncompleteRead) as error:
             return {'path': path, 'error': str(error)}
 
@@ -64,7 +72,10 @@ def fetch_documents(source, pool, repo_fd, tree, blobs, paths):
             continue
         license_record['path'] = path
         try:
-            content = ' '.join(read(raw + quote(path), 200_000).decode('utf8', 'replace').lower().split())
+            data = read(raw + quote(path), 200_000)
+            if len(data) > 200_000 or git_blob(data) != blobs[path]['sha']:
+                raise ValueError('Cannot verify root license bytes against pinned Git blob')
+            content = ' '.join(data.decode('utf8', 'replace').lower().split())
             spdx = ('Apache-2.0' if 'apache license version 2.0' in content else
                     'MIT' if 'permission is hereby granted, free of charge' in content and
                     'the software is provided "as is"' in content else None)
@@ -77,22 +88,44 @@ def fetch_documents(source, pool, repo_fd, tree, blobs, paths):
             'licenseCheck': license_record, 'documents': list(pool.map(download, enumerate(paths)))}
 
 
-def main():
-    root = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_ROOT
+def populate(root, sources):
     root.mkdir(mode=0o700, exist_ok=True, parents=True)
     with directory(root) as cache_fd:
-        if os.listdir(cache_fd):
-            raise SystemExit('Use a fresh cache directory for each retrieval')
-        with cache_file('index.json', cache_fd, write=True) as index, ThreadPoolExecutor(max_workers=12) as pool:
+        try:
+            fcntl.flock(cache_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise SystemExit('A retrieval is already running in this cache') from None
+        for entry in os.listdir(cache_fd):
+            if not GENERATION.fullmatch(entry):
+                raise SystemExit('Use a fresh cache directory for each retrieval')
+            with directory(entry, cache_fd):
+                pass
+        generation = f'run-{uuid4().hex}'
+        os.mkdir(generation, mode=0o700, dir_fd=cache_fd)
+        with directory(generation, cache_fd) as generation_fd, ThreadPoolExecutor(max_workers=12) as pool:
             summary = []
-            for source in json.loads(MANIFEST.read_text())['sources']:
+            for source in sources:
                 try:
-                    result = fetch(source, pool, cache_fd)
+                    result = fetch(source, pool, generation_fd)
                 except (OSError, ValueError, KeyError, IncompleteRead) as error:
                     result = {**source, 'error': str(error)}
-                summary.append(result)
+                summary.append({**result, 'cacheGeneration': generation})
                 print(source['repository'], len(result.get('documents', [])), result.get('error', ''), flush=True)
-            index.write((json.dumps(summary, ensure_ascii=False, indent=2) + '\n').encode())
+            with cache_file('index.json', generation_fd, write=True) as index:
+                index.write((json.dumps(summary, ensure_ascii=False, indent=2) + '\n').encode())
+                index.flush()
+                os.fsync(index.fileno())
+            os.fsync(generation_fd)
+            os.fsync(cache_fd)
+            # Atomically publish without replacing any existing directory entry.
+            os.link('index.json', 'index.json', src_dir_fd=generation_fd, dst_dir_fd=cache_fd, follow_symlinks=False)
+            os.fsync(cache_fd)
+            os.unlink('index.json', dir_fd=generation_fd)
+
+
+def main():
+    root = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_ROOT
+    populate(root, json.loads(MANIFEST.read_text())['sources'])
 
 
 if __name__ == '__main__':

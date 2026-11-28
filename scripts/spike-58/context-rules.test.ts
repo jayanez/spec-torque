@@ -111,6 +111,8 @@ test('one-column Markdown table rows keep their own evidence', () => {
     ['table', 1, 1], ['table', 3, 3], ['table', 4, 4],
   ]);
   assert.deepEqual(rows.flatMap(leadsFor), []);
+  assert.ok(parse('| Context | Outcome |\n|:---:|\n| Provider | Retry |').every(row => row.kind !== 'table'));
+  assert.ok(parse('| Context |\n|---|---|\n| Provider | Retry |').every(row => row.kind !== 'table'));
 });
 
 test('later empty conditions are evaluated with their own outcome', () => {
@@ -118,6 +120,7 @@ test('later empty conditions are evaluated with their own outcome', () => {
     .some(lead => lead.cues.includes('empty-condition-and-outcome'));
   assert.ok(cue('When diagnostics are on, log the request. When the inbox is empty, show a notice.'));
   assert.ok(cue('Si el servicio está ocupado, espera; si el buzón está vacío, se mostrará un aviso.'));
+  assert.ok(cue('When the inbox is empty, record when it became empty and show a notice.'));
   assert.ok(!cue('When the inbox is empty, wait and when a message arrives, show a notice.'));
 });
 

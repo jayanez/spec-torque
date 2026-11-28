@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
-import { constants } from 'node:fs';
-import { open, readFile, realpath } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { createInterface } from 'node:readline';
+import { fileURLToPath } from 'node:url';
 import { analyze, ENGINE_VERSION, RUBRIC_VERSION } from '../../src/core/analyze.js';
 import { z } from 'zod';
 import { leadsFor, normalize, passagesOf, scenarioPairs, type Passage } from './context-rules.js';
@@ -16,14 +17,6 @@ const indexSchema = z.array(sourceSchema.extend({
   documents: z.array(z.object({ path: z.string(), local: z.string().regex(/^\d+\.md$/u).optional(),
     error: z.string().optional() })).optional(),
 }));
-
-const familyPaths: Record<string, RegExp> = {
-  openspec: /(?:^|\/)openspec\/specs\/(?:.*\/)?spec\.md$/iu,
-  'spec-kit': /^specs\/(?:.*\/)?spec\.md$/iu,
-  'spec-kitty': /(?:^|\/)kitty-specs\/(?:.*\/)?spec\.md$/iu,
-  kiro: /(?:^|\/)\.kiro\/specs\/(?:.*\/)?requirements\.md$/iu,
-  bmad: /(?:^|\/)_bmad-output\/(?:.*\/)?prd\.md$/iu,
-};
 
 const hash = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
 const gitBlob = (data: Buffer) => createHash('sha1').update(`blob ${data.length}\0`).update(data).digest('hex');
@@ -42,41 +35,28 @@ async function pinnedBlobs(repository: string, revision: string) {
     .map(entry => [entry.path, entry.sha]));
 }
 
-async function readCacheFile(path: string, limit?: number) {
-  if (await realpath(path) !== path) throw new Error('Unexpected cache file target');
-  const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
-  try {
-    const stat = await handle.stat();
-    if (!stat.isFile()) throw new Error('Unexpected non-regular cache file');
-    if (limit === undefined) return await handle.readFile();
-    if (stat.size > limit) throw new Error('Cached document exceeds 1 MB');
-    const buffer = Buffer.alloc(stat.size + 1);
-    let offset = 0;
-    while (offset < buffer.length) {
-      const { bytesRead } = await handle.read(buffer, offset, buffer.length - offset, offset);
-      if (!bytesRead) break;
-      offset += bytesRead;
-    }
-    if (offset !== stat.size) throw new Error('Cached document size changed during read');
-    return buffer.subarray(0, offset);
-  } finally {
-    await handle.close();
-  }
-}
-
-const root = await realpath(resolve(process.argv[2] ?? '/private/tmp/spec58-natural'));
-const manifest = z.object({ sources: z.array(sourceSchema.extend({ family: z.string() })) }).parse(JSON.parse(await readFile(new URL('../../fixtures/precision/r52-dev-sources.json', import.meta.url), 'utf8')));
-const index = indexSchema.parse(JSON.parse((await readCacheFile(join(root, 'index.json'))).toString('utf8')));
-const pinned = new Map(manifest.sources.map(source => [source.repository, source]));
-if (new Set(index.map(source => source.repository)).size !== index.length || index.some(source => {
-  const pin = pinned.get(source.repository);
-  const docs = source.documents ?? [];
-  const downloads = docs.flatMap(doc => doc.local ? [doc.local] : []);
-  return !pin || pin.commit !== source.commit || pin.license !== source.license ||
-    new Set(docs.map(doc => doc.path)).size !== docs.length || new Set(downloads).size !== downloads.length ||
-    docs.some(doc => /[\\]/u.test(doc.path) || doc.path.split('/').some(part => !part || part === '.' || part === '..') ||
-      !familyPaths[pin.family]?.test(doc.path));
-})) throw new Error('Index contains duplicate or unauthorized DEV sources');
+// Use the shared POSIX reader to open every cache component relative to an
+// already-open directory and validate index paths before sending any bytes.
+const root = process.argv[2] ?? '/private/tmp/spec58-natural';
+const reader = spawn('python3', ['-B', fileURLToPath(new URL('./dev_cache.py', import.meta.url)), root],
+  { stdio: ['ignore', 'pipe', 'inherit'] });
+const exit = new Promise<number>(resolve => {
+  reader.once('close', code => resolve(code ?? 1));
+  reader.once('error', error => {
+    console.error(error.message);
+    resolve(1);
+  });
+});
+const records = createInterface({ input: reader.stdout, crlfDelay: Infinity })[Symbol.asyncIterator]();
+const readRecord = async () => {
+  const entry = await records.next();
+  if (entry.done) throw new Error(`DEV cache reader ended before completing (exit ${await exit})`);
+  return JSON.parse(entry.value) as unknown;
+};
+const recordSchema = z.union([z.object({ data: z.string() }), z.object({ error: z.string() })]);
+const index = indexSchema.parse(await readRecord());
+const manifest = z.object({ sources: z.array(sourceSchema) }).parse(JSON.parse(await readFile(
+  new URL('../../fixtures/precision/r52-dev-sources.json', import.meta.url), 'utf8')));
 
 const counts: Record<string, number> = {};
 const coverage = [];
@@ -95,7 +75,9 @@ for (const source of index) {
     }
     let data: Buffer;
     try {
-      data = await readCacheFile(join(root, repo, document.local), 1_000_000);
+      const record = recordSchema.parse(await readRecord());
+      if ('error' in record) throw new Error(record.error);
+      data = Buffer.from(record.data, 'base64');
       blobs ??= pinnedBlobs(repo, source.commit);
       if ((await blobs).get(document.path) !== gitBlob(data)) throw new Error('Git blob mismatch for pinned path');
     } catch (error) {
@@ -149,8 +131,10 @@ for (const source of index) {
     if (negative) emit(negative.block, hash(normalize(negative.block.text)), null, ['uncaught-window-sample']);
   }
 }
+if (!(await records.next()).done || await exit !== 0) throw new Error('DEV cache reader failed');
 console.error(JSON.stringify({
-  engineVersion: ENGINE_VERSION, rubricVersion: RUBRIC_VERSION, counts, coverage, absent: [...pinned.keys()].filter(repo => !index.some(source => source.repository === repo)),
+  engineVersion: ENGINE_VERSION, rubricVersion: RUBRIC_VERSION, counts, coverage,
+  absent: manifest.sources.map(source => source.repository).filter(repo => !index.some(source => source.repository === repo)),
   crossRepositoryFragments: [...fragments].filter(([, entries]) =>
     new Set(entries.map(entry => entry.repository)).size > 1).map(([fragmentHash, occurrences]) => ({ fragmentHash, occurrences })),
   unassessed: { 'C2.3': 'The authorized download index contains specs only. This check needs a task companion.' },
