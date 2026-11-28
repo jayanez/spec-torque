@@ -13,6 +13,7 @@ MANIFEST = Path(__file__).resolve().parents[2] / 'fixtures/precision/r52-dev-sou
 DEFAULT_ROOT = Path('/private/tmp/spec58-natural')
 LIMIT = 1_000_000
 GENERATION = re.compile(r'run-[0-9a-f]{32}')
+BLOB_ID = re.compile(r'[0-9a-f]{40}')
 
 
 def matches(path, family):
@@ -78,7 +79,8 @@ def load_index(cache):
         generation = source.get('cacheGeneration')
         if (repository in seen or not pin or
                 any(source.get(key) != pin[key] for key in ('commit', 'license')) or
-                (generation is not None and not GENERATION.fullmatch(generation))):
+                ('cacheGeneration' in source and
+                 (not isinstance(generation, str) or not GENERATION.fullmatch(generation)))):
             raise ValueError('Index contains duplicate or unauthorized DEV sources')
         seen.add(repository)
         paths, locals_ = set(), set()
@@ -87,7 +89,7 @@ def load_index(cache):
             if (path in paths or not matches(path, pin['family'])
                     or (local is not None and (not re.fullmatch(r'[0-9]+\.md', local) or local in locals_))
                     or (generation is not None and local is not None and blob is None)
-                    or (blob is not None and not re.fullmatch(r'[0-9a-f]{40}', blob))):
+                    or (blob is not None and (not isinstance(blob, str) or not BLOB_ID.fullmatch(blob)))):
                 raise ValueError('Index contains duplicate or unauthorized DEV sources or paths')
             paths.add(path)
             if local is not None:

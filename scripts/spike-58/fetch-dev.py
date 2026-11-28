@@ -11,7 +11,7 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 from uuid import uuid4
 
-from dev_cache import DEFAULT_ROOT, GENERATION, LIMIT, MANIFEST, cache_file, directory, git_blob, matches
+from dev_cache import BLOB_ID, DEFAULT_ROOT, GENERATION, LIMIT, MANIFEST, cache_file, directory, git_blob, matches
 
 
 def read(url, limit=None):
@@ -23,12 +23,14 @@ def read(url, limit=None):
         return data
 
 
-def fetch(source, pool, cache_fd):
+def fetch(source, cache_fd):
     repo = source['repository'].removeprefix('github.com/')
     revision = source['commit']
     tree = json.loads(read(f'https://api.github.com/repos/{repo}/git/trees/{revision}?recursive=1'))
     blobs = {entry['path']: entry for entry in tree['tree']
              if entry['type'] == 'blob' and entry['mode'] in ('100644', '100755')}
+    if any(not isinstance(entry.get('sha'), str) or not BLOB_ID.fullmatch(entry['sha']) for entry in blobs.values()):
+        raise ValueError('Pinned Git tree contains a missing or invalid blob ID')
     paths = sorted(path for path in blobs if matches(path, source['family']))
     owner, name = repo.split('/')
     try:
@@ -38,7 +40,10 @@ def fetch(source, pool, cache_fd):
     with directory(owner, cache_fd) as owner_fd:
         os.mkdir(name, mode=0o700, dir_fd=owner_fd)
         with directory(name, owner_fd) as repo_fd:
-            result = fetch_documents(source, pool, repo_fd, tree, blobs, paths)
+            # Shutdown waits for every submitted download, including when result
+            # collection raises. The repository descriptor outlives the pool.
+            with ThreadPoolExecutor(max_workers=12) as pool:
+                result = fetch_documents(source, pool, repo_fd, tree, blobs, paths)
             os.fsync(repo_fd)
         os.fsync(owner_fd)
         return result
@@ -115,11 +120,11 @@ def populate(root, sources):
                 pass
         generation = f'run-{uuid4().hex}'
         os.mkdir(generation, mode=0o700, dir_fd=cache_fd)
-        with directory(generation, cache_fd) as generation_fd, ThreadPoolExecutor(max_workers=12) as pool:
+        with directory(generation, cache_fd) as generation_fd:
             summary = []
             for source in sources:
                 try:
-                    result = fetch(source, pool, generation_fd)
+                    result = fetch(source, generation_fd)
                 except (OSError, ValueError, KeyError, IncompleteRead) as error:
                     result = {**source, 'error': str(error)}
                 summary.append({**result, 'cacheGeneration': generation})

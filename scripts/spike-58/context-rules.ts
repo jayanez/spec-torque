@@ -1,7 +1,8 @@
 // Search cues rank leads for review. They are independent of the engine's patterns.
 const exception = /\b(edge cases?|boundary|out of range|malformed|invalid|empty|failure|casos? limite|fuera de rango|incorrect[oa]s?|invalid[oa]s?|vaci[oa]s?|fallos?)\b/u;
 const conditionalStart = /[.!?;]\s+(?=(?:if|when|si|cuando)\s+)/u;
-const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/u;
+const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/gu;
+const indirectQuestion = /\b(?:where|when|how|what|why|whether|donde|cuando|como|que|por que)\s*$/u;
 const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
@@ -17,7 +18,8 @@ function hasEmptyCaseOutcome(body: string): boolean {
       const outcome = parts[2];
       // A coordinated condition before the comma shares the outcome. One
       // inside the outcome starts a new conditional clause.
-      const next = coordinatedCondition.exec(outcome);
+      const next = [...outcome.matchAll(coordinatedCondition)].find(match =>
+        !indirectQuestion.test(outcome.slice(0, match.index)));
       if (emptyCondition.test(parts[1]) && emptyOutcome.test(outcome.slice(0, next?.index))) return true;
       remaining = next ? outcome.slice(next.index + next[0].length) : '';
     }
@@ -87,7 +89,7 @@ export function passagesOf(lines: readonly string[]): Passage[] {
       continue;
     }
     const next = lines[index + 1] ?? '';
-    if (hasPipe(line) && (tableDelimiter.test(next) || singleColumnDelimiter.test(next)) &&
+    if (hasPipe(line) && hasPipe(next) && (tableDelimiter.test(next) || singleColumnDelimiter.test(next)) &&
         columnCount(line) === columnCount(next)) {
       tableHeader = line;
       begin(index, 'table');

@@ -1,5 +1,5 @@
 """Focused regression tests for the Python DEV tools."""
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import fcntl
 from http.client import IncompleteRead
 import importlib.util
@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+from threading import Event
 import unittest
 from unittest.mock import patch
 
@@ -107,6 +108,51 @@ class DevCacheTests(unittest.TestCase):
                 (root / 'index.json').write_text(json.dumps([source]))
                 with self.assertRaisesRegex(ValueError, 'unauthorized DEV'):
                     list(documents(root))
+
+    def test_null_generation_is_rejected_before_path_resolution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'index.json').write_text(json.dumps([{**PIN, 'cacheGeneration': None}]))
+            with self.assertRaisesRegex(ValueError, 'unauthorized DEV'):
+                list(documents(root))
+
+    def test_invalid_tree_is_rejected_before_dispatching_downloads(self):
+        tree = {'truncated': False, 'tree': [{'path': DOC, 'type': 'blob', 'mode': '100644'}]}
+        with tempfile.TemporaryDirectory() as temp, directory(temp) as fd:
+            with patch.object(fetch_dev, 'read', return_value=json.dumps(tree).encode()) as read, \
+                 patch.object(fetch_dev, 'ThreadPoolExecutor') as executor:
+                with self.assertRaisesRegex(ValueError, 'invalid blob ID'):
+                    fetch_dev.fetch({**PIN, 'family': 'openspec'}, fd)
+            self.assertEqual(read.call_count, 1)
+            executor.assert_not_called()
+            self.assertEqual(list(Path(temp).iterdir()), [])
+
+    def test_repository_descriptor_outlives_workers_on_unexpected_failure(self):
+        started, release = Event(), Event()
+        observed = []
+
+        def fail_after_submit(_source, pool, repo_fd, *_):
+            def worker():
+                started.set()
+                if release.wait(5):
+                    observed.append(os.fstat(repo_fd).st_ino)
+
+            pool.submit(worker)
+            raise RuntimeError('unexpected failure collecting results')
+
+        with tempfile.TemporaryDirectory() as temp, directory(temp) as fd, ThreadPoolExecutor() as caller:
+            with patch.object(fetch_dev, 'read', return_value=b'{"tree":[]}'), \
+                 patch.object(fetch_dev, 'fetch_documents', side_effect=fail_after_submit):
+                future = caller.submit(fetch_dev.fetch, {**PIN, 'family': 'openspec'}, fd)
+                try:
+                    self.assertTrue(started.wait(2))
+                    with self.assertRaises(TimeoutError):
+                        future.result(timeout=0.05)
+                finally:
+                    release.set()
+                with self.assertRaisesRegex(RuntimeError, 'unexpected failure'):
+                    future.result(timeout=2)
+            self.assertEqual(observed, [(Path(temp) / 'kcalvelli/cairn').stat().st_ino])
 
     def test_new_cache_parent_is_synced_and_staging_cleanup_is_best_effort(self):
         with tempfile.TemporaryDirectory() as temp:
