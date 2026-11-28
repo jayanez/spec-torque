@@ -13,13 +13,15 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
-import { attemptSchema, calibrationItems, calibrationList, liveItems, load, packet, sha256, type Phase } from './rehearsal.js';
+import { attemptSchema, calibrationItems, calibrationList, liveItems, load, packet, sha256 } from './rehearsal.js';
+
+import { PHASES } from './calibration/protocol.mjs';
 
 const { values } = parseArgs({ options: {
   phase: { type: 'string' }, attempts: { type: 'string' }, out: { type: 'string', default: '.spec-torque/rehearsal/packets' },
 } });
-const phase = z.enum(['calibration', 'reserve', 'live', 'calibration-run2', 'reserve-run2', 'calibration-run3', 'reserve-run3']).parse(values.phase) as Phase;
-const loaded = await load(process.cwd());
+const phase = z.enum(PHASES).parse(values.phase);
+const loaded = await load(process.cwd(), phase);
 const dir = join(values.out!, phase);
 const operator = join(dir, 'operator');
 await mkdir(operator, { recursive: true });

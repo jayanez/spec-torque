@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bindKeys, checkPopulation, evaluate, kappa, kappaPasses, labelsOf, majority, parseRun, readSealed, seal,
   spanVerified, stripQuotes, unverifiedYes, RUNS } from './score-calibration.mjs';
-import { classifyR1, classifyR2, codexHeader, loadRecords, material, minimalEnv, nextAttempt, wellFormed } from './run-reviewer.mjs';
+import { classifyR1, classifyR2, clientVersion, codexHeader, inspectImage, SCREEN_IMAGE, loadRecords, material, minimalEnv, nextAttempt, wellFormed } from './run-reviewer.mjs';
 import { FROZEN_PROTOCOL_SHA256, PROMPT_SHA256, RUN2_PROTOCOL_SHA256, orderKey, packetProblems, seedFor, sha256 } from './protocol.mjs';
 
 const edit = { action: 'edit', scope: 'target line', text: 'X MUST refresh within 500 ms.', note: null };
@@ -228,4 +228,27 @@ test('run-3 phases: live prompt unchanged, seeds wait for the run-3 freeze', asy
   const p = { phase: 'calibration-run3', reviewer: 'R1', run: 1, seed: 'x', protocolSha256: FROZEN_PROTOCOL_SHA256,
     runProtocolSha256: 'y', prompt: '', items: [] };
   if (RUN3_PROTOCOL_SHA256 === null) assert.ok(packetProblems(p).some(m => /run 3 is not frozen/.test(m)));
+});
+
+test('R2 verifies the client in the resolved screening image without pulling or using the network', () => {
+  const id = `sha256:${'a'.repeat(64)}`;
+  const commands = [];
+  const spawn = (name, args) => {
+    commands.push([name, ...args]);
+    return { status: 0, stdout: args[0] === 'image' ? `${id}\n` : 'codex-cli 0.170.0\n' };
+  };
+  const image = inspectImage(SCREEN_IMAGE, spawn);
+  assert.equal(image, id);
+  assert.equal(clientVersion('R2', image, spawn), 'codex-cli 0.170.0');
+  assert.deepEqual(commands, [
+    ['docker', 'image', 'inspect', SCREEN_IMAGE, '--format', '{{.Id}}'],
+    ['docker', 'run', '--rm', '--pull=never', '--network', 'none', '--entrypoint', 'codex', id, '--version'],
+  ]);
+});
+
+test('R2 refuses an unresolved image or a failed version probe', () => {
+  assert.throws(() => inspectImage(SCREEN_IMAGE, () => ({ status: 0, stdout: '' })), /missing or invalid image ID/);
+  assert.throws(() => inspectImage(SCREEN_IMAGE, () => ({ status: 1, stderr: 'image absent' })), /image absent/);
+  const id = `sha256:${'b'.repeat(64)}`;
+  assert.throws(() => clientVersion('R2', id, () => ({ status: 1, stdout: 'codex-cli 0.170.0', stderr: 'container failed' })), /container failed/);
 });

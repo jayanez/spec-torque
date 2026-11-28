@@ -24,7 +24,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { LABELS, packetProblems, sha256 } from './protocol.mjs';
+import { LABELS, packetProblems, runOf, sha256 } from './protocol.mjs';
 
 export const PINS = {
   R1: { client: /^2\.1\.311 \(Claude Code\)$/, model: 'claude-sonnet-5-5', effort: 'medium' },
@@ -93,18 +93,27 @@ export function classifyR2(stderr, status, answer, pins = PINS.R2) {
   return { raw: answer, model: header.model, meta: header };
 }
 
-function imageId() {
-  const p = spawnSync('docker', ['image', 'inspect', IMAGE, '--format', '{{.Id}}'], { encoding: 'utf8' });
-  return (p.stdout || '').trim();
-}
-function clientVersion(reviewer) {
-  const p = reviewer === 'R1'
-    ? spawnSync('claude', ['--version'], { encoding: 'utf8', env: minimalEnv(process.env) })
-    : spawnSync('docker', ['run', '--rm', '--entrypoint', 'codex', IMAGE, '--version'], { encoding: 'utf8' });
-  return (p.stdout || '').trim();
+export function inspectImage(tag, spawn = spawnSync) {
+  const p = spawn('docker', ['image', 'inspect', tag, '--format', '{{.Id}}'], { encoding: 'utf8' });
+  const id = p.stdout?.trim();
+  if (p.status !== 0 || !/^sha256:[a-f0-9]{64}$/.test(id ?? '')) {
+    const detail = p.error?.message || p.stderr?.trim() || (p.status === 0 ? 'missing or invalid image ID' : `exit ${p.status}`);
+    throw new Error(`Cannot resolve Docker image ${tag}: ${detail}.`);
+  }
+  return id;
 }
 
-function call(reviewer, input, authPath, screen = null) {
+export function clientVersion(reviewer, image, spawn = spawnSync) {
+  const p = reviewer === 'R1'
+    ? spawn('claude', ['--version'], { encoding: 'utf8', env: minimalEnv(process.env) })
+    : spawn('docker', ['run', '--rm', '--pull=never', '--network', 'none', '--entrypoint', 'codex', image, '--version'], { encoding: 'utf8' });
+  if (p.status !== 0) {
+    throw new Error(`Cannot check ${reviewer} client version${image ? ` in ${image}` : ''}: ${p.error?.message || p.stderr?.trim() || `exit ${p.status}`}.`);
+  }
+  return p.stdout?.trim() ?? '';
+}
+
+function call(reviewer, input, authPath, image, screen) {
   const work = mkdtempSync(join(tmpdir(), `st57-${reviewer}-`));
   try {
     if (reviewer === 'R1') {
@@ -115,10 +124,10 @@ function call(reviewer, input, authPath, screen = null) {
     }
     mkdirSync(join(work, 'out'));
     writeFileSync(join(work, 'item.txt'), input);
-    const p = spawnSync('docker', ['run', '--rm', '--network', 'bridge', '--read-only',
+    const p = spawnSync('docker', ['run', '--rm', '--pull=never', '--network', 'bridge', '--read-only',
       '--tmpfs', '/tmp', '--tmpfs', '/home/reviewer:uid=1001,gid=1001', '-e', 'CODEX_HOME=/home/reviewer/.codex',
       '-v', `${join(work, 'item.txt')}:/in/item.txt:ro`, '-v', `${authPath}:/secrets/auth.json:ro`, '-v', `${join(work, 'out')}:/out`,
-      ...(screen ? ['-e', `SCREEN_MODEL=${screen.model}`, '-e', `SCREEN_EFFORT=${screen.effort}`, SCREEN_IMAGE] : [IMAGE])],
+      ...(screen ? ['-e', `SCREEN_MODEL=${screen.model}`, '-e', `SCREEN_EFFORT=${screen.effort}`] : []), image],
     { encoding: 'utf8', timeout: 1_800_000 });
     const answerFile = join(work, 'out', 'answer.txt');
     return classifyR2(p.stderr || '', p.status, existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : null,
@@ -178,7 +187,7 @@ function main() {
     if (problems.length) throw new Error(`Packet rejected: ${problems.join('; ')}.`);
   } else if (packet.reviewer !== reviewer) throw new Error(`Packet is for ${packet.reviewer}, not ${reviewer}.`);
   // Run 3 replaces R2's model and effort with the pinned candidate; it is a gated run, not a screening one.
-  const run3 = reviewer === 'R2' && String(packet.phase).endsWith('-run3');
+  const run3 = reviewer === 'R2' && runOf(packet.phase) === 3;
   if (run3 && values.screen) throw new Error('--screen is for exploratory runs; run-3 packets use the pinned RUN3_R2.');
   if (run3 && !SCREEN_CANDIDATES[RUN3_R2]) throw new Error('Run 3 is not frozen: RUN3_R2 is not pinned.');
   const r2 = screen ?? (run3 ? SCREEN_CANDIDATES[RUN3_R2] : null);
@@ -194,9 +203,9 @@ function main() {
 
   const authPath = reviewer === 'R2' ? resolve(values.auth ?? `${process.env.HOME}/.codex/auth.json`) : null;
   if (authPath && !existsSync(authPath)) throw new Error(`No credentials at ${authPath}.`);
-  const version = clientVersion(reviewer);
+  const image = reviewer === 'R2' ? inspectImage(r2 ? SCREEN_IMAGE : IMAGE) : null;
+  const version = clientVersion(reviewer, image);
   if (!PINS[reviewer].client.test(version)) throw new Error(`Pinned client not available (got "${version}"). The run waits, per the protocol.`);
-  const image = reviewer === 'R2' ? (r2 ? spawnSync('docker', ['image', 'inspect', SCREEN_IMAGE, '--format', '{{.Id}}'], { encoding: 'utf8' }).stdout.trim() : imageId()) : null;
 
   const rawFile = join(out, 'raw.jsonl');
   const doneFile = join(out, 'done.json');
@@ -205,6 +214,9 @@ function main() {
   if (records.some(r => Boolean(r.dryRun) !== dry)) throw new Error(`${rawFile} mixes dry and official records; use a separate directory.`);
   if (records.some(r => (r.screen ?? null) !== (values.screen ?? null))) throw new Error(`${rawFile} mixes screening and other records; use a separate directory.`);
   if (records.some(r => r.packetSha256 !== packetSha || r.reviewer !== reviewer)) throw new Error(`${rawFile} belongs to a different packet or reviewer.`);
+  if (records.some(r => r.image !== image || r.clientVersion !== version)) {
+    throw new Error(`${rawFile} belongs to a different client version or image. Restore the recorded client and image before resuming.`);
+  }
   const items = dry ? packet.items.slice(0, 2) : packet.items;
   const promptSha = sha256(packet.prompt);
   const done = items.filter(i => nextAttempt(records, i.id) === null).length;
@@ -219,7 +231,7 @@ function main() {
     for (; attempt <= 2; attempt++) {
       let result, transportFailures = 0;
       for (;;) {
-        result = call(reviewer, input, authPath, r2);
+        result = call(reviewer, input, authPath, image, r2);
         if (result.fatal) { console.error(`Stopping: ${result.fatal}. Nothing recorded for ${item.id}.`); process.exit(1); }
         if (!result.error || ++transportFailures >= 3) break;
         spawnSync('sleep', ['15']);

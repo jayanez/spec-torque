@@ -11,6 +11,7 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
+import { FROZEN_PROTOCOL_SHA256, runOf, RUN2_PROTOCOL_SHA256, RUN3_PROTOCOL_SHA256, type Phase } from './calibration/protocol.mjs';
 import { analyze, classifyArtifact, clarifyE12 } from '../../src/core.js';
 
 export const PROTOCOL = 'docs/clarification-actionability.md';
@@ -23,7 +24,7 @@ export const RUN3_PROTOCOL = 'docs/clarification-actionability-run3.md';
  * Seeds and presentation IDs derive from this value, not from the current file, so a
  * dated amendment does not reorder packets or change page IDs (amendment of 2026-11-23).
  */
-export const FROZEN_PROTOCOL_SHA256 = '16659f6e7f7317f2e10e1b3b6bbb87cb8304732ed17fcb7e9a8a024984525826';
+export { FROZEN_PROTOCOL_SHA256 };
 /** SHA-256 of the frozen reviewer prompt, used for the first calibration. */
 export const FROZEN_PROMPT_SHA256 = '406cae4c818b43ba725dcdc2d83a098dae3ec8207da4ec94e470e0b34f787f58';
 /** SHA-256 of the prompt after the single permitted revision of run 1 (amendment of 2026-11-24), used for the run-1 reserve. */
@@ -33,12 +34,12 @@ export const RUN2_PROMPT_SHA256 = '2ac88d84b776f336bbfd16f69badea2598663d4717b79
 /** SHA-256 of the prompt after run 2's single format revision; used for the run-2 reserve and the live phase. */
 export const RUN2_REVISED_PROMPT_SHA256 = 'c5a28aecbf6fc09ce8b9d50279cd9a23b746cdb3054e6618e167f9a340ed7464';
 /** LF SHA-256 of the run-2 pre-registration at its freeze (cc53307); run-2 seeds derive from it, not from the amended file. */
-export const RUN2_FROZEN_SHA256 = '847ed2750fd7aaf71290e9a9d1ae04dd764082cbfbd63b8b3e7fcfbd152a5724';
+export const RUN2_FROZEN_SHA256 = RUN2_PROTOCOL_SHA256;
 /**
  * LF SHA-256 of the run-3 pre-registration at its freeze. Null until the maintainer confirms the freeze in #65;
  * run-3 packets are refused while it is null.
  */
-export const RUN3_FROZEN_SHA256: string | null = null;
+export const RUN3_FROZEN_SHA256: string | null = RUN3_PROTOCOL_SHA256;
 const FIXTURES = 'tests/fixtures/e12';
 
 export const sha256 = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
@@ -115,7 +116,7 @@ export function extractPrompt(protocol: string): string {
   return match[1];
 }
 
-export async function load(root: string): Promise<Loaded> {
+export async function load(root: string, phase?: Phase): Promise<Loaded> {
   const read = (path: string) => readFile(join(root, path));
   const protocol = await read(PROTOCOL);
   const studyBytes = await read(`${FIXTURES}/study.json`);
@@ -152,7 +153,9 @@ export async function load(root: string): Promise<Loaded> {
     return { fixture, docSha256: existsSync(join(root, doc)) ? fileSha256(await read(doc)) : null };
   };
   const run2 = await optional(2, calibrationRun2Schema, RUN2_PROTOCOL);
-  const run3 = await optional(3, calibrationRun3Schema, RUN3_PROTOCOL);
+  const run3 = phase !== undefined && runOf(phase) === 3
+    ? await optional(3, calibrationRun3Schema, RUN3_PROTOCOL)
+    : { fixture: null, docSha256: null };
   return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration,
     calibrationRun2: run2.fixture, run2ProtocolSha256: run2.docSha256,
     calibrationRun3: run3.fixture, run3ProtocolSha256: run3.docSha256, material };
@@ -234,9 +237,8 @@ ${clarification}</body></html>
 
 // ---------------------------------------------------------------- packets
 
-export type Phase = 'calibration' | 'reserve' | 'live' | 'calibration-run2' | 'reserve-run2' | 'calibration-run3' | 'reserve-run3';
-/** Calibration run a phase belongs to: 1 for the original protocol's phases (and live), else the run suffix. */
-export const runOf = (phase: Phase): 1 | 2 | 3 => phase.endsWith('-run2') ? 2 : phase.endsWith('-run3') ? 3 : 1;
+export { runOf };
+export type { Phase } from './calibration/protocol.mjs';
 const RUN_DOCS = { 2: { doc: RUN2_PROTOCOL, frozen: RUN2_FROZEN_SHA256 }, 3: { doc: RUN3_PROTOCOL, frozen: RUN3_FROZEN_SHA256 } } as const;
 export type Reviewer = 'R1' | 'R2';
 
