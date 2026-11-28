@@ -1,5 +1,11 @@
 // Search cues rank leads for review. They are independent of the engine's patterns.
 const exception = /\b(edge cases?|boundary|out of range|malformed|invalid|empty|failure|casos? limite|fuera de rango|incorrect[oa]s?|invalid[oa]s?|vaci[oa]s?|fallos?)\b/u;
+const conditionalStart = /[.!?;]\s+(?=(?:if|when|si|cuando)\s+)/u;
+const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/gu;
+const indirectQuestion = /\b(?:where|when|how|what|why|whether|donde|cuando|como|que|por que)\s*$/u;
+const loggingAction = /^(?:then\s+)?(?:log|record|note|report)\s+/u;
+const loggedTemporalDetail = /\s+and\s+when\s+(?:it|they|he|she)\s+(?:(?:was|were)\s+)?last\s+([^,]+),\s*(?=then\b)/u;
+const explicitTemporalGuard = /\bis\s+unknown\s+and\b/u;
 const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
@@ -7,8 +13,23 @@ const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|
 function hasEmptyCaseOutcome(body: string): boolean {
   // Treat command names and flags as literals, not condition or outcome words.
   const prose = body.replace(/(`+)[^`]+\1(?!`)/gu, ' ');
-  const parts = conditionAndOutcome.exec(prose);
-  return parts !== null && emptyCondition.test(parts[1]) && emptyOutcome.test(parts[2]);
+  return prose.split(conditionalStart).some(clause => {
+    let remaining = clause;
+    while (remaining) {
+      const parts = conditionAndOutcome.exec(remaining);
+      if (!parts) break;
+      // With an explicit "then" boundary, don't take cues from the details
+      // being logged. A stated "is unknown and ..." guard stays eligible.
+      const outcome = loggingAction.test(parts[2])
+        ? parts[2].replace(loggedTemporalDetail, (span, detail: string) => explicitTemporalGuard.test(detail) ? span : ', ')
+        : parts[2];
+      const next = [...outcome.matchAll(coordinatedCondition)].find(match =>
+        !indirectQuestion.test(outcome.slice(0, match.index)));
+      if (emptyCondition.test(parts[1]) && emptyOutcome.test(outcome.slice(0, next?.index))) return true;
+      remaining = next ? outcome.slice(next.index + next[0].length) : '';
+    }
+    return false;
+  });
 }
 const interruption = /\b(upstream|provider|dependency|no response|stops? responding|unavailable|timeout|proveedor|dependencia|servicio externo|deja de responder|no responde|no disponible|interrupcion)\b/u;
 const response = /\b(reject\w*|retry|retries|try again|try twice more|unchanged|retain\w*|rollback|preserv\w*|return\w* an? error|rechaz\w*|reintent\w*|intentar de nuevo|intentar dos veces mas|sin cambios|no se modific\w*|devolv\w* un error)\b/u;
@@ -33,7 +54,9 @@ const headingLine = /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/u;
 const fenceLine = /^\s*(`{3,}|~{3,})(.*)$/u;
 const listLine = /^(\s*)(?:[-+*]|\d+[.)])[ \t]+/u;
 const tableDelimiter = /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)+\|?\s*$/u;
+const singleColumnDelimiter = /^\s*\|?\s*:?-+:?\s*\|?\s*$/u;
 const hasPipe = (line: string) => /(?<!\\)\|/u.test(line);
+const columnCount = (line: string) => line.trim().replace(/^\||(?<!\\)\|$/gu, '').split(/(?<!\\)\|/u).length;
 
 export function passagesOf(lines: readonly string[]): Passage[] {
   const passages: Passage[] = [];
@@ -70,7 +93,9 @@ export function passagesOf(lines: readonly string[]): Passage[] {
       tableHeader = undefined;
       continue;
     }
-    if (hasPipe(line) && tableDelimiter.test(lines[index + 1] ?? '')) {
+    const next = lines[index + 1] ?? '';
+    if (hasPipe(line) && hasPipe(next) && (tableDelimiter.test(next) || singleColumnDelimiter.test(next)) &&
+        columnCount(line) === columnCount(next)) {
       tableHeader = line;
       begin(index, 'table');
       index++;

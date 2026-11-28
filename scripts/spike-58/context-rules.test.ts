@@ -104,3 +104,94 @@ test('adjacent exceptional scenario steps retain their source span', () => {
     assert.deepEqual(scenarioPairs(parse([when, then].join('\n'))), []);
   }
 });
+
+test('one-column Markdown table rows keep their own evidence', () => {
+  const rows = parse('| Context |\n|:---:|\n| Provider |\n| Retry |');
+  assert.deepEqual(rows.map(row => [row.kind, row.start, row.end]), [
+    ['table', 1, 1], ['table', 3, 3], ['table', 4, 4],
+  ]);
+  assert.deepEqual(rows.flatMap(leadsFor), []);
+  assert.ok(parse('| Context | Outcome |\n|:---:|\n| Provider | Retry |').every(row => row.kind !== 'table'));
+  assert.ok(parse('| Context |\n|---|---|\n| Provider | Retry |').every(row => row.kind !== 'table'));
+  assert.ok(parse('| Context |\n---\n| Provider |').every(row => row.kind !== 'table'));
+});
+
+test('later empty conditions are evaluated with their own outcome', () => {
+  const cue = (text: string) => parse(text).flatMap(leadsFor)
+    .some(lead => lead.cues.includes('empty-condition-and-outcome'));
+  assert.ok(cue('When diagnostics are on, log the request. When the inbox is empty, show a notice.'));
+  assert.ok(cue('Si el servicio está ocupado, espera; si el buzón está vacío, se mostrará un aviso.'));
+  assert.ok(cue('When the inbox is empty, record when it became empty and show a notice.'));
+  assert.ok(cue('When the inbox is empty, record where and when it was last accessed, then show a notice.'));
+  assert.ok(cue('When the inbox is empty, log the server name and when it last synced, then show a notice.'));
+  assert.ok(cue('When the inbox is empty, log the server name and when it last synced successfully, then show a notice.'));
+  assert.ok(cue('When polling is enabled, log the server name and when it last synced is unknown and the inbox is empty, then show a notice.'));
+  assert.ok(cue('When the inbox is empty and when polling is enabled, show a notice.'));
+  assert.ok(cue('When polling is enabled, log the request and when the inbox is empty, show a notice.'));
+  assert.ok(!cue('When the inbox is empty, wait and when a message arrives, show a notice.'));
+  assert.ok(!cue('When the inbox is empty, log the server name and when a message arrives, then show a notice.'));
+  assert.ok(!cue('When the inbox is empty, log the server name and when it last tried to show a notice, then wait.'));
+  assert.ok(!cue('When polling is enabled, log the server name and when it last reported no results, then show a notice.'));
+});
+
+test('cached bytes must be the Git blob at the pinned path, even for an old index', async () => {
+  const { createHash } = await import('node:crypto');
+  const { mkdir, mkdtemp, writeFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { spawnSync } = await import('node:child_process');
+  const root = await mkdtemp(join(tmpdir(), 'spike58-blob-'));
+  const repository = 'github.com/kcalvelli/cairn';
+  const commit = '712dc76d47efd44f2affc5a07865cd26231ef3e6';
+  const path = 'openspec/specs/synthetic/spec.md';
+  const text = Buffer.from('# Example\n\nWhen the mailbox is empty, show a notice.\n');
+  const sha = createHash('sha1').update(`blob ${text.length}\0`).update(text).digest('hex');
+  const mock = join(root, 'mock.mjs');
+  const tree = [{ type: 'blob', mode: '100644', path, sha }];
+  const doc = join(root, 'kcalvelli/cairn/0.md');
+  async function run(pathInIndex: string, data: Buffer | string, {
+    status = 0, http = 200, gh = '', github = '', expectedToken = '',
+  } = {}) {
+    await writeFile(doc, data);
+    await writeFile(join(root, 'index.json'), JSON.stringify([
+      { repository, commit, license: 'MIT', documents: [{ path: pathInIndex, local: '0.md' }] },
+    ]));
+    const result = spawnSync(process.execPath, ['--import', 'tsx', '--import', mock, 'scripts/spike-58/scan-context.ts', root], {
+      encoding: 'utf8', env: { ...process.env, GH_TOKEN: gh, GITHUB_TOKEN: github,
+        MOCK_TREE_HTTP_STATUS: String(http), MOCK_EXPECTED_TOKEN: expectedToken, PYTHONPATH: root },
+    });
+    assert.equal(result.status, status, result.stderr);
+    if (expectedToken) assert.ok(!result.stderr.includes(expectedToken));
+    return { coverage: JSON.parse(result.stderr).coverage[0], stdout: result.stdout };
+  }
+  try {
+    await mkdir(join(root, 'kcalvelli/cairn'), { recursive: true });
+    await writeFile(join(root, 'sitecustomize.py'), 'import os\nif "GH_TOKEN" in os.environ or "GITHUB_TOKEN" in os.environ:\n    os._exit(97)\n');
+    await writeFile(mock, `globalThis.fetch = async (url, options) => {
+      if (url !== 'https://api.github.com/repos/kcalvelli/cairn/git/trees/${commit}?recursive=1') throw new Error(url);
+      const expected = process.env.MOCK_EXPECTED_TOKEN;
+      const header = new Headers(options.headers).get('Authorization');
+      if (header !== (expected ? 'Bearer ' + expected : null) || options.redirect !== 'error') throw new Error('Unexpected GitHub request options');
+      const status = Number(process.env.MOCK_TREE_HTTP_STATUS);
+      if (status !== 200) return new Response(null, {status});
+      return Response.json(${JSON.stringify({ tree, truncated: false })});
+    };`);
+    const valid = await run(path, text);
+    assert.equal(valid.coverage.scanned, 1);
+    assert.match(valid.stdout, /empty-condition-and-outcome/u);
+    for (const result of [await run(path, 'altered bytes', { status: 1 }),
+      await run('openspec/specs/other/spec.md', text, { status: 1 })]) {
+      assert.equal(result.stdout, '');
+      assert.match(result.coverage.skipped[0].reason, /Git blob mismatch/u);
+    }
+    const rateLimited = await run(path, text, { status: 1, http: 403 });
+    assert.equal(rateLimited.stdout, '');
+    assert.equal(rateLimited.coverage.scanned, 0);
+    assert.match(rateLimited.coverage.skipped[0].reason, /HTTP 403/u);
+    assert.equal((await run(path, text, { gh: 'fake-gh-token', github: 'other-token', expectedToken: 'fake-gh-token' })).coverage.scanned, 1);
+    const denied = await run(path, text, { status: 1, http: 401, github: 'fake-github-token', expectedToken: 'fake-github-token' });
+    assert.match(denied.coverage.skipped[0].reason, /HTTP 401/u);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
