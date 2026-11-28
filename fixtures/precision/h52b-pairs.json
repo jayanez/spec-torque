@@ -1,0 +1,788 @@
+{
+  "version": 1,
+  "description": "H52b synthetic twins (#52): qualified and group-infixed requirement IDs. Constructed before the H52b candidate; not independent labels.",
+  "cases": [
+    {
+      "id": "infix-line-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- FR-A-001: The system MUST export drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement FR-A-001"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A group-infixed ID identifies its line and resolves the task reference. 0.1.20: no identifier, no reference."
+    },
+    {
+      "id": "infix-heading-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### FR-A-001 — Drafts",
+          "",
+          "The system MUST keep drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement FR-A-001"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "The body inherits the infixed heading ID."
+    },
+    {
+      "id": "qualified-heading-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## VP-REQ-01 Admission",
+          "",
+          "The system MUST admit drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement VP-REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A qualified heading defines VP-REQ-01; the body inherits it and the own-namespace reference resolves. 0.1.20: no identifier and an error for REQ-01."
+    },
+    {
+      "id": "two-namespaces-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- VP-REQ-01: The system MUST admit drafts.",
+          "- AV-REQ-01: The system MUST archive drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement VP-REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "Two namespaces with one number are two IDs, not a duplicate."
+    },
+    {
+      "id": "duplicated-qualified-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- VP-REQ-01: The system MUST admit drafts.",
+          "- VP-REQ-01: The system MUST archive drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement VP-REQ-01"
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|4|Duplicate requirement identifier VP-REQ-01."
+      ],
+      "status": {
+        "I1.2": "partial",
+        "I2.2": "partial",
+        "I2.3": "partial"
+      },
+      "note": "The same qualified ID defined twice is a duplicate. 0.1.20: not a definition."
+    },
+    {
+      "id": "undefined-own-namespace-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- VP-REQ-01: The system MUST admit drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement VP-REQ-02"
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference VP-REQ-02 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "The error names the full ID. 0.1.20 names REQ-02."
+    },
+    {
+      "id": "short-form-reference-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- SYS-REQ-01: The system MUST admit drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "The flagged risk: the short form of a qualified ID still resolves (rule 4)."
+    },
+    {
+      "id": "lowercase-namespace-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- vp-REQ-01: The system MUST admit drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A lowercase namespace is not read; REQ-01 is."
+    },
+    {
+      "id": "group-without-letter-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- FR-001-002: The system MUST export drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement FR-001"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A numeric group is not an infix; FR-001 is read as in 0.1.20."
+    },
+    {
+      "id": "range-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- FR-001: The system MUST export drafts.",
+          "- FR-002: The system MUST keep drafts.",
+          "- FR-003: The system MUST log exports."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement FR-001-FR-003"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A range reads both IDs, as in 0.1.20."
+    },
+    {
+      "id": "req-infix-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- REQ-UI-01: The system MUST export drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement the export"
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|3|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing",
+        "I2.3": "missing"
+      },
+      "note": "REQ takes no infix group."
+    },
+    {
+      "id": "external-qualified-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- REQ-01: The system MUST export drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement OTHER-REQ-07"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A namespace the spec does not use is external (H9)."
+    },
+    {
+      "id": "bare-control-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "- REQ-01: The system MUST export drafts."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 Implement REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "Bare IDs as in 0.1.20."
+    },
+    {
+      "id": "infix-line-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- FR-A-001: El sistema DEBE exportar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar FR-A-001"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A group-infixed ID identifies its line and resolves the task reference. 0.1.20: no identifier, no reference."
+    },
+    {
+      "id": "infix-heading-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### FR-A-001 — Drafts",
+          "",
+          "El sistema DEBE conservar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar FR-A-001"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "The body inherits the infixed heading ID."
+    },
+    {
+      "id": "qualified-heading-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## VP-REQ-01 Admission",
+          "",
+          "El sistema DEBE admitir borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar VP-REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A qualified heading defines VP-REQ-01; the body inherits it and the own-namespace reference resolves. 0.1.20: no identifier and an error for REQ-01."
+    },
+    {
+      "id": "two-namespaces-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- VP-REQ-01: El sistema DEBE admitir borradores.",
+          "- AV-REQ-01: El sistema DEBE archivar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar VP-REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "Two namespaces with one number are two IDs, not a duplicate."
+    },
+    {
+      "id": "duplicated-qualified-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- VP-REQ-01: El sistema DEBE admitir borradores.",
+          "- VP-REQ-01: El sistema DEBE archivar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar VP-REQ-01"
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|4|Duplicate requirement identifier VP-REQ-01."
+      ],
+      "status": {
+        "I1.2": "partial",
+        "I2.2": "partial",
+        "I2.3": "partial"
+      },
+      "note": "The same qualified ID defined twice is a duplicate. 0.1.20: not a definition."
+    },
+    {
+      "id": "undefined-own-namespace-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- VP-REQ-01: El sistema DEBE admitir borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar VP-REQ-02"
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference VP-REQ-02 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "The error names the full ID. 0.1.20 names REQ-02."
+    },
+    {
+      "id": "short-form-reference-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- SYS-REQ-01: El sistema DEBE admitir borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "The flagged risk: the short form of a qualified ID still resolves (rule 4)."
+    },
+    {
+      "id": "lowercase-namespace-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- vp-REQ-01: El sistema DEBE admitir borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A lowercase namespace is not read; REQ-01 is."
+    },
+    {
+      "id": "group-without-letter-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- FR-001-002: El sistema DEBE exportar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar FR-001"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A numeric group is not an infix; FR-001 is read as in 0.1.20."
+    },
+    {
+      "id": "range-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- FR-001: El sistema DEBE exportar borradores.",
+          "- FR-002: El sistema DEBE conservar borradores.",
+          "- FR-003: El sistema DEBE registrar exportaciones."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar FR-001-FR-003"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A range reads both IDs, as in 0.1.20."
+    },
+    {
+      "id": "req-infix-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- REQ-UI-01: El sistema DEBE exportar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar the export"
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|3|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing",
+        "I2.3": "missing"
+      },
+      "note": "REQ takes no infix group."
+    },
+    {
+      "id": "external-qualified-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- REQ-01: El sistema DEBE exportar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar OTHER-REQ-07"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "A namespace the spec does not use is external (H9)."
+    },
+    {
+      "id": "bare-control-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "- REQ-01: El sistema DEBE exportar borradores."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Approach."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tareas",
+          "",
+          "- [ ] T001 Implementar REQ-01"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported",
+        "I2.3": "partial"
+      },
+      "note": "Bare IDs as in 0.1.20."
+    }
+  ]
+}

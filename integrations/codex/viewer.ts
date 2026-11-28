@@ -1,16 +1,30 @@
 import { PRODUCT_VERSION } from '../../src/version.js';
+import { fitsReadLimit, READ_LIMIT } from '../../src/core/artifacts.js';
+import { DISCLAIMER, LABELS, dimensionsLine, findingCard, replacementLabel, summaryLine, titleLine } from '../../src/core/presentation.js';
 import type { Assessment, Evidence, Finding, PatchProposal } from '../../src/core/types.js';
 
 interface AssessmentView {
   root: string;
   feature: string | null;
   features: string[];
-  assessment: Assessment;
+  /** Documents in the worktree index; above the read limit, All documents is not offered. */
+  total: number;
+  /** Whether the feature list is narrowed to features changed on the branch. */
+  changed: boolean;
+  assessment: Assessment | null;
 }
+type LoadedView = AssessmentView & { assessment: Assessment };
+const SHOWN = 12;
+// Select values besides a feature ID: '' for All documents (or the feature prompt), and the branch's changes.
+const CHANGED = ':changed';
 
 const main = document.querySelector<HTMLElement>('main')!;
 const scope = document.querySelector<HTMLSelectElement>('#scope')!;
 const scopeLabel = document.querySelector<HTMLLabelElement>('#scope-label')!;
+const filterLabel = document.querySelector<HTMLLabelElement>('#filter-label')!;
+const filter = document.querySelector<HTMLInputElement>('#scope-filter')!;
+let current: AssessmentView | undefined;
+let changedMode = false;
 const refresh = document.querySelector<HTMLButtonElement>('#refresh')!;
 const status = document.querySelector<HTMLParagraphElement>('#status')!;
 const report = document.querySelector<HTMLDivElement>('#report')!;
@@ -22,6 +36,13 @@ let selectedFinding: string | undefined;
 let isSpanish = navigator.language.toLowerCase().startsWith('es');
 
 function label(en: string, es: string) { return isSpanish ? es : en; }
+
+// The shared English presentation text, with its fixed prefixes translated for the Spanish view.
+const spanishLine = (line: string) => line
+  .replace(/^Finding (\d+) of (\d+)/, 'Hallazgo $1 de $2').replace(/^Evidence: /, 'Evidencia: ').replace(/^Fix: /, 'Corrección: ')
+  .replace(/^Incomplete assessment/, 'Evaluación incompleta').replace(/ \(highest reachable (\d+)\)/, ' (máximo alcanzable $1)').replace(/ (\d+) findings?/, (_, n) => ` ${n} hallazgo${n === '1' ? '' : 's'}`)
+  .replace(/ (\d+) open decisions?/, (_, n) => ` ${n} decisi${n === '1' ? 'ón pendiente' : 'ones pendientes'}`).replace(/ · engine /, ' · motor ');
+const localized = (line: string) => isSpanish ? spanishLine(line) : line;
 
 function send(message: Record<string, unknown>) {
   parent.postMessage({ jsonrpc: '2.0', ...message }, hostOrigin && hostOrigin !== 'null' ? hostOrigin : '*');
@@ -67,17 +88,17 @@ function source(evidence: Evidence) {
   return block;
 }
 
-function refinement(view: AssessmentView, finding: Finding) {
+function refinement(view: LoadedView, finding: Finding) {
   const section = element('details');
   const caption = element('summary', label('Preview a change', 'Previsualizar un cambio'));
   const first = finding.evidence[0];
-  const field = element('label', label('Replacement line', 'Línea propuesta'));
+  const field = element('label', label(replacementLabel(first.line), 'Texto de reemplazo para la línea ' + first.line));
   const input = element('textarea');
   input.rows = 2;
   input.maxLength = 20_000;
   input.value = first.text;
   field.append(input);
-  const preview = element('button', label('Show difference', 'Mostrar diferencia'));
+  const preview = element('button', label(LABELS.reviewChange, 'Revisar cambio'));
   preview.type = 'button';
   preview.disabled = true;
   const feedback = element('p');
@@ -108,7 +129,7 @@ function refinement(view: AssessmentView, finding: Finding) {
       const proposal = result?._meta?.proposal;
       if (result?.isError || !proposal || proposal.path !== first.path || proposal.line !== first.line ||
         proposal.original !== first.text || proposal.replacement !== input.value) throw new Error('Invalid proposal');
-      const discard = element('button', label('Discard preview', 'Descartar vista previa'));
+      const discard = element('button', label(LABELS.rejectProposal, 'Rechazar propuesta'));
       discard.type = 'button';
       discard.addEventListener('click', () => { input.value = first.text; reset(); input.focus(); });
       const transfer = element('details');
@@ -120,7 +141,7 @@ function refinement(view: AssessmentView, finding: Finding) {
       packetField.append(packet);
       transfer.append(
         element('summary', label('Review in local workbench', 'Revisar en el workbench local')),
-        element('p', label('Copy the review data and paste it on the workbench review page for this worktree.', 'Copia los datos y pégalos en la página de revisión del workbench de este worktree.')),
+        element('p', label('Copy the review data, then open the workbench review page (?review=1) for this worktree and paste it there.', 'Copia los datos, abre la página de revisión del workbench de este worktree (?review=1) y pégalos allí.')),
         packetField,
       );
       diff.append(
@@ -141,7 +162,7 @@ function refinement(view: AssessmentView, finding: Finding) {
   return section;
 }
 
-function exportControls(view: AssessmentView) {
+function exportControls(view: LoadedView) {
   const section = element('details');
   const packet = element('textarea');
   packet.readOnly = true;
@@ -172,44 +193,83 @@ function exportControls(view: AssessmentView) {
   return section;
 }
 
+function drawScope(view: AssessmentView) {
+  const needle = filter.value.trim().toLowerCase();
+  // The first matches, plus the current feature in its sorted position, so the selector always shows it.
+  const shown = new Set(view.features.filter(id => id.toLowerCase().includes(needle)).slice(0, SHOWN));
+  const listed = view.features.filter(id => id === feature || shown.has(id));
+  const all = fitsReadLimit(view);
+  scope.replaceChildren(
+    ...(all ? [new Option(label(LABELS.allDocuments, 'Todos los documentos'), '')] : feature === null && !view.changed ? [new Option(label('Choose a feature…', 'Elige una funcionalidad…'), '')] : []),
+    new Option(label(LABELS.changed, 'Cambiado en esta rama'), CHANGED),
+    ...listed.map(id => new Option(id, id)));
+  scope.value = view.changed && feature === null ? CHANGED : feature ?? '';
+  scopeLabel.hidden = view.features.length < 2 && feature === null && view.assessment !== null;
+  filterLabel.hidden = view.features.length <= SHOWN;
+  filter.placeholder = label('Filter ' + view.features.length + ' features', 'Filtrar ' + view.features.length + ' funcionalidades');
+}
+
 function draw(view: AssessmentView) {
   if (feature !== view.feature) selectedFinding = undefined;
   feature = view.feature;
-  scope.replaceChildren(new Option(label('All documents', 'Todos los documentos'), ''),
-    ...view.features.map(id => new Option(id, id)));
-  scope.value = feature ?? '';
-  scopeLabel.hidden = view.features.length < 2 && feature === null;
+  current = view;
+  changedMode = view.changed;
+  drawScope(view);
 
-  const result = view.assessment;
-  const score = result.summary.score;
-  const scoreText = score === null ? label('Incomplete', 'Incompleta') : score + '/' + result.summary.maximum;
-  const summary = element('p', [
-    scoreText,
-    result.findings.length + label(' findings', ' hallazgos'),
-    result.summary.unknown + label(' unknown', ' desconocidas'),
-  ].join(' · '));
-  report.replaceChildren(summary);
+  if (!view.assessment) {
+    report.replaceChildren(element('p', view.changed
+      ? (view.features.length
+        ? label(view.features.length + ' features changed on this branch. Choose one.', view.features.length + ' funcionalidades cambiadas en esta rama. Elige una.')
+        : label('No feature changed on this branch.', 'Ninguna funcionalidad cambió en esta rama.'))
+      : label('This worktree has ' + view.total + ' documents, more than ' + READ_LIMIT + ' assessed at once. Choose a feature.',
+        'Este worktree tiene ' + view.total + ' documentos, más de ' + READ_LIMIT + ' a la vez. Elige una funcionalidad.')));
+    return;
+  }
+  const loaded = view as LoadedView;
+  const result = loaded.assessment;
+  // Summary and dimensions first, then the finding card, as in every host.
+  report.replaceChildren(element('p', localized(summaryLine(result))), element('p', dimensionsLine(result)));
 
   if (result.findings.length) {
     const picker = element('label');
     picker.id = 'finding-field';
     picker.className = 'field';
     const choices = element('select');
+    const previous = element('button', label('Previous', 'Anterior'));
+    const next = element('button', label('Next', 'Siguiente'));
+    previous.type = next.type = 'button';
     const evidence = element('div');
     choices.replaceChildren(...result.findings.map((finding, index) =>
-      new Option((index + 1) + '. ' + finding.message, finding.id)));
+      new Option(localized(findingCard(result, index)[0]) + ' · ' + finding.message, finding.id)));
     if (selectedFinding && result.findings.some(finding => finding.id === selectedFinding)) choices.value = selectedFinding;
     function showFinding() {
-      const finding = result.findings.find(item => item.id === choices.value);
+      const index = result.findings.findIndex(item => item.id === choices.value);
+      const finding = result.findings[index];
       selectedFinding = finding?.id;
+      previous.disabled = index <= 0;
+      next.disabled = index < 0 || index >= result.findings.length - 1;
       evidence.replaceChildren();
-      if (finding) {
-        evidence.append(...finding.evidence.map(source), element('p', finding.suggestion));
-        if (finding.evidence[0]) evidence.append(refinement(view, finding));
-      }
+      if (!finding) return;
+      const [heading, ...lines] = findingCard(result, index).map(localized);
+      const card = element('div');
+      card.append(element('strong', heading), ...lines.map(line => {
+        const node = element(line.startsWith('Evid') ? 'pre' : 'p', line);
+        if (finding.evidence[0] && line === finding.evidence[0].path + ':' + finding.evidence[0].line) node.className = 'path';
+        return node;
+      }));
+      evidence.append(card, ...finding.evidence.slice(1).map(source));
+      if (finding.evidence[0]) evidence.append(refinement(loaded, finding));
     }
+    const step = (offset: number) => () => {
+      const index = result.findings.findIndex(item => item.id === choices.value) + offset;
+      if (index < 0 || index >= result.findings.length) return;
+      choices.value = result.findings[index].id;
+      showFinding();
+    };
     choices.addEventListener('change', showFinding);
-    picker.append(element('span', label('Finding', 'Hallazgo')), choices);
+    previous.addEventListener('click', step(-1));
+    next.addEventListener('click', step(1));
+    picker.append(element('span', label(LABELS.selectFinding, 'Selecciona un hallazgo')), choices, previous, next);
     report.append(picker, evidence);
     showFinding();
   } else {
@@ -223,15 +283,15 @@ function draw(view: AssessmentView) {
   for (const decision of result.decisions) decisions.append(source(decision));
 
   const overview = element('details');
-  const root = element('p', view.root);
+  const root = element('p', loaded.root);
   root.className = 'path';
   const dimensions = element('ul');
   for (const dim of result.dimensions) {
-    dimensions.append(element('li', dim.title + ' · ' + (dim.score ?? label('Unknown', 'Desconocido'))));
+    dimensions.append(element('li', dim.id + ' ' + dim.title + ' · ' + (dim.score === null ? label('Unknown', 'Desconocido') : dim.score + '/3')));
   }
   overview.append(element('summary', label('Assessment details', 'Detalles de la evaluación')),
     dimensions, element('p', label('Revision ', 'Revisión ') + result.id), root);
-  report.append(decisions, overview, exportControls(view));
+  report.append(decisions, overview, exportControls(loaded), element('p', label(DISCLAIMER, 'Evidencia heurística, no un certificado de corrección.')));
 }
 
 function observeSize() {
@@ -247,22 +307,22 @@ function observeSize() {
   }).observe(main);
 }
 
-async function load(selected: string | null) {
+async function load(selected: string | null, initial = false) {
   scope.disabled = true;
   refresh.disabled = true;
   report.replaceChildren();
   status.classList.remove('screen-reader-only');
   status.textContent = label('Assessing local documents…', 'Analizando documentos locales…');
   try {
-    const result = await request('tools/call', { name: 'assess_worktree', arguments: { feature: selected } }) as {
+    const result = await request('tools/call', { name: 'assess_worktree', arguments: initial ? { feature: null, initial: true } : { feature: selected, changed: changedMode } }) as {
       isError?: boolean;
       _meta?: { assessmentView?: AssessmentView };
     };
     const view = result?._meta?.assessmentView;
-    if (result?.isError || !view || typeof view.root !== 'string' || !Array.isArray(view.features) || typeof view.assessment?.id !== 'string') throw new Error('Invalid assessment response');
+    if (result?.isError || !view || typeof view.root !== 'string' || !Array.isArray(view.features) || typeof view.total !== 'number' || (view.assessment !== null && typeof view.assessment?.id !== 'string')) throw new Error('Invalid assessment response');
     draw(view);
     status.classList.add('screen-reader-only');
-    status.textContent = label('Assessment loaded.', 'Evaluación cargada.');
+    status.textContent = view.assessment ? label('Assessment loaded.', 'Evaluación cargada.') : label('Choose a feature to assess.', 'Elige una funcionalidad para analizar.');
   } catch {
     scope.value = feature ?? '';
     status.textContent = label('Could not load the assessment. Select a scope or refresh.', 'No se pudo cargar la evaluación. Selecciona un alcance o actualiza.');
@@ -272,8 +332,15 @@ async function load(selected: string | null) {
   }
 }
 
-scope.addEventListener('change', () => void load(scope.value || null));
-refresh.addEventListener('click', () => void load(scope.value || null));
+// Choosing the branch's changes lists only changed features; All documents or the prompt leaves that mode.
+function choose(value: string) {
+  if (value === CHANGED) { changedMode = true; return load(null); }
+  if (!value) changedMode = false;
+  return load(value || null);
+}
+scope.addEventListener('change', () => void choose(scope.value));
+refresh.addEventListener('click', () => void choose(scope.value));
+filter.addEventListener('input', () => { if (current) drawScope(current); });
 
 async function initialize() {
   status.textContent = label('Connecting to Codex…', 'Conectando con Codex…');
@@ -287,11 +354,13 @@ async function initialize() {
     const locale = result.hostContext?.locale;
     if (typeof locale === 'string') isSpanish = locale.toLowerCase().startsWith('es');
     document.documentElement.lang = isSpanish ? 'es' : 'en';
-    document.querySelector('#scope-caption')!.textContent = label('Artifact scope', 'Alcance de documentos');
+    document.querySelector('h1')!.textContent = titleLine(PRODUCT_VERSION);
+    document.querySelector('#scope-caption')!.textContent = label(LABELS.selectScope, 'Selecciona el alcance');
     refresh.textContent = label('Refresh', 'Actualizar');
     send({ method: 'ui/notifications/initialized', params: {} });
     observeSize();
-    await load(null);
+    filter.setAttribute('aria-label', label('Filter features', 'Filtrar funcionalidades'));
+    await load(null, true);
   } catch {
     status.textContent = label('Connection failed. Reopen the viewer to retry.', 'Falló la conexión. Vuelve a abrir el visor.');
   }

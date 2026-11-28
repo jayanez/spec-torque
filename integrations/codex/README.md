@@ -1,10 +1,17 @@
 # SpecTorque in Codex Desktop
 
-The package includes the inline viewer, project MCP server, review skills and local workbench. Use Node 22.20 or later. The desktop scenario uses a local project or worktree.
+The package includes the inline viewer, project MCP server, skills and local workbench. Use Node 22.20 or later. The desktop scenario uses a local project or worktree.
 
 ## Install and bind a worktree
 
-1. Verify the ZIP against the supplied SHA-256 and extract it into a local marketplace directory, for example as `plugins/spectorque`. Create `.agents/plugins/marketplace.json` at the marketplace root:
+1. Add this repository's marketplace and install the plugin:
+
+   ```sh
+   codex plugin marketplace add jayanez/spec-torque
+   codex plugin add spectorque@spectorque --json
+   ```
+
+   The catalog installs the `spectorque-codex` npm package. Use the emitted `installedPath` in step 3. For an offline install, verify the release ZIP against its SHA-256 and extract it into a local marketplace directory, for example as `plugins/spectorque`, with this `.agents/plugins/marketplace.json` at the marketplace root:
 
    ```json
    {
@@ -18,16 +25,31 @@ The package includes the inline viewer, project MCP server, review skills and lo
    }
    ```
 
-2. From that marketplace root, run `codex plugin marketplace add .` and `codex plugin add spectorque@spectorque-local --json`. Use the emitted `installedPath` in the next step. The marketplace supplies the skills. The MCP connection comes from the trusted project.
-3. Run `node /path/to/installed/plugin/setup-workspace.mjs /path/to/trusted/worktree`, quoting paths as needed. Merge its MCP block into that worktree’s `.codex/config.toml`. Replace any previous SpecTorque block for this server so the key is declared once. For a linked worktree, run this step with its own path. The script also prints the command to start the corresponding workbench.
-4. Open a new local chat in the trusted project in Codex Desktop. Invoke `open_spectorque` from the local `spectorque-workspace` server. The inline viewer opens with **All documents** and supports feature selection and exact source evidence. Testing the opening turn uses disposable documents.
+2. For the offline route, run `codex plugin marketplace add .` and `codex plugin add spectorque@spectorque-local --json` from that marketplace root. Either route supplies the skills. The MCP connection comes from the trusted project.
+3. In Codex Desktop, open the local worktree and trust the folder. In a local chat, type `$` and choose **Spectorque: Spec Setup** (`$spec-setup`). Confirm the displayed Git root and review the proposed `spectorque-workspace` block. Approve the write to the protected `.codex/config.toml` when prompted. Setup reports when the binding already matches the installed plugin and updates obsolete Node or runtime paths after approval. Invalid TOML and custom layouts that setup cannot validate are left for manual repair.
+4. Once setup finishes, open a new local chat in the same worktree and invoke `$spec-view` from the `$` menu (optionally `$spec-view specs/001-booking` or `$spec-view changed`). The skill calls the read-only `open_spectorque` tool in the project MCP server. It takes one model turn. The inline viewer opens with **All documents** and supports feature selection and exact source evidence.
+
+If you just ran setup and `open_spectorque` is unavailable in that chat, open a new local chat in the same worktree. Multiple installed copies of SpecTorque can show identical entries in the `$` menu. In **Plugins**, keep the intended copy enabled for this walkthrough. [Desktop qualification](../../docs/codex-desktop-probe.md#native-onboarding-2026-11-28-issue-117)
+
+For manual setup or the workbench action, run `node /path/to/installed/plugin/setup-workspace.mjs /path/to/trusted/worktree [feature-id]`, quoting paths as needed. The script prints the project MCP block, environment action and terminal fallback. If you set up the viewer manually, merge the MCP block into `.codex/config.toml` and replace any earlier block for that server. For the action, create `.codex/environments/environment.toml` with the printed content, or merge the printed action into the existing file and keep the other actions and setup script. The skill can also show that action for manual setup. Bind each worktree separately, including linked worktrees. With a feature ID, the action and fallback open on that feature. On Windows the script prints the terminal fallback and omits the environment action.
+
+## Open the workbench
+
+Use one workbench per worktree. If one is already running, reuse it or stop it before switching launch methods. The workbench opens at `/` in the integrated browser.
+
+| Launch | Open | Stop |
+| --- | --- | --- |
+| **Environment action** (recommended with approval-based permissions) | In a local chat, press **⌘K**, search for **Open SpecTorque workbench** and select **Run: Open SpecTorque workbench** under **Project**. Click the printed URL in the integrated terminal. The action runs in that terminal outside the model sandbox and takes no model turn. | Press **Ctrl+C** in the action's terminal, close its terminal tab, or archive the chat. |
+| **Optional skill** (convenient with **Full access**) | In a local chat invoke `$spec-workbench`. It takes one model turn and opens the URL with `@Browser` when available. Under **Ask for approval**, the sandbox can deny the listener and Desktop can offer **Allow once**. If it finds an existing workbench for this worktree, it asks before reusing it. | For a skill-launched process, verify its command and worktree with `ps -p <PID> -o command=`, then run `kill -TERM <PID>`. When reusing a process, follow the original launcher's stop method. |
+
+In the tested Desktop version the action needed a click on the terminal URL, and no action button appeared in the header. Switching chats left the action running. Closing the Desktop window with the server active was untested. [Desktop qualification](../../docs/codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
 
 ## Review and export
 
-Open **Preview a change**, enter the proposed line and inspect the exact diff. To apply, start the workbench using the generated command and open its printed loopback URL plus `?review=1` in the integrated browser. Copy the data from **Review in local workbench**. Paste it, verify the review and explicitly approve or reject the displayed change. Refresh the original scope in Codex after approval. A stale or different worktree review is rejected.
+Open **Preview a change**, enter the proposed line and inspect the exact diff. For a proposal from the inline viewer, open the running workbench’s loopback URL with `?review=1` in the integrated browser. Copy the data from **Review in local workbench**. Paste it, verify the review and explicitly approve or reject the displayed change. Refresh the original scope in Codex after approval. A stale or different worktree review is rejected.
 
 Use **Export in local workbench** to select the scope data and paste it into the same loopback URL with `?export=1`. Download JSON or ZIP there. Export checks the worktree and revision. Refresh and copy a new selection if the revision changed.
 
 ## Update and remove
 
-On update, verify and extract the replacement ZIP into the marketplace source and refresh or reinstall the plugin. Re-run setup against the new installed path and start a new local chat. To disable the viewer for a worktree, remove its `spectorque-workspace` block and open a new chat. Stop the workbench from the terminal that launched it. When the plugin is no longer needed, run `codex plugin remove spectorque@spectorque-local` and remove this dedicated marketplace using `codex plugin marketplace remove spectorque-local`.
+On update, run `codex plugin marketplace upgrade spectorque` and reinstall the plugin (offline: verify and extract the replacement ZIP into the marketplace source and reinstall). Run `$spec-setup` in each affected worktree to check and repair the MCP binding, and replace the action command separately if you use it. Then start a new local chat. To remove the integration for a worktree, stop the workbench using the method in the table, remove its `spectorque-workspace` block and **Open SpecTorque workbench** action, and open a new chat. When the plugin is no longer needed, run `codex plugin remove spectorque@spectorque` and `codex plugin marketplace remove spectorque` (offline: `spectorque@spectorque-local` and `spectorque-local`).

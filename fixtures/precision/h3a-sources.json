@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-24",
+  "purpose": "Fresh H3a confirmation set (requirement definitions, narrowed). Frozen before any file content was read and before the candidate.",
+  "rule": "GitHub code search for \"### FR-001\" and \"| REQ-001 |\" in files named spec.md, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner used earlier in #39, #51, #52 and H3, and the pilot repository owner, excluded; pinned to the default-branch head SHA.",
+  "unfilled": {},
+  "sources": [
+    {
+      "family": "spec-kit",
+      "repository": "github.com/SpillwaveSolutions/agent-brain",
+      "commit": "833962340d2b142ab785dbac5ea03dc5912fc7b5",
+      "license": "MIT",
+      "query": "\"### FR-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/intersystems-community/iris-agentic-dev",
+      "commit": "ca7996f9b8255f9d54b8d8e984a3a75eb7f57cf1",
+      "license": "MIT",
+      "query": "\"### FR-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/hugr-lab/mssql-extension",
+      "commit": "4bb47d5223c43938ba25b09a485bd72a3686f6bc",
+      "license": "MIT",
+      "query": "\"### FR-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/complytime/complyctl",
+      "commit": "bbe53480bd7af11cb01c519154aa710c98b7b173",
+      "license": "Apache-2.0",
+      "query": "\"### FR-001\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/FlyFission/nuclear-grade-context-engineering",
+      "commit": "395aa6ed161b773f1cf24abbf85e1c9ff95b969c",
+      "license": "MIT",
+      "query": "\"| REQ-001 |\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/uwzis/UniSpec",
+      "commit": "78a1cf4fd328eddd6fe90c9dafa2c1259ca34408",
+      "license": "MIT",
+      "query": "\"| REQ-001 |\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/sharma-open-source/spec-sprint",
+      "commit": "10bcbd519865af9cdaafbf915472fe5ad7569b95",
+      "license": "MIT",
+      "query": "\"| REQ-001 |\" filename:spec.md"
+    },
+    {
+      "family": "spec-kit",
+      "repository": "github.com/juanmorschrott/ens-auditor",
+      "commit": "89127ae926107f959a8fe411181af92c1ba7d5de",
+      "license": "MIT",
+      "query": "\"| REQ-001 |\" filename:spec.md"
+    }
+  ]
+}

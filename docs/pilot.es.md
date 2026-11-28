@@ -10,7 +10,7 @@ Este recorrido está dirigido a quienes escriben o revisan especificaciones. Usa
    node "$cli" serve --root "$WORKSPACE" --port 0
    ```
 
-2. Abre la dirección de loopback impresa. Cambia a español, pulsa **Cargar proyecto local** y elige `specs/booking` si aparece el selector de alcance. Tu primer análisis termina cuando se muestran los hallazgos y se pueden abrir. Descarga el JSON y el informe inicial. Abre el hallazgo de redacción no acotada en `specs/booking/spec.md:5`.
+2. Abre la dirección de loopback impresa. Cambia a español; el workbench carga el proyecto local al abrirse (**Recargar proyecto local** lo vuelve a cargar). Elige `specs/booking` si aparece el selector de alcance. Tu primer análisis termina cuando se muestran los hallazgos y se pueden abrir. Descarga el JSON y el informe inicial. Abre el hallazgo de redacción no acotada en `specs/booking/spec.md:5`.
 3. En **Texto propuesto**, pega esta línea y pulsa **Revisar diferencia**. Inspecciona ambos textos y pulsa **Rechazar**. Comprueba que el archivo no cambió.
 
    ```markdown

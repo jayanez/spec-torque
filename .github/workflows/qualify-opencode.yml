@@ -47,8 +47,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run build
-      - run: npm run package:integrations
       - run: npm run package:opencode
       - name: Locate the versioned opencode archive
         shell: bash

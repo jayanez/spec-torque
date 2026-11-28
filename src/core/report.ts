@@ -1,6 +1,14 @@
 import type { Assessment } from './types.js';
+/** Drops the spaces and tabs that end a line, in linear time (a backtracking regex is quadratic on long space runs). */
+function trimLineEnd(line: string): string {
+  let end = line.length;
+  while (end > 0 && (line[end - 1] === ' ' || line[end - 1] === '\t')) end--;
+  return line.slice(0, end);
+}
+/** Strips trailing spaces and tabs from every report line (#126); the assessment's Evidence.text is unchanged. */
 export function markdownReport(a: Assessment): string {
-  return `# SpecTorque report: ${a.name}\n\nRevision: \`${a.id}\`\nEngine: ${a.engineVersion} · Rubric: ${a.rubricVersion}\n\nScore: ${a.summary.score === null ? `incomplete (${a.summary.assessedDimensions}/10 dimensions assessed)` : `${a.summary.score}/30`}\n\nThis is an evidence-based heuristic, not an EPIC author score, ISO certification or a prediction of software correctness.\n\n## Dimensions\n\n${a.dimensions.map(d => `- ${d.id} ${d.title}: ${d.score ?? 'not assessed'}`).join('\n')}\n\n## Practices\n\n${a.practices.map(p => `### ${p.id} ${p.title} — ${p.status}\n${p.reason}\n${p.evidence.map(e => `- ${e.path}:${e.line}: ${e.text}`).join('\n')}\nNext: ${p.suggestion}`).join('\n\n')}\n\n## Findings\n\n${a.findings.map(f => `- **${f.severity}** ${f.message} (${f.evidence[0]?.path}:${f.evidence[0]?.line})\n  ${f.suggestion}`).join('\n')}\n\n## Open decisions\n\n${a.decisions.map(e => `- ${e.path}:${e.line}: ${e.text}`).join('\n') || 'No explicit clarification markers detected; this does not establish completeness.'}\n`;
+  const report = `# SpecTorque report: ${a.name}\n\nRevision: \`${a.id}\`\nEngine: ${a.engineVersion} · Rubric: ${a.rubricVersion}\n\nScore: ${a.summary.score === null ? `incomplete (${a.summary.assessedDimensions}/10 dimensions assessed)` : `${a.summary.score}/${a.summary.maximum} · highest reachable for this scope: ${a.summary.reachable}`}\n\nThis is an evidence-based heuristic, not an EPIC author score, ISO certification or a prediction of software correctness. Most practices reach partial at most, so the highest reachable total is below ${a.summary.maximum} and depends on which practices apply.\n\n## Dimensions\n\n${a.dimensions.map(d => `- ${d.id} ${d.title}: ${d.score ?? 'not assessed'}`).join('\n')}\n\n## Practices\n\n${a.practices.map(p => `### ${p.id} ${p.title} — ${p.status}\n${p.reason}\n${p.evidence.map(e => `- ${e.path}:${e.line}: ${e.text}`).join('\n')}\nNext: ${p.suggestion}`).join('\n\n')}\n\n## Findings\n\n${a.findings.map(f => `- **${f.severity}** ${f.message} (${f.evidence[0]?.path}:${f.evidence[0]?.line})\n  ${f.suggestion}`).join('\n')}\n\n## Open decisions\n\n${a.decisions.map(e => `- ${e.path}:${e.line}: ${e.text}`).join('\n') || 'No explicit clarification markers detected; this does not establish completeness.'}\n`;
+  return report.split('\n').map(trimLineEnd).join('\n');
 }
 const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]!));
 export function badgeSvg(a: Assessment): string {

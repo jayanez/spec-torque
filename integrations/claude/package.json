@@ -1,0 +1,53 @@
+{
+  "name": "spectorque-claude",
+  "version": "0.3.0",
+  "description": "SpecTorque plugin for Claude Code: native review pane, author/review/refine skills and read-only MCP tools.",
+  "type": "module",
+  "author": {
+    "name": "jayanez",
+    "url": "https://github.com/jayanez"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/jayanez/spec-torque#readme",
+  "bugs": {
+    "url": "https://github.com/jayanez/spec-torque/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jayanez/spec-torque.git",
+    "directory": "integrations/claude"
+  },
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "spectorque",
+    "specification",
+    "spec-driven-development",
+    "requirements",
+    "epic",
+    "mcp",
+    "skills",
+    "claude-code",
+    "claude-plugin"
+  ],
+  "files": [
+    ".claude-plugin",
+    ".mcp.json",
+    "hooks/hooks.json",
+    "hooks/register.js",
+    "hooks/text.js",
+    "dist",
+    "web-dist",
+    "skills",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_NOTICES",
+    "assets"
+  ]
+}

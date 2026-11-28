@@ -2,7 +2,35 @@
 
 SpecTorque ayuda a crear, revisar y refinar especificaciones antes de entregarlas a un agente. El análisis básico funciona en local, sin GPU ni credenciales de IA.
 
-Con Node.js 22.20 o superior, instala desde el repositorio con `npm ci --ignore-scripts` y `npm run build`. Ejecuta `node dist/cli.js serve --root /ruta/absoluta/a/tu/proyecto` y abre la dirección local mostrada.
+## Pruébalo con un comando
+
+Desde la raíz de un repositorio git con tus specs (Node.js 22.20 o superior):
+
+```bash
+npx -y spectorque serve --root .
+```
+
+Abre el workbench en una dirección local y analiza ese árbol de trabajo en tu máquina, sin cuenta, modelo ni telemetría. Para dar a tu agente las seis herramientas de solo lectura, añade el servidor MCP en una línea: `claude mcp add spectorque -- npx -y spectorque mcp` o `codex mcp add spectorque -- npx -y spectorque mcp`. Otros clientes MCP usan el mismo comando como servidor stdio. Los paneles nativos llegan con el plugin de cada plataforma, en la tabla siguiente.
+
+## Instalación
+
+SpecTorque 0.3.0 es una **versión preliminar**, publicada en el canal `next` hasta superar el [gate de candidato estable](pilot-operations.md#stable-candidate-gate). Al ser la primera versión en npm también es `latest`, así que `npm i spectorque` la instala. Todas las rutas usan el mismo motor local y necesitan Node.js 22.20 o superior en el `PATH`.
+
+| Plataforma | Instalación | Después |
+|---|---|---|
+| Claude Code (CLI y pestaña Code de Desktop) | `claude plugin marketplace add jayanez/spec-torque` y `claude plugin install spectorque@spectorque` | `/spectorque` |
+| Codex (CLI y Desktop) | `codex plugin marketplace add jayanez/spec-torque` y `codex plugin add spectorque@spectorque` | [Vincula el worktree con `$spec-setup`](../integrations/codex/README.md#install-and-bind-a-worktree) y abre otro chat local para `$spec-view` (visor integrado: solo Desktop) |
+| OpenCode | Añade `"opencode-spectorque@0.3.0"` a `plugins` en `~/.config/opencode/cli.json` | `/spectorque` en una sesión |
+| Pi y ThinkRail | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
+| VS Code | Busca **SpecTorque** y elige *Switch to Pre-Release*, o `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
+| Cursor, Windsurf, VSCodium | El VSIX de la [release de GitHub](https://github.com/jayanez/spec-torque/releases) (*Install from VSIX…*); en Open VSX cuando se apruebe el namespace `jayanez` (instalable, aún sin cualificar) | El mismo comando |
+| Navegador, CLI o cualquier cliente MCP | `npx -y spectorque@0.3.0 serve --root .` o `npx -y spectorque@0.3.0 mcp`; en el [registro MCP](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.jayanez/spectorque) como `io.github.jayanez/spectorque` | Abre la dirección local mostrada |
+
+**Dónde está publicado:** [npm](https://www.npmjs.com/package/spectorque) (los cinco paquetes), [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jayanez.spectorque) (pre-release), el registro MCP, los catálogos de Claude Code y Codex de este repositorio y la [release de GitHub](https://github.com/jayanez/spec-torque/releases/tag/v0.3.0). Las galerías de Pi y ThinkRail listan `pi-spectorque` desde npm. Open VSX llegará cuando se apruebe su namespace.
+
+Los recursos de cada versión para instalaciones sin conexión y la política de versiones están en [releases](releases.md). Desde el código fuente, con Node.js 22.20 o superior, ejecuta `npm ci --ignore-scripts` y `npm run build`, después `node dist/cli.js serve --root /ruta/absoluta/a/tu/proyecto`, y abre la dirección local mostrada.
+
+## Uso
 
 1. Prueba una muestra, crea una spec con el asistente o importa tus documentos.
 2. Revisa las prácticas, sus evidencias y las decisiones pendientes. Selecciona una funcionalidad cuando haya varias.
@@ -10,13 +38,45 @@ Con Node.js 22.20 o superior, instala desde el repositorio con `npm ci --ignore-
 4. Revisa la diferencia antes de aceptar. Las cifras, obligaciones e identificadores existentes se conservan y los cambios concurrentes se rechazan.
 5. Exporta los documentos y el informe. La edición directa y el historial viven en memoria durante la sesión. Guarda o exporta antes de cerrar.
 
-Las puntuaciones son una ayuda heurística: no certifican la corrección de la spec ni predicen defectos. «Desconocido» indica evidencia insuficiente; «no aplicable» requiere justificación. Consulta [el estado real de las integraciones](compatibility.md) y [su instalación](integrations.md).
+Las puntuaciones son una ayuda heurística: no certifican la corrección de la spec ni predicen defectos. La escala llega a 30, pero solo cinco prácticas pueden quedar «cubiertas» y las demás llegan como mucho a «parcial», así que el máximo alcanzable con el alcance completo es **20/30** ([motivo](rubric.md#scoring-and-the-reachable-maximum)). El informe y los resúmenes lo muestran junto a la puntuación, y marcar prácticas como no aplicables lo cambia. Con `--min`, elige un valor igual o inferior a 20, por ejemplo `--min 18`. «Desconocido» indica evidencia insuficiente; «no aplicable» requiere justificación. Consulta [el estado real de las integraciones](compatibility.md) y [su instalación](integrations.md).
+
+## Secuencia de revisión con modelo
+
+La skill `spec-review` recomienda esta secuencia cuando un modelo revisa un conjunto de specs y sus correcciones. Es una recomendación sin una evaluación controlada que la respalde. Cada corrección y cada commit requieren la aprobación del usuario, como en `spec-refine`.
+
+1. Ejecuta el motor y corrige los problemas reales que señale antes de cualquier revisión con modelo.
+2. Haz commit del texto, anota el commit, guarda la salida del motor de cada funcionalidad en ese commit y ejecuta una revisión completa con dos enfoques en paralelo, sin que ninguno vea la salida del otro:
+   - Adversarial: contradicciones, frases normativas ambiguas y cifras recalculadas desde sus fuentes.
+   - Contrafáctico: contrasta el texto con los fallos anteriores y con cada opción de cada decisión abierta.
+
+   Conserva un hallazgo cuando lo señalen ambos enfoques o cuando una comprobación con contexto nuevo, que solo recibe el hallazgo y el texto, no pueda refutarlo. Esa comprobación solo descarta hallazgos; nunca los añade. Si el host no puede usar contextos separados, indica que la revisión usó uno solo.
+3. Aplica en una sola pasada los hallazgos conservados, salvo los que son solo informativos.
+4. Verifica contra el commit anotado y mantenlo en el historial (sin `amend` ni `rebase`) hasta terminar la verificación:
+   - Obtén las funcionalidades tocadas con el CLI `spectorque features --changed --base <commit>`, o con MCP `discover_specs` con `changed` y `base` y sin `index`. Analiza cada una con `feature` y corrige los hallazgos que no estén en la salida guardada, comparando por práctica y texto de la línea, porque los números de línea cambian.
+   - Lee `git diff <commit>` y los archivos nuevos sin seguimiento.
+   - Para cada definición cambiada o eliminada (la línea que define un ID, un umbral, un término definido), busca en el worktree las líneas sin cambios que la citan y haz una pregunta de sí o no por línea: ¿sigue siendo cierta?
+
+   Si alguna respuesta es negativa, haz commit del texto actual, corrige las líneas que fallan y repite este paso con ese commit como base. Termina cuando todas las respuestas sean afirmativas.
+5. Repite la revisión completa solo cuando una corrección cambie una regla de decisión, un umbral, el conjunto de decisiones abiertas o el orden de las tareas.
+6. No uses nunca la puntuación como señal de aceptación: con `epic-heuristic-1` el total más alto alcanzable desde el CLI o MCP es 20/30, así que las correcciones no pueden subirla por encima de 20.
+
+## Cómo funciona el motor
+
+Un único motor determinista en TypeScript da servicio al CLI, al servidor MCP, al banco de trabajo y a todos los hosts. Descubre los documentos del worktree sin leerlos (las plantillas de `.specify/` y `.kittify/` no cuentan) y lee solo el alcance elegido; clasifica cada archivo (spec, plan, tareas, instrucciones o contexto, como `quickstart.md` y las `checklists/` de Spec Kit); reconoce palabras normativas completas en inglés y español; cuenta un identificador como requisito solo en posición de definición; resuelve referencias dentro del espacio de nombres de la funcionalidad; evalúa las 40 prácticas con evidencia exacta de ruta, línea y texto; y puntúa diez dimensiones de 0 a 3, sin total mientras alguna sea desconocida. Las propuestas cambian una línea, conservan identificadores, cantidades, obligaciones y cláusulas negativas, y solo se escriben tras una aprobación explícita. Motor 0.1.21, rúbrica `epic-heuristic-1`. [Arquitectura](architecture.md#engine-pipeline)
+
+## Fundamento científico
+
+EPIC reúne 40 prácticas en diez dimensiones a partir de un estudio de 114 repositorios de código abierto y la evaluación de 15 profesionales. SpecTorque usa ese marco para revisar especificaciones, planes y tareas con evidencias en inglés y español. [Estudio EPIC](https://arxiv.org/abs/2610.07534)
+
+Desde el motor 0.1.9, cada cambio de detección sigue una reproducción preregistrada frente a un comparador congelado y el corpus EN/ES antes de publicarse. [Método de precisión](research.md#precision-method)
+
+La precisión permite comprobar una obligación. Si una reserva debe confirmarse «rápido», queda por decidir qué tiempo de respuesta se acepta y en qué condiciones. La selectividad consiste en preguntar por decisiones que cambian la implementación o la aceptación. Los estudios de aclaración con agentes evalúan esa capacidad en tareas concretas. El efecto de SpecTorque sobre los defectos de implementación sigue pendiente de evaluación. [Fundamento y límites](research.md) · [Corpus EN/ES](format-corpus.md)
 
 ## Entorno y verificación reproducible
 
 Para desarrollar y verificar usa Node 22.20.0, fijado en `.nvmrc`. `npm run check` comprueba el ejecutable efectivo. Instala los navegadores dentro del proyecto con `npm run browsers:install` y ejecuta `npm run test:browser`; conserva los fallos y límites en el informe, sin convertirlos en aceptación.
 
-`npm run prepare:codex -- es` crea un proyecto desechable en `.spec-torque/codex-es`, con MCP y las tres skills locales. No sobrescribe un proyecto existente ni modifica tu perfil global. Ábrelo en Codex y verifica la conexión. Exporta los cambios que quieras conservar antes de borrar esa carpeta.
+`npm run prepare:codex -- es` crea un proyecto desechable en `.spec-torque/codex-es`, con MCP y las skills compartidas. No sobrescribe un proyecto existente ni modifica tu perfil global. Ábrelo en Codex y verifica la conexión. Exporta los cambios que quieras conservar antes de borrar esa carpeta.
 
 `npm run qualify:codex` verifica el app-server real y el panel común sin iniciar un turno de modelo. Para VS Code, genera el VSIX con `npm run package:vscode` y configura `VSCODE_EXECUTABLE` antes de ejecutar `npm run test:vscode` y su variante `-- --restricted`. Se utilizan perfiles aislados. Consulta [los pasos, resultados y límites](qualification.md).
 
@@ -24,17 +84,30 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 
 ## Visor de Codex Desktop
 
-Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el archivo reubicado fuera del checkout. Instala el ZIP desde un marketplace local y ejecuta `setup-workspace.mjs` desde la copia instalada, con la ruta del worktree confiable. Incorpora el bloque TOML que imprime al proyecto. Para actualizar, reinstala el ZIP verificado y vuelve a generar ese bloque. Para retirarlo, elimina el bloque de SpecTorque, detén el workbench y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
+Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el paquete fuera del checkout. Instala el ZIP desde un marketplace local. Abre el worktree local y confía en la carpeta. En un chat local, escribe `$` y elige **Spectorque: Spec Setup** (`$spec-setup`). Confirma la raíz que se muestra, revisa el bloque MCP y autoriza la escritura protegida en `.codex/config.toml` cuando se te pida. Abre un chat local nuevo en el mismo worktree y elige `$spec-view`. Después de actualizar el plugin o Node, vuelve a ejecutar `$spec-setup` para reparar las rutas si hace falta.
 
-En la versión de Codex Desktop probada, abrir el visor con `open_spectorque` inicia un turno con el proveedor configurado. Para el piloto, usa el workbench local. En una cualificación interna con autorización expresa, abre un chat con el ejemplo público e invoca `open_spectorque` del servidor `spectorque-workspace`. Selecciona el alcance y revisa la evidencia y la diferencia. Para guardar o exportar, inicia el workbench con el comando impreso por el instalador y usa su dirección local en el navegador integrado. Los datos de revisión requieren una aprobación explícita y se rechazan si cambió la revisión. Consulta las rutas observadas en la [cualificación de Desktop](codex-desktop-probe.md). El [seguimiento de Windows](https://github.com/jayanez/spec-torque/issues/34) registra sus variantes por separado.
+Si acabas de configurar el worktree y `open_spectorque` no aparece en ese chat, abre un chat local nuevo en el mismo worktree. Si el menú `$` muestra entradas idénticas, comprueba en **Plugins** qué copias de SpecTorque están habilitadas y deja activa la que quieras usar. [Prueba nativa en Desktop](codex-desktop-probe.md#native-onboarding-2026-11-28-issue-117)
+
+Para configurar la acción de entorno, usa el bloque que muestra la skill o que imprime `setup-workspace.mjs`. Incorpóralo a `.codex/environments/environment.toml` conservando las demás acciones y el script de setup. Si el archivo aún no existe, el script imprime su contenido completo. En Windows imprime el comando para terminal. La configuración manual del MCP usa el mismo script y el bloque que imprime. Vincula cada worktree por separado. Para retirar la integración, detén el workbench, elimina los bloques de SpecTorque y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
+
+Abre un solo workbench por worktree. Si ya hay uno activo, reutilízalo o detenlo antes de cambiar de vía.
+
+| Vía | Abrir | Detener |
+| --- | --- | --- |
+| **Acción de entorno**, recomendada en perfiles con aprobación | Pulsa **⌘K**, busca **Open SpecTorque workbench** y elige **Run: Open SpecTorque workbench** en **Project**. Pulsa la URL del terminal integrado. No consume un turno de modelo. | **Ctrl+C** en el terminal de la acción, cerrar su pestaña o archivar el chat. |
+| **Skill opcional**, cómoda con **Full access** | Invoca `$spec-workbench`. Consume un turno y puede abrir el navegador integrado con `@Browser`. Con **Ask for approval**, Desktop puede pedir **Allow once**. Si ya hay un workbench para ese worktree, pregunta si quieres reutilizarlo. | Si lo abrió la skill, verifica el comando y el worktree con `ps -p <PID> -o command=` y ejecuta `kill -TERM <PID>`. Si lo reutilizaste, sigue la parada de su vía original. |
+
+En la versión probada, la acción no abrió la página sola ni mostró un botón en la cabecera. Cambiar de chat dejó el servidor activo. Queda sin verificar el cierre de la ventana con el servidor en marcha. [Cualificación de Desktop](codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
+
+Las dos vías abren `/`. Para el visor en línea, `$spec-view` o `open_spectorque` inicia un turno con el proveedor configurado. Sus enlaces `?review=1` y `?export=1` siguen usando los datos copiados desde el visor. Los datos de revisión requieren aprobación explícita y se rechazan si cambió la revisión. [Guía de revisión y exportación](../integrations/codex/README.md#review-and-export)
 
 ## Continuación en otros clientes
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).
 
-En Claude Code, genera el paquete con `npm run package:integrations` y
-`npm run package:claude`; el script imprime el SHA-256 del ZIP determinista.
-Cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-0.2.0.zip`
+En Claude Code, genera el paquete con `npm run package:claude`, que antes
+recompila el motor y los runtimes de los hosts; el script imprime el SHA-256 del ZIP determinista.
+Para una instalación sin marketplace, cárgalo en tu proyecto con `claude --plugin-dir /ruta/absoluta/spectorque-claude-<versión>.zip`
 y ejecuta `/spectorque`. El panel usa el `node` del `PATH` (Node 22.20+).
 Si el workspace tiene varias funcionalidades, el panel ofrece **All documents** o
 una funcionalidad concreta, como en OpenCode. Una propuesta se rechaza si el
@@ -43,7 +116,7 @@ archivo ya no coincide con el hash evaluado.
 sesión, copia su dirección e indica el alcance que hay que seleccionar; se detiene
 al cerrarlo, al cerrar el panel o al terminar la sesión. Pulsarlo mientras arranca
 cancela ese arranque.
-`npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-0.2.0.zip <node_modules>`
+`npm run qualify:claude -- "$(which claude)" artifacts/spectorque-claude-<versión>.zip <node_modules>`
 recorre el ZIP instalado en un cliente real (EN/ES, alcance, rechazo, aplicación,
 fuente obsoleta, traspaso, errores e instalación por marketplace) sin enviar
 prompts al modelo.
@@ -56,8 +129,8 @@ x64), Linux (x64 y arm64) y Windows (x64 y arm64) con un perfil aislado, una cla
 ficticia y salida de red bloqueada por el sistema operativo; consulta la tabla en
 la guía de cualificación.
 
-En Claude Desktop (Claude Code 2.1.325 integrado), instala el ZIP desde un
-marketplace local con ámbito de proyecto, abre una sesión del Code tab en esa
+En Claude Desktop (Claude Code 2.1.325 integrado), instala el plugin desde el
+marketplace con ámbito de proyecto, abre una sesión del Code tab en esa
 carpeta y escribe `/spectorque` en el cuadro de mensajes: el primer mensaje de
 una sesión nueva va al modelo, no se ejecuta como comando.
 `claude plugin validate` solo valida carpetas: valida una copia extraída.
@@ -85,7 +158,7 @@ Consulta [las fases, evidencias y condiciones de parada](corrective-gates.md). G
 
 ## Reconocimiento normativo EN/ES
 
-El motor 0.1.1 reconoce palabras normativas completas, incluidas `DEBEN`, `DEBERÁ`,
+Desde el motor 0.1.1, SpecTorque reconoce palabras normativas completas, incluidas `DEBEN`, `DEBERÁ`,
 `DEBERÁN`, `DEBERÍA`, `DEBERÍAN` y `PUEDEN`, con o sin identificador de requisito.
 Conserva la diferencia entre obligación, recomendación y permiso. Los nuevos casos
 reconocidos pueden cambiar los hallazgos y sus evidencias; no cambia la política de

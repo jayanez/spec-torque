@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -18,10 +18,24 @@ export async function loadEngine(root: string) {
 }
 export type Engine = Awaited<ReturnType<typeof loadEngine>>;
 
-/** Extract the committed engine sources of one revision and import them. */
-export async function archiveEngine(revision: string, directory: string): Promise<Engine> {
+/**
+ * Extract the committed engine sources of one revision and import them. `liftDocumentLimit` removes the
+ * 500-document analysis guard in this copy only (measurement of large scopes; the 1 MB guard stays).
+ */
+export async function archiveEngine(revision: string, directory: string, liftDocumentLimit = false): Promise<Engine> {
   await mkdir(directory);
-  const snapshot = execFileSync('git', ['archive', revision, 'package.json', 'src/core', 'src/node'], { cwd: repository });
-  execFileSync('tar', ['-xf', '-', '-C', directory], { input: snapshot });
+  // Extract from a file, not stdin: bsdtar (macOS) stops reading at the end-of-archive marker,
+  // so piping git archive's trailing padding into it can fail with EPIPE.
+  const snapshot = join(directory, '.snapshot.tar');
+  execFileSync('git', ['archive', '-o', snapshot, revision, 'package.json', 'src/core', 'src/node'], { cwd: repository });
+  execFileSync('tar', ['-xf', snapshot, '-C', directory]);
+  await rm(snapshot);
+  if (liftDocumentLimit) {
+    const file = join(directory, 'src/core/analyze.ts');
+    const guard = 'if (set.artifacts.length > 500 || ';
+    const source = await readFile(file, 'utf8');
+    if (source.split(guard).length !== 2) throw new Error('The 500-document guard was not found exactly once.');
+    await writeFile(file, source.replace(guard, 'if ('));
+  }
   return loadEngine(directory);
 }

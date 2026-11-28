@@ -1,0 +1,5 @@
+interface:
+  short_description: "Open the inline viewer for a feature or branch changes"
+  default_prompt: "Use $spec-view to open the SpecTorque viewer on the feature or branch changes I name."
+policy:
+  allow_implicit_invocation: false

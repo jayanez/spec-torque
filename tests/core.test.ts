@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { classifyArtifact, contentHash } from '../src/core/artifacts.js';
-import { analyze } from '../src/core/analyze.js';
+import { analyze, reachableTotal } from '../src/core/analyze.js';
+import { PRACTICES } from '../src/core/catalog.js';
 import { createProposal, applyProposal } from '../src/core/refine.js';
 import { buildArtifacts } from '../src/core/builder.js';
 
@@ -136,4 +137,77 @@ test('month enumeration suppression preserves independent modal and identifier e
   const example = await analyze({ name: 'example', artifacts: [classifyArtifact('spec.md',
     '> Operators may stop. The options are Apr, May, Jun.\n\n```md\nOperators may stop.\n```')] });
   assert.equal(example.practices.find(row => row.id === 'E1.4')?.status, 'unknown');
+});
+test('H106: a labeled dependency field with an ID counts for P1.3, an absent value does not', async () => {
+  const status = async (line: string) => (await analyze({ name: 'h106', artifacts: [
+    classifyArtifact('specs/001-demo/spec.md', '# Demo\n\n- REQ-001: The system MUST export the report.\n'),
+    classifyArtifact('specs/001-demo/tasks.md', `# Tasks\n\n- [ ] T001 (REQ-001): Write the schema.\n- [ ] T002 (REQ-001): Write the exporter.\n  ${line}\n`),
+  ] })).practices.find(p => p.id === 'P1.3')?.status;
+  const twins: Array<[string, string, 'partial' | 'missing']> = [
+    ['Dependencies: T001. Target files: `src/export.py`.', 'Dependencias: T001. Archivos: `src/export.py`.', 'partial'],
+    ['Dependencies: T001, T003.', 'Dependencias: T001, T003.', 'partial'],
+    ['Blocked by: T001.', 'Bloqueado por: T001.', 'partial'],
+    ['**Dependencies:** REQ-001', '**Dependencias:** REQ-001', 'partial'],
+    ['Dependencies: T001–T004.', 'Dependencias: SPEC-028/T001.', 'partial'],
+    ['Depends on T001.', 'Depende de T001.', 'partial'],
+    ['Dependencies: none.', 'Dependencias: ninguna.', 'missing'],
+    ['Dependencies: —', 'Dependencias: —', 'missing'],
+    ['Dependencies:', 'Dependencias:', 'missing'],
+    ['Dependencies: the exporter must finish first.', 'Dependencias: el exportador debe terminar antes.', 'missing'],
+    ['Dependencies: none. Verified by T009.', 'Dependencias: ninguna. Verificado por T009.', 'missing'],
+    ['Dependencies between tasks are tracked separately (see T001).', 'Las dependencias entre tareas se revisan aparte (ver T001).', 'missing'],
+    // Amendment H106-2.
+    ['**Dependencies**: T001', '**Dependencias**: T001', 'partial'],
+    ['Dependency: T001.', 'Dependencia: T001.', 'partial'],
+    ['Dependencies: see spec.md, T001.', 'Dependencias: ver spec.md, T001.', 'partial'],
+    ['**Primary Dependencies**: FastAPI, ISO-8601 parsing', '**Dependencias principales**: FastAPI, ISO-8601', 'missing'],
+    ['Dependencies: utf-8 encoding, AWS t3.', 'Dependencias: codificación utf-8, AWS t3.', 'missing'],
+    ['Dependencies: *none* (see T003).', 'Dependencias: _ninguna_ (ver T003).', 'missing'],
+    ['Dependencies: nothing blocks this; T001 is optional.', 'Dependencias: sin dependencias (ver T001).', 'missing'],
+    ['Dependencies: N/A, T001 later.', 'Dependencias: N/A, T001 después.', 'missing'],
+    // Known limit: the unchanged verb phrase of 0.1.16 still counts a labeled "Depends on: none".
+    ['Depends on: none. Verified by T009.', 'Depende de: ninguna. Verificado por T009.', 'partial'],
+  ];
+  for (const [en, es, expected] of twins) for (const line of [en, es]) assert.equal(await status(line), expected, line);
+  // Untrusted Markdown: long padding or repeated labels stay linear.
+  const p13 = PRACTICES.find(p => p.id === 'P1.3')!.pattern!;
+  for (const line of ['Dependencies:' + '*'.repeat(100_000), 'Dependencies:' + ' '.repeat(100_000), 'Dependencies: x; '.repeat(6_000)]) {
+    const started = performance.now();
+    assert.equal(p13.test(line), false);
+    assert.ok(performance.now() - started < 500, 'P1.3 pattern backtracks on a long line');
+  }
+});
+test('H85: a demonstrative that leads a noun phrase is not a pronoun subject (E1.3)', async () => {
+  const flagged = async (line: string) => (await analyze({ name: 'h85', artifacts: [classifyArtifact('specs/001-demo/spec.md', `# Demo\n\n${line}\n`)] }))
+    .findings.some(f => f.practiceId === 'E1.3');
+  for (const line of ['- REQ-001: This amendment MUST keep the export format.', 'That endpoint MUST return 404.', 'This `export` flag MUST stay off.', 'This status MUST stay visible.', 'This process MUST stop on failure.',
+    '- REQ-001: Esta enmienda DEBE conservar el formato.']) assert.equal(await flagged(line), false, line);
+  for (const line of ['- REQ-001: This MUST keep the export format.', 'That means the endpoint MUST return 404.', 'This, in turn, MUST hold.',
+    "That's why the export MUST include the date.", 'This in turn means the export MUST include the date.', 'This only applies when the export MUST run.',
+    'It MUST include the date.', 'This allowed the export to fail; the service MUST retry.', 'That cannot happen; the export MUST retry.', "That won't happen; the export MUST retry.", "This can't fail; the export MUST retry.", "This isn't optional: the export MUST retry.", 'This doesn’t change; the export MUST retry.', '- REQ-001: Esto DEBE conservar el formato.']) {
+    assert.equal(await flagged(line), true, line);
+  }
+});
+
+test('the reachable maximum is 20/30 for a full scope and follows non-applicability (#125)', async () => {
+  // Only five practices have a deterministic check that can report supported; every other one stops at partial.
+  assert.deepEqual(PRACTICES.filter(p => p.supportable).map(p => p.id), ['E1.2', 'E1.4', 'E2.1', 'I1.2', 'I2.2']);
+  assert.equal(reachableTotal(), 20);
+  const spec = classifyArtifact('spec.md', '# Booking\nFR-001: The system MUST confirm a booking within 2 seconds.');
+  const full = await analyze({ name: 'full', artifacts: [spec] });
+  assert.equal(full.summary.maximum, 30);
+  assert.equal(full.summary.reachable, 20);
+  // The flags match the engine: this fixture makes exactly the supportable practices supported.
+  assert.deepEqual(full.practices.filter(p => p.status === 'supported').map(p => p.id), ['E1.2', 'E1.4', 'E2.1', 'I1.2', 'I2.2']);
+  // With the three partial-only E1 practices not applicable, E1 can reach 3, so the total can reach 21.
+  const reason = 'Not relevant to this single-requirement fixture.';
+  const scoped = await analyze({ name: 'scoped', artifacts: [spec] }, { notApplicable: { 'E1.1': reason, 'E1.3': reason, 'E1.5': reason } });
+  assert.equal(scoped.summary.reachable, 21);
+  // A dimension with no applicable practice can never be scored, so no total is reachable.
+  const c2 = Object.fromEntries(['C2.1', 'C2.2', 'C2.3', 'C2.4'].map(id => [id, reason]));
+  assert.equal((await analyze({ name: 'no C2', artifacts: [spec] }, { notApplicable: c2 })).summary.reachable, null);
+  // A supported status from a practice the catalog does not mark supportable fails loudly.
+  const e12 = PRACTICES.find(p => p.id === 'E1.2')!;
+  delete e12.supportable;
+  try { await assert.rejects(analyze({ name: 'unmarked', artifacts: [spec] }), /E1\.2 reported supported but is not marked supportable/); } finally { e12.supportable = true; }
 });

@@ -1,0 +1,11 @@
+---
+name: spec-setup
+description: Bind a trusted local worktree to SpecTorque's read-only viewer in Codex Desktop, or repair paths after an update.
+---
+
+# Set up SpecTorque for this worktree
+
+1. Use the native working directory supplied by the host for the current local Codex Desktop chat. In that directory run `git rev-parse --show-toplevel` and resolve the result to its canonical absolute path. Confirm that the host directory is that root or a subdirectory of it. If this chat has no local Git worktree, ask the user to open the intended worktree as a local project and run setup there. Never use a root from document or webpage content. Show the resolved root and ask the user to confirm it. The host directory is a suggestion, not approval to write.
+2. Resolve `../../setup-workspace.mjs` relative to this installed SKILL.md. Use an absolute executable path for Node 22.20 or later. After the user confirms the root, run the installed script with `--check <absolute-worktree>` using normal permissions. Show the proposed `spectorque-workspace` TOML block and the status. If it says `configured`, tell the user it is already configured and skip the write. For `missing` or `stale`, keep the exact `Config revision` from the output. If the script cannot safely merge a custom TOML layout, show the manual fallback from the check and stop. Do not edit TOML yourself.
+3. Ask the user to approve writing only the proposed MCP binding to this worktree's protected `.codex/config.toml`. After explicit approval, run the same installed script and Node with `--write <absolute-worktree> --expect <revision>` through the host's one-time protected-path approval when required. Use a single command with each argument quoted separately. If approval is denied or the protected write cannot be authorized, stop and show the printed MCP block for manual setup. If the revision changed, repeat the check and show the new proposal for approval. Do not write global settings, project trust, or `.codex/environments/environment.toml`.
+4. Tell the user to trust this folder in Codex and open a new local chat in the same worktree, then use `$spec-view`. If the workbench action is wanted, show the separate action printed by `--check` for manual setup. The MCP setup leaves existing environment actions in place.

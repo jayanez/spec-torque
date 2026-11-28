@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "selectedAt": "2026-11-27",
+  "purpose": "Fresh H52c-a confirmation set (scenario steps with a modal, retry, #52). Frozen before any file content was read and before the candidate was rebuilt.",
+  "rule": "GitHub code search (REST API) for the four pre-registered H52c-a queries, search order, up to 4 repositories per query; public, non-fork, not archived, MIT or Apache-2.0; every repository and owner in the earlier fixtures/precision/*-sources.json files (H52, H52b and H52c included), every one of the 137 earlier roots, and the pilot repository owner, excluded; one repository per owner; pinned to the default-branch head SHA.",
+  "unfilled": [],
+  "sources": [
+    {
+      "family": "spec",
+      "repository": "github.com/atman-33/openspec-for-copilot",
+      "commit": "e2c933e567199de8b42feea7314a530af8f98a9a",
+      "license": "MIT",
+      "query": "\"THEN the system SHOULD\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/Litash/moomoo-api-mcp",
+      "commit": "18a91eb954bd4095bf9971fb80c9ddf81e7f7793",
+      "license": "Apache-2.0",
+      "query": "\"THEN the system SHOULD\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/ValorVie/custom-skills",
+      "commit": "6f2922324af2766083d4f776d25b0c7c6e16d531",
+      "license": "MIT",
+      "query": "\"THEN the system SHOULD\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/melpomenex/Plethora",
+      "commit": "a03e5c4b791e329c590f4fbe3e4794fca9025ae0",
+      "license": "Apache-2.0",
+      "query": "\"THEN the system SHOULD\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/compose-spec/compose-spec",
+      "commit": "6b3a2a93e77c30ded1aa8264307e74d1208a6eae",
+      "license": "Apache-2.0",
+      "query": "\"WHEN\" \"MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/cloudfoundry/servicebroker",
+      "commit": "60e1e77662d374a5fcd79eb74c2fa3151e62731f",
+      "license": "Apache-2.0",
+      "query": "\"WHEN\" \"MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/itsHabib/repair-loop-kernel",
+      "commit": "28c9abb3394b5b09716b7731e1f6687bc18bbc42",
+      "license": "MIT",
+      "query": "\"WHEN\" \"MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/geekplux/markvis",
+      "commit": "fd13ec9d6bda8b1d0aedd985550e9bc355c1c585",
+      "license": "MIT",
+      "query": "\"WHEN\" \"MUST\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/AO-HyS/development-system",
+      "commit": "1bc108c2624006d378a492b1842c0fc1ca989f4c",
+      "license": "MIT",
+      "query": "\"CUANDO\" \"DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/cortega26/chile-hub",
+      "commit": "71804d57b6edf0f28566060665cb41be8d7dbcdb",
+      "license": "MIT",
+      "query": "\"CUANDO\" \"DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/rarroy2/floatbeat",
+      "commit": "0bac581c680f4d1b2c6dc2d9cc0190f09e3f51ad",
+      "license": "MIT",
+      "query": "\"CUANDO\" \"DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/MauricioPerera/hybrid-context-contract",
+      "commit": "1c6bd494c9c963de1e9361edadf4f42bc7346916",
+      "license": "MIT",
+      "query": "\"CUANDO\" \"DEBE\" filename:spec.md"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/MehmetGoekce/llm-wiki",
+      "commit": "404cc32d588a0219a6c5bfb37749b5c388788238",
+      "license": "MIT",
+      "query": "\"THEN\" \"SHALL\" path:openspec"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/CharlesHoskinson/anthropies",
+      "commit": "6b60854935f3b15e08f4499709d9f995238caa6c",
+      "license": "Apache-2.0",
+      "query": "\"THEN\" \"SHALL\" path:openspec"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/schamane/node-syslog",
+      "commit": "bd34193f25434ed8cf9430331595ed808084ded4",
+      "license": "MIT",
+      "query": "\"THEN\" \"SHALL\" path:openspec"
+    },
+    {
+      "family": "spec",
+      "repository": "github.com/mipmip/inkscape-cloud-architect",
+      "commit": "e9c7039799f8ec845ff2c19dbf59f0761b8e112c",
+      "license": "MIT",
+      "query": "\"THEN\" \"SHALL\" path:openspec"
+    }
+  ]
+}

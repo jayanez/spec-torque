@@ -19,22 +19,36 @@ server.registerResource('SpecTorque viewer', uri, { mimeType }, async () => ({
   }],
 }));
 
+// The scope asked for when the viewer was opened; the viewer's first assessment uses it.
+let requested: { feature: string | null; changed: boolean; base?: string } = { feature: null, changed: false };
+
 server.registerTool('open_spectorque', {
-  description: 'Open the SpecTorque viewer for the configured local worktree.',
+  description: 'Open the SpecTorque viewer for the configured local worktree. Optionally open it on one feature (for example specs/001-booking) or on the features changed on the current branch.',
+  inputSchema: z.object({
+    feature: z.string().max(4096).optional(),
+    changed: z.boolean().optional(),
+    base: z.string().max(200).optional(),
+  }),
   annotations,
   _meta: { ui: { resourceUri: uri }, 'openai/ui': { entrypoints: [{ type: 'thread' }] } },
-}, async () => ({ content: [{ type: 'text', text: 'SpecTorque viewer opened.' }] }));
+}, async ({ feature, changed, base }) => {
+  requested = { feature: feature ?? null, changed: Boolean(changed), ...(base ? { base } : {}) };
+  return { content: [{ type: 'text', text: 'SpecTorque viewer opened.' }] };
+});
 
 server.registerTool('assess_worktree', {
   description: 'Load a local assessment into the SpecTorque viewer.',
-  inputSchema: z.object({ feature: z.string().max(4096).nullable() }),
+  inputSchema: z.object({ feature: z.string().max(4096).nullable(), initial: z.boolean().optional(), changed: z.boolean().optional() }),
   annotations,
   _meta: { ui: { visibility: ['app'] } },
-}, async ({ feature }) => {
+}, async ({ feature, initial, changed }) => {
   try {
+    const assessmentView = initial
+      ? await workspace.assess(requested.feature, { changed: requested.changed, base: requested.base })
+      : await workspace.assess(feature, { changed: Boolean(changed), base: changed ? requested.base : undefined });
     return {
-      content: [{ type: 'text', text: 'Local assessment available in the viewer.' }],
-      _meta: { assessmentView: await workspace.assess(feature) },
+      content: [{ type: 'text', text: assessmentView.assessment ? 'Local assessment available in the viewer.' : 'Choose a feature in the viewer.' }],
+      _meta: { assessmentView: { ...assessmentView, changed: initial ? requested.changed : Boolean(changed) } },
     };
   } catch {
     return { isError: true, content: [{ type: 'text', text: 'The requested scope could not be assessed.' }] };

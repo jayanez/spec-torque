@@ -1,6 +1,6 @@
 # Compatibility and observed qualification
 
-The [published preview](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0) is 0.1.0. The table records observed host behavior, primarily from the November 18 and 19 qualification. Model turns for MCP/skill use and Desktop opening are documented in the host runbooks.
+The current release is the [0.3.0 prerelease](releases.md); earlier previews are [0.2.0](https://github.com/jayanez/spec-torque/releases/tag/v0.2.0) and [0.1.0](https://github.com/jayanez/spec-torque/releases/tag/v0.1.0). Each row records observed host behavior for the version it names, primarily from the November 18 to 20 qualification; a marketplace listing is not a qualification. Rows for 0.3.0 are added as the installed packages are observed. Model turns for MCP/skill use and Desktop opening are documented in the host runbooks.
 
 | Surface | Version observed | Observed evidence | Remaining qualification |
 |---|---|---|---|
@@ -22,12 +22,40 @@ The [post-merge run for PR #40](https://github.com/jayanez/spec-torque/actions/r
 
 The [pilot runbook](pilot-operations.md) tracks participant and release acceptance. Safari with VoiceOver, the wider VS Code workflow and Windows Desktop variants retain the limits in the table.
 
+## 0.3.0 package checks (local, macOS 27.2 arm64, Node 22.20.0)
+
+Observed on 2026-11-26 against the uncommitted 0.3.0 working tree, before publication. They exercise package shape and catalog parsing, not installation from the public registries, and do not extend the qualification rows above.
+
+| Check | Result |
+|---|---|
+| `npm run pack:hosts` | Five npm tarballs packed and their entry points verified from a clean extraction. The root tarball no longer bundles host integrations. |
+| Claude Code 2.1.311 | `SPECTORQUE_CLAUDE_ISOLATED=1 npm run qualify:claude` on `spectorque-claude-0.3.0.zip`: 21 of 21 cases pass in EN/ES, including install and removal through the committed catalog (source rewritten to the archive) at project scope. In the operator's own profile the removal case fails only because a separately installed SpecTorque plugin still answers `/spectorque`. `claude plugin validate .` and `claude plugin validate --profile directory integrations/claude` pass (the second reports advisory notes on two gating hooks without `.catch`). `claude plugin test integrations/claude`: 12 of 12 pass. The pane rendered 0.3.0 with `--plugin-dir integrations/claude`. |
+| Codex CLI 0.170.0 | With an isolated `CODEX_HOME`, the committed catalog with its source pointed at the extracted `spectorque-codex` tarball installed `spectorque@spectorque` 0.3.0. The unchanged catalog parsed its `npm` source and failed to install only because the package is not yet published. `npm run verify:codex-package` passed. |
+| OpenCode 2.1.4 | `npm run qualify:opencode` on `spectorque-opencode-0.3.0.zip` (darwin-arm64) passes in EN/ES. The extracted `opencode-spectorque` tarball, listed in `cli.json`, opened the native panel in an active session. `opencode plugin add` accepts only registry or git specifiers, so the published package cannot be tried before release. |
+| Pi 1.5.2 | `npm run qualify:pi -- <pi 1.5.2> --installed-archive spectorque-pi-0.3.0.zip --terminal-driver <node-pty>` passes: discovery, trust controls, text and JSON reports, RPC scopes and the EN/ES terminal walkthrough with JSON/ZIP handoff. |
+| Pi 1.6.1 | The same qualifier stops at the headless text report: with no model configured, Pi 1.6.1 writes a "No models available" warning to stderr, which the check requires to be empty. The SpecTorque report itself is unchanged. `pi install` of the extracted `pi-spectorque` tarball (`--local`) loaded the extension and the three skills; `/spectorque` showed the widget and finding picker offline. |
+| VS Code 1.147.0 | The VSIX built by `@vscode/vsce` 4.1.1 installed in an isolated extension host and passed `npm run test:vscode`. |
+
+## 0.3.0 installs from the public registries (macOS 27.2 arm64, Node 22.20.0)
+
+Observed on 2026-11-26 after release [v0.3.0](https://github.com/jayanez/spec-torque/releases/tag/v0.3.0), each in an isolated profile. They confirm that the published packages and catalogs install; they do not repeat the qualification runs above.
+
+| Route | Result |
+|---|---|
+| Claude Code 2.1.311 | With an isolated `CLAUDE_CONFIG_DIR`, `claude plugin marketplace add jayanez/spec-torque` and `claude plugin install spectorque@spectorque` installed `spectorque@spectorque` 0.3.0, enabled. |
+| Codex CLI 0.170.0 | With an isolated `CODEX_HOME`, `codex plugin marketplace add jayanez/spec-torque` and `codex plugin add spectorque@spectorque` installed 0.3.0 from npm with its runtime (`server.mjs`, `viewer.html`, `workbench.mjs`), skills and web assets. |
+| Pi 1.5.2 | `pi install npm:pi-spectorque@0.3.0 --local` in a scratch git project installed the package and recorded it in `.pi/settings.json`. |
+| npm CLI and MCP | `npx -y spectorque@0.3.0 --help` reports SpecTorque 0.3.0; `npx -y spectorque@0.3.0 mcp` answers `initialize` as server `spectorque` 0.3.0. |
+| Listings | npm: five packages at 0.3.0 (`next`, and `latest` as first versions). VS Code Marketplace: `jayanez.spectorque` 0.3.0 pre-release. MCP Registry: `io.github.jayanez/spectorque` 0.3.0. Open VSX: not published, namespace claim pending. |
+
+OpenCode was not reinstalled from npm in this pass.
+
 ## Detected layout hints
 
 | Family | Main hint | Caveat |
 |---|---|---|
-| Spec Kit | `.specify/`, `specs/<feature>/` | A generic `specs/` directory is not proof of framework ownership. |
-| Spec Kitty | `kitty-specs/<mission>/`, `.kittify/` or explicit header marker | Markdown work packages are grouped by mission. YAML manifests are outside this input path. |
+| Spec Kit | `.specify/`, `specs/<feature>/` | A generic `specs/` directory is not proof of framework ownership. Installed templates (`.specify/templates/`, preset and extension `templates/`) are not discovered. |
+| Spec Kitty | `kitty-specs/<mission>/`, `.kittify/` or explicit header marker | Markdown work packages are grouped by mission. YAML manifests are outside this input path. Installed templates (`.kittify/templates/`, mission and override `templates/` and `command-templates/`) are not discovered. |
 | OpenSpec | `openspec/` and change folders | Change proposals are discovered as context. Dated archives have distinct feature IDs and stay outside active analysis. |
 | Kiro | `.kiro/specs/<feature>/` | Requirement, design and task basenames determine roles. |
 | BMAD | `_bmad/`, `_bmad-output/` | Complex cross-folder story grouping needs explicit selection. |

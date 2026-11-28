@@ -1,0 +1,618 @@
+{
+  "version": 1,
+  "description": "H104 synthetic twins (#104): role nouns in actor position for P2.1 and C1.1. Constructed before the H104 candidate from the frozen policy; not independent labels. The candidate and its test (tests/actors.test.ts) were reverted after gate 4; the twins remain as the pre-registration record and run with scripts/precision/verification.ts.",
+  "cases": [
+    {
+      "id": "issue-example-en",
+      "construct": "scenario-subject",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "Help maintainers publish a release note.",
+          "",
+          "### Draft note",
+          "",
+          "- Given the developer requests a release,",
+          "- when the release note is drafted,",
+          "- then the note lists every merged change.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "The issue's example with one admitted requirement (H104-1): a role subject after Given + determiner."
+    },
+    {
+      "id": "operator-precedence-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "Operator precedence follows the C convention.",
+          "",
+          "- When the operator precedence is ambiguous, parentheses decide.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The parser MUST reject an unbalanced expression."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: the role noun modifies a noun; no verb follows it."
+    },
+    {
+      "id": "issue-example-es",
+      "construct": "scenario-subject",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Ayudar a las mantenedoras a publicar una nota de versión.",
+          "",
+          "### Redactar la nota",
+          "",
+          "- Dado que el desarrollador solicita una versión,",
+          "- cuando se redacta la nota,",
+          "- entonces la nota lista cada cambio fusionado.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Spanish twin of the issue example: el + role + verb in -a after Dado que."
+    },
+    {
+      "id": "operador-logico-es",
+      "construct": "non-actor",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "La precedencia del operador sigue la convención de C.",
+          "",
+          "- Cuando el operador lógico es ambiguo, deciden los paréntesis.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El analizador DEBE rechazar una expresión desequilibrada."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: \"del\" is not a listed determiner, and \"lógico\" is not a verb."
+    },
+    {
+      "id": "when-operator-approves-en",
+      "construct": "scenario-subject",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "- When the operator approves the release, the note is published.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Role subject in a When scenario line."
+    },
+    {
+      "id": "operator-status-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The operator status is shown on the dashboard.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: \"status\" ends in -us, so it is not a verb form (H85 rule)."
+    },
+    {
+      "id": "cuando-operador-aprueba-es",
+      "construct": "scenario-subject",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "- Cuando el operador aprueba la versión, se publica la nota.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Role subject in a Cuando scenario line."
+    },
+    {
+      "id": "operador-modificador-es",
+      "construct": "non-actor",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "El operador lógico se evalúa de izquierda a derecha.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: an adjective in -o follows the role noun."
+    },
+    {
+      "id": "user-story-en",
+      "construct": "user-story",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "As a maintainer, I want a drafted note so that releases are faster.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "User story form."
+    },
+    {
+      "id": "as-a-result-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "As a result, the cache is rebuilt after each release.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: \"As a\" without the \", I want\" clause."
+    },
+    {
+      "id": "historia-es",
+      "construct": "user-story",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Como mantenedora, quiero una nota redactada para publicar antes.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Spanish user story form."
+    },
+    {
+      "id": "como-resultado-es",
+      "construct": "non-actor",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Como resultado, la caché se reconstruye tras cada versión.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: \"Como\" without a quiero/necesito clause."
+    },
+    {
+      "id": "bare-plural-en",
+      "construct": "clause-start",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "Maintainers can draft a note before the release.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Bare plural role first on the line, followed by a modal."
+    },
+    {
+      "id": "owner-hyphen-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The owner-approved plan is attached.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: a hyphen joins the role noun to the next word."
+    },
+    {
+      "id": "revisores-pueden-es",
+      "construct": "scope",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Los revisores pueden aprobar la nota.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104-3: \"pueden\" is a normative modal, so the line is a requirement and outside the cue (unchanged)."
+    },
+    {
+      "id": "revisores-es",
+      "construct": "clause-start",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Los revisores aprueban la nota.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "H104-3: plural role after a determiner, followed by a verb in -an."
+    },
+    {
+      "id": "campo-propietario-es",
+      "construct": "non-actor",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "El campo propietario se muestra en la tabla.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: the role noun follows a noun, not a determiner."
+    },
+    {
+      "id": "operator-possessive-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The operator's token expires after a day.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Twin: an apostrophe joins the role noun to the next word."
+    },
+    {
+      "id": "requirement-only-en",
+      "construct": "scope",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The operator MUST approve the release."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "The role subject is on a requirement line only; requirement lines do not carry the cue (unchanged)."
+    },
+    {
+      "id": "requirement-only-es",
+      "construct": "scope",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: El operador DEBE aprobar la versión."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Spanish: the role subject is on a requirement line only."
+    },
+    {
+      "id": "heading-only-en",
+      "construct": "scope",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "### The operator approves releases",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "The role subject is on a heading only; headings do not carry the cue (unchanged)."
+    },
+    {
+      "id": "heading-only-es",
+      "construct": "scope",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "### El operador aprueba versiones",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "Spanish: the role subject is on a heading only."
+    },
+    {
+      "id": "generic-control-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The user drafts a note.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Control: the 0.1.16 cue, partial in both engines."
+    },
+    {
+      "id": "generic-control-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "El usuario redacta una nota.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "partial",
+        "C1.1": "partial"
+      },
+      "note": "Spanish control: the 0.1.16 cue, partial in both engines."
+    },
+    {
+      "id": "as-preposition-en",
+      "construct": "non-actor",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Release notes",
+          "",
+          "## Purpose and scope",
+          "",
+          "The owner as a concept is defined in the glossary.",
+          "",
+          "## Requirements",
+          "",
+          "- REQ-001: The release note MUST list every merged change."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104-2 twin: \"as\" after a role noun is a preposition, not a verb form."
+    },
+    {
+      "id": "preposicion-es",
+      "construct": "non-actor",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Notas de versión",
+          "",
+          "## Propósito y alcance",
+          "",
+          "Ayudar a las mantenedoras a publicar una nota de versión.",
+          "",
+          "## Requisitos",
+          "",
+          "- REQ-001: La nota de versión DEBE listar cada cambio fusionado."
+        ]
+      },
+      "expected": {
+        "P2.1": "missing",
+        "C1.1": "missing"
+      },
+      "note": "H104-2 twin: the preposition \"a\" after a role noun is not a verb."
+    }
+  ]
+}

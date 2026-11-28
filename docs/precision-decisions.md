@@ -631,3 +631,1240 @@ node --import tsx scripts/precision/audit-denominators.ts --fixture <f.jsonl> --
 The public roots file lists repositories and pinned SHAs. The external inventory's
 non-MIT and unconfirmed-license sources were scanned only as restricted, so none of
 their text was stored. None of their text is copied into the corpus.
+
+### H3: requirement definitions in defining positions — **iterate (owner decision)**
+
+Tracking: [#83](https://github.com/jayanez/spec-torque/issues/83).
+- Pre-registered at `7eeefa0`.
+- The sources (8 repositories, `"### REQ-001"` and `"**REQ-001"` queries) and the
+  synthetic twins were frozen at `31f16af`.
+- The twin for mentions was amended at `57f87ac`, before the candidate existed,
+  because it contradicted the frozen policy.
+- Candidate: `6a33bee`, engine 0.1.8.
+
+| Gate | Result |
+|---|---|
+| 1. Synthetic twins (14 EN/ES) and existing minimal pairs | holds: 14 of 14 (0.1.4 meets 8), and no admission, E1.4 or E1.2 change in the minimal pairs |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh set review | **fails on added findings** |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** The candidate was compared with 0.1.4 across 1,369 Spec Kit features
+in 8 roots, 4 of which contribute changes. It:
+- removes 2,227 I1.2/I2.3 findings: 1,086 missing identifiers, 994 duplicates and
+  147 unresolved references;
+- adds 431 duplicates.
+
+**Gate 3, added findings.** Provisional review of 100 added findings, seed 42039:
+- 75 are traceability table rows whose first cell restates an ID already defined
+  by a heading (`| REQ-005 | T4 | S6 | INV-005 |`);
+- 10 are dotted sub-requirements (`- REQ-2.1: …`) read as their parent `REQ-2`;
+- 15 are other cases: prose lines that begin with a cited ID, and a few real
+  restatements.
+
+Most added findings are therefore false. **Removed findings**, provisional review
+of 100: they are predominantly mentions that were counted as duplicates and body
+lines under a defining heading. No lost true problem was identified, but the full
+labelled review was not completed because gate 3 had already failed.
+
+**Decision.** The candidate stays on its branch, unmerged. The failing
+constructions are first-cell table IDs and dotted sub-IDs. The owner decides
+between:
+- **H3a**: exclude table cells from defining positions, and stop an ID at a
+  following `.digit`. Pre-register it, freeze new twins and select a fresh set
+  before the candidate.
+- stopping H3.
+
+### H3a: no table-cell definitions, dotted IDs end before `.digit` — **stop; best candidate to adjudication (owner decision)**
+
+- Pre-registered at `0903db2`.
+- The sources (8 repositories, `"### FR-001"` and `"| REQ-001 |"` queries) and 20
+  twins were frozen at `5244317`.
+- Candidate: `7a476d1`, engine 0.1.9.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (20 EN/ES) and existing minimal pairs | holds: 20 of 20 (0.1.4 meets 8, H3 meets 14), and no admission, E1.4 or E1.2 change |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh set and H3 development set | **fails on added findings** |
+| 4. Evidence | holds |
+
+**Fresh set.** 192 features in 8 roots: 204 findings are removed and 12 added.
+- Removed: 192 duplicates, 10 missing identifiers and 2 unresolved references.
+  Provisional review of a sample of 100 (seed 42039): the removed duplicates are
+  mid-line mentions, checklist citations and repeated mentions of an ID already
+  defined in a list or table. No lost true problem was identified.
+- Added: all 12 duplicates are restatements, not real duplicates. There are two
+  kinds:
+  - a hard-wrapped continuation line that starts with the ID (`   FR-010.`);
+  - a list item that restates the ID in another spec-role document of the
+    feature (`requirements.md` traceability lists, `spec-compact.md`, PR
+    descriptions classified as spec).
+
+**H3 development set.** 1,369 features: 2,487 findings removed and 81 added, down
+from 431 added under H3. The added findings fall into the same two kinds.
+
+**Pilot repository (development data, all 83 features).** 975 of 1,269 I1.2/I2.3
+findings are removed: 777 unresolved references, 141 duplicates and 57 missing
+identifiers. 10 duplicates are added.
+
+**Decision.** Stop under the H3a stop rule. There is no H3b. H3a is the best
+candidate. It goes to independent adjudication under
+[precision adjudication](precision-adjudication.md), with these known limits:
+- an ID restated as the first token of a list item, or of a wrapped line, in
+  another spec-role document or later in the same one is counted as a second
+  definition;
+- spec-role classification of summary documents (compact specs, validation
+  reports, PR descriptions) is unchanged and outside H3.
+
+The owner decides on the product change after adjudication.
+
+### H3a adjudication — **holds; proposed for merge with known limits**
+
+The owner fixed the threshold on 2026-11-25 (`caba058`), before labeling: at most
+2 of 100 sampled removed findings may be agreed true problems.
+
+The packet was built at `156e895` from the H3a fresh-set scan: 100 removed
+findings (seed 42039) and all 12 added ones, shuffled. Two independent agent
+sessions labeled it separately. Neither saw engine output, the key, the code or
+the other's labels.
+
+| Direction | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Removed (100) | 100 | 0 | 0 | 0 |
+| Added (12) | 12 | 0 | 0 | 0 |
+
+- **Removed:** 0 of 100 are true problems, within the threshold. Reviewers
+  described the removed duplicates as the only definition of the ID, or as lines
+  that cite, restate or trace it: wrapped continuations, checklist ranges,
+  traceability cells, assumptions, plan steps and test descriptions. The 4
+  missing-identifier items sit under an enclosing ID heading; one of them rests
+  on an inference beyond the context window. The single unresolved reference has
+  a visible heading definition.
+- **Added:** all 12 are false duplicates, which confirms the known limit.
+
+**Limits of this adjudication.**
+- Both reviewers are sessions of the same model family; calibrating an
+  alternative second reviewer is tracked in #65.
+- The packet shows three lines of context and at most 8 same-ID occurrences.
+
+**Decision.** Propose H3a (engine 0.1.9) for merge. The known limits are recorded
+in the H3a entry above. The owner decides at review.
+
+### H5: hard-wrapped continuations join their item or paragraph — **holds; proposed for merge pending adjudication**
+
+Tracking: [#78](https://github.com/jayanez/spec-torque/issues/78).
+- Pre-registered at `62afcea`.
+- The sources (8 repositories, `"- **FR-001"` and `"- REQ-001"` queries) and 16
+  EN/ES twins were frozen at `7a4eb6e`.
+- Candidate: `9336e2b`, engine 0.1.10. Comparator: 0.1.9 (`c3f79b0`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (16 EN/ES), H3a twins and existing minimal pairs | holds: 16 of 16 (0.1.9 meets 10, failing exactly the 6 target cases); H3a twins 20 of 20; no admission, E1.4 or E1.2 change in the minimal pairs |
+| 2. 716 historical predictions | holds: 0 changed, as predicted; artifact sets and unknown practices identical in all 36 cases |
+| 3. Fresh set review | holds provisionally: 0 added; 37 of 38 removed findings are not true problems, 1 uncertain |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** 167 Spec Kit features in 8 roots; changes in 13 features of 2 roots.
+The candidate removes 38 I1.2 findings (36 missing identifiers, 2 duplicates) and
+adds none. I2.3 findings do not change. One feature changes I1.2/I2.2 status.
+
+**Gate 3, provisional review of all 38 removed findings** (this session, not
+independent labels):
+- 24 are wrapped continuation lines of a list item or paragraph that defines an ID
+  (`- **FR-003**: … MUST be bounded, and` / `  the bound MUST be configurable …`),
+  including one Spanish item.
+- 2 duplicates are continuation lines that start by citing an ID
+  (`  FR-015 holds in eight of ten discovery paths.`).
+- 10 are wrapped lines of notes, open questions, clarifications or "Never" lists that
+  cite the governing ID (`(FR-009)`, `(NFR-001)`), and 1 is a design note that "mechanically satisfies
+  FR-006". They restate or explain a requirement; none states a new one.
+- 1 is uncertain: a two-line paragraph whose first line states a rule
+  (`The LLM response must be a valid SKILL.md.`) and whose second line cites
+  `(see FR-006)`. A single-line version is identified under 0.1.9 too, because any
+  ID on a line counts.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 40 of 304 I1.2/I2.3 findings are removed: 35 missing identifiers and 5
+duplicates. None is added, and 5 features change I1.2/I2.2 status. The remaining
+I1.2 missing-identifier findings are, by structure: 93 continuation lines of items
+or paragraphs that carry no ID anywhere, 76 lines after a blank line, 36 list items
+of their own and 6 table rows. 11 duplicates remain, none on an indented line.
+
+**Known limits.**
+- An ID cited anywhere in an item or paragraph identifies all its lines, as a
+  mid-line mention already identifies its own line in 0.1.9.
+- An unindented line that starts with an ID is still a definition, so a wrapped
+  paragraph line such as `REQ-001 episodes already written.` without indentation
+  still counts as a duplicate. This keeps one-requirement-per-line paragraphs.
+- Other line-local rules are unchanged: a continuation that starts with a pronoun
+  (`  that …`) can still get E1.3, and E1.2/E2.1 still read one physical line.
+
+**Decision.** Propose H5 (engine 0.1.10) for merge after independent adjudication
+of the removed findings. The owner fixes the threshold before labeling; the H3a
+packet builder (`scripts/precision/definitions-packet.ts`) applies unchanged to
+the H5 scan.
+
+
+### H5 adjudication — **fails the threshold; continued as H5a (owner decision)**
+
+The owner fixed the threshold on 2026-11-25 (`8131ae9`), before labeling: at most 2
+of the 38 removed findings may be agreed true problems. Two independent agent
+sessions labeled the full packet separately, without engine output, the key, the
+provisional review or each other's labels.
+
+| Removed (38) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 31 | 3 | 4 | 0 |
+
+Cohen's kappa 0.55.
+
+- **Agreed positive (3), over the threshold.** Each is a prose paragraph or item
+  that states its own rule, where the only ID in the unit is a citation:
+  `The LLM response must be a valid SKILL.md. … (see FR-006)`; a design paragraph
+  that "satisfies FR-006"; a conditional rule beside `(NFR-001)`. H5 counts the
+  unit as identified because any ID in it counts.
+- **Disputed (4).** Items of "Never" lists or notes that end with a trace tag
+  (`(FR-009)`, `(FR-014)`, `(FR-020)`, "per FR-005"). One reviewer read the tag as
+  the item's identifier; the other read it as a cross-reference.
+- The 31 agreed negatives are continuations of items or paragraphs led by a
+  defining ID, and the 2 duplicates.
+
+**Failing construction.** Unit identification by a cited ID. All 7 positive or
+disputed items fall in it, and none of the 31 agreed negatives depends on it.
+
+**Decision.** The owner chose a narrowed H5a (a unit
+counts as identified only when its first line has a defining ID, so citations no
+longer identify wrapped lines), pre-registered as H5a below.
+
+### H5a: only a unit's defining first line identifies its continuations — **holds; proposed for merge**
+
+- Pre-registered at `4eb3108`, after the H5 adjudication failed.
+- The sources (4 repositories, `"**NFR-001**"` query; `"- **REQ-001**"` had no
+  eligible repository) and 22 EN/ES twins were frozen at `816fcf7`.
+- Candidate: `81ed209`, engine 0.1.11 (0.1.10 is H6). Comparators: 0.1.9 (`c3f79b0`)
+  and H5 (`9336e2b`).
+- **Version at merge.** H5a lands before H6, so it ships as engine 0.1.10 (merged with
+  `develop` after #95, product 0.2.3). The rules are those of `81ed209`; only the
+  version string changes.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (22 EN/ES), H3a twins, minimal pairs | holds: 22 of 22 (0.1.9 meets 14, H5 meets 18, failing exactly the 4 cited-ID twins); H3a 20 of 20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. H5 development set | holds: all 7 adjudicated positive or disputed findings are kept. Relative to H5, 12 findings come back: those 7 and 5 the H5 reviewers agreed were false (notes and open questions that cite an ID) |
+| 4. Fresh set and adjudication | holds: 0 findings added; 0 of 27 removed findings agreed true problems (threshold 2) |
+| 5. Evidence | holds |
+
+**H5 development set against 0.1.9.** 167 features: 26 findings removed (24
+continuations of items led by a defining ID, and 2 duplicates), none added.
+
+**Fresh set.** 109 Spec Kit features in 4 roots. 27 I1.2 missing-identifier
+findings are removed, and none is added.
+
+**Adjudication.** The threshold (at most 2 of 27 agreed positive) was confirmed
+by the owner before labeling (`106c986`). The two H5 reviewer sessions labeled the
+packet separately; having labeled the H5 packet before is a limit.
+
+| Removed (27) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 26 | 0 | 0 | 1 |
+
+Cohen's kappa 1.00. Both reviewers marked one item `unknown`, because the wrapped
+item's first line lay outside the six-line context. In the pinned source that line
+is `- **FR-018**: Any authenticated user MUST …`, seven lines above. It is not a
+true problem, and the threshold holds either way.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 34 of 304 I1.2/I2.3 findings are removed: 29 missing identifiers and 5
+duplicates. None is added, and 5 features change I1.2/I2.2 status. H5 removed 40;
+the 6 it no longer removes are units identified only by a cited ID.
+
+**Known limits.**
+- An unindented line led by an ID still starts its own requirement, so a wrapped
+  paragraph line such as `REQ-001 episodes already written.` still counts as a
+  duplicate.
+- A wrapped item that cites its governing ID only in a trace tag is still reported
+  as lacking an identifier. That is deliberate: such items were disputed.
+- Other line-local rules (E1.2, E1.3, E2.1) still read one physical line.
+
+**Decision.** Propose H5a (engine 0.1.10 at merge) for merge.
+
+### H6: acceptance scenarios, validation tables and Spec Kit quickstart — **holds provisionally; E3.2 unconfirmed; proposed for merge pending adjudication**
+
+Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
+- Pre-registered at `20d9a85`.
+- The sources (5 repositories: `"SC-001: Given"` in `spec.md` filled 1 of 4,
+  `"python3 -m pytest"` in `quickstart.md` filled 4), 16 EN/ES twins and the replay
+  (`scripts/precision/verification.ts`) were frozen at `ec1fcca`.
+- Candidate: `2cda71c`, engine 0.1.10. Comparator: 0.1.9 (`develop`, `c3f79b0`).
+- **Version at merge.** H5a merged first as engine 0.1.10 (#96), so H6 ships as
+  engine 0.1.11 with product 0.2.4. It was measured again against `develop` with
+  H5a; see the H6 adjudication entry.
+- **Rebase (owner decision, 2026-11-25, after both adjudications).** H6 was first
+  built on H5 (engine 0.1.11, comparator 0.1.10 at `13cfd0d`). H5 failed its
+  adjudication, so H6 was rebased onto `develop` unchanged except for the engine
+  version. Every measurement below was repeated against 0.1.9 and is identical to
+  the run against H5: the twins, the H3a twins, the minimal pairs, the 716
+  predictions, the fresh-set totals with the same changed features and E3.1
+  evidence lines, and the pilot totals. The H6 rules do not interact with H5's.
+
+The replay discovers with the work-tree rule (basename only), as local analysis
+does. GitHub import already matches every Markdown file under `specs/`, so it
+already read `quickstart.md`.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (16 EN/ES), H3a twins, minimal pairs | holds: 16 of 16 (0.1.9 meets 8, failing exactly the 8 target cases); H3a 20 of 20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical in all 36 cases |
+| 3. Fresh set | holds provisionally: nothing goes down; every new E3.1 and E3.4 evidence line is genuine; **no E3.2 change occurs, so the E3.2 rules are not confirmed on fresh data** |
+| 4. Evidence | holds: no evidence changes in the minimal pairs |
+
+**Fresh set.** 197 Spec Kit features in 5 roots; every change falls in one root
+(132 features), and 129 `quickstart.md` files are added as context artifacts.
+- Status: E3.1 `missing` → `partial` in 13 features, E3.4 in 2; no status and no
+  dimension score goes down; 8 dimension scores go up.
+- E3.1: all 13 first evidence lines are Spec Kit `**Acceptance Scenarios**:`
+  blocks with numbered Given/When/Then scenarios. E3.4: both are a
+  `## Definition of done` section of a `quickstart.md`.
+- E3.2: no change. The features that gained a quickstart already had E3.2 from
+  other documents, and no validation table row matched.
+- Added findings, all on `quickstart.md` lines: 15 E2.1, 5 E1.3 and 1 E1.2. They
+  are the line-local rules running on procedure text with a modal word
+  (`Both must return … and **must not** make any POST`, `This single assertion
+  *is* FR-039.`), the same kind they produce on any other context document. Most
+  are not useful findings.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** 57 `quickstart.md` files are added. E3.1 goes `missing` → `partial` in 59
+features and E3.2 in 16; nothing goes down; 37 dimension scores go up. Added
+findings: 5 E2.1 and fewer than 5 E1.3. After the candidate, E3.1 is `partial` in
+68 features and `missing` in 15; E3.2 is `partial` in 18 and `missing` in 65,
+including 47 that have a quickstart.
+
+**Unpredicted result.** #88 assumed that the pilot quickstarts run `python3 -m
+pytest`. A token count shows 1 of 57 does; 24 run `python3 -m unittest` and 43 run
+`python3 scripts/…`. Neither is in the E3.2 vocabulary, which H6 did not change, so
+the quickstart change moves E3.2 in far fewer pilot features than #88 expected. The
+vocabulary was not widened after the fact.
+
+**Known limits.**
+- Indexing `quickstart.md` lets line-local rules (E1.2, E1.3, E2.1) report on its
+  procedure text.
+- The identifier cell of the validation-table rule is case-insensitive, so a cell
+  such as `| utf-8 |` counts as an identifier when the row also names a test file.
+- A one-line Given/When/Then counts for E3.1 whatever its role in the text.
+
+**Decision.** Propose H6 (engine 0.1.10) for merge after independent adjudication
+of the new E3 evidence; the owner fixes the threshold before labeling. The owner
+also decides whether to pre-register an H6a for further runner vocabulary
+(`python3 -m unittest`, script runners), with a fresh set chosen for it.
+
+
+### H6 adjudication — **holds; proposed for merge with known limits**
+
+The owner fixed the threshold on 2026-11-25 (`e81fcec`), before labeling: at most 1
+of the 15 new evidence lines may be agreed not genuine or remain unknown. Two
+independent agent sessions labeled the packet separately. They saw no engine
+output, key, provisional review or each other's labels. The packet was built
+before the rebase; its evidence lines are identical against 0.1.9.
+
+| New evidence (15) | Agreed positive | Agreed negative | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 14 | 1 | 0 | 0 |
+
+Cohen's kappa 1.00.
+
+- Apart from one, the 13 E3.1 lines and 2 E3.4 lines are Spec Kit acceptance
+  scenario blocks and quickstart "Definition of done" sections.
+- The agreed negative is a spec-quality checklist item
+  (`- [x] Requirements and acceptance scenarios are testable.`) in a
+  `checklists/requirements.md` classified as spec. It names acceptance scenarios
+  without stating one. This is added to the H6 known limits.
+
+**Limits of this adjudication.** Both reviewers are sessions of the same model
+family (#65). E3.2 had no new evidence on the fresh set, so the validation-table and
+quickstart rules are not adjudicated on fresh data.
+
+**Decision.** Propose H6 (engine 0.1.11 at merge) for merge, within the threshold. H6a
+(runner vocabulary such as `python3 -m unittest`) follows, as decided.
+
+### H6a: quickstart as validation evidence only, plus test runners — **holds; proposed for merge**
+
+Tracking: [#88](https://github.com/jayanez/spec-torque/issues/88).
+- Pre-registered at `97da6ce` (owner decision after H6).
+- The sources (8 repositories, `"python3 -m unittest"` and `"go test ./..."` in
+  `quickstart.md`) and 12 EN/ES twins were frozen at `61b379f`.
+- Candidate: `7d56551`, engine 0.1.12, version 0.2.5. Comparator: 0.1.11 (`develop`,
+  `56d4fea`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (12 EN/ES), H6, H5a and H3a twins, minimal pairs | holds: 12 of 12 (0.1.11 meets 6, failing exactly the 6 target cases); H6 16/16, H5a 22/22, H3a 20/20; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. H6 fresh set | holds: 21 findings removed, all on `quickstart.md` lines and exactly those H6 had added (15 E2.1, 5 E1.3, 1 E1.2); none added; E3.4 returns to `missing` in the 2 features where a quickstart "Definition of done" was its only evidence, as predicted |
+| 4. H6a fresh set | nothing goes down; 3 quickstart E2.1 findings removed; E3.2 rises in 4 features. **Low power: only 5 Spec Kit features in the 8 roots, and all 4 gains come from one line** |
+| 5. Evidence | holds |
+
+**Fresh set.** Most repositories that a quickstart search finds are not Spec Kit
+projects, so the 8 roots hold only 5 Spec Kit features. The 4 E3.2 gains share one
+line, which every feature inherits from the root `CLAUDE.md`: `Run cross-validation
+tests with: go test -tags compare_mergo ./pkg/merge/... -run CompareMergo -v`. It is
+a real test command. No gain on the fresh set comes from a quickstart.
+
+**Pilot repository (development data, all 83 features, committed `HEAD`, counts
+only).** E3.2 goes `missing` → `partial` in 32 features, and nothing goes down.
+The 6 findings on quickstart lines (5 E2.1, fewer than 5 E1.3) are removed, and
+none is added. After the candidate, E3.2 is `partial` in 50 features and
+`missing` in 33 (16 of those have a quickstart).
+
+**Known limits.**
+- Generic script runs (`python3 scripts/…`) do not count, by design.
+- The runner vocabulary is substring-based, like the existing `pytest` and
+  `npm test` terms.
+- The runner terms reach every document role, not only the quickstart.
+
+**Second fresh set (amendment H6a-2).** 481 Spec Kit features in 8 roots:
+- E3.2 rises in 36 features.
+- 116 findings on `quickstart.md` lines are removed (111 E2.1, 4 E1.3, 1 E1.2), and
+  none is added. 3 open decisions written in quickstarts are no longer counted.
+- In 11 cases another practice drops to `missing` because a quickstart was its only
+  evidence (E3.3 2, P1.4 4, E1.1 1, P2.5 1, I1.3 3). That direction was predicted.
+  6 dimension scores go down as a result, which the pre-registration did not state
+  explicitly.
+
+**Adjudication.** The owner fixed the threshold before selection: at most 2 of up to
+30 lines agreed not genuine or unknown. The packet holds all 28 distinct new E3.2
+evidence lines. Two new blind agent sessions labeled it separately: 27 are agreed
+genuine and 1 is disputed. The disputed line is a checked task to rewrite named
+Ginkgo test files. One reviewer read it as an implementation task, the other as a
+test reference. Counted against the threshold, it still passes: 1 ≤ 2.
+
+**Decision.** Propose H6a (engine 0.1.12, version 0.2.5) for merge.
+
+### H8: plan-local `R-n` labels are not requirement references — **holds; proposed for merge**
+
+Tracking: [#80](https://github.com/jayanez/spec-torque/issues/80).
+- Pre-registered at `ce11cce`.
+- The sources (8 repositories: `"R-001" path:specs` in `plan.md` and `"R-1" path:specs`
+  in `tasks.md`) and 10 EN/ES twins were frozen at `067cc80`.
+- Candidate: `1a1f4a5`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12 (`develop`,
+  `3a888f0`).
+- The H3 replay script now also compares the I2.3, C1.3 and C2.3 statuses and lists
+  status-only changes in its detail file. A rerun of an earlier scan can therefore
+  report more status changes than the recorded totals; its findings are unchanged.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (10 EN/ES), H6a, H6, H5a and H3a twins, minimal pairs | holds: 10 of 10 (0.1.12 meets the 4 controls and fails exactly the 6 target cases); H6a 12/12, H6 16/16, H5a 22/22, H3a 20/20; minimal pairs 0 changed rows |
+| 2. 716 historical predictions | holds: 0 observations and 0 metric groups changed (`corpus:report -- --baseline origin/develop`) |
+| 3. Fresh set | holds: 557 findings removed, all I2.3 "Reference R-n has no definition" in features whose specification has no `R-n` token; none added; 11 status changes in 4 features, all `partial` → `missing` (I2.3 3, C1.3 4, C2.3 4) |
+| 4. Adjudication | holds: 0 of 100 removed findings agreed positive (threshold 2) |
+| 5. Evidence | holds: no evidence is added; removed traceability edges and findings only |
+
+**Fresh set.** 557 Spec Kit features in 8 roots. The 557 removed findings come from
+6 repositories, 53 features and 476 distinct lines, on `plan.md`, `tasks.md` and
+other plan- or tasks-role documents. Two repositories had none.
+
+**Adjudication.** The owner fixed the threshold before the packet was drawn
+(`1633d19`): at most 2 of 100 agreed positive, disputed items counted against it.
+The packet (`45319b9`) holds 100 of the 557 removed findings (seed 42039), with six
+lines of context and the label's occurrences across the feature's Markdown
+documents. Two new blind agent sessions labeled it separately.
+
+| Removed (100) | Agreed negative | Agreed positive | Disputed | Unknown |
+|---|---|---|---|---|
+| Count | 100 | 0 | 0 | 0 |
+
+Raw agreement is 100/100; Cohen's kappa is undefined because neither reviewer used a
+second label. The reviewers read the labels as research decisions (`R-1:` headings
+in `research.md` or the plan's Phase 0), the plan's own risk and test tables, and
+numbered steps. One reviewer gave templated reasons (14 distinct for 100 items);
+both reviewers are agent sessions of one model family, which is a limit.
+
+**Pilot repository (development data, 86 open features, work tree, counts only).**
+10 I2.3 findings are removed, all `R-n` labels in one feature's plan and tasks, and
+none is added. 10 traceability edges are removed. No practice status or dimension
+score changes.
+
+**Known limits.**
+- The family test is feature-wide, not per label. A specification that numbers its
+  risks or research items `R-1` makes every plan-local `R-n` label a reference
+  again, so those labels stay reported.
+- Any `R-n` token on a specification line counts, including fenced examples and
+  HTML comments. That keeps findings rather than hiding them.
+- A plan that cites an undefined `R-n` requirement while the specification uses only
+  `FR-` IDs is no longer reported. The fresh-set adjudication found no such case.
+- The P1.3 catalog pattern (`[A-Z]{1,8}-\d+` near a dependency word) still reads a
+  plan-local `R-n` as dependency-traceability evidence. P1.3 is outside the frozen
+  I2.3/C1.3/C2.3 scope.
+
+**Decision.** Propose H8 (engine 0.1.13, version 0.2.6) for merge.
+
+### H85: demonstrative determiners are not pronoun subjects (E1.3) — **holds; proposed for merge**
+
+Tracking: [#85](https://github.com/jayanez/spec-torque/issues/85).
+- Pre-registered at `f47a90c`. One hypothesis: the owner decided that E1.2 gets no
+  detection change, because suppressing quoted labels would remove the frozen
+  rehearsal case FR-091. The sources (8 repositories, `"This feature MUST"` and
+  `"This endpoint MUST"` in `specs/**/spec.md`) and 11 EN/ES twins were frozen at
+  `7f6b1ae`. Amendment H85-1 (contractions, prepositions; 2 more twins) at `8b1af54`,
+  before the candidate.
+- Candidate `7609678`, engine 0.1.13, version 0.2.6. Comparator 0.1.12 (`develop`,
+  `3a888f0`). H8 (#80) then merged first as engine 0.1.13, so H85 ships as engine
+  0.1.14, version 0.2.7, and every measurement below was repeated against `develop`
+  with H8 (`0738464`). The clarifier change is `ac40313`.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (13 EN/ES), H3a, H5a, H6, H6a and H8 twins, minimal pairs | holds: 13 of 13 (the comparator meets 10, failing exactly the 3 determiner targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12, H8 10/10; minimal pairs: 0 rows changed, 0 regressions |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Fresh set | holds: 387 Spec Kit features in 8 roots; 28 E1.3 findings removed (28 distinct lines, 4 repositories), all on lines that start with `this` or `that`; nothing added; no status, dimension, open decision or artifact set changes. The #39 replay over all 399 features agrees: E1.3 only, 42 unique removals, 0 admission or E1.2/E1.4 decision changes. Before Amendment H85-2: 51 findings, 29 distinct lines, 5 repositories |
+| 4. Evidence | holds: 0 invalid |
+
+**Adjudication.** The owner fixed the threshold before labeling: at most 2 of the 29
+items (the pre-H85-2 removals) may be agreed `positive` or remain disputed. Two independent blind agent
+sessions labeled every item `negative`: 0 agreed positives and 0 disputes. Raw
+agreement was 29/29. Kappa is undefined because every label was the same. 11 of the 29
+lines are wrapped continuation lines whose first word is not the sentence's subject.
+After Amendments H85-2 and H85-3 the 28 remaining removed lines are a subset of these items. H85-3 (`-n't` contractions) changed nothing on the fresh set or the pilot.
+
+**Pilot repository (development data, 32 open features, work tree, counts only).**
+E1.3 drops from 6 to 4. The 2 removed findings are the predicted "This *noun*" lines,
+none is added, and no status or dimension changes. The E1.2 finding stays, because
+its label is unquoted.
+
+**Clarifier (outside the gates).** `tests/rehearsal.test.ts` renders the frozen
+arms unchanged. New EN/ES tests cover:
+- a multi-word quoted or code-formatted label after a label noun gets `named-option`;
+- the unquoted form stays `unsupported`.
+
+**Known limits.**
+- Nouns that end in `-ly`, `-ed` or `-s` ("This reply", "This seed", "This alias")
+  are read as pronoun cues, so those lines keep their 0.1.12 finding.
+- Wrapped continuation lines that start with `it` or `that` + verb are still
+  flagged. They are a separate class: the first word of a continuation is not the
+  requirement's subject.
+- An unquoted domain label ("easily copied items") is still an E1.2 finding.
+  Quoting it after a label noun makes the clarifier abstain, but the finding remains.
+
+**Decision.** Propose H85 (engine 0.1.14, version 0.2.7) for merge.
+
+### H7: Spec Kit checklists as review context, not requirements text — **fails the redesigned gate 4; continued as H7a (decision rule)**
+
+Tracking: [#79](https://github.com/jayanez/spec-torque/issues/79).
+- Pre-registered at `1379afe`, with amendment H7-1 (search queries) at `0b2ccb8`.
+- The sources (8 repositories) and 20 EN/ES twins were frozen at `6d17479`.
+- Candidate: `b1bfdf8`, engine 0.1.13. Comparator: 0.1.12 (`develop`, `3a888f0`).
+- After gates 1–3, the owner asked for an adversarial review of the test. Amendment
+  H7-2 (`14df705`, owner-approved) replaced the document-level gate with
+  adjudication of the changes that move scores. It also fixed arm B (H7a) and the
+  decision rule before any packet was built.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (20 + 4 N1/N2 EN/ES), H6a, H6, H5a and H3a twins, minimal pairs | holds: 24 of 24 (0.1.12 meets 10, failing exactly the target cases); earlier sets and minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Fresh set 1 | holds in direction: every change is in a feature with a reclassified checklist; P2.1, C1.1 and I3.2 move although the pre-registration did not list them |
+| 4. Adjudication (H7-2) | **fails**: N1 and stratum 1b are agreed genuine evidence |
+
+**Fresh set 1.** 217 Spec Kit features in 8 roots. 118 change, and each has a
+reclassified checklist (119 files, all `spec` → `context`):
+- findings removed: 56 I1.2 duplicates whose other "definition" was a checklist
+  citation, 29 I1.2 missing identifiers on checklist lines and 7 E2.1, with none added;
+- 2 real in-spec duplicates are now evidenced at their true second definition (relocations);
+- 123 decisions in 103 features are no longer counted;
+- E1.1 and P2.5 go down in 87 features, and 30 dimension scores go down. Almost all of
+  these features owe the change to the template item
+  `- [x] No [NEEDS CLARIFICATION] markers remain`.
+
+**Adjudication.** Two blind agent sessions labeled 76 items (Cohen's kappa 0.94). The
+packet was capped at 15 features per repository.
+
+| Stratum | Distinct | Labeled | Agreed positive (error) | Disputed | Allowed | Result |
+|---|---|---|---|---|---|---|
+| N1 (checked template item; 52 features) | 2 | 2 | 2 (genuine "none remain") | 0 | — | goes to H7a |
+| 1a spec-only lost evidence | 7 | 7 | 0 | 0 | 0 | holds |
+| 1b all-role lost evidence | 39 | 30 | 24 | 2 | 2 | **fails** |
+| 2 removed decisions | 17 | 17 | 1 | 0 | 1 | holds |
+| 3 sanity (findings, documents) | 107 | 20 | 1 | 0 | 1 | holds |
+
+- The 1b errors are checklist notes that state that no clarification remains or that
+  the open questions were resolved.
+- The decision error is an assumption that the checklist explicitly defers to planning.
+- The finding error is a genuine two-obligation line in a checklist note.
+- N2 (unchecked item) has no occurrence. N1 is also a removed decision in 57 features. By design, that role is outside stratum 2; its agreed N1 label ("none remain") means it is not an open decision.
+
+**Decision.** By the pre-registered rule, H7 stops for "counts for nothing" and H7a
+(arm B) is proposed.
+
+### H7a: checklist lines count as context, never requirements or decisions — **holds with one owner-accepted exception; proposed for merge**
+
+- Arm B was fixed by amendment H7-2 before fresh set 2 was selected. Its 24 EN/ES
+  twins were frozen at `c92757f`, before arm B was built.
+- Candidate: `2f84bc0`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12.
+- **Version at merge.** H8 (#80, engine 0.1.13, #100) and H85 (#85, engine 0.1.14, #101) merged
+  first, so H7a ships as engine 0.1.15 with product 0.2.8. `develop` was merged into the branch
+  twice without a rebase, and the twins, minimal pairs, corpus report, fresh set 1 and pilot were
+  rerun on the merged tree.
+- Fresh set 2 (`351cf96`): the non-template query found no eligible repository and the
+  fallback found 1. That gives 10 features, 7 of them changed, so gate 4 is
+  underpowered on this set.
+
+| Gate | Result |
+|---|---|
+| 1. H7a twins, H7 twins, earlier sets, minimal pairs | holds: H7a 24 of 24; H7 20 of 24, missing exactly the 4 N1/N2 arm-C cases; earlier sets and minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. Fresh sets | holds: all-role practices are unchanged as predicted; the removed findings and decisions are those of H7 |
+| 4. Gains adjudication | **fails, owner-accepted**: 7 of 20 agreed positive, threshold 1 |
+
+**Fresh set 1.** Same findings and decisions as H7.
+- Down: P2.1 8, C1.1 8, and P2.2, I3.3, I3.2 and P2.3 1 each, all spec-only
+  practices losing checklist evidence (stratum 1a: 0 of 7 genuine).
+- Up: E1.4 6, I1.2 3, I2.2 3 and E2.1 1.
+- Dimensions: 4 up, 8 down (H7: 30 down).
+
+**Fresh set 2.** 9 decisions are no longer counted; P2.1 and C1.1 go down in 1
+feature, and E1.4 goes up in 1.
+
+**Gains adjudication.** It covers the checklist lines that 0.1.12 admitted as
+requirements in the 10 features where arm B raises a ratio practice. Two new blind
+agent sessions labeled 20 distinct lines and agreed on all of them: 13 negative and 7
+positive.
+- All 7 positives are lines of one checklist (`specs/046-046-bug-bash`), which restates
+  FR-001…FR-007 with paraphrased content as unchecked items.
+- In that feature, H7a removes 7 duplicates and raises I1.2/I2.2 to `supported`.
+- The other 9 features have no error.
+- The owner accepted this as a known limit on 2026-11-25, overriding the threshold.
+
+**Pilot repository (development data, 86 features, work tree, counts only; arms B
+and C identical except E1.1/P2.5).**
+- 36 checklists are reclassified.
+- Findings go from 483 to 482 against 0.1.12, and from 470 to 469 against `develop` at engine
+  0.1.14 (after H8 and H85): one duplicate is removed, and none is added. The status and score
+  changes below are identical in both runs.
+- Decisions are unchanged (2).
+- Down: E1.5 14, P2.1 and C1.1 5 each, and E2.4, I1.2 and I2.2 fewer than 5 each.
+  Up: E1.4, fewer than 5.
+- Scores: 14 dimension scores and 11 totals go down, and 1 dimension score goes up.
+- The E1.5 drops are spec-only evidence that the pilot's checklists carried. They are
+  not adjudicated, because the pilot is restricted development data.
+
+**Known limits.**
+- A checklist that restates the specification's requirements with their content no
+  longer produces duplicates (the owner-accepted gains exception).
+- Unchecked `- [ ]` marker items still count for E1.1/P2.5, because the pattern matches
+  the marker name. There were no occurrences on the fresh sets.
+- Outside H7, the E1.1/P2.5 pattern and the decision rule both match negated mentions
+  of `[NEEDS CLARIFICATION]` in any document, including `spec.md`.
+- Checklists whose basename is not discovered (`ux.md`, `security.md`) are unchanged.
+- Fresh set 2 is underpowered. All four reviewers are sessions of the same model family
+  (#65), and one reviewer pair's judgment on N1 decides about 80 features.
+
+**Decision.** Propose H7a (engine 0.1.15, version 0.2.8 at merge) for merge, closing #79.
+
+### H9: qualified and non-adopted references in I2.3 — **rule 1 holds and is proposed for merge; rule 2 reverted (owner decision)**
+
+Tracking: [#84](https://github.com/jayanez/spec-torque/issues/84).
+- Pre-registered at `e2313f5`, as one hypothesis with two separately gated rules:
+  references qualified by another specification (rule 1) and references marked not
+  adopted (rule 2).
+- The 24 EN/ES twins and the 10 fresh sources were frozen at `5cd81e7`.
+- Candidate: `bf908cf`, engine 0.1.13, version 0.2.6. Comparator: 0.1.12 (`develop`,
+  `3a888f0`).
+- The adjudication threshold was fixed at `656e023`, before any packet was built.
+- Amendment H9-2 (owner decision) and its 16 sources were frozen at `c6dabd1`,
+  before any scan.
+- Rule 2 was reverted at `d58628e` (owner decision), after two independent reviews;
+  see "Rule 2 reverted" below. The gates below cover the full candidate; the rule 2
+  rows are kept as measured.
+- **Version at merge.** H8 (#80), H85 (#85) and H7a (#79) merged first as engines
+  0.1.13 (#100), 0.1.14 (#101) and 0.1.15 (#103), so H9 ships as engine 0.1.16 with
+  product 0.2.9. After each was merged in, every measurement was repeated against
+  `develop`; see "After H8, H85 and H7a" below.
+
+| Gate | Result |
+|---|---|
+| 1. Twins (24 EN/ES), H3a, H5a, H6 and H6a twins, minimal pairs | holds: 24 of 24 (0.1.12 meets 12, failing exactly the 12 target cases); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier fresh sets (H3a, H5a, H6, H6a, H6a-2; 33 roots, 984 features) | holds: nothing changes |
+| 4. Fresh sets and adjudication | holds for rule 1 with low power: 1 finding removed, 0 agreed positive (threshold 2). Rule 2 removes nothing and is **unconfirmed**; it was then reverted |
+| 5. Evidence | holds: no evidence, status, other finding or traceability edge changes anywhere |
+
+**Fresh sets.** The first set holds 2567 Spec Kit features in 10 roots. H9 removes
+1 I2.3 finding there and adds none: a plan line that "inherits spec-005's FR-023"
+from feature 006 (rule 1). The second set (H9-2) holds 191 features in 16 roots,
+and nothing changes. Code search splits `SPEC-0` into separate tokens, so neither
+query selected the qualified construction, and `not adopted` occurs in the
+fresh repositories but never attached to a requirement ID.
+
+**Adjudication.** The owner fixed the threshold before any packet was built: at
+most 2 agreed positive per rule, disputed items counting against it. The packet
+holds the single removed finding. Two blind agent sessions labeled it separately,
+both `negative`: the line attributes the ID to another specification. With one item
+this is a weak confirmation, and both reviewers are sessions of the same model
+family (#65).
+
+**Pilot repository (development data, the 32 open features, counts only).** Of 42
+I2.3 unresolved-reference findings, 23 are removed, exactly the hyphen-qualified
+ones the pre-registration predicted, and none is added. No status, evidence, other
+finding or traceability edge changes. The other 19 stay: 10 plan-local `R-n` labels
+(#80), 7 IDs whose line calls them a proposal without the words "not adopted", and
+2 IDs with another specification named elsewhere on the line.
+
+**Known limits.**
+- Only the forms of the pre-registration qualify an ID: a qualifier linked
+  (`[SPEC-028](…) REQ-004`), wrapped in markup (`**SPEC-028** REQ-004`,
+  `` `SPEC-028` REQ-004 ``), put before a parenthesis (`SPEC-028 (REQ-004)`) or
+  placed after the ID (`REQ-004 of SPEC-028`), or a second ID after a qualified one
+  (`SPEC-028 REQ-004 and REQ-005`), still resolves locally.
+- Qualifiers are read within 64 characters before the ID.
+- A hyphen-joined prefix counts as a namespace whatever it means, so a task-ID
+  prefix such as `T001-FR-001` makes the reference external.
+- Whether the other specification exists or defines the ID is not checked; the
+  workspace index (#68) is not consulted.
+- Traceability does not distinguish an external reference. Its edge is resolved
+  by the bare ID, as in 0.1.12: `resolved: false` usually, but `true` when the
+  feature happens to define the same bare ID (`SPEC-028 REQ-001` in a feature with
+  its own REQ-001), which then also counts that local requirement as referenced.
+
+**After H8, H85 and H7a.** H8 (#80) and H9 read the same plan and tasks references,
+so H9 now iterates H8's reference matches. H85 (#85) changes only E1.3 and the E1.2
+clarifier, and H7a (#79) only how Spec Kit checklists are read. Against `develop` with
+H8 (`0738464`), with H85 (`79bb539`) and with H7a (`7ad3586`), every measurement above
+is unchanged: the twins, the minimal pairs, the 716 predictions, the dev and fresh
+sets. On the pilot, H8 removes the 10 `R-n` findings and H9 the same 23, none is
+added, and I2.3 unresolved references go from 42 (0.1.12) to 32 (H8, H85, H7a) to 9.
+That is the pre-registered subtraction, so no deviation is recorded.
+
+**Rule 2 reverted (owner decision, 2026-11-25).** Asked whether rule 2 should ship on
+its twins alone, the owner requested an adversarial review and then a counterfactual
+one. Both were run by independent agent sessions on the code and the policy, with
+probes through `analyze()`.
+- *Adversarial review.* The marker is not tied to the line's meaning, so it silences
+  true problems: `- [ ] T002 Implement REQ-007 (not adopted) …`, `The old ADR was not
+  adopted REQ-007 replaces it.` and `Previously not adopted REQ-007 is now in scope.`
+  all lose their error. It also misses the natural forms (`REQ-007 no adoptado`,
+  `REQ-007: not adopted`, a status column, strikethrough, "rejected", "withdrawn",
+  `(proposal, not adopted)`) and the pilot's own phrasing.
+- *Counterfactual review.* Of 103 natural lines with "not adopted" in the pinned
+  public roots, 71 record a design alternative that was not adopted, 23 use "adopt" as
+  a verb about code or ownership, 8 describe an external status and 1 is a data value.
+  None puts the marker against an ID on a plan or tasks line, so rule 2 acts on none
+  of them, rightly or wrongly. The harm is as theoretical as the benefit. A demoted
+  finding instead of a suppressed one would inherit the same misses with no natural
+  case to measure it.
+- *Author guidance.* Recording the proposal in `spec.md` resolves the reference but
+  admits a non-normative line as a requirement, lowers E1.2 and E1.4, and hides later
+  real references to the same ID. The two forms that clear the error with no side
+  effect are dropping the bare ID from the plan or tasks line, or prefixing it
+  (`PROPOSAL-REQ-007`), which rule 1 already reads as external.
+
+Rule 2's code and its 10 twins were removed. The remaining 14 twins are met (0.1.13
+meets 8, failing exactly the 6 rule 1 targets), and every other measurement is
+unchanged, because rule 2 never acted on the corpus, the dev and fresh sets or the
+pilot.
+
+**Decision.** Propose H9 rule 1 (engine 0.1.16, product 0.2.9) for merge. It holds
+within the threshold on low fresh power and on the pilot. Rule 2 stops; it is
+reconsidered only if a fresh, pre-registered set shows the construction in natural
+plan or tasks text.
+
+### H106: labeled dependency fields count for P1.3 — **holds; proposed for merge**
+
+Tracking: [#106](https://github.com/jayanez/spec-torque/issues/106).
+- Pre-registered at `2523c73`. The twins and the fresh sources were frozen at
+  `4afe056`, with Amendment H106-1 (query `T001` instead of the `T0` prefix, which
+  code search does not match).
+- The first candidate (`60c25f5`) passed every gate. The owner then asked for a full
+  branch review. Three independent reviews found false matches (technology lists such
+  as `**Primary Dependencies**: …, ISO-8601`, lowercase tokens such as `utf-8` and
+  `t3`, emphasized `*none*`), and quadratic backtracking on long runs of stars or
+  spaces after the colon (`'*'.repeat(50000)`: 7.9 s). Amendment H106-2 (`5aaba12`)
+  anchors the label, makes the ID case-sensitive, widens the absence words, bounds
+  the value to 200 characters and adds 18 twins. Every gate below was re-run on the
+  final candidate, `7b171f4`.
+- Engine 0.1.17. The product version stays at 0.3.0 (owner decision: the product bump
+  belongs to the next release). Comparator: 0.1.16 (`develop`, `0084178`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (40 EN/ES), earlier twins, minimal pairs | holds: 40 of 40 (0.1.16 meets 26, failing exactly the 14 targets); H3a 20/20, H5a 22/22, H6 16/16, H6a 12/12, H7 and H7a unchanged, H8 10/10, H85 13/13, H9 14/14; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed, 0 metric groups changed |
+| 3. Earlier development and fresh sets (75 roots, 4685 features) | holds: 54 features move P1.3 `missing` → `partial`, in 9 roots; nothing else changes (no other status, finding or open decision; 41 dimension scores rise, none falls). Every new evidence line is a labeled field (`**Dependency**: T013, T016.`, `Dependencies: T001→T002…`, `**Dependencies:** ENV-3`) |
+| 4. Fresh set and adjudication | holds: 316 features in 5 roots (4 EN, 1 ES); 6 move `missing` → `partial`, nothing else changes. The 40 newly accepted lines (35 distinct) were labeled blind by two agent sessions: 35/35 `positive` each, 0 disputes (threshold: at most 2 negative or disputed). The final candidate accepts exactly the same 40 lines |
+| 5. Evidence | holds: 238 pilot P1.3 evidence lines, 0 invalid |
+
+**Pilot repository (development data, 81 features with a P1.3 result, work tree,
+counts only).** P1.3 goes from 63 `missing` / 18 `partial` to 21 / 60: the
+predicted 42 features move to `partial`, and none moves back. Of the 21 still
+`missing`, 15 have no dependency line and 6 only `none` or ID-less values. No other
+practice status, finding, open decision or non-P1 dimension changes. 21 features gain
+1 point (P1); the mean score goes from 12.90 to 13.16.
+
+**Known limits.**
+- The unchanged 0.1.16 verb phrase still counts `Depends on: none. Verified by T009.`
+  and reads lowercase tokens as IDs after `depends on` or `requires`; its `.*` is
+  also quadratic on adversarial lines. That branch is outside H106.
+- An uppercase standard name that starts a field still counts
+  (`Dependencies: UTF-8 locale`).
+- A field whose IDs are on the following list lines (`**Dependencies**:` then
+  `  - T001`), a table column, and a value whose first ID comes more than 200
+  characters after the colon are not recognized.
+- Absence words are matched in ASCII case only (`NINGÚN` is not one).
+- The Spanish fresh power is low: 1 eligible root.
+- Both reviewers are agent sessions of one model family.
+
+**Counterfactual and adversarial review (owner request, after the record).**
+- *Recall.* Of the 21 pilot features still `missing`, 18 declare no dependency in
+  their plan or tasks (dependencies appear only as product subject matter, or not at
+  all). 2 state an order in prose ("after T0nn is reviewed"), which is not a declared
+  field. 1 uses an unlabeled verb without "on" (`depends T001`, 3 lines). None uses a
+  field whose IDs are on the following list lines, a table column or another label.
+- *Precision.* An independent agent session that saw only the diff built 44 lines.
+  The field accepts 14 that are not dependencies, almost all uppercase standard or
+  product names (`UTF-8`, `ISO-8601`, `GPT-4`, `SHA-256`, `CVE-2024`, `RFC-6749`). It
+  rejects 5 genuine or arguable ones (`Dependencies - T001`, lowercase `t001`, and
+  values without an ID). On natural text none of these standard names occurs in a
+  newly accepted line: 0 of 134 evidence lines on the earlier sets, 0 of 40 on the
+  fresh set, 0 on the pilot.
+- *Guards considered.* An allow-list of ID families (`T\d{3,}`, `FR-`, `REQ-`, `SC-`, …)
+  removes 12 of the 14 synthetic false accepts. It would also drop genuine natural
+  fields with project prefixes (`ENV-`, `PROJ-`, `ARCH-`, `PARSE-`) in 11 of the 54
+  changed earlier features. A stop list of standard prefixes is open-ended. A digit
+  threshold does not help (`ISO-8601`, `SHA-256`). No cheap guard improves the measured
+  result, so no Amendment H106-3 is made.
+- *Follow-ups (not in this change).* Resolve a field's IDs against the feature's own
+  task and requirement IDs, which is the general fix for standard names; read
+  `depends T001` and fields with IDs on the following list lines.
+
+**Decision.** Propose H106 (engine 0.1.17) for merge.
+
+### H104: role nouns in actor position for P2.1 and C1.1 — **fails gate 4 (adjudication); reverted, owner decides H104a**
+
+Tracking: [#104](https://github.com/jayanez/spec-torque/issues/104).
+- Pre-registered at `ef900b6`. Fresh sources frozen at `e19a563` (16 repositories),
+  twins and amendment H104-1 (the issue's example has no admitted requirement) at
+  `3fa704e`, amendment H104-2 (prepositions `as`, `a`, `de`, … are not verbs) at
+  `fc548f3`, both before the candidate.
+- Candidate `fb8fd53`, engine 0.1.17. Comparator 0.1.16 (`develop`, `0084178`).
+  Amendment H104-3 (`b20b831`) corrected one twin after the first twin run: `pueden`
+  is a normative modal, so that line is a requirement and outside the cue by policy.
+- Reverted under the stop rule after gate 4. The product version is not bumped
+  (owner decision: engine-only bumps until the next release).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (26 EN/ES), H3a, H5a, H6, H6a, H7, H7a, H8, H85 and H9 twins, minimal pairs | holds: 26 of 26 (0.1.16 meets 18, failing exactly the 8 targets); every earlier suite has the same result in both arms; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier sets (59 roots, 3742 Spec Kit features) | holds: 189 features change, each P2.1 and C1.1 `missing` → `partial` together; 117 dimension scores rise; no finding, decision, artifact or other status changes |
+| 4. Fresh set (16 roots, 276 features) and adjudication | structure holds (20 features change, the same way); **adjudication fails**: of 100 drawn items, 2 agreed `negative` and 5 disputed, 7 against a threshold of 5 |
+| 5. Evidence | holds: 0 invalid |
+
+**Adjudication.** 100 of the 209 changed features (seed 42104). Raw agreement 95/100;
+93 agreed `positive`.
+- *Agreed negative (2).* `member` naming a system node ("A member stores the hub
+  certificate …"), and `owner` first on a wrapped continuation line, where it modifies
+  the next noun ("owner columns, not also reported …"; `columns` passes the `-s` verb
+  test).
+- *Disputed (5).* All are a project role in the spec's own process rather than the
+  product ("the owner changed that …", "the operator asked for the spec and the
+  plan", "the maintainer requested …", "only the maintainer can decide"). One
+  reviewer read them as actors, the other as process notes.
+
+**Pilot repository (development data, 32 open features, work tree, counts only).** The
+prediction held exactly: P2.1 and C1.1 `partial` 26 → 29, `missing` 6 → 3. The 3
+owner-adjudicated features move to `partial` on both practices, the other 3 stay
+`missing`, and no finding, decision or artifact changes.
+
+**Possible H104a (for the owner).** Each change below addresses one observed class and
+would be pre-registered and measured again on a new fresh set:
+- drop `member` from the role nouns (system nodes in distributed specs);
+- do not read a role noun first on a wrapped continuation line;
+- decide whether a project-process role (owner, maintainer, operator acting on the
+  specification itself) should count. The 5 disputed items, and the pilot's own
+  features, use this construction; excluding it by rule would likely also exclude
+  the pilot gains, so this is a policy choice, not a detector fix.
+
+**Review inputs for H104a (pre-merge review of this branch).**
+- *Altitude.* Read the cue on the engine's own lines rather than physical lines:
+  skip the line-start branch on `Line.continuation` (the agreed-negative "owner
+  columns"), or test the joined unit. Share one verb-form fragment with H85 instead of
+  retyping it. Scoping the cue to product-narrative units (user stories, scenario
+  lines, the user-scenario section) would remove both the system-node `member` and
+  the process roles without a noun list; it is the policy choice above.
+- *Uncovered misreads, found by probing the reverted regexes.* A plural noun after a
+  role noun passes the `-s` test ("the operator logs are retained"); a Spanish
+  adjective in `-a` or `-e` passes the Spanish test ("la revisora técnica decide",
+  "el operador responsable"); Spec Kit's `**Given**` bold scenario keyword reaches
+  the rule only through the determiner branch. Each needs a twin in H104a.
+- *Carried over from 0.1.16.* The generic cue has no word boundaries, so "refactor",
+  "factor" and "superuser" count as actor words, and fenced lines can carry it. Both
+  change 0.1.16 behaviour and need their own pre-registration.
+- *Packet.* The packet script reads the files at the scan's revision, fails when
+  both arms are the same engine or an item has no cue line, and skips archived
+  specs. Rebuilt with these checks, the adjudicated packet is byte-identical.
+
+**Decision.** H104 stops under its stop rule and is reverted on the branch; engine stays
+0.1.16. The owner decides between H104a and stopping #104.
+
+### H104a: product actors named by role, no process roles — **holds at the threshold; proposed for merge**
+
+Tracking: [#104](https://github.com/jayanez/spec-torque/issues/104). Owner decision after
+H104: retry once, without process roles, with a new fresh set and new blind labels.
+- Pre-registered at `c2bc4e0`. Fresh sources frozen at `dfd91d0` (14 repositories; the
+  Spanish query had only 2 eligible), twins at `d60a544`, both before the candidate.
+- Candidate `46de657`, engine 0.1.17, product 0.3.0 unchanged; measured with amendment `19a7605`.
+  Amendment H104a-1 (whole-word process headings, no `draft` object) after the first
+  twin run, before any natural measurement. Comparator 0.1.16 (`develop`, `0084178`).
+- If #106 (PR #112, also engine 0.1.17) merges first, H104a takes 0.1.18 and every
+  measurement is repeated.
+
+| Gate | Result |
+|---|---|
+| 1. Twins: 29 H104a and 26 H104 (EN/ES), earlier suites, minimal pairs | holds: 29/29 (0.1.16 meets 16, failing exactly the 13 targets) and 26/26; H3a, H5a, H6, H6a, H7, H7a, H8, H85, H9 identical in both arms; minimal pairs unchanged |
+| 2. 716 historical predictions | holds: 0 changed; artifact sets and unknown practices identical |
+| 3. Earlier sets (75 roots, 4018 features) | holds: 295 features change, P2.1 and C1.1 together: 187 gains, 108 losses (rule 10); no finding, decision, artifact or other status changes |
+| 4. New fresh set (14 roots, 542 features) and adjudication | holds at the threshold: 67 features change (54 gains, 13 losses); of 100 drawn (seed 42105, H104's 100 items excluded), 4 agreed wrong and 1 disputed, 5 against a threshold of 5 |
+| 5. Evidence | holds: 0 invalid |
+
+**Adjudication.** 100 items, 54 gains and 46 losses, labeled by two new blind agent
+sessions. Raw agreement 99/100.
+- *Gains:* 53 agreed right, 1 agreed wrong: a reviewer requesting a statistical
+  correction from a research project (a process role in a user story, which rule 4 does
+  not catch because the verb is present).
+- *Losses:* 42 agreed right (substrings such as "refactor", "factor", "superuser", and
+  generic words inside code blocks), 3 agreed wrong: "User …" lines inside fenced
+  diagrams of one repository, which a reader takes as user flows.
+- *Disputed (1):* a fenced "User question" label in the same repository.
+
+**Pilot repository (development data, 32 open features, counts only, both engines on
+the same work tree).** P2.1 and C1.1 `partial` 26 → 29, `missing` 6 → 3: the 3
+owner-adjudicated features gain, as predicted; 048, 050 and 076 stay `missing`; no
+feature drops; nothing else changes.
+
+**Known limits.**
+- Process roles stated in the present ("a reviewer requests that the project …") still
+  count; rule 4 reads tense, not intent.
+- Rule 2 reads only the nearest heading. Spec Kit nests its Q&A under
+  `## Clarifications` / `### Session <date>`, so a present-tense answer there ("A: The
+  owner approves the thresholds") still counts.
+- Rule 2 matches a listed word anywhere in the heading, so product sections such as
+  "Order status", "Product reviews" or "Approval workflow" lose the role cue.
+- Rule 5's document nouns include product objects (`plan`, `tasks`, `document`): "The
+  developer chooses a pricing plan" does not count. Rule 3 drops any line with an ISO
+  date, including product values.
+- Rule 10 drops generic words in fenced blocks, including user flows drawn as text
+  diagrams; 4 of the 5 adjudication errors are that one construction in one repository.
+- The role cue still reads Spanish adjectives in `-a`/`-e` as verbs ("la revisora
+  técnica decide") outside process sections.
+- Losses of the generic cue are real status drops (108 and 13 features), not only gains.
+
+**Amendment H104a-2 and the merge of H106.** The pre-merge review found that `was`
+passed the `-s` verb test against rule 4; it is excluded (`H104a-2`), with 12 opposite
+twins (41 H104a twins, 0.1.16 meets 19). With the fix, every measurement is unchanged:
+the same 295 and 67 changed features, the same pilot result, and the adjudicated packet
+rebuilds byte-identical, so the labels stand. H106 (#106) then merged as engine 0.1.17, so
+H104a ships as **engine 0.1.18**, product 0.3.0. Against `develop` with H106 (`87f3a5b`):
+H104a 41/41, H104 26/26, H106 40/40 and every earlier suite identical in both arms;
+minimal pairs and the 716 predictions unchanged; the scans change only P2.1 and C1.1
+(295 and 67 features, as above); the pilot again goes 26 → 29 `partial` with no other
+change; the packet rebuilds identical.
+
+**Decision.** Propose H104a (engine 0.1.18) for merge. It holds every gate, with no margin
+on gate 4; the known limits above are candidates for a later, separately measured change.
+
+
+### H92: framework template folders are not discovered — **fails gate 3 (one missed prediction); reverted, continued as H92a (owner decision)**
+
+Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92).
+- Pre-registered at `c7ae4a1`. Fresh sources frozen at `1d45a06` (12 repositories: 5 Spec Kit,
+  3 Spec Kitty mission, 1 older Spec Kitty, 3 controls with a `templates/` folder outside
+  `.specify/` and `.kittify/`), path twins at `98edd14`, all before the candidate.
+- First candidate `3d8879c`. Amendment H92-1 (`5022a17`, after the fresh set and its labels,
+  from the branch review): installed layouts only, so a `templates` folder inside a feature
+  kept under `.specify/specs/` or `.kittify/specs/` stays; the packet pools both discovery
+  modes; an explicit scope naming a template folder fails with a reason. Final candidate
+  `f388de3` (engine 0.1.19, product 0.3.0). Comparator 0.1.18 (`develop`, `abf1730`).
+- The rule is owned by `isSpecCandidate` (`isFrameworkTemplate`, `src/core/artifacts.ts`):
+  workspace indexing, GitHub import and the precision tooling all go through it, so the CLI,
+  MCP, `serve`, VS Code and the other adapters stop listing, reading and scoring templates
+  together. The workbench folder import, which never used the candidate filter, calls the
+  same predicate. A non-candidate was chosen over a skipped `template` role: a role would
+  have to be skipped by every reader and rule, while a non-candidate is never read. The
+  0.1.18 presentation rule that sorted folders named `template(s)` last is removed.
+
+| Gate | Result |
+|---|---|
+| 1. Path twins, earlier twins, minimal pairs | holds: 19 excluded and 22 kept twins in both modes (0.1.18 meets 0 of the excluded, all of the kept); the listing twin sorts a user `templates` folder by name; every earlier twin suite passes in both arms; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed, 0 metric groups changed, artifact sets and unknown practices identical |
+| 3. Earlier roots (110 repositories, 6315 features) | **misses one prediction.** Discovery removes 3888 workspace and 4893 GitHub-mode paths in 60 roots, every one a template, and adds none; 975 template features leave the list, none with a non-template file; the 5340 common features are identical; order changes in 11 roots, only for user or vendored folders named `template(s)`. In the 1938 analyzed "All documents" and template-parent scopes, every removed decision (19348) and traceability edge (12) cites a template, and nothing is added. Of 7912 removed findings, **31 cite only a non-template file** (see below) |
+| 4. Fresh set (12 roots) and adjudication | holds: 90 workspace and 98 GitHub-mode paths removed in the 9 framework roots, all templates; the 3 control roots lose nothing; 24 template features leave the list; the 96 common features are identical; in 18 scopes 284 findings, 288 decisions and 16 edges are removed, all citing templates, nothing added. All 98 excluded files (pool below 100) were labeled blind: 90 by two sessions, the 8 GitHub-mode additions of H92-1 by two new sessions; 98/98 agreed `positive`, 0 negative or disputed (threshold 2) |
+| 5. Evidence | holds: 0 invalid in either arm |
+
+**The gate-3 miss.** All 31 findings are I2.3 "Reference FR-n has no definition" on
+`.specify/memory/task_verifier_notes.md` in 15 projects of one repository (llmXive, which
+nests one Spec Kit project per folder). The folder scope `projects/<project>/.specify` holds
+the templates, the constitution and that notes file. Without the templates no spec is left in
+the scope, so I2.3 goes `partial → unknown` and stops reporting unresolved references, as it
+does for any scope without a specification (897 other scopes show the same transition with no
+non-template finding involved). The references were "undefined" only against the templates'
+placeholder requirements. In 14 of the 15 projects the project-folder scope, which holds the
+real specs, is unchanged; the 15th project has no spec of its own. The pre-registered
+prediction ("no finding or decision whose evidence lies only outside template paths is
+removed") did not anticipate this; no other prediction is affected.
+
+**Pilot repository (development data, counts only, both engines on the same work tree).** The
+prediction held exactly: features 89 → 87 (the two `.specify/templates` features), index total
+575 → 557, the 87 features unchanged; the `.specify` folder scope goes from 21 to 3 documents,
+its 15 template findings and 4 template edges are removed and nothing is added; the two user
+`templates/m35-*` folders are unchanged. "All documents" stays above the read limit (557).
+
+**Branch review.** `/code-review high`, `/simplify`, `pr-test-analyzer`, `silent-failure-hunter`
+and an adversarial agent that saw only the diff.
+- *Fixed:* the any-depth rule removed `templates/` inside `.specify/specs/` features (H92-1);
+  the browser test still expected `.specify/templates` in the scope picker; the packet pooled
+  one mode only; an explicit `--path`, `--feature`, focus or GitHub tree URL naming a template
+  folder returned an empty set silently (now an error); the replay re-parsed paths from string
+  keys, could crash on a non-template removal and counted over-limit scopes silently (now
+  listed); one rule entry and one shared message; the replay imports the production
+  exclusions; the packet uses the shared seeded `sample`.
+- *Not changed (by design or out of scope):* a single file, a root chosen inside a template
+  folder and caller-supplied text are still analyzed; a mixed folder import drops templates
+  without a count, as discovery does; scopes that are empty for other reasons stay as before.
+
+**Known limits.**
+- Agent command copies that Spec Kit installs outside `.specify/` (`.claude/commands/speckit.*`,
+  `.github/prompts/speckit.*`, `.cursor/commands/…`) and extension or mission `commands/`
+  folders are still discovered.
+- Vendored framework packages (`venv/…/site-packages/specify_cli/templates/`) are still
+  discovered; `venv`, `env` and `.tox` are not fixed exclusions, and GitHub import excludes only
+  `node_modules`, `vendor`, `dist` and `.git`. Without the 0.1.18 demotion such folders now sort
+  by name (one vendored folder in the fresh set).
+- Other tools' template folders (`.speckit/`, `.aod/`, `get-shit-done/templates/`) and a
+  framework's own source repository (`templates/` at the root) are project content.
+- 8 "All documents" scopes exceed the read limit and were not compared (their template-parent
+  folder scopes were).
+- Browser tests ran on Chromium and WebKit (180 passed); Firefox could not launch in this
+  sandbox. All labelers are agent sessions of one model family.
+
+**Decision.** Gate 3 misses its prediction on 31 findings, all from one mechanism in one
+repository. The owner chose the stop rule over an exception (2026-11-27): H92 is reverted on
+the branch (engine stays 0.1.18; the record, fixtures and measurement-script fixes stay), and
+H92a is pre-registered with predictions that cover scopes left without a specification and a
+new fresh set.
+
+### H92a: framework template folders are not discovered, with scopes left without a specification — **holds; proposed for merge**
+
+Tracking: [#92](https://github.com/jayanez/spec-torque/issues/92). Owner decision after H92:
+revert and retry once, with predictions for scopes left without a specification, a new fresh
+set and new blind labelers.
+- Pre-registered at `a3b2cb7`. Fresh sources frozen at `4265cdb` (15 repositories: 6 Spec Kit,
+  3 Spec Kit presets, 3 controls with features under `.specify/specs/`, 3 controls with a
+  `templates/` folder elsewhere; the Spec Kitty mission and Spec Kit extension queries had no
+  eligible repository). Amendment H92a-1 and the scope twins at `17efefd`, both before the
+  candidate: a template defines an ID for another document only inside that document's feature
+  folder, and an edge to such an ID may turn from resolved to unresolved.
+- Candidate `fa19304` (the H92-1 rule, unchanged), final `2d966b9` after the review (the
+  template check rewritten as an equivalent linear test; no discovery change: the fresh-set
+  totals are identical). Engine 0.1.19, product 0.3.0. Comparator 0.1.18 (`develop`, `abf1730`).
+
+| Gate | Result |
+|---|---|
+| 1. Path and scope twins, earlier twins, minimal pairs | holds: 19 excluded and 22 kept path twins in both modes, the listing twin, and the 3 scope twins (emptied, kept with a template-defined ID, kept control) as registered; every earlier twin suite passes; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed, 0 metric groups changed |
+| 3. Earlier roots (122: the 110 H92 earlier roots and the 12 H92 fresh roots) | holds: 3978 workspace and 4991 GitHub-mode paths removed in 69 roots, all templates, none added; 999 template features leave the list, none with a non-template file; the 5436 common features are identical; order changes in 14 roots, only for folders named `template(s)`. 1964 scopes compared (1041 kept, 923 emptied, including all 8 "All documents" scopes over the host limit with the guard lifted): 11885 findings, 28844 decisions and 32 edges removed, nothing added, **0 items outside prediction 5**. The 31 H92 findings are now predicted: their scopes are emptied and I2.3 is `unknown` |
+| 4. New fresh set (15 roots) and adjudication | holds: 45 workspace and 59 GitHub-mode paths removed in 11 roots, all templates; the `.specify/specs/` and `templates/` controls keep every other candidate; 17 template features leave the list; the 2437 common features are identical; 21 scopes (16 kept, 5 emptied): 97 findings and 142 decisions removed, nothing added, 0 items outside prediction 5; one `.specify` folder scope over the host limit was not compared (its "All documents" scope was). All 59 excluded files were labeled blind from their full text by new sessions: 59/59 agreed `positive` (threshold 2). One session typed every last line and a second-half detail by hand (59/59 last lines exact, 56/59 details found); a second one copied its last lines by script, and a third session, run in its place, agrees as well |
+| 5. Evidence | holds: 0 invalid in either arm |
+
+**Hosts.** No root over the 500-document read limit falls within it after the change (prediction
+6: the list is empty).
+
+**Pilot repository (development data, counts only, both engines on the same work tree).** The
+prediction held: features 89 → 87, index total 575 → 557, the 87 features unchanged; the
+`.specify` folder scope is emptied (21 → 3 documents) and "All documents" (557, compared with the
+guard lifted) is kept, each losing 15 template findings and 4 template edges with nothing
+outside prediction 5; `templates/m35-*` unchanged.
+
+**Branch review (final diff).** `/code-review high`, `/simplify` (four angles), `pr-test-analyzer`,
+`silent-failure-hunter` and an adversarial agent that saw only the diff.
+- *Fixed:* a working directory inside a template folder blocked an explicit `--feature` or
+  `--path`; the replay's scope judgement moved to `scripts/precision/scope-judge.ts` with tests
+  (twins, counted violations) and a test of the lifted guard; the packet seed is now required
+  and the packet holds full files; the template check was quadratic on paths with many slashes
+  (now linear); template-defined IDs are memoized; small replay cleanups.
+- *Prediction gap found by the review, after measurement began (not amended):* a template inside
+  a feature folder that redefines one of the spec's IDs makes I1.2 report a duplicate on the
+  spec line alone; its removal is outside prediction 5. The judge stays strict and its test
+  records the case. No natural scope showed it (0 items outside prediction 5).
+- *Not changed:* an explicit root at or inside `.specify/` or a template folder (`analyze
+  .specify`, `--root`) analyzes paths relative to that root, so its templates are read, as for
+  any explicit input; the replay judges I2.3 by message text and template-defined IDs by
+  occurrence (scope-wide, which can only add breaks); scopes are compared for workspace mode only;
+  the replay reuses HEAD's exclusion helpers for both arms.
+
+**Known limits.** Those recorded for H92 still apply: agent command copies outside `.specify/`,
+extension and mission `commands/` folders, vendored framework packages and other tools' template
+folders are still discovered. Firefox browser tests cannot launch in this sandbox (Chromium and
+WebKit: 180 passed). All labelers are agent sessions of one model family.
+
+**Decision.** Propose H92a (engine 0.1.19) for merge.
+
+### H52: requirement headings count as identified units for I1.2 and I2.2 — **holds; proposed for merge**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The first of three bounded
+hypotheses the owner approved after the Phase 0 sizing (H52, then H52b and H52c). The general
+requirement classifier stays closed; T2 and T2b stay sealed.
+- Pre-registered at `8bd46a9`. The fresh sources (15 repositories, `"### REQ-001"` and
+  `"### FR-001"` with `Given` or `Dado`; one query found 3) were frozen at `7cdb263`, and 28 EN/ES
+  twins at `17e2b88`, both before the candidate.
+- The first candidate (`23ade76`) held every gate. The branch review then found headings that are
+  not requirements: `R-` risks and releases, ranges, removals and headings with nothing under them.
+  None occurs in the measured natural features. Amendment H52-1 (`db8bf5d`) narrows the rule to a
+  single `FR`/`NFR`/`REQ` ID, no removal word and content in the section, and adds 10 twins
+  (`2caca83`). Every gate below was re-run on the final candidate (`3dc79a0`; engine sources
+  unchanged after it), with the judge tightened by the review.
+- Engine 0.1.20, product 0.3.0. Comparator 0.1.19 (`develop`, `a4e1d38`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins (38 EN/ES), earlier twins, minimal pairs | holds: 38 of 38 (0.1.19 meets 28, failing exactly the 10 targets); H3 12/14 and H3a 20/20, H5 16/16, H5a 22/22, H6 16/16, H6a 12/12, H8 10/10, H9 14/14, all as in 0.1.19; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed in 220 groups |
+| 3. Earlier roots (137: the H92 earlier and fresh roots and the H92a fresh roots) | holds: 7874 features, 178 with a requirement heading, 29 change (I1.2 and I2.2 alike: 12 `unknown`→`supported`, 3 `unknown`→`partial`, 14 `missing`→`partial`); **0 items outside predictions 2 and 3**. One feature over the 500-document limit was not compared (listed in the scan) |
+| 4. Fresh set and adjudication | holds: 219 features, 61 with a requirement heading, 6 change (2 `unknown`→`supported`, 2 `unknown`→`partial`, 2 `missing`→`partial`), 0 outside predictions. All 35 changed features (29 + 6) were labeled blind by two new Sonnet sessions: 35/35 `positive` from both, 0 disputes or `unknown` (threshold 2). Labeler B quoted 35/35 last lines exactly; labeler A 33/35, its two misses quote the line before a closing fence and the start of a wrapped last line. The final candidate yields a byte-identical packet, so the labels apply to it |
+| 5. Evidence | holds: every new evidence item is a heading the judge found at its path and line, and the packet builder re-read each drawn one at the scanned revision |
+
+**Pilot repository (development data, 87 features, work tree, counts only).** As predicted,
+exactly the 12 I1.2 `missing` features with a requirement heading move to `partial` (I2.2 the
+same), and nothing else changes (0 judge violations). No pilot spec has an `R-` heading.
+
+**Branch review.** `/code-review high`, `/simplify` (four angles), `pr-test-analyzer`,
+`silent-failure-hunter`, and an adversarial and counterfactual agent that saw only the engine diff.
+- *Fixed through Amendment H52-1:* `R-` risk and release headings, range and removal headings,
+  and empty headings counted as identified requirements (adversarial probes; 0 natural cases).
+- *Fixed in the replay:* the judge now requires the exact predicted status (including
+  `unknown`→`partial` only with a duplicate), every field outside I1.2/I2.2 and I1/I2 identical,
+  practice and dimension sets equal, summary counts consistent, and the reason the engine derives
+  from status and evidence; a violation fails the run; over-limit features are listed; work-tree
+  output is numbered, never named; the packet caches per revision and deduplicates features; the
+  comparator test skips only in a shallow clone. Tests were added for the packet section, evidence,
+  transitions, reasons, summary and score checks, and every twin against the heading definition.
+- *Not changed:* units are counted over the whole assessed set, so a multi-feature set pools them,
+  as it already does for requirement lines; a heading and the lines that inherit its ID both
+  count (no status depends on the count); a heading and a list item that restate one ID are a
+  duplicate (H3a limit); with four 0.1.19 hits the evidence cannot show the headings, so the judge
+  checks only that it is unchanged. Equivalent engine refactors suggested by `/simplify` (heading
+  level on `Line`, computing headings, inherited lines and definitions once per analysis) were left
+  out to keep the measured engine unchanged; `definitionsOf` copies an array per repeated ID
+  (quadratic near 1 MB), which predates H52 and is a follow-up.
+
+**Counterfactual (still missed).** An ID that is not the first token (`### Requirement FR-001:
+Export`), headings without an ID (`### Requirement 1`), and other ID families. Specs written only
+with scenario steps keep E1.4, E1.2 and E2.1 `unknown`; H52c addresses modal scenario steps.
+
+**Known limits.** Both labelers are sessions of one model family
+(Sonnet); the fresh Spanish power is low (3 repositories from the `Dado` queries).
+
+**Decision.** Propose H52 with Amendment H52-1 (engine 0.1.20) for merge.
+
+### H52b: qualified and group-infixed IDs read as one ID — **fails gate 1 (an earlier twin suite changes); reverted, owner decides**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). Second of the approved sequence
+(H52 merged as engine 0.1.20).
+- Pre-registered at `23539ba`. Fresh sources (8 repositories, 4 queries short) frozen at `1ad08ae`,
+  26 EN/ES twins at `1a2db10`, Amendment H52b-1 (short forms made resolvable by a qualified
+  definition; ASCII ID boundary) at `6cac8f5`, all before the candidate.
+- Candidate `7f598d7` (engine 0.1.21), reverted at the commit after it. Comparator 0.1.20
+  (`develop`, `297b7ed`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins, earlier twins, minimal pairs | **fails**: the H52b twins hold 26 of 26 (0.1.20 meets 16, failing exactly the 10 targets), but the H9 twins `namespace-local-en/es` change. Their reference error now names the full ID (`Reference VPC-REQ-02 …` instead of `REQ-02`), which is the H52b rule (the H52b twin `undefined-own-namespace` pins the same message), so prediction 1 contradicted the policy. Every other suite and the minimal pairs are unchanged |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3, 4. Earlier and fresh sets | not judged (stop rule). Measured for information with the H3 definitions replay (Spec Kit features only): earlier, 7276 features: 152 "no stable identifier" warnings removed, 16 reference errors and 9 duplicate errors added; fresh, 27 features: 64 reference errors removed and 116 added |
+| Pilot (counts only) | nothing changes in 87 features |
+
+**What the information scans show, beyond the failed gate.** The 116 added fresh errors are 64
+renamed messages (`SEC-REQ-n`, `PRIV-REQ-n` instead of the bare number) and 52 group-infixed
+references (`NFR-M-007` …) that 0.1.20 did not read at all. These are defined in the spec on lines
+such as `- **NFR-M-007**：…` that have no English or Spanish modal. Admission was left unchanged by
+the pre-registration, so the defining line is not a requirement line, its definition does not
+count, and the newly read reference becomes an undefined-reference error. A retry would have to make
+a new-form ID in a defining position count as a definition (or admit the line), and pre-register
+the renamed messages of earlier H9 twins.
+
+**Decision.** H52b stops and the candidate is reverted; engine stays 0.1.20. The owner decides
+between a pre-registered H52b-a (the two corrections above, a new fresh set and new labelers) and
+stopping. No labels were drawn.
+
+### H52c: scenario steps with a modal are requirement lines — **fails gate 3 (one prediction missed); reverted, owner decides**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). Third of the approved sequence;
+H52b failed and was not retried.
+- Pre-registered at `fbba64a`. Fresh sources (15 repositories; the Spanish query found 3) frozen
+  at `79b7de3`. 24 EN/ES twins, the replay, the judge and Amendment H52c-1 (the earlier twins with
+  an entering line and their predicted outcomes) at `ee72b15`, all before the candidate.
+- Candidate `a9de2bb` (engine 0.1.21); it, the version commit and the H52c tests were reverted.
+  Comparator 0.1.20 (`develop`, `297b7ed`).
+
+| Gate | Result |
+|---|---|
+| 1. Twins, earlier twins, minimal pairs | holds: 24 of 24 (0.1.20 meets 14, failing exactly the 10 targets); the H52 twins change exactly as Amendment H52c-1 predicts (10 twins, I1.2/I2.2 to `missing` or `partial` with one warning each); every other suite and the minimal pairs unchanged. Not pre-registered: the unit test `tests/normative.test.ts` pinned the old exclusion of scenario lines with a modal (`DADO … DEBEN …`, `GIVEN … MAY …`); the candidate updated it to the new rule |
+| 2. 716 historical predictions | holds: 0 changed |
+| 3. 137 earlier roots | **fails**: 7874 features, 480 with an entering line, 186 change, **1 item outside the predictions**: in one feature E1.4 moves `missing` → `partial`. Prediction 3 allowed only `unknown` → `supported`. The reasoning ("every entering line has a modal") missed that E1.4 is already `missing` when every admitted line is admitted by an ID without a modal; adding modal steps then makes it `partial`, which is the right result but was not predicted |
+| 4. Fresh set | not judged for the gate (stop rule). For information: 340 features, 64 change, 0 items outside the predictions, 1498 entering lines; no packet was drawn and nothing was labeled |
+| Pilot (counts only) | for information: 87 features, 5 change (findings only), 0 items outside the predictions |
+
+**Decision.** H52c stops and is reverted; engine stays 0.1.20. The owner decides between a
+pre-registered H52c-a (the same rule, prediction 3 allowing E1.4 `missing` → `partial`, the
+`normative.test.ts` change listed in advance, a new fresh set and new labelers) and stopping.
+
+### H52c-a: scenario steps with a modal are requirement lines (retry) — **holds; proposed for merge**
+
+Tracking: [#52](https://github.com/jayanez/spec-torque/issues/52). The owner's single retry of H52c
+(2026-11-27): the same rule, complete predictions, every test scanned, a new fresh set and new
+labelers; a miss would have stopped the #52 sequence.
+- Pre-registered at `161976e` (with a traced derivation of every use of the admitted set). Fresh
+  sources (16 repositories) frozen at `33bc9cd`. Amendment H52c-a-1 (`ba7e23c`, opposite-obligation
+  twins as the rule keys them) and 8 EN/ES twins, the judge for the complete predictions and the
+  rewritten `tests/normative.test.ts` (`97d8182`), all before the candidate.
+- Candidate `93cb1a5` (the H52c rule; engine 0.1.21, product 0.3.0). Comparator 0.1.20 (`develop`,
+  `597df41`). Every gate below was re-run with the judge as hardened by the review (`190eca6`); the
+  engine is unchanged after the candidate.
+
+| Gate | Result |
+|---|---|
+| 1. Twins, earlier twins, tests, minimal pairs | holds: H52c twins 24/24 (0.1.20 meets 14) and H52c-a twins 8/8 (0.1.20 meets 0), each also judged with 0 violations; the H52 twins change exactly as Amendment H52c-1 lists (10); `tests/normative.test.ts` changes as listed; H3 12/14, H3a 20/20, H5 16/16, H5a 22/22, H8 10/10, H9 14/14, H6 16/16 and H6a 12/12 as in 0.1.20; minimal pairs 0 rows changed |
+| 2. 716 historical predictions | holds: 0 changed in 220 groups |
+| 3. 137 earlier roots and the 15 H52c fresh roots | holds: 8214 features, 544 with an entering line, 250 change, **0 items outside the predictions** (the H52c miss, E1.4 `missing` → `partial`, is now predicted and occurs once). One feature over the 500-document limit was not compared (listed) |
+| 4. New fresh set (16 roots) and adjudication | holds: 979 features, 280 with an entering line, 249 change, 0 items outside the predictions. 582 distinct entering lines; 100 drawn (seed 42055) and labeled blind by two new Sonnet sessions, both quoting 100/100 lines exactly. 96 agreed `positive`; 4 fail (2 agreed `negative`: a `MAY` permission and a purpose statement; 2 with one `unknown`: a design-note sentence and a hedged draft note), threshold 5 (5% of 100). No line leaves admission (the rule only adds), so there is no leaving direction |
+| 5. Evidence | holds: every new finding and evidence item cites a line the judge found entering, at its path and line |
+
+**Pilot repository (development data, 87 features, counts only).** 12 features have an entering
+line; 5 change (findings only, no status), 0 items outside the predictions.
+
+**Branch review.** `/code-review high`, `/simplify` (four angles), `pr-test-analyzer`,
+`silent-failure-hunter`, and an adversarial and counterfactual agent that saw only the engine diff.
+- *Fixed in the replay (no engine change):* findings are compared whole and as multisets, so a
+  changed severity, suggestion or later evidence, or a duplicated finding, is a violation; added
+  findings must carry their rule's severity; the allowance for a removed opposite-obligation error
+  (predicted impossible) is now a violation; free status moves of E1.2, E2.1, I1.2 and I2.2 need an
+  entering spec line; name, schema and rubric versions are compared; synthetic mode also judges
+  the twins; the scan fails if the engines classify documents differently or (without an explicit
+  flag) if a feature is over the limit; the H52c-a twins and every judge allowance are tested; small
+  simplifications (dead structure test, shared key helper).
+- *Not changed (known limits, from the adversarial pass):* modals are matched in any case, as for
+  every requirement line, so a descriptive step with a lowercase `may`, `should` or `puede`, a step
+  that quotes a modal, a template step (`THEN [outcome] SHOULD …`) or a modal in the precondition
+  clause (`WHEN a user MUST re-authenticate, THEN …`) is admitted; the natural rate is in gate 4 (4
+  of 100 fail, 2 of them permissive or descriptive). `AND`, `BUT`, `Y`, numbered, `+` and bold
+  scenario forms were never scenario lines to the engine and are unchanged; a scenario line with an
+  ID and no modal stays excluded while its bold or numbered form is admitted (inconsistency that
+  predates H52c-a). Narrowing scenario steps to uppercase modals, or widening the step forms, would
+  each need a new hypothesis.
+
+**Known limits.** Both labelers are sessions of one model family (Sonnet). The fresh Spanish
+power is one query (4 repositories).
+
+**Decision.** Propose H52c-a (engine 0.1.21) for merge.

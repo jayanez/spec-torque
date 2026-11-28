@@ -1,0 +1,876 @@
+{
+  "version": 1,
+  "description": "H52 synthetic twins (#52): defining ID headings count as identified requirement units for I1.2 and I2.2. Constructed before the H52 candidate; not independent labels. Findings are unchanged by the policy, so `expected` holds the findings both engines report. Amendment H52-1 adds the r-family-risk, range-heading, removed-heading, empty-headings and content-under-subheading twins.",
+  "cases": [
+    {
+      "id": "gwt-only-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "- Given a reviewer opens the export,",
+          "- when the draft is reviewed,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "Only a defining heading and scenario steps; 0.1.19 has no requirement unit (unknown)."
+    },
+    {
+      "id": "gwt-plus-unidentified-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "- Given a reviewer opens the export,",
+          "- when the draft is reviewed,",
+          "- then the export MUST state its status as draft.",
+          "",
+          "## Notes",
+          "",
+          "The system MUST log every export."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|11|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "partial",
+        "I2.2": "partial"
+      },
+      "note": "The heading is identified; the line under Notes is not. 0.1.19: missing."
+    },
+    {
+      "id": "prose-without-modal-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "The export stays a draft until a reviewer adopts it."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "A defining heading with prose without a modal. 0.1.19: unknown."
+    },
+    {
+      "id": "duplicate-headings-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "The export stays a draft until a reviewer adopts it.",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "The export stays a draft until a reviewer adopts it."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|7|Duplicate requirement identifier REQ-001."
+      ],
+      "status": {
+        "I1.2": "partial",
+        "I2.2": "partial"
+      },
+      "note": "Two headings define REQ-001; the duplicate error is reported by both engines. 0.1.19: unknown."
+    },
+    {
+      "id": "heading-without-id-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### Keep the export a draft",
+          "",
+          "- Given a reviewer opens the export,",
+          "- when the draft is reviewed,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "No ID in the heading."
+    },
+    {
+      "id": "id-late-in-title-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### Export rules (REQ-001)",
+          "",
+          "- Given a reviewer opens the export,",
+          "- when the draft is reviewed,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "The ID is not in the defining position."
+    },
+    {
+      "id": "non-family-user-story-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### US-001 — Reviewer adopts the export",
+          "",
+          "- Given a reviewer opens the export,",
+          "- when the draft is reviewed,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "US- is not a requirement family."
+    },
+    {
+      "id": "non-family-document-id-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### SPEC-028 — Export drafts",
+          "",
+          "The export stays a draft until a reviewer adopts it."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "SPEC- is a document ID, not a requirement family."
+    },
+    {
+      "id": "fenced-heading-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "```markdown",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "```",
+          "",
+          "The export stays a draft until a reviewer adopts it."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading inside a fence is not a heading."
+    },
+    {
+      "id": "dotted-sub-id-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-2.1 — Keep the export a draft",
+          "",
+          "- Given a reviewer opens the export,",
+          "- when the draft is reviewed,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A dotted sub-ID does not define (H3a)."
+    },
+    {
+      "id": "heading-in-plan-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## Notes",
+          "",
+          "The system MUST log every export."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "The export stays a draft until a reviewer adopts it."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/plan.md|3|Reference REQ-001 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A defining heading in a plan is not a specification requirement."
+    },
+    {
+      "id": "heading-in-checklist-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## Notes",
+          "",
+          "The system MUST log every export."
+        ],
+        "specs/001-demo/checklists/requirements.md": [
+          "# Requirements checklist",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "- [ ] The export stays a draft until a reviewer adopts it."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Review checklists are context (H7a)."
+    },
+    {
+      "id": "heading-with-modal-body-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft until it is adopted",
+          "",
+          "The export MUST stay a draft until it is adopted."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "The body line inherits REQ-001 in both engines."
+    },
+    {
+      "id": "table-row-en",
+      "construct": "control",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "| ID | Requirement |",
+          "| --- | --- |",
+          "| REQ-001 | The export MUST stay a draft. |"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "A table row with an ID is admitted and identified in both engines."
+    },
+    {
+      "id": "gwt-only-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- cuando se revisa el borrador,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "Only a defining heading and scenario steps; 0.1.19 has no requirement unit (unknown)."
+    },
+    {
+      "id": "gwt-plus-unidentified-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- cuando se revisa el borrador,",
+          "- entonces la exportación DEBE indicar que es un borrador.",
+          "",
+          "## Notas",
+          "",
+          "El sistema DEBE registrar cada exportación."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|11|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "partial",
+        "I2.2": "partial"
+      },
+      "note": "The heading is identified; the line under Notes is not. 0.1.19: missing."
+    },
+    {
+      "id": "prose-without-modal-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "La exportación sigue siendo un borrador hasta que un revisor la adopta."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "A defining heading with prose without a modal. 0.1.19: unknown."
+    },
+    {
+      "id": "duplicate-headings-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "La exportación sigue siendo un borrador hasta que un revisor la adopta.",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "La exportación sigue siendo un borrador hasta que un revisor la adopta."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|7|Duplicate requirement identifier REQ-001."
+      ],
+      "status": {
+        "I1.2": "partial",
+        "I2.2": "partial"
+      },
+      "note": "Two headings define REQ-001; the duplicate error is reported by both engines. 0.1.19: unknown."
+    },
+    {
+      "id": "heading-without-id-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### Mantener la exportación como borrador",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- cuando se revisa el borrador,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "No ID in the heading."
+    },
+    {
+      "id": "id-late-in-title-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### Reglas de exportación (REQ-001)",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- cuando se revisa el borrador,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "The ID is not in the defining position."
+    },
+    {
+      "id": "non-family-user-story-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### US-001 — El revisor adopta la exportación",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- cuando se revisa el borrador,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "US- is not a requirement family."
+    },
+    {
+      "id": "non-family-document-id-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### SPEC-028 — Borradores de exportación",
+          "",
+          "La exportación sigue siendo un borrador hasta que un revisor la adopta."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "SPEC- is a document ID, not a requirement family."
+    },
+    {
+      "id": "fenced-heading-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "```markdown",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "```",
+          "",
+          "La exportación sigue siendo un borrador hasta que un revisor la adopta."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading inside a fence is not a heading."
+    },
+    {
+      "id": "dotted-sub-id-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-2.1 — Mantener la exportación como borrador",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- cuando se revisa el borrador,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A dotted sub-ID does not define (H3a)."
+    },
+    {
+      "id": "heading-in-plan-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## Notas",
+          "",
+          "El sistema DEBE registrar cada exportación."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "La exportación sigue siendo un borrador hasta que un revisor la adopta."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier.",
+        "I2.3|specs/001-demo/plan.md|3|Reference REQ-001 has no definition in the supplied specs."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "A defining heading in a plan is not a specification requirement."
+    },
+    {
+      "id": "heading-in-checklist-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## Notas",
+          "",
+          "El sistema DEBE registrar cada exportación."
+        ],
+        "specs/001-demo/checklists/requirements.md": [
+          "# Lista de requisitos",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "- [ ] La exportación sigue siendo un borrador hasta que un revisor la adopta."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|5|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Review checklists are context (H7a)."
+    },
+    {
+      "id": "heading-with-modal-body-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador hasta su adopción",
+          "",
+          "La exportación DEBE seguir siendo un borrador hasta su adopción."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "The body line inherits REQ-001 in both engines."
+    },
+    {
+      "id": "table-row-es",
+      "construct": "control",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "| ID | Requisito |",
+          "| --- | --- |",
+          "| REQ-001 | La exportación DEBE seguir siendo un borrador. |"
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "A table row with an ID is admitted and identified in both engines."
+    },
+    {
+      "id": "r-family-risk-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## Risks",
+          "",
+          "### R-1 — Vendor lock-in",
+          "",
+          "Mitigation: keep the client behind an adapter."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "R- also numbers risks; it does not count as a heading unit. (Amendment H52-1)"
+    },
+    {
+      "id": "range-heading-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "## FR-001 to FR-005 — Overview",
+          "",
+          "These requirements cover the export flow."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading with a second ID names a range, not one requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "removed-heading-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### FR-003 — Removed",
+          "",
+          "Export to PDF was dropped from scope."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading marked removed is not a requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "empty-headings-en",
+      "construct": "negative",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft",
+          "### REQ-002 — Show the draft banner",
+          "",
+          "## Notes",
+          "",
+          "The system MUST log every export."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|8|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Headings with nothing under them do not count. (Amendment H52-1)"
+    },
+    {
+      "id": "content-under-subheading-en",
+      "construct": "target",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Export",
+          "",
+          "### REQ-001 — Keep the export a draft",
+          "",
+          "#### Scenario",
+          "",
+          "- Given a reviewer opens the export,",
+          "- then the export MUST state its status as draft."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "Content under a deeper heading belongs to the section. (Amendment H52-1)"
+    },
+    {
+      "id": "r-family-risk-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## Riesgos",
+          "",
+          "### R-1 — Dependencia del proveedor",
+          "",
+          "Mitigación: mantener el cliente detrás de un adaptador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "R- also numbers risks; it does not count as a heading unit. (Amendment H52-1)"
+    },
+    {
+      "id": "range-heading-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "## FR-001 a FR-005 — Resumen",
+          "",
+          "Estos requisitos cubren el flujo de exportación."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading with a second ID names a range, not one requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "removed-heading-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### FR-003 — Eliminado",
+          "",
+          "La exportación a PDF quedó fuera del alcance."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "unknown",
+        "I2.2": "unknown"
+      },
+      "note": "A heading marked removed is not a requirement. (Amendment H52-1)"
+    },
+    {
+      "id": "empty-headings-es",
+      "construct": "negative",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador",
+          "### REQ-002 — Mostrar el aviso de borrador",
+          "",
+          "## Notas",
+          "",
+          "El sistema DEBE registrar cada exportación."
+        ]
+      },
+      "expected": [
+        "I1.2|specs/001-demo/spec.md|8|Requirement has no stable identifier."
+      ],
+      "status": {
+        "I1.2": "missing",
+        "I2.2": "missing"
+      },
+      "note": "Headings with nothing under them do not count. (Amendment H52-1)"
+    },
+    {
+      "id": "content-under-subheading-es",
+      "construct": "target",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Exportación",
+          "",
+          "### REQ-001 — Mantener la exportación como borrador",
+          "",
+          "#### Escenario",
+          "",
+          "- Dado que un revisor abre la exportación,",
+          "- entonces la exportación DEBE indicar que es un borrador."
+        ]
+      },
+      "expected": [],
+      "status": {
+        "I1.2": "supported",
+        "I2.2": "supported"
+      },
+      "note": "Content under a deeper heading belongs to the section. (Amendment H52-1)"
+    }
+  ]
+}

@@ -1,0 +1,320 @@
+{
+  "version": 1,
+  "description": "H9 synthetic twins (#84): references qualified by another specification (SPEC-<n> or a hyphen-joined namespace), each with a twin of the opposite outcome. Constructed before the H9 candidate from the frozen policy; not independent labels. The 10 rule-2 (not-adopted) cases frozen at 5cd81e7 were removed when rule 2 was reverted (owner decision, 2026-11-25).",
+  "cases": [
+    {
+      "id": "spec-qualified-external-en",
+      "construct": "spec-qualifier",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST ask for consent before recording."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001; reuses SPEC-028 REQ-004 unchanged."
+        ]
+      },
+      "expected": [],
+      "note": "SPEC-028 qualifies REQ-004 and is not feature 001, so the reference is external (rule 1)."
+    },
+    {
+      "id": "spec-qualified-bare-en",
+      "construct": "spec-qualifier",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST ask for consent before recording."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001; reuses REQ-004 unchanged."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference REQ-004 has no definition in the supplied specs."
+      ],
+      "note": "Twin: without a qualifier REQ-004 is a local reference and is undefined."
+    },
+    {
+      "id": "spec-qualified-self-en",
+      "construct": "spec-qualifier",
+      "language": "en",
+      "files": {
+        "specs/028-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST ask for consent before recording."
+        ],
+        "specs/028-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001; reuses SPEC-028 REQ-004 unchanged."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/028-demo/plan.md|3|Reference REQ-004 has no definition in the supplied specs."
+      ],
+      "note": "Twin: SPEC-028 is the feature itself (specs/028-demo), so REQ-004 is local and undefined."
+    },
+    {
+      "id": "spec-qualified-separators-en",
+      "construct": "spec-qualifier",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST ask for consent before recording."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements REQ-001; depends on SPEC-028/REQ-004 and SPEC-031's REQ-002."
+        ]
+      },
+      "expected": [],
+      "note": "SPEC-<n> followed by \"/\", a possessive or \":\" still qualifies the ID (rule 1)."
+    },
+    {
+      "id": "namespace-external-en",
+      "construct": "namespace",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST ask for consent before recording."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Wire the consumer to VPC-REQ-01."
+        ]
+      },
+      "expected": [],
+      "note": "VPC- is joined to REQ-01 and no spec line of the feature uses the VPC namespace, so the reference is external (rule 1)."
+    },
+    {
+      "id": "namespace-local-en",
+      "construct": "namespace",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **REQ-001:** The system MUST ask for consent before recording.",
+          "- **VPC-REQ-01:** The consumer MUST revalidate the plan."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Wire the consumer to VPC-REQ-02."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference REQ-02 has no definition in the supplied specs."
+      ],
+      "note": "Twin: the spec uses the VPC namespace, so VPC-REQ-02 is local and, as in 0.1.12, resolves as REQ-02, which is undefined."
+    },
+    {
+      "id": "hyphen-range-en",
+      "construct": "namespace",
+      "language": "en",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001:** The system MUST ask for consent.",
+          "- **FR-002:** The system MUST log each export."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implements FR-001-FR-003."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference FR-003 has no definition in the supplied specs."
+      ],
+      "note": "Control: FR-001- is a range, not a namespace, so FR-003 stays a local undefined reference."
+    },
+    {
+      "id": "spec-qualified-external-es",
+      "construct": "spec-qualifier",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001; reutiliza SPEC-028 REQ-004 sin cambios."
+        ]
+      },
+      "expected": [],
+      "note": "SPEC-028 qualifies REQ-004 and is not feature 001, so the reference is external (rule 1)."
+    },
+    {
+      "id": "spec-qualified-bare-es",
+      "construct": "spec-qualifier",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001; reutiliza REQ-004 sin cambios."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference REQ-004 has no definition in the supplied specs."
+      ],
+      "note": "Twin: without a qualifier REQ-004 is a local reference and is undefined."
+    },
+    {
+      "id": "spec-qualified-self-es",
+      "construct": "spec-qualifier",
+      "language": "es",
+      "files": {
+        "specs/028-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/028-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001; reutiliza SPEC-028 REQ-004 sin cambios."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/028-demo/plan.md|3|Reference REQ-004 has no definition in the supplied specs."
+      ],
+      "note": "Twin: SPEC-028 is the feature itself (specs/028-demo), so REQ-004 is local and undefined."
+    },
+    {
+      "id": "spec-qualified-separators-es",
+      "construct": "spec-qualifier",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa REQ-001; depende de SPEC-028/REQ-004 y de SPEC-031: REQ-002."
+        ]
+      },
+      "expected": [],
+      "note": "SPEC-<n> followed by \"/\", a possessive or \":\" still qualifies the ID (rule 1)."
+    },
+    {
+      "id": "namespace-external-es",
+      "construct": "namespace",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE pedir consentimiento antes de grabar."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Conectar el consumidor con VPC-REQ-01."
+        ]
+      },
+      "expected": [],
+      "note": "VPC- is joined to REQ-01 and no spec line of the feature uses the VPC namespace, so the reference is external (rule 1)."
+    },
+    {
+      "id": "namespace-local-es",
+      "construct": "namespace",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **REQ-001:** El sistema DEBE pedir consentimiento antes de grabar.",
+          "- **VPC-REQ-01:** El consumidor DEBE revalidar el plan."
+        ],
+        "specs/001-demo/tasks.md": [
+          "# Tasks",
+          "",
+          "- [ ] T001 (REQ-001): Conectar el consumidor con VPC-REQ-02."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/tasks.md|3|Reference REQ-02 has no definition in the supplied specs."
+      ],
+      "note": "Twin: the spec uses the VPC namespace, so VPC-REQ-02 is local and, as in 0.1.12, resolves as REQ-02, which is undefined."
+    },
+    {
+      "id": "hyphen-range-es",
+      "construct": "namespace",
+      "language": "es",
+      "files": {
+        "specs/001-demo/spec.md": [
+          "# Demo",
+          "",
+          "## Requisitos",
+          "",
+          "- **FR-001:** El sistema DEBE pedir consentimiento.",
+          "- **FR-002:** El sistema DEBE registrar cada exportación."
+        ],
+        "specs/001-demo/plan.md": [
+          "# Plan",
+          "",
+          "Implementa FR-001-FR-003."
+        ]
+      },
+      "expected": [
+        "I2.3|specs/001-demo/plan.md|3|Reference FR-003 has no definition in the supplied specs."
+      ],
+      "note": "Control: FR-001- is a range, not a namespace, so FR-003 stays a local undefined reference."
+    }
+  ]
+}

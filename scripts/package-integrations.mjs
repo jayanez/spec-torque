@@ -1,8 +1,13 @@
 import { cp, mkdir, writeFile, access, rm, readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 import { generateLicenseNotices } from './license-notices.mjs';
-await Promise.all(['dist/cli.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md'].map(path => access(path)));
+await Promise.all(['dist/cli.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md', 'docs/assets/brand/icon-256.png'].map(path => access(path)));
 await generateLicenseNotices();
+// Marketplace listings need a square PNG icon inside each package.
+async function copyIcon(dir) {
+  await mkdir(dir + '/assets', { recursive: true });
+  await cp('docs/assets/brand/icon-256.png', dir + '/assets/icon.png');
+}
 for (const name of ['claude', 'vscode', 'opencode', 'pi']) {
   const dir = 'integrations/' + name;
   const runtime = dir + (name === 'claude' ? '/dist' : '/runtime');
@@ -15,7 +20,7 @@ for (const name of ['claude', 'vscode', 'opencode', 'pi']) {
   await cp('LICENSE', dir + '/LICENSE');
   await cp('NOTICE', dir + '/NOTICE');
   await cp('THIRD_PARTY_NOTICES', dir + '/THIRD_PARTY_NOTICES');
-
+  await copyIcon(dir);
 }
 await build({ entryPoints: ['integrations/vscode/src/extension.ts'], bundle: true, platform: 'node', target: 'node22', format: 'cjs', external: ['vscode'], outfile: 'integrations/vscode/extension.cjs' });
 const codexRuntime = 'integrations/codex/runtime';
@@ -35,9 +40,12 @@ for (const dir of ['web-dist', 'skills']) {
   await rm(codexRoot + '/' + dir, { recursive: true, force: true });
   await cp(dir, codexRoot + '/' + dir, { recursive: true });
 }
+// Codex-only skills (they call tools only the Codex server has) live in skill-src and join the shared ones.
+await cp(codexRoot + '/skill-src', codexRoot + '/skills', { recursive: true });
 for (const filename of ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) {
   await cp(filename, codexRoot + '/' + filename);
 }
+await copyIcon(codexRoot);
 const widget = await build({
   entryPoints: ['integrations/codex/viewer.ts'], bundle: true, platform: 'browser', target: 'es2022',
   format: 'iife', write: false,
