@@ -77,3 +77,15 @@ test('spec-view is a Codex-only skill that opens the viewer through open_spector
   assert.doesNotMatch(metadata, /display_name/u, 'a display_name drops the "Spectorque:" prefix the other skills show in the $ menu');
   await assert.rejects(readFile('skills/spec-view/SKILL.md', 'utf8'), 'the shared skills reach Claude Code and Pi, which have no open_spectorque tool');
 });
+
+test('spec-workbench is a Codex-only skill that opens the workbench root', async () => {
+  const directory = 'integrations/codex/skill-src/spec-workbench';
+  const skill = (await readFile(directory + '/SKILL.md', 'utf8')).replace(/\r\n/gu, '\n');
+  assert.match(skill, /^---\nname: spec-workbench\n/u);
+  assert.match(skill, /\.\.\/\.\.\/runtime\/workbench\.mjs/u);
+  assert.doesNotMatch(skill, /\?(?:review|export)=1/u);
+  const metadata = (await readFile(directory + '/agents/openai.yaml', 'utf8')).replace(/\r\n/gu, '\n');
+  assert.match(metadata, /^policy:\n  allow_implicit_invocation: false$/mu);
+  assert.doesNotMatch(metadata, /display_name/u);
+  await assert.rejects(readFile('skills/spec-workbench/SKILL.md', 'utf8'), { code: 'ENOENT' });
+});

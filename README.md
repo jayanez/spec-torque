@@ -192,7 +192,7 @@ Install the plugin from the marketplace, start a session in the Code tab, then r
 <details>
 <summary><strong>Codex</strong> · inline viewer</summary>
 
-The viewer opens in the conversation from the project's local MCP server. Choose a scope and finding, preview a change, then hand off to the local workbench to approve or export. Opening it in Codex Desktop takes one model turn. The capture shows the viewer as Codex renders it, driven by a local MCP Apps host. [Install for Codex](integrations/codex/README.md) · [Codex Desktop capture](docs/assets/panels/codex-desktop.jpg)
+The viewer opens in the conversation from the project's local MCP server. Choose a scope and finding, preview a change, then hand off to the local workbench to approve or export. Opening the inline viewer in Codex Desktop takes one model turn. Open the workbench directly with the environment action or the optional `$spec-workbench` skill. The capture shows the viewer as Codex renders it, driven by a local MCP Apps host. [Install for Codex](integrations/codex/README.md) · [Codex Desktop capture](docs/assets/panels/codex-desktop.jpg)
 
 [![SpecTorque 0.3.0 inline viewer with the summary, dimensions, finding card and change preview](docs/assets/panels/codex.png)](docs/assets/panels/codex.png)
 

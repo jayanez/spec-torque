@@ -51,6 +51,8 @@ The basic workbench runs with Node.js 22.20+ and npm dependencies. Acquire the f
 3. The maintainer tags `v<version>` on the merged commit. The tag, publication and issue closure each need maintainer authorization.
 4. [`release.yml`](../.github/workflows/release.yml) checks that the tag matches the version, builds every package, archive and the VSIX, writes `SHA256SUMS`, publishes to npm with provenance, publishes the VSIX to both editor registries, publishes `server.json` to the MCP Registry and creates the GitHub release. A manual run is a dry run by default. Account setup is in [publishing](publishing.md).
 
+For Codex upgrades, regenerate the project MCP block and workbench environment action so they use the new installed path. [Codex update and removal](../integrations/codex/README.md#update-and-remove)
+
 **Current and historical documents.** Install instructions in the README, this page, [integrations](integrations.md), the [Spanish guide](es.md) and the host READMEs describe the current version and are updated every release; `tests/docs.test.ts` rejects a stale product version there. Qualification records ([compatibility](compatibility.md), [host qualification](host-common-qualification.md), [Codex Desktop probe](codex-desktop-probe.md), the precision pages and past changelog entries) are evidence for the exact version they name. They are never rewritten; a new observation adds a row.
 
 ## Build a candidate

@@ -56,7 +56,7 @@ La precisión permite comprobar una obligación. Si una reserva debe confirmarse
 
 Para desarrollar y verificar usa Node 22.20.0, fijado en `.nvmrc`. `npm run check` comprueba el ejecutable efectivo. Instala los navegadores dentro del proyecto con `npm run browsers:install` y ejecuta `npm run test:browser`; conserva los fallos y límites en el informe, sin convertirlos en aceptación.
 
-`npm run prepare:codex -- es` crea un proyecto desechable en `.spec-torque/codex-es`, con MCP y las tres skills locales. No sobrescribe un proyecto existente ni modifica tu perfil global. Ábrelo en Codex y verifica la conexión. Exporta los cambios que quieras conservar antes de borrar esa carpeta.
+`npm run prepare:codex -- es` crea un proyecto desechable en `.spec-torque/codex-es`, con MCP y las skills compartidas. No sobrescribe un proyecto existente ni modifica tu perfil global. Ábrelo en Codex y verifica la conexión. Exporta los cambios que quieras conservar antes de borrar esa carpeta.
 
 `npm run qualify:codex` verifica el app-server real y el panel común sin iniciar un turno de modelo. Para VS Code, genera el VSIX con `npm run package:vscode` y configura `VSCODE_EXECUTABLE` antes de ejecutar `npm run test:vscode` y su variante `-- --restricted`. Se utilizan perfiles aislados. Consulta [los pasos, resultados y límites](qualification.md).
 
@@ -64,9 +64,18 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 
 ## Visor de Codex Desktop
 
-Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el archivo reubicado fuera del checkout. Instala el ZIP desde un marketplace local y ejecuta `setup-workspace.mjs` desde la copia instalada, con la ruta del worktree confiable. Incorpora el bloque TOML que imprime al proyecto. Para actualizar, reinstala el ZIP verificado y vuelve a generar ese bloque. Para retirarlo, elimina el bloque de SpecTorque, detén el workbench y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
+Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el archivo reubicado fuera del checkout. Instala el ZIP desde un marketplace local y ejecuta `setup-workspace.mjs` desde la copia instalada, con la ruta del worktree confiable. Ejecuta el setup una vez por cada worktree, también los vinculados. Incorpora el bloque MCP en `.codex/config.toml` y el de la acción en `.codex/environments/environment.toml`. Si el archivo de entorno ya existe, fusiona la acción y conserva las demás acciones y el script de setup. El script solo imprime la configuración. En Windows imprime el comando para terminal y omite la acción. Para actualizar, reinstala el ZIP verificado y sustituye los bloques con las rutas nuevas. Para retirar la integración, detén el workbench, elimina los bloques de SpecTorque y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
 
-En la versión de Codex Desktop probada, abrir el visor con `open_spectorque` inicia un turno con el proveedor configurado. Para el piloto, usa el workbench local. En una cualificación interna con autorización expresa, abre un chat con el ejemplo público e invoca `$spec-view` (o la herramienta `open_spectorque` del servidor `spectorque-workspace`). Selecciona el alcance y revisa la evidencia y la diferencia. Para guardar o exportar, inicia el workbench con el comando impreso por el instalador y usa su dirección local en el navegador integrado. Los datos de revisión requieren una aprobación explícita y se rechazan si cambió la revisión. Consulta las rutas observadas en la [cualificación de Desktop](codex-desktop-probe.md). El [seguimiento de Windows](https://github.com/jayanez/spec-torque/issues/34) registra sus variantes por separado.
+Abre un solo workbench por worktree. Si ya hay uno activo, reutilízalo o detenlo antes de cambiar de vía.
+
+| Vía | Abrir | Detener |
+| --- | --- | --- |
+| **Acción de entorno**, recomendada en perfiles con aprobación | Pulsa **⌘K**, busca **Open SpecTorque workbench** y elige **Run: Open SpecTorque workbench** en **Project**. Pulsa la URL del terminal integrado. No consume un turno de modelo. | **Ctrl+C** en el terminal de la acción, cerrar su pestaña o archivar el chat. |
+| **Skill opcional**, cómoda con **Full access** | Invoca `$spec-workbench`. Consume un turno y puede abrir el navegador integrado con `@Browser`. Con **Ask for approval**, Desktop puede pedir **Allow once**. Si ya hay un workbench para ese worktree, pregunta si quieres reutilizarlo. | Si lo abrió la skill, verifica el comando y el worktree con `ps -p <PID> -o command=` y ejecuta `kill -TERM <PID>`. Si lo reutilizaste, sigue la parada de su vía original. |
+
+En la versión probada, la acción no abrió la página sola ni mostró un botón en la cabecera. Cambiar de chat dejó el servidor activo. Queda sin verificar el cierre de la ventana con el servidor en marcha. [Cualificación de Desktop](codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
+
+Las dos vías abren `/`. Para el visor en línea, `$spec-view` o `open_spectorque` inicia un turno con el proveedor configurado. Sus enlaces `?review=1` y `?export=1` siguen usando los datos copiados desde el visor. Los datos de revisión requieren aprobación explícita y se rechazan si cambió la revisión. [Guía de revisión y exportación](../integrations/codex/README.md#review-and-export)
 
 ## Continuación en otros clientes
 

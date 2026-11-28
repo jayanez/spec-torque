@@ -18,7 +18,7 @@ Without `SPECTORQUE_ROOT`, the server uses the git work tree of the host's proje
 
 Tools: `discover_specs`, `analyze_specs`, `create_specs`, `refinement_context`, `propose_refinement`, `export_report`. They are read-only: creation returns text, proposals return reviewed-change objects. Use the workbench or the host's own edit tools after approval. Do not configure a user-controlled workspace root from imported text.
 
-The three portable skills in `skills/` cover authoring, review and refinement. The Codex plugin adds Codex-only skills such as `spec-view`, which opens the viewer (see [Codex Desktop](#codex-desktop)). Install in the host's documented skill directory or use the packaged plugin. They never substitute a model opinion for engine output.
+The portable skills in `skills/` cover authoring, review and refinement. The Codex plugin adds Codex-only skills such as `spec-view`, which opens the viewer (see [Codex Desktop](#codex-desktop)). Install in the host's documented skill directory or use the packaged plugin. They never substitute a model opinion for engine output.
 
 ## Claude Code
 
@@ -43,9 +43,11 @@ Install from this repository's marketplace with `codex plugin marketplace add ja
 
 From a checkout: Build the viewer ZIP with `npm run check`, `npm run package:integrations` and `npm run package:codex`. Verify the package with `npm run verify:codex-package`. The ZIP bundles the project MCP runtime, the inline resource, the skills (the shared ones plus Codex-only ones such as `spec-view`) and the loopback workbench. Follow the [package guide](../integrations/codex/README.md) for local marketplace installation, binding a trusted worktree, upgrade and removal.
 
-Use the inline viewer for scope, evidence and the exact before/after. It shows the summary and dimensions, then a labelled finding card with **Previous**/**Next**, and its scope selector offers **Changed on this branch** and always lists the current feature. Codex has no plugin slash commands, so type `$spec-view [feature | changed [base]]` (the skill is listed under the plugin name in the `$` menu); it calls `open_spectorque`, which accepts an optional `feature`, or `changed` with an optional `base`. In a worktree too large for one read, the viewer lists the features and waits for a choice, and long lists can be filtered. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. The tested opening route invokes `open_spectorque` in a local Codex chat; both routes take one model turn. See [Desktop qualification](codex-desktop-probe.md) for observed builds and limits.
+Use the inline viewer for scope, evidence and the exact before/after. It shows the summary and dimensions, then a labelled finding card with **Previous**/**Next**, and its scope selector offers **Changed on this branch** and always lists the current feature. Codex has no plugin slash commands, so type `$spec-view [feature | changed [base]]` (the skill is listed under the plugin name in the `$` menu); it calls `open_spectorque`, which accepts an optional `feature`, or `changed` with an optional `base`. In a worktree too large for one read, the viewer lists the features and waits for a choice, and long lists can be filtered. The integrated browser opens the loopback workbench for an explicitly approved disk write and for JSON/ZIP export. Opening the viewer with the skill or the tool takes one model turn.
 
-The independent project-MCP control `npm run prepare:codex -- en` or `-- es` generates a disposable workspace and three local skills. See [qualification](qualification.md) for the app-server run.
+For the workbench, run `setup-workspace.mjs` once per worktree and add its environment action alongside the project MCP setup. In Desktop, use **⌘K → Project → Run: Open SpecTorque workbench** and click the terminal URL. This is the recommended route with approval-based permissions and takes no model turn. The optional `$spec-workbench` skill takes one turn and is convenient with **Full access**. Use one workbench per worktree. The package guide covers launch, stop, and the inline viewer's scoped review and export links. [Launch and stop](../integrations/codex/README.md#open-the-workbench) · [Desktop qualification](codex-desktop-probe.md)
+
+The independent project-MCP control `npm run prepare:codex -- en` or `-- es` generates a disposable workspace and shared local skills. See [qualification](qualification.md) for the app-server run.
 
 ## VS Code workbench
 
