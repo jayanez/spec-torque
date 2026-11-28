@@ -152,8 +152,11 @@ export async function load(root: string, phase?: Phase): Promise<Loaded> {
       if (!material.has(item.case)) throw new Error(`Run-${run} item ${item.id} names unknown case ${item.case}.`);
     return { fixture, docSha256: existsSync(join(root, doc)) ? fileSha256(await read(doc)) : null };
   };
-  const run2 = await optional(2, calibrationRun2Schema, RUN2_PROTOCOL);
-  const run3 = phase === undefined || runOf(phase) === 3
+  const run = phase === undefined ? undefined : runOf(phase);
+  const run2 = run === undefined || run === 2
+    ? await optional(2, calibrationRun2Schema, RUN2_PROTOCOL)
+    : { fixture: null, docSha256: null };
+  const run3 = run === undefined || run === 3
     ? await optional(3, calibrationRun3Schema, RUN3_PROTOCOL)
     : { fixture: null, docSha256: null };
   return { protocolSha256: FROZEN_PROTOCOL_SHA256, currentProtocolSha256: fileSha256(protocol), prompt, rehearsal, calibration,

@@ -177,6 +177,22 @@ test('a torn final line is dropped on resume; corruption elsewhere stops', () =>
   assert.throws(() => loadRecords(f), /corrupt record on line 1/);
 });
 
+test('recovering a torn UTF-8 append preserves the complete prefix byte for byte', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'st65-utf8-'));
+  try {
+    const raw = join(dir, 'raw.jsonl');
+    const first = { id: 'acción 🧪', final: true };
+    const prefix = Buffer.from(`${JSON.stringify(first)}\r\n\n`);
+    const torn = Buffer.from('{"id":"café 🧪');
+    writeFileSync(raw, Buffer.concat([prefix, torn.subarray(0, -1)]));
+    assert.deepEqual(loadRecords(raw), [first]);
+    assert.deepEqual(readFileSync(raw), prefix);
+    assert.deepEqual(loadRecords(raw), [first]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('client results: blank output is transport; pins are enforced on every call', () => {
   const env = r => JSON.stringify({ is_error: false, result: r, modelUsage: { 'claude-sonnet-5-5': {} } });
   assert.equal(classifyR1(env('{"a":1}'), 0).raw, '{"a":1}');

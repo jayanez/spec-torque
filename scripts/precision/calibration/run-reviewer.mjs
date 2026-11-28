@@ -19,7 +19,7 @@
  * - R2: the pinned docker image; mounts only the item, read-only credentials and an output directory.
  */
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, truncateSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -144,7 +144,8 @@ function call(reviewer, input, authPath, image, screen) {
 /** Loads existing records, dropping a torn final line from an interrupted append. */
 export function loadRecords(rawFile, validate = () => {}) {
   if (!existsSync(rawFile)) return [];
-  const text = readFileSync(rawFile, 'utf8');
+  const bytes = readFileSync(rawFile);
+  const text = bytes.toString('utf8');
   const lines = text.split('\n');
   const records = [];
   for (const [i, line] of lines.entries()) {
@@ -154,7 +155,7 @@ export function loadRecords(rawFile, validate = () => {}) {
       if (i === lines.length - 1) {
         // Torn final line from an interrupted append: drop it; the call it recorded is redone.
         validate(records);
-        writeFileSync(rawFile, lines.slice(0, i).join('\n') + (i ? '\n' : ''));
+        truncateSync(rawFile, bytes.lastIndexOf(0x0a) + 1);
         return records;
       }
       throw new Error(`${rawFile}: corrupt record on line ${i + 1}.`);

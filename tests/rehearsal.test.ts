@@ -101,20 +101,24 @@ test('the live split applies consent, sanitization and completion, and keeps lea
 
 test('run-2 calibration packets: 96 and 48 items, seeded from the run-2 pre-registration', async () => {
   const { calibrationItems, packet, seed, order } = await import('../scripts/precision/rehearsal.js');
-  assert.ok(loaded.calibrationRun2 && loaded.run2ProtocolSha256);
-  const cal = calibrationItems(loaded, 'calibration-run2');
-  const res = calibrationItems(loaded, 'reserve-run2');
+  assert.equal(loaded.calibrationRun2, null, 'the explicit live phase excludes run 2');
+  assert.equal(loaded.run2ProtocolSha256, null);
+  const run2 = await load(root, 'calibration-run2');
+  assert.equal(run2.calibrationRun3, null);
+  assert.ok(run2.calibrationRun2 && run2.run2ProtocolSha256);
+  const cal = calibrationItems(run2, 'calibration-run2');
+  const res = calibrationItems(run2, 'reserve-run2');
   assert.equal(cal.length, 96); assert.equal(res.length, 48);
   for (const lang of ['en', 'es']) {
-    assert.equal(loaded.calibrationRun2!.items.filter(i => i.language === lang).length, 48);
-    assert.equal(loaded.calibrationRun2!.reserve.filter(i => i.language === lang).length, 24);
+    assert.equal(run2.calibrationRun2!.items.filter(i => i.language === lang).length, 48);
+    assert.equal(run2.calibrationRun2!.reserve.filter(i => i.language === lang).length, 24);
   }
-  const p = packet(loaded, 'calibration-run2', 'R1', 1, cal);
+  const p = packet(run2, 'calibration-run2', 'R1', 1, cal);
   const { RUN2_FROZEN_SHA256 } = await import('../scripts/precision/rehearsal.js');
   assert.equal(p.runProtocolSha256, RUN2_FROZEN_SHA256);
   assert.equal(p.seed, seed(RUN2_FROZEN_SHA256, 'calibration-run2', 'R1', 1));
   assert.deepEqual(p.items.map(i => i.id), order(cal, p.seed).map(i => i.id));
-  const run1 = new Set(calibrationItems(loaded, 'calibration').map(i => i.id));
+  const run1 = new Set(calibrationItems(run2, 'calibration').map(i => i.id));
   assert.ok(cal.every(i => !run1.has(i.id)));
 });
 
@@ -122,7 +126,10 @@ test('run-3 calibration items: 96 and 48, new, and refused until the run-3 freez
   const { calibrationItems, packet, RUN3_FROZEN_SHA256 } = await import('../scripts/precision/rehearsal.js');
   assert.equal(loaded.calibrationRun3, null, 'the explicit live phase excludes run 3');
   const run3 = await load(root, 'calibration-run3');
+  assert.equal(run3.calibrationRun2, null, 'the explicit run-3 phase excludes run 2');
+  assert.equal(run3.run2ProtocolSha256, null);
   const byDefault = await load(root);
+  assert.ok(byDefault.calibrationRun2 && byDefault.run2ProtocolSha256);
   assert.equal(byDefault.run3ProtocolSha256, run3.run3ProtocolSha256);
   assert.deepEqual(byDefault.calibrationRun3, run3.calibrationRun3);
   assert.ok(run3.calibrationRun3 && run3.run3ProtocolSha256);
@@ -136,7 +143,7 @@ test('run-3 calibration items: 96 and 48, new, and refused until the run-3 freez
   // No run-3 response repeats a response shown to reviewers on the same case in runs 1 or 2.
   const sig = (i: { case: string; response: unknown }) => `${i.case}:${JSON.stringify(i.response)}`;
   const earlier = new Set([...loaded.calibration.items, ...loaded.calibration.reserve,
-    ...loaded.calibrationRun2!.items, ...loaded.calibrationRun2!.reserve].map(sig));
+    ...byDefault.calibrationRun2.items, ...byDefault.calibrationRun2.reserve].map(sig));
   assert.ok([...run3.calibrationRun3!.items, ...run3.calibrationRun3!.reserve].every(i => !earlier.has(sig(i))));
   if (RUN3_FROZEN_SHA256 === null) assert.throws(() => packet(run3, 'calibration-run3', 'R1', 1, cal), /not frozen/);
 });
