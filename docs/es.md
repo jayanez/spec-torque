@@ -40,6 +40,26 @@ Los recursos de cada versión para instalaciones sin conexión y la política de
 
 Las puntuaciones son una ayuda heurística: no certifican la corrección de la spec ni predicen defectos. «Desconocido» indica evidencia insuficiente; «no aplicable» requiere justificación. Consulta [el estado real de las integraciones](compatibility.md) y [su instalación](integrations.md).
 
+## Secuencia de revisión con modelo
+
+La skill `spec-review` recomienda esta secuencia cuando un modelo revisa un conjunto de specs y sus correcciones. Es una recomendación sin una evaluación controlada que la respalde. Cada corrección y cada commit requieren la aprobación del usuario, como en `spec-refine`.
+
+1. Ejecuta el motor y corrige los problemas reales que señale antes de cualquier revisión con modelo.
+2. Haz commit del texto, anota el commit y ejecuta una revisión completa con dos enfoques en paralelo, sin que ninguno vea la salida del otro:
+   - Adversarial: contradicciones, frases normativas ambiguas y cifras recalculadas desde sus fuentes.
+   - Contrafáctico: contrasta el texto con los fallos anteriores y con cada opción de cada decisión abierta.
+
+   Conserva un hallazgo cuando lo señalen ambos enfoques o cuando una comprobación con contexto nuevo, que solo recibe el hallazgo y el texto, no pueda refutarlo. Esa comprobación solo descarta hallazgos; nunca los añade. Si el host no puede usar contextos separados, indica que la revisión usó uno solo.
+3. Aplica en una sola pasada los hallazgos conservados, salvo los que son solo informativos.
+4. Verifica contra el commit anotado y mantenlo en el historial (sin `amend` ni `rebase`) hasta terminar la verificación:
+   - Obtén las funcionalidades tocadas con `changed` y `base` (CLI `spectorque features --changed --base <commit>`), analiza cada una con `feature` y corrige los hallazgos que no existían en el commit anotado.
+   - Lee `git diff <commit>` y los archivos nuevos sin seguimiento.
+   - Para cada definición cambiada o eliminada (la línea que define un ID, un umbral, un término definido), busca en el worktree las líneas sin cambios que la citan y haz una pregunta de sí o no por línea: ¿sigue siendo cierta?
+
+   Si alguna respuesta es negativa, haz commit del texto actual, corrige las líneas que fallan y repite este paso con ese commit como base. Termina cuando todas las respuestas sean afirmativas.
+5. Repite la revisión completa solo cuando una corrección cambie una regla de decisión, un umbral, el conjunto de decisiones abiertas o el orden de las tareas.
+6. No uses nunca la puntuación como señal de aceptación: con `epic-heuristic-1` el total más alto alcanzable desde el CLI o MCP es 20/30, así que las correcciones no pueden subirla.
+
 ## Cómo funciona el motor
 
 Un único motor determinista en TypeScript da servicio al CLI, al servidor MCP, al banco de trabajo y a todos los hosts. Descubre los documentos del worktree sin leerlos (las plantillas de `.specify/` y `.kittify/` no cuentan) y lee solo el alcance elegido; clasifica cada archivo (spec, plan, tareas, instrucciones o contexto, como `quickstart.md` y las `checklists/` de Spec Kit); reconoce palabras normativas completas en inglés y español; cuenta un identificador como requisito solo en posición de definición; resuelve referencias dentro del espacio de nombres de la funcionalidad; evalúa las 40 prácticas con evidencia exacta de ruta, línea y texto; y puntúa diez dimensiones de 0 a 3, sin total mientras alguna sea desconocida. Las propuestas cambian una línea, conservan identificadores, cantidades, obligaciones y cláusulas negativas, y solo se escriben tras una aprobación explícita. Motor 0.1.21, rúbrica `epic-heuristic-1`. [Arquitectura](architecture.md#engine-pipeline)
@@ -80,20 +100,6 @@ Abre un solo workbench por worktree. Si ya hay uno activo, reutilízalo o detenl
 En la versión probada, la acción no abrió la página sola ni mostró un botón en la cabecera. Cambiar de chat dejó el servidor activo. Queda sin verificar el cierre de la ventana con el servidor en marcha. [Cualificación de Desktop](codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
 
 Las dos vías abren `/`. Para el visor en línea, `$spec-view` o `open_spectorque` inicia un turno con el proveedor configurado. Sus enlaces `?review=1` y `?export=1` siguen usando los datos copiados desde el visor. Los datos de revisión requieren aprobación explícita y se rechazan si cambió la revisión. [Guía de revisión y exportación](../integrations/codex/README.md#review-and-export)
-
-## Secuencia de revisión con modelo
-
-La skill `spec-review` recomienda esta secuencia cuando un modelo revisa un conjunto de specs y sus correcciones. Es una recomendación; ninguna evaluación controlada la respalda.
-
-1. Ejecuta el motor y corrige lo que señale antes de cualquier revisión con modelo.
-2. Haz commit del texto, anota el commit y ejecuta una revisión completa con dos enfoques en paralelo, sin que ninguno vea la salida del otro:
-   - Adversarial: contradicciones, frases normativas ambiguas y cifras recalculadas desde sus fuentes.
-   - Contrafáctico: recorre el texto con los fallos pasados y con cada opción de cada decisión abierta.
-   Conserva un hallazgo cuando lo señalan ambos enfoques o cuando una comprobación aparte, con contexto nuevo y solo el hallazgo y el texto, no puede refutarlo. Esa comprobación solo descarta hallazgos; nunca añade.
-3. Aplica los hallazgos conservados en una sola pasada.
-4. Verifica sobre la diferencia con el commit anotado: analiza con `changed` y `base` (CLI `--changed --base <commit>`) y corrige los hallazgos nuevos del motor, lee `git diff <commit>` y, para cada definición cambiada (un ID, un umbral, un término definido), busca las líneas sin cambios que la citan. Haz una pregunta de sí o no por línea: ¿sigue siendo cierta? Por cada no, haz commit, corrígelo y repite este paso con ese commit como base.
-5. Repite la revisión completa solo cuando una corrección cambia una regla de decisión, un umbral, el conjunto de decisiones abiertas o el orden de las tareas.
-6. No uses nunca la puntuación como señal de aceptación. Con `epic-heuristic-1` el total más alto alcanzable es 20/30 salvo que alguna práctica no sea aplicable, así que las correcciones rara vez la mueven.
 
 ## Continuación en otros clientes
 
