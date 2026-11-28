@@ -1,5 +1,5 @@
-import { access, realpath, stat } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { access, lstat, realpath, stat } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const [major, minor] = process.versions.node.split('.').map(Number);
@@ -26,9 +26,32 @@ const config = [
 const cmd = process.platform === 'win32'
   ? values => '& ' + values.map(value => "'" + value.replaceAll("'", "''") + "'").join(' ')
   : values => values.map(value => "'" + value.replaceAll("'", "'\"'\"'") + "'").join(' ');
+const workbenchCommand = cmd([node, workbench, 'serve', '--root', root, '--port', '0', ...(feature ? ['--feature', feature] : [])]);
 
 console.log('Merge this block into the trusted worktree’s .codex/config.toml:');
 console.log('\n' + config + '\n');
+if (process.platform === 'win32') {
+  console.log('The Codex Desktop environment action is unavailable on Windows. Use the workbench command below.\n');
+} else {
+  const environmentPath = '.codex/environments/environment.toml';
+  const exists = await lstat(join(root, environmentPath)).then(() => true, error => {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  });
+  const action = [
+    '[[actions]]',
+    'name = ' + toml('Open SpecTorque workbench'),
+    'icon = ' + toml('run'),
+    'command = ' + toml(workbenchCommand),
+  ].join('\n');
+  if (exists) {
+    console.log('Merge this block into the worktree’s ' + environmentPath + ' (replace any previous Open SpecTorque workbench action):');
+    console.log('\n' + action + '\n');
+  } else {
+    console.log('Create ' + environmentPath + ' in the worktree with this content:');
+    console.log('\nversion = 1\nname = ' + toml('SpecTorque workbench') + '\n\n[setup]\nscript = ""\n\n' + action + '\n');
+  }
+}
 // The workbench loads what it is started for on connect: this feature, or the whole work tree when it fits.
 console.log(feature ? 'To open the corresponding local workbench on ' + feature + ', run:' : 'To open the corresponding local workbench, run (add --feature <feature-id> to open it on one feature):');
-console.log(cmd([node, workbench, 'serve', '--root', root, '--port', '0', ...(feature ? ['--feature', feature] : [])]));
+console.log(workbenchCommand);
