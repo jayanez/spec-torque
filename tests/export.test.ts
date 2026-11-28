@@ -50,4 +50,7 @@ test('Markdown report has no trailing whitespace while the JSON evidence keeps t
   // Only ends of lines are trimmed: spaces before a lone carriage return inside a quoted line stay.
   const lone = await analyze({ name: 'cr', artifacts: [classifyArtifact('spec.md', '# Booking\nFR-001: The system MUST be fast.  \rnext\n')] });
   assert.ok(markdownReport(lone).includes('fast.  \rnext\n'));
+  // Linear trimming: a long run of spaces inside a line does not make the report quadratic.
+  const spaced = ' '.repeat(200_000) + 'x';
+  assert.ok(markdownReport({ ...result, name: spaced }).startsWith(`# SpecTorque report: ${spaced}\n`));
 });
