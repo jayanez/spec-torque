@@ -81,6 +81,20 @@ En la versión probada, la acción no abrió la página sola ni mostró un botó
 
 Las dos vías abren `/`. Para el visor en línea, `$spec-view` o `open_spectorque` inicia un turno con el proveedor configurado. Sus enlaces `?review=1` y `?export=1` siguen usando los datos copiados desde el visor. Los datos de revisión requieren aprobación explícita y se rechazan si cambió la revisión. [Guía de revisión y exportación](../integrations/codex/README.md#review-and-export)
 
+## Secuencia de revisión con modelo
+
+La skill `spec-review` recomienda esta secuencia cuando un modelo revisa un conjunto de specs y sus correcciones. Es una recomendación; ninguna evaluación controlada la respalda.
+
+1. Ejecuta el motor y corrige lo que señale antes de cualquier revisión con modelo.
+2. Haz commit del texto, anota el commit y ejecuta una revisión completa con dos enfoques en paralelo, sin que ninguno vea la salida del otro:
+   - Adversarial: contradicciones, frases normativas ambiguas y cifras recalculadas desde sus fuentes.
+   - Contrafáctico: recorre el texto con los fallos pasados y con cada opción de cada decisión abierta.
+   Conserva un hallazgo cuando lo señalan ambos enfoques o cuando una comprobación aparte, con contexto nuevo y solo el hallazgo y el texto, no puede refutarlo. Esa comprobación solo descarta hallazgos; nunca añade.
+3. Aplica los hallazgos conservados en una sola pasada.
+4. Verifica sobre la diferencia con el commit anotado: analiza con `changed` y `base` (CLI `--changed --base <commit>`) y corrige los hallazgos nuevos del motor, lee `git diff <commit>` y, para cada definición cambiada (un ID, un umbral, un término definido), busca las líneas sin cambios que la citan. Haz una pregunta de sí o no por línea: ¿sigue siendo cierta? Por cada no, haz commit, corrígelo y repite este paso con ese commit como base.
+5. Repite la revisión completa solo cuando una corrección cambia una regla de decisión, un umbral, el conjunto de decisiones abiertas o el orden de las tareas.
+6. No uses nunca la puntuación como señal de aceptación. Con `epic-heuristic-1` el total más alto alcanzable es 20/30 salvo que alguna práctica no sea aplicable, así que las correcciones rara vez la mueven.
+
 ## Continuación en otros clientes
 
 Consulta los [recorridos de Claude, OpenCode y Pi](host-common-qualification.md).

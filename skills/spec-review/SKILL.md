@@ -39,3 +39,17 @@ Respect the repository's own specification workflow:
 - Separate likely detector false positives from real issues, and say why.
 
 End with a prioritized set of source-grounded questions or changes per feature.
+
+## Review sequence
+
+When a model reviews a specification set and its fixes, follow this sequence. It is a recommendation; no controlled evaluation stands behind it.
+
+1. Run the engine and fix what it reports before any model review.
+2. Commit the text, note the commit, and run one full review as two lenses in parallel, neither seeing the other's output:
+   - Adversarial: contradictions, ambiguous normative sentences, and numbers recomputed from their sources.
+   - Counterfactual: walk the text through past failures and through each option of every open decision.
+   Keep a finding when both lenses report it, or when a separate fresh-context check, given only the finding and the text, cannot refute it. That check only discards findings; it never adds them.
+3. Apply the kept findings in one pass.
+4. Verify on the difference against the noted commit: analyze with `changed` and `base` (CLI `--changed --base <commit>`) and fix new engine findings, read `git diff <commit>`, and for each changed definition (an ID, a threshold, a defined term) find the unchanged lines that cite it. Ask one yes/no question per line: does it still hold? For each no, commit, fix it, and repeat this step with that commit as the base.
+5. Run a full review again only when a fix changes a decision rule, a threshold, the set of open decisions or the task order.
+6. Never use the score as an acceptance signal. Under `epic-heuristic-1` the highest reachable total is 20/30 unless a practice is not applicable, so fixes rarely move it.
