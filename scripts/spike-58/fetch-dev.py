@@ -1,5 +1,6 @@
 """Fetch only the pinned DEV specification population for spike #58."""
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 import fcntl
 from http.client import IncompleteRead
 import json
@@ -88,8 +89,20 @@ def fetch_documents(source, pool, repo_fd, tree, blobs, paths):
             'licenseCheck': license_record, 'documents': list(pool.map(download, enumerate(paths)))}
 
 
+def prepare_root(root):
+    root = root.absolute()
+    if root == root.parent:
+        return
+    if not root.parent.exists():
+        prepare_root(root.parent)
+    with directory(root.parent.resolve(strict=True)) as parent_fd:
+        with suppress(FileExistsError):
+            os.mkdir(root.name, mode=0o700, dir_fd=parent_fd)
+        os.fsync(parent_fd)
+
+
 def populate(root, sources):
-    root.mkdir(mode=0o700, exist_ok=True, parents=True)
+    prepare_root(root)
     with directory(root) as cache_fd:
         try:
             fcntl.flock(cache_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -120,7 +133,9 @@ def populate(root, sources):
             # Atomically publish without replacing any existing directory entry.
             os.link('index.json', 'index.json', src_dir_fd=generation_fd, dst_dir_fd=cache_fd, follow_symlinks=False)
             os.fsync(cache_fd)
-            os.unlink('index.json', dir_fd=generation_fd)
+            # The index is already published. A leftover staging link is harmless.
+            with suppress(OSError):
+                os.unlink('index.json', dir_fd=generation_fd)
 
 
 def main():

@@ -1,6 +1,7 @@
 // Search cues rank leads for review. They are independent of the engine's patterns.
 const exception = /\b(edge cases?|boundary|out of range|malformed|invalid|empty|failure|casos? limite|fuera de rango|incorrect[oa]s?|invalid[oa]s?|vaci[oa]s?|fallos?)\b/u;
-const conditionalStart = /(?:[.!?;]\s+|\s+(?:and|y)\s+)(?=(?:if|when|si|cuando)\s+)/u;
+const conditionalStart = /[.!?;]\s+(?=(?:if|when|si|cuando)\s+)/u;
+const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/u;
 const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
@@ -9,8 +10,18 @@ function hasEmptyCaseOutcome(body: string): boolean {
   // Treat command names and flags as literals, not condition or outcome words.
   const prose = body.replace(/(`+)[^`]+\1(?!`)/gu, ' ');
   return prose.split(conditionalStart).some(clause => {
-    const parts = conditionAndOutcome.exec(clause);
-    return parts !== null && emptyCondition.test(parts[1]) && emptyOutcome.test(parts[2]);
+    let remaining = clause;
+    while (remaining) {
+      const parts = conditionAndOutcome.exec(remaining);
+      if (!parts) break;
+      const outcome = parts[2];
+      // A coordinated condition before the comma shares the outcome. One
+      // inside the outcome starts a new conditional clause.
+      const next = coordinatedCondition.exec(outcome);
+      if (emptyCondition.test(parts[1]) && emptyOutcome.test(outcome.slice(0, next?.index))) return true;
+      remaining = next ? outcome.slice(next.index + next[0].length) : '';
+    }
+    return false;
   });
 }
 const interruption = /\b(upstream|provider|dependency|no response|stops? responding|unavailable|timeout|proveedor|dependencia|servicio externo|deja de responder|no responde|no disponible|interrupcion)\b/u;

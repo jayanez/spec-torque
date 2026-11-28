@@ -5,6 +5,7 @@ from http.client import IncompleteRead
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -81,6 +82,50 @@ class DevCacheTests(unittest.TestCase):
                                                    {DOC: {'sha': git_blob(b'intended')}}, [DOC])
             self.assertEqual(result['documents'], [{'path': DOC, 'error': 'Git blob mismatch for pinned path'}])
             self.assertFalse((Path(temp) / '0.md').exists())
+
+    def test_fetcher_never_records_paths_its_index_reader_rejects(self):
+        paths = [DOC, 'openspec/specs/untrusted\\name/spec.md']
+        data = b'example'
+        tree = {'truncated': False, 'tree': [
+            {'path': path, 'type': 'blob', 'mode': '100644', 'sha': git_blob(data)} for path in paths
+        ]}
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            with patch.object(fetch_dev, 'read', side_effect=[json.dumps(tree).encode(), data]) as read:
+                fetch_dev.populate(root, [{**PIN, 'family': 'openspec'}])
+            self.assertEqual(read.call_count, 2)
+            self.assertEqual(list(documents(root)), [
+                ('kcalvelli/cairn', PIN['commit'], DOC, data, 'matches-recorded-blob'),
+            ])
+
+    def test_new_generation_requires_a_blob_for_every_download(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = {**PIN, 'cacheGeneration': 'run-' + '0' * 32, 'documents': [{'path': DOC, 'local': '0.md'}]}
+            for fields in ({}, {'gitBlob': 'invalid'}):
+                source['documents'] = [{'path': DOC, 'local': '0.md', **fields}]
+                (root / 'index.json').write_text(json.dumps([source]))
+                with self.assertRaisesRegex(ValueError, 'unauthorized DEV'):
+                    list(documents(root))
+
+    def test_new_cache_parent_is_synced_and_staging_cleanup_is_best_effort(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / 'new' / 'cache'
+            synced = []
+            fsync = os.fsync
+
+            def note_sync(fd):
+                synced.append(os.fstat(fd).st_ino)
+                fsync(fd)
+
+            with patch.object(fetch_dev, 'fetch', return_value={**PIN, 'documents': []}), \
+                 patch.object(fetch_dev.os, 'fsync', side_effect=note_sync), \
+                 patch.object(fetch_dev.os, 'unlink', side_effect=PermissionError('staging only')):
+                fetch_dev.populate(root, [PIN])
+            self.assertIn(Path(temp).stat().st_ino, synced)
+            self.assertIn(root.parent.stat().st_ino, synced)
+            self.assertIn(root.stat().st_ino, synced)
+            self.assertEqual(list(documents(root)), [])
 
     def test_index_publication_recovers_after_interruption_and_respects_lock(self):
         with tempfile.TemporaryDirectory() as temp:

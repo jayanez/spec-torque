@@ -16,6 +16,8 @@ GENERATION = re.compile(r'run-[0-9a-f]{32}')
 
 
 def matches(path, family):
+    if '\\' in path or any(part in ('', '.', '..') for part in path.split('/')):
+        return False
     path = path.lower()
     patterns = {
         'openspec': ('/openspec/specs/', '/spec.md'),
@@ -82,9 +84,9 @@ def load_index(cache):
         paths, locals_ = set(), set()
         for doc in source.get('documents', []):
             path, local, blob = doc['path'], doc.get('local'), doc.get('gitBlob')
-            if (path in paths or '\\' in path or any(part in ('', '.', '..') for part in path.split('/'))
-                    or not matches(path, pin['family'])
+            if (path in paths or not matches(path, pin['family'])
                     or (local is not None and (not re.fullmatch(r'[0-9]+\.md', local) or local in locals_))
+                    or (generation is not None and local is not None and blob is None)
                     or (blob is not None and not re.fullmatch(r'[0-9a-f]{40}', blob))):
                 raise ValueError('Index contains duplicate or unauthorized DEV sources or paths')
             paths.add(path)
