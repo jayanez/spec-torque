@@ -13,7 +13,7 @@ import { parseArgs } from 'node:util';
 import { checkRenderings, load, page, presentationId, sha256, type Arm } from './rehearsal.js';
 
 const { values } = parseArgs({ options: { out: { type: 'string', default: '.spec-torque/rehearsal/pages' } } });
-const loaded = await load(process.cwd());
+const loaded = await load(process.cwd(), 'live');
 const differences = await checkRenderings(loaded);
 if (differences.length) {
   console.error(`Engine output differs from tests/fixtures/e12/rehearsal.json:\n${differences.join('\n')}`);

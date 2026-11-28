@@ -1,12 +1,12 @@
 // Synthetic tests only: no keys, packets or responses from the rehearsal.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, appendFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, appendFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bindKeys, checkPopulation, evaluate, kappa, kappaPasses, labelsOf, majority, parseRun, readSealed, seal,
   spanVerified, stripQuotes, unverifiedYes, RUNS } from './score-calibration.mjs';
-import { classifyR1, classifyR2, clientVersion, codexHeader, inspectImage, SCREEN_IMAGE, loadRecords, material, minimalEnv, nextAttempt, wellFormed } from './run-reviewer.mjs';
+import { checkResumeClient, classifyR1, classifyR2, clientVersion, codexHeader, inspectImage, SCREEN_IMAGE, loadRecords, material, minimalEnv, nextAttempt, wellFormed } from './run-reviewer.mjs';
 import { FROZEN_PROTOCOL_SHA256, PROMPT_SHA256, RUN2_PROTOCOL_SHA256, orderKey, packetProblems, seedFor, sha256 } from './protocol.mjs';
 
 const edit = { action: 'edit', scope: 'target line', text: 'X MUST refresh within 500 ms.', note: null };
@@ -251,4 +251,37 @@ test('R2 refuses an unresolved image or a failed version probe', () => {
   assert.throws(() => inspectImage(SCREEN_IMAGE, () => ({ status: 1, stderr: 'image absent' })), /image absent/);
   const id = `sha256:${'b'.repeat(64)}`;
   assert.throws(() => clientVersion('R2', id, () => ({ status: 1, stdout: 'codex-cli 0.170.0', stderr: 'container failed' })), /container failed/);
+});
+
+test('Docker probe failures include the terminating signal', () => {
+  const spawn = () => ({ status: null, signal: 'SIGTERM', stderr: 'interrupted' });
+  assert.throws(() => inspectImage(SCREEN_IMAGE, spawn), /signal SIGTERM: interrupted/);
+  assert.throws(() => clientVersion('R2', `sha256:${'a'.repeat(64)}`, spawn), /signal SIGTERM: interrupted/);
+});
+
+test('R2 preserves legacy records on refusal and resumes only records pinned to the same client', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'st65-resume-'));
+  try {
+    const raw = join(dir, 'raw.jsonl');
+    const image = `sha256:${'a'.repeat(64)}`;
+    const version = 'codex-cli 0.170.0';
+    const record = { reviewer: 'R2', image, clientVersion: version };
+    const verify = records => checkResumeClient(records, raw, 'R2', version, image);
+    const legacy = `${JSON.stringify(record)}\n{`;
+    writeFileSync(raw, legacy);
+    assert.throws(() => loadRecords(raw, verify), /legacy R2 records without verified image pinning/);
+    assert.equal(readFileSync(raw, 'utf8'), legacy);
+
+    const pinned = { ...record, imagePinnedById: true };
+    const resumable = `${JSON.stringify(pinned)}\n{`;
+    writeFileSync(raw, resumable);
+    assert.throws(() => loadRecords(raw, records =>
+      checkResumeClient(records, raw, 'R2', version, `sha256:${'b'.repeat(64)}`)), /different client version or image/);
+    assert.equal(readFileSync(raw, 'utf8'), resumable);
+    assert.deepEqual(loadRecords(raw, verify), [pinned]);
+    assert.equal(readFileSync(raw, 'utf8'), `${JSON.stringify(pinned)}\n`);
+    assert.doesNotThrow(() => checkResumeClient([{ image: null, clientVersion: version }], raw, 'R1', version, null));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

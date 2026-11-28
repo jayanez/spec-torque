@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { calibrationItems, checkRenderings, leaked, liveItems, load, order, packet, page, presentationId, seed, type Attempt } from '../scripts/precision/rehearsal.js';
 
-const loaded = await load(fileURLToPath(new URL('..', import.meta.url)));
+const root = fileURLToPath(new URL('..', import.meta.url));
+const loaded = await load(root, 'live');
 const live = loaded.rehearsal.cases.filter(c => c.live);
 
 test('seeds and IDs use the frozen protocol hash and the prompt is unchanged', async () => {
@@ -119,8 +120,11 @@ test('run-2 calibration packets: 96 and 48 items, seeded from the run-2 pre-regi
 
 test('run-3 calibration items: 96 and 48, new, and refused until the run-3 freeze is pinned', async () => {
   const { calibrationItems, packet, RUN3_FROZEN_SHA256 } = await import('../scripts/precision/rehearsal.js');
-  assert.equal(loaded.calibrationRun3, null, 'the default load excludes run 3');
-  const run3 = await load(fileURLToPath(new URL('..', import.meta.url)), 'calibration-run3');
+  assert.equal(loaded.calibrationRun3, null, 'the explicit live phase excludes run 3');
+  const run3 = await load(root, 'calibration-run3');
+  const byDefault = await load(root);
+  assert.equal(byDefault.run3ProtocolSha256, run3.run3ProtocolSha256);
+  assert.deepEqual(byDefault.calibrationRun3, run3.calibrationRun3);
   assert.ok(run3.calibrationRun3 && run3.run3ProtocolSha256);
   const cal = calibrationItems(run3, 'calibration-run3');
   const res = calibrationItems(run3, 'reserve-run3');
