@@ -45,20 +45,20 @@ Las puntuaciones son una ayuda heurística: no certifican la corrección de la s
 La skill `spec-review` recomienda esta secuencia cuando un modelo revisa un conjunto de specs y sus correcciones. Es una recomendación sin una evaluación controlada que la respalde. Cada corrección y cada commit requieren la aprobación del usuario, como en `spec-refine`.
 
 1. Ejecuta el motor y corrige los problemas reales que señale antes de cualquier revisión con modelo.
-2. Haz commit del texto, anota el commit y ejecuta una revisión completa con dos enfoques en paralelo, sin que ninguno vea la salida del otro:
+2. Haz commit del texto, anota el commit, guarda la salida del motor de cada funcionalidad en ese commit y ejecuta una revisión completa con dos enfoques en paralelo, sin que ninguno vea la salida del otro:
    - Adversarial: contradicciones, frases normativas ambiguas y cifras recalculadas desde sus fuentes.
    - Contrafáctico: contrasta el texto con los fallos anteriores y con cada opción de cada decisión abierta.
 
    Conserva un hallazgo cuando lo señalen ambos enfoques o cuando una comprobación con contexto nuevo, que solo recibe el hallazgo y el texto, no pueda refutarlo. Esa comprobación solo descarta hallazgos; nunca los añade. Si el host no puede usar contextos separados, indica que la revisión usó uno solo.
 3. Aplica en una sola pasada los hallazgos conservados, salvo los que son solo informativos.
 4. Verifica contra el commit anotado y mantenlo en el historial (sin `amend` ni `rebase`) hasta terminar la verificación:
-   - Obtén las funcionalidades tocadas con `changed` y `base` (CLI `spectorque features --changed --base <commit>`), analiza cada una con `feature` y corrige los hallazgos que no existían en el commit anotado.
+   - Obtén las funcionalidades tocadas con el CLI `spectorque features --changed --base <commit>`, o con MCP `discover_specs` con `changed` y `base` y sin `index`. Analiza cada una con `feature` y corrige los hallazgos que no estén en la salida guardada, comparando por práctica y texto de la línea, porque los números de línea cambian.
    - Lee `git diff <commit>` y los archivos nuevos sin seguimiento.
    - Para cada definición cambiada o eliminada (la línea que define un ID, un umbral, un término definido), busca en el worktree las líneas sin cambios que la citan y haz una pregunta de sí o no por línea: ¿sigue siendo cierta?
 
    Si alguna respuesta es negativa, haz commit del texto actual, corrige las líneas que fallan y repite este paso con ese commit como base. Termina cuando todas las respuestas sean afirmativas.
 5. Repite la revisión completa solo cuando una corrección cambie una regla de decisión, un umbral, el conjunto de decisiones abiertas o el orden de las tareas.
-6. No uses nunca la puntuación como señal de aceptación: con `epic-heuristic-1` el total más alto alcanzable desde el CLI o MCP es 20/30, así que las correcciones no pueden subirla.
+6. No uses nunca la puntuación como señal de aceptación: con `epic-heuristic-1` el total más alto alcanzable desde el CLI o MCP es 20/30, así que las correcciones no pueden subirla por encima de 20.
 
 ## Cómo funciona el motor
 

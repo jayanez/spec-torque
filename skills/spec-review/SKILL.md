@@ -45,17 +45,17 @@ End with a prioritized set of source-grounded questions or changes per feature.
 Use this sequence when a model reviews a specification set and its fixes. It is a recommendation without a controlled evaluation behind it. Every fix and commit below needs the user's approval, as in spec-refine.
 
 1. Run the engine and fix the real issues it reports before any model review.
-2. Commit the text, note the commit, and run one full review as two parallel lenses, neither seeing the other's output:
+2. Commit the text, note the commit, keep each feature's engine output at it, and run one full review as two parallel lenses, neither seeing the other's output:
    - Adversarial: contradictions, ambiguous normative sentences, and numbers recomputed from their sources.
    - Counterfactual: walk the text through past failures and each option of every open decision.
 
    Keep a finding when both lenses report it or a fresh-context check, given only the finding and the text, cannot refute it. The check only discards findings; it never adds them. If the host cannot run separate contexts, say the review used one.
 3. Apply the kept findings, except report-only ones, in one pass.
 4. Verify against the noted commit, and keep it in history (no amend or rebase) until verification ends:
-   - List the touched features with `changed` and `base` (CLI `spectorque features --changed --base <commit>`), analyze each with `feature`, and fix findings absent at the noted commit.
+   - List the touched features with the CLI `spectorque features --changed --base <commit>`, or MCP `discover_specs` with `changed` and `base` and without `index`. Analyze each with `feature` and fix findings absent from the kept output, comparing by practice and line text, since line numbers shift.
    - Read `git diff <commit>` and any new untracked files.
    - For each definition that changed or was removed (an ID's defining line, a threshold, a defined term), search the work tree for unchanged lines that cite it, and ask one yes/no question per line: does it still hold?
 
    If any answer is no, commit the current text, fix the failing lines, and repeat this step with that commit as the base. Stop when every answer is yes.
 5. Run a full review again only when a fix changes a decision rule, a threshold, the set of open decisions or the task order.
-6. Never use the score as an acceptance signal: under `epic-heuristic-1` the highest total reachable through the CLI or MCP is 20/30, so fixes cannot raise it.
+6. Never use the score as an acceptance signal: under `epic-heuristic-1` the highest total reachable through the CLI or MCP is 20/30, so fixes cannot raise it above 20.
