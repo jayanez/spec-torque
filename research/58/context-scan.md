@@ -50,7 +50,7 @@ The download enumerated all 17 pinned trees without truncation. It fetched and s
 | First expanded inventory (historical) | 974 | 16 of 17 | 6,167 | 974 |
 | Expanded inventory after both cue refinements | 974 | 16 of 17 | 6,170 | 974 |
 
-The lead columns differ in retrieval rules and coverage. In the final run P2.2 has 691 lead records and E3.3 has 1,928, of which 502 are from `missing` specs. The R52 DEV input and engine scope are described above. The number of admitted lineages comes from examination of the pinned sources, separately from these scanner counts.
+The lead columns differ in retrieval rules and coverage. In the final run P2.2 has 691 lead records and E3.3 has 1,928, of which 502 are from `missing` specs. The R52 DEV input and engine scope are described above. The [E3.3 content lineage trace](e33-issue-draft.md#content-lineage) counts the two lineages from pinned repository history, separately from these scanner counts.
 
 Development review inspected candidate groups and one uncaught sample per repository with documents, selecting the lowest fragment hash from that repository's uncaught queue. For example, the md2confl sample describes what the tool does with an empty page even though it missed the current P2.2 condition-and-response cues. This is a scanner blind spot. It is not an adjudication of the engine for that passage. The uncaught review was a spot-check, not full adjudication. Keep the remaining hypotheses open where the evidence is insufficient.
 

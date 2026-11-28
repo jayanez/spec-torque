@@ -4,7 +4,7 @@ Closes #58.
 
 SpecTorque can miss equivalent EN/ES wording and count keywords without the intended information. This spike adds 51 hashed synthetic controls and a contextual scanner for the authorized DEV sources. It records each observation and the evidence supporting its disposition.
 
-The scan covered all 974 matching specifications across 17 pinned revisions. **One defect meets intake.** E3.3 reports `missing` for exceptional scenarios with explicit conditions and observable outcomes in two independent repositories and feature lineages. Two additional scenarios in those repositories corroborate the finding. The separate corrective issue draft in `research/58/e33-issue-draft.md` records the evidence and evaluation gates.
+The scan covered all 974 matching specifications across 17 pinned revisions. **One defect meets intake.** E3.3 reports `missing` for exceptional scenarios with explicit conditions and observable outcomes. The two cases trace to separate project-local changesets, counting each scenario's proposal, archive and active copies as one lineage. Two additional scenarios in those repositories corroborate the finding. The [corrective issue draft](e33-issue-draft.md#content-lineage) records the trace and evaluation gates.
 
 The report keeps C2.3 pending because the authorized documents contain only specification artifacts. It records the other unadmitted observations and recommends explaining the partial ceiling in a follow-up. H2c remains stopped.
 

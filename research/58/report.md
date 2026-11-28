@@ -31,7 +31,7 @@ The initial bounded retrieval returned 223 documents from 16 repositories (one h
 
 ## Expanded natural recurrence pass
 
-The [expanded scan](context-scan.md#expanded-scan) supersedes the initial coverage figures. It fetched and searched all 974 matching specs at the 17 authorized revisions and checked each root license. One repository had no matching spec. E3.3 meets admission for a specific failure: a documented exceptional scenario with a condition and observable outcome remains missing on both an EN and an ES spec from two separate projects and authored feature lineages. See the [separate corrective issue draft](e33-issue-draft.md). The expanded scan records the remaining decisions and pending evidence per practice. C2.3 still needs task companions outside this spec-only download.
+The [expanded scan](context-scan.md#expanded-scan) supersedes the initial coverage figures. It fetched and searched all 974 matching specs at the 17 authorized revisions and checked each root license. One repository had no matching spec. E3.3 meets admission for a specific failure: a documented exceptional scenario with a condition and observable outcome remains missing on both an EN and an ES spec. The [content lineage trace](e33-issue-draft.md#content-lineage) follows both scenarios to their respective project-local changesets and collapses their archived and active copies. The expanded scan records the remaining decisions and pending evidence per practice. C2.3 still needs task companions outside this spec-only download.
 
 ## Historical regression and future evaluation
 
