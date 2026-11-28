@@ -1,6 +1,7 @@
+import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { constants } from 'node:fs';
-import { link, lstat, mkdir, open, rename, unlink, writeFile } from 'node:fs/promises';
+import { link, lstat, mkdir, mkdtemp, open, readFile, readdir, readlink, rename, rmdir, unlink, writeFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { TextDecoder } from 'node:util';
 
@@ -267,6 +268,82 @@ const statIfPresent = path => lstat(path).catch(error => {
 });
 const sameEntry = (a, b) => a && b && a.dev === b.dev && a.ino === b.ino;
 
+async function removeLock(directory, owner) {
+  if (owner) {
+    await unlink(join(directory, owner)).catch(error => { if (error.code !== 'ENOENT') throw error; });
+  }
+  await rmdir(directory).catch(error => {
+    if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error.code)) throw error;
+  });
+}
+
+// A PID probe is evidence only within the same OS boot and PID namespace.
+export async function setupLockScope() {
+  try {
+    if (process.platform === 'darwin') {
+      const boot = execFileSync('/usr/sbin/sysctl', ['-n', 'kern.bootsessionuuid'], {
+        encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 2000,
+      }).trim();
+      if (/^[a-f0-9-]{36}$/iu.test(boot)) return createHash('sha256').update(boot).digest('hex').slice(0, 16);
+    }
+    if (process.platform === 'linux') {
+      const boot = (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim();
+      const namespace = await readlink('/proc/self/ns/pid');
+      if (/^[a-f0-9-]{36}$/iu.test(boot) && /^pid:\[\d+\]$/u.test(namespace)) {
+        return createHash('sha256').update(boot + ':' + namespace).digest('hex').slice(0, 16);
+      }
+    }
+  } catch {
+    // Lack of local identity permits locking but prevents PID-based recovery.
+  }
+}
+
+async function acquireLock(directory) {
+  const lock = join(directory, '.spectorque-config.lock');
+  const scope = await setupLockScope();
+  const owner = (scope ?? 'unknown') + '-' + process.pid + '-' + randomUUID();
+  const staged = await mkdtemp(join(directory, '.spectorque-lock-'));
+  const busy = 'Cannot acquire the SpecTorque setup lock at ' + lock +
+    '. Wait for the current setup to finish. If its owner cannot be verified, confirm no setup is using this worktree before removing the lock.';
+  try {
+    await writeFile(join(staged, owner), '', { flag: 'wx', mode: 0o600 });
+    // Publish a non-empty directory atomically. Removing an old owner's
+    // unique marker and then an empty directory cannot release a new lock.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await rename(staged, lock);
+        return () => removeLock(lock, owner);
+      } catch (error) {
+        if (!['ENOTEMPTY', 'EEXIST', 'ENOTDIR', 'EISDIR', 'EPERM', 'EACCES', 'EBUSY'].includes(error.code)) throw error;
+        const entry = await statIfPresent(lock);
+        if (attempt || (entry && !entry.isDirectory())) throw new Error(busy);
+        if (!entry) continue;
+        const names = await readdir(lock).catch(readError => {
+          if (readError.code === 'ENOENT') return undefined;
+          throw readError;
+        });
+        if (!names || !sameEntry(entry, await statIfPresent(lock))) continue;
+        if (names.length > 0) {
+          const match = names.length === 1 && /^([a-f0-9]{16})-([1-9]\d{0,9})-[a-f0-9-]{36}$/u.exec(names[0]);
+          const pid = match && Number(match[2]);
+          if (!scope || !match || match[1] !== scope || pid > 0x7fffffff) throw new Error(busy);
+          let exited = false;
+          try {
+            process.kill(pid, 0);
+          } catch (probeError) {
+            exited = probeError.code === 'ESRCH';
+          }
+          if (!exited) throw new Error(busy);
+        }
+        await removeLock(lock, names[0]);
+      }
+    }
+    throw new Error(busy);
+  } finally {
+    await removeLock(staged, owner);
+  }
+}
+
 export async function configureWorkspace(root, binding, mode, expectedRevision) {
   const directory = join(root, '.codex');
   const path = join(directory, 'config.toml');
@@ -305,9 +382,8 @@ export async function configureWorkspace(root, binding, mode, expectedRevision) 
   await mkdir(directory, { recursive: true, mode: 0o700 });
   const parent = await statIfPresent(directory);
   if (!parent?.isDirectory() || (before.parent && !sameEntry(before.parent, parent))) fail();
-  const lock = join(directory, '.spectorque-config.lock');
   const temp = join(directory, '.spectorque-config-' + randomUUID());
-  await writeFile(lock, '', { flag: 'wx', mode: 0o600 });
+  const release = await acquireLock(directory);
   try {
     await writeFile(temp, proposal.next, { flag: 'wx', mode: before.file ? before.file.mode & 0o777 : 0o600 });
     const current = await snapshot();
@@ -321,7 +397,7 @@ export async function configureWorkspace(root, binding, mode, expectedRevision) 
     try {
       await unlink(temp).catch(error => { if (error.code !== 'ENOENT') throw error; });
     } finally {
-      await unlink(lock);
+      await release();
     }
   }
   return { path, status: 'written' };

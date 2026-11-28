@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { mkdir, mkdtemp, readdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
+import { pathToFileURL } from 'node:url';
 import { unzipSync } from 'fflate';
 
 const manifest = JSON.parse(await readFile(new URL('../integrations/codex/plugin.json', import.meta.url), 'utf8'));
@@ -153,6 +154,42 @@ async function checkProjectSetup() {
   assert.doesNotMatch(repairedConfig, /\u007f/u, 'Stale repair must escape DEL in the installed runtime path.');
   assert.equal(await readFile(environment, 'utf8'), '# existing workbench action\n');
   check('configured');
+
+  const lock = join(configDir, '.spectorque-config.lock');
+  const { setupLockScope } = await import(pathToFileURL(join(install, 'workspace-config.mjs')).href);
+  const scope = await setupLockScope();
+  const recordOwner = async (pid, ownerScope = scope ?? 'unknown') => {
+    await mkdir(lock);
+    const name = ownerScope + '-' + pid + '-' + randomUUID();
+    await writeFile(join(lock, name), '');
+    return name;
+  };
+  await writeFile(path, stale);
+  const lockedRevision = check('stale');
+  const liveOwner = await recordOwner(process.pid);
+  const locked = write(lockedRevision);
+  assert.notEqual(locked.status, 0);
+  assert.match(locked.stderr, /Cannot acquire the SpecTorque setup lock/u);
+  assert.deepEqual(await readdir(lock), [liveOwner]);
+  assert.equal(await readFile(path, 'utf8'), stale);
+  await rm(lock, { recursive: true });
+  const exited = spawnSync(process.execPath, ['-e', ''], { cwd: scratch, env });
+  assert.equal(exited.status, 0);
+  const foreignScope = scope === '0000000000000000' ? '1111111111111111' : '0000000000000000';
+  const foreignOwner = await recordOwner(exited.pid, foreignScope);
+  const foreignLock = write(lockedRevision);
+  assert.notEqual(foreignLock.status, 0);
+  assert.match(foreignLock.stderr, /owner cannot be verified/u);
+  assert.deepEqual(await readdir(lock), [foreignOwner]);
+  assert.equal(await readFile(path, 'utf8'), stale);
+  await rm(lock, { recursive: true });
+  if (scope) await recordOwner(exited.pid);
+  else await mkdir(lock);
+  const recovered = write(lockedRevision);
+  assert.equal(recovered.status, 0, recovered.stderr);
+  assert.equal(await readFile(path, 'utf8'), repairedConfig.replace('# concurrent edit\r\n', ''));
+  assert.deepEqual((await readdir(configDir)).sort(), ['config.toml', 'environments']);
+  assert.equal(await readFile(environment, 'utf8'), '# existing workbench action\n');
 
   for (const custom of ['mcp_servers = { "spectorque-workspace" = { enabled = false } }\n', 'value = "text"\rignored = true\n',
     'x = true false\n', 'x = 1garbage\n', 'x = [1 2]\n', 'x = { a = 1, a = 2 }\n',
