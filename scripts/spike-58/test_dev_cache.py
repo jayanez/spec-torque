@@ -62,6 +62,23 @@ class DevCacheTests(unittest.TestCase):
                     self.fail('opened existing cache path')
             self.assertEqual(target.read_text(), 'preserve')
 
+    def test_cache_reader_closes_descriptor_if_stream_open_fails(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'index.json').mkdir()
+            (root / '0.md').write_bytes(b'example')
+            with directory(root) as parent:
+                for name, expected in [('index.json', ValueError), ('0.md', OSError)]:
+                    fd = os.open(name, os.O_RDONLY, dir_fd=parent)
+                    with patch.object(os, 'open', return_value=fd), \
+                         patch.object(os, 'fdopen', side_effect=OSError('cannot create stream')) as fdopen:
+                        with self.assertRaises(expected):
+                            with cache_file(name, parent):
+                                self.fail('unexpected cache stream')
+                    self.assertEqual(fdopen.call_count, int(name == '0.md'))
+                    with self.assertRaises(OSError):
+                        os.fstat(fd)
+
     def test_truncated_download_is_recorded_for_that_document(self):
         with tempfile.TemporaryDirectory() as temp, ThreadPoolExecutor() as pool, directory(temp) as fd:
             def read(url, _):

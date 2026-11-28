@@ -62,10 +62,13 @@ def git_blob(data):
 def cache_file(name, directory_fd, *, write=False):
     access = os.O_WRONLY | os.O_CREAT | os.O_EXCL if write else os.O_RDONLY | os.O_NONBLOCK
     fd = os.open(name, access | os.O_NOFOLLOW, 0o600, dir_fd=directory_fd)
-    with os.fdopen(fd, 'wb' if write else 'rb') as stream:
-        if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+    try:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
             raise ValueError('Unexpected non-regular cache file')
-        yield stream
+        with os.fdopen(fd, 'wb' if write else 'rb', closefd=False) as stream:
+            yield stream
+    finally:
+        os.close(fd)
 
 
 def load_index(cache):

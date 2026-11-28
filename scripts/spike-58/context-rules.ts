@@ -3,6 +3,8 @@ const exception = /\b(edge cases?|boundary|out of range|malformed|invalid|empty|
 const conditionalStart = /[.!?;]\s+(?=(?:if|when|si|cuando)\s+)/u;
 const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/gu;
 const indirectQuestion = /\b(?:where|when|how|what|why|whether|donde|cuando|como|que|por que)\s*$/u;
+const loggingAction = /^(?:then\s+)?(?:log|record|note|report)\s+/u;
+const temporalDetail = /^when\s+(?:it|they|he|she)\s+last\b[^,]+,\s*then\b/u;
 const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
@@ -16,10 +18,12 @@ function hasEmptyCaseOutcome(body: string): boolean {
       const parts = conditionAndOutcome.exec(remaining);
       if (!parts) break;
       const outcome = parts[2];
-      // A coordinated condition before the comma shares the outcome. One
-      // inside the outcome starts a new conditional clause.
-      const next = [...outcome.matchAll(coordinatedCondition)].find(match =>
-        !indirectQuestion.test(outcome.slice(0, match.index)));
+      // Keep bounded forms of indirect temporal questions inside the action.
+      const next = [...outcome.matchAll(coordinatedCondition)].find(match => {
+        const action = outcome.slice(0, match.index);
+        const rest = outcome.slice(match.index + match[0].length);
+        return !indirectQuestion.test(action) && !(loggingAction.test(action) && temporalDetail.test(rest));
+      });
       if (emptyCondition.test(parts[1]) && emptyOutcome.test(outcome.slice(0, next?.index))) return true;
       remaining = next ? outcome.slice(next.index + next[0].length) : '';
     }
