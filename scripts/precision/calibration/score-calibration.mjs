@@ -89,10 +89,17 @@ export function seal(results) {
   const target = join(results, 'frozen.json');
   if (existsSync(target)) throw new Error(`${target} exists; a seal is never overwritten.`);
   const files = {};
-  for (const run of RUNS) for (const f of ['raw.jsonl', 'done.json']) {
-    const p = join(results, run, f);
-    if (!existsSync(p)) throw new Error(`Missing ${run}/${f}: every run must finish before sealing.`);
-    files[`${run}/${f}`] = sha256(readFileSync(p));
+  for (const run of RUNS) {
+    const read = file => {
+      const path = join(results, run, file);
+      if (!existsSync(path)) throw new Error(`Missing ${run}/${file}: every run must finish before sealing.`);
+      return readFileSync(path);
+    };
+    const doneBytes = read('done.json');
+    const rawBytes = read('raw.jsonl');
+    const { rawSha256 } = checkedDone(run, rawBytes, doneBytes);
+    files[`${run}/raw.jsonl`] = rawSha256;
+    files[`${run}/done.json`] = sha256(doneBytes);
   }
   const body = { sealedAt: new Date().toISOString(), files };
   writeFileSync(target, JSON.stringify(body, null, 2) + '\n', { flag: 'wx' });
@@ -119,10 +126,15 @@ export const verifySeal = results => { readSealed(results); };
 
 // ---------------------------------------------------------------- runs and population
 
+function checkedDone(run, rawBytes, doneBytes) {
+  const done = JSON.parse(doneBytes.toString('utf8'));
+  if (done?.rawSha256 !== sha256(rawBytes)) throw new Error(`${run}: raw.jsonl does not match done.json.`);
+  return done;
+}
+
 /** Final records of one run, bound to its packet: one final record per packet item and nothing else. */
 export function parseRun(run, rawBytes, doneBytes, packet, packetSha) {
-  const done = JSON.parse(doneBytes.toString('utf8'));
-  if (done.rawSha256 !== sha256(rawBytes)) throw new Error(`${run}: raw.jsonl does not match done.json.`);
+  const done = checkedDone(run, rawBytes, doneBytes);
   const reviewer = run.slice(0, 2), n = Number(run.slice(-1));
   if (done.reviewer !== reviewer) throw new Error(`${run}: done.json is for ${done.reviewer}.`);
   if (done.screen) throw new Error(`${run}: is an exploratory screening run.`);

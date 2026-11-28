@@ -8,6 +8,11 @@
  * rule in docs/clarification-actionability.md. Operator-only files (item map,
  * withheld attempts, leakage flags) go to a separate `operator/` folder and
  * never into a packet. Nothing is sent: the operator starts each review by hand.
+ *
+ * This checkout loads the latest protocol appendix. The three earlier prompts
+ * are preserved in that appendix at 6a2dc0f (calibration), a1c6d46 (reserve)
+ * and cc53307 (calibration-run2). The runner checks each phase's frozen hash.
+ * Keep archived runs bound to their original packets and tooling revisions.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';

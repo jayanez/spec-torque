@@ -78,7 +78,7 @@ export function classifyR1(stdout, status) {
   if (status !== 0) return { error: `exit ${status}` };
   let envelope;
   try { envelope = JSON.parse(stdout); } catch { return { error: 'unparseable client envelope' }; }
-  if (envelope.is_error) return { error: String(envelope.result).slice(0, 300) };
+  if (envelope.is_error) return { error: String(envelope.result ?? '').trim().slice(0, 300) || 'client reported an error without a message' };
   const models = Object.keys(envelope.modelUsage ?? {});
   if (models.length !== 1 || models[0] !== PINS.R1.model) return { fatal: `R1 model usage ${models.join(',') || 'empty'}, expected only ${PINS.R1.model}` };
   if (typeof envelope.result !== 'string' || !envelope.result.trim()) return { error: 'blank output' };

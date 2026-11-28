@@ -1,7 +1,7 @@
 // Synthetic tests only: no keys, packets or responses from the rehearsal.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, appendFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync, appendFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bindKeys, checkPopulation, evaluate, kappa, kappaPasses, labelsOf, majority, parseRun, readSealed, seal,
@@ -84,7 +84,14 @@ test('seal: needs all runs, never overwrites, rejects empty or partial seals and
   assert.throws(() => readSealed(dir), /not sealed/);
   for (const run of RUNS) { mkdirSync(join(dir, run)); writeFileSync(join(dir, run, 'raw.jsonl'), '{}\n'); }
   assert.throws(() => seal(dir), /Missing/);
-  for (const run of RUNS) writeFileSync(join(dir, run, 'done.json'), '{}\n');
+  const complete = JSON.stringify({ rawSha256: sha256('{}\n') });
+  for (const run of RUNS) writeFileSync(join(dir, run, 'done.json'), complete);
+  const lastRun = RUNS.at(-1);
+  const lastRaw = join(dir, lastRun, 'raw.jsonl');
+  appendFileSync(lastRaw, '{"late":true}\n');
+  assert.throws(() => seal(dir), /raw.jsonl does not match done.json/);
+  assert.equal(existsSync(join(dir, 'frozen.json')), false);
+  writeFileSync(lastRaw, '{}\n');
   seal(dir);
   assert.throws(() => seal(dir), /never overwritten/);
   assert.equal(Object.keys(readSealed(dir)).length, 12);
@@ -204,6 +211,13 @@ test('client results: blank output is transport; pins are enforced on every call
   assert.match(classifyR2(head, 0, '').error, /blank/);
   assert.match(classifyR2('model: gpt-6-luna\n', 0, 'x').error, /incomplete/);
   assert.match(classifyR2(head.replace('medium', 'high'), 0, 'x').fatal, /effort high/);
+});
+
+test('R1 error envelopes remain transport failures even when the result is blank', () => {
+  for (const result of ['', '   ', undefined, null]) {
+    assert.match(classifyR1(JSON.stringify({ is_error: true, result }), 0).error, /without a message/);
+  }
+  assert.deepEqual(classifyR1(JSON.stringify({ is_error: true, result: 'upstream error' }), 0), { error: 'upstream error' });
 });
 
 test('codex header, minimal environment, well-formed output and prompt material order', () => {
