@@ -4,9 +4,8 @@ const conditionalStart = /[.!?;]\s+(?=(?:if|when|si|cuando)\s+)/u;
 const coordinatedCondition = /\s+(?:and|y)\s+(?=(?:if|when|si|cuando)\s+)/gu;
 const indirectQuestion = /\b(?:where|when|how|what|why|whether|donde|cuando|como|que|por que)\s*$/u;
 const loggingAction = /^(?:then\s+)?(?:log|record|note|report)\s+/u;
-// Recognize a short logging complement such as "when it last synced".
-// Longer predicates stay eligible as separate conditions.
-const temporalDetail = /^when\s+(?:it|they|he|she)\s+last\s+[\p{L}-]+\s*,\s*then\b/u;
+const loggedTemporalDetail = /\s+and\s+when\s+(?:it|they|he|she)\s+(?:(?:was|were)\s+)?last\s+([^,]+),\s*(?=then\b)/u;
+const explicitTemporalGuard = /\bis\s+unknown\s+and\b/u;
 const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
@@ -19,13 +18,13 @@ function hasEmptyCaseOutcome(body: string): boolean {
     while (remaining) {
       const parts = conditionAndOutcome.exec(remaining);
       if (!parts) break;
-      const outcome = parts[2];
-      // Keep bounded forms of indirect temporal questions inside the action.
-      const next = [...outcome.matchAll(coordinatedCondition)].find(match => {
-        const action = outcome.slice(0, match.index);
-        const rest = outcome.slice(match.index + match[0].length);
-        return !indirectQuestion.test(action) && !(loggingAction.test(action) && temporalDetail.test(rest));
-      });
+      // With an explicit "then" boundary, don't take cues from the details
+      // being logged. A stated "is unknown and ..." guard stays eligible.
+      const outcome = loggingAction.test(parts[2])
+        ? parts[2].replace(loggedTemporalDetail, (span, detail: string) => explicitTemporalGuard.test(detail) ? span : ', ')
+        : parts[2];
+      const next = [...outcome.matchAll(coordinatedCondition)].find(match =>
+        !indirectQuestion.test(outcome.slice(0, match.index)));
       if (emptyCondition.test(parts[1]) && emptyOutcome.test(outcome.slice(0, next?.index))) return true;
       remaining = next ? outcome.slice(next.index + next[0].length) : '';
     }
