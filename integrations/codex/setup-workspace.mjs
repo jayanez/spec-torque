@@ -1,11 +1,29 @@
 import { access, lstat, realpath, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { configureWorkspace, tomlValue } from './workspace-config.mjs';
 
 const [major, minor] = process.versions.node.split('.').map(Number);
 if (major < 22 || (major === 22 && minor < 20)) throw new Error('SpecTorque requires Node 22.20 or later.');
-const [input, feature, ...extra] = process.argv.slice(2);
-if (!input || extra.length || feature?.startsWith('-')) throw new Error('Usage: node setup-workspace.mjs <trusted-worktree> [feature-id]');
+function usage() {
+  throw new Error('Usage: node setup-workspace.mjs [--check] <trusted-worktree> [feature-id]\n' +
+    '       node setup-workspace.mjs --write <trusted-worktree> --expect <revision from --check>');
+}
+
+function parseArgs(args) {
+  if (args[0] === '--write') {
+    const [, input, flag, revision] = args;
+    if (args.length !== 4 || !input || input.startsWith('-') || flag !== '--expect' || !/^[a-f0-9]{64}$/u.test(revision)) usage();
+    return { mode: '--write', input, revision };
+  }
+  const checking = args[0] === '--check';
+  const operands = checking ? args.slice(1) : args;
+  const [input, feature] = operands;
+  if (!input || input.startsWith('-') || operands.length > 2 || feature?.startsWith('-')) usage();
+  return { mode: checking ? '--check' : undefined, input, feature };
+}
+
+const { mode, input, feature, revision } = parseArgs(process.argv.slice(2));
 const root = await realpath(resolve(input));
 if (!(await stat(root)).isDirectory()) throw new Error('The worktree must be a directory.');
 const node = await realpath(process.execPath);
@@ -13,16 +31,23 @@ const server = fileURLToPath(new URL('./runtime/server.mjs', import.meta.url));
 const workbench = fileURLToPath(new URL('./runtime/workbench.mjs', import.meta.url));
 const assets = fileURLToPath(new URL('./web-dist/index.html', import.meta.url));
 await Promise.all([server, workbench, assets].map(path => access(path)));
-const toml = JSON.stringify;
+const toml = tomlValue;
+const fields = { command: node, args: [server], cwd: root, 'env.SPECTORQUE_ROOT': root };
 const config = [
   '[mcp_servers.spectorque-workspace]',
-  'command = ' + toml(node),
-  'args = [' + toml(server) + ']',
-  'cwd = ' + toml(root),
+  'command = ' + toml(fields.command),
+  'args = ' + toml(fields.args),
+  'cwd = ' + toml(fields.cwd),
   '',
   '[mcp_servers.spectorque-workspace.env]',
-  'SPECTORQUE_ROOT = ' + toml(root),
+  'SPECTORQUE_ROOT = ' + toml(fields['env.SPECTORQUE_ROOT']),
 ].join('\n');
+
+if (mode === '--write') {
+  const result = await configureWorkspace(root, { fields, block: config }, mode, revision);
+  console.log((result.status === 'configured' ? 'Already configured: ' : 'Configured: ') + result.path);
+  process.exit(0);
+}
 const cmd = process.platform === 'win32'
   ? values => '& ' + values.map(value => "'" + value.replaceAll("'", "''") + "'").join(' ')
   : values => values.map(value => "'" + value.replaceAll("'", "'\"'\"'") + "'").join(' ');
@@ -30,6 +55,11 @@ const workbenchCommand = cmd([node, workbench, 'serve', '--root', root, '--port'
 
 console.log('Merge this block into the trusted worktree’s .codex/config.toml:');
 console.log('\n' + config + '\n');
+if (mode === '--check') {
+  const result = await configureWorkspace(root, { fields, block: config }, mode);
+  console.log('Project configuration: ' + result.status);
+  console.log('Config revision: ' + result.revision + '\n');
+}
 if (process.platform === 'win32') {
   console.log('The Codex Desktop environment action is unavailable on Windows. Use the workbench command below.\n');
 } else {

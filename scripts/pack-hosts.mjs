@@ -12,9 +12,9 @@ await mkdir(out, { recursive: true });
 export const PACKAGES = {
   '.': ['dist/cli.js', 'dist/mcp.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md'],
   'integrations/claude': ['.claude-plugin/plugin.json', '.mcp.json', 'hooks/register.js', 'dist/mcp.js', 'dist/cli.js', 'web-dist/index.html', 'skills/spec-review/SKILL.md', 'assets/icon.png'],
-  'integrations/codex': ['plugin.json', 'setup-workspace.mjs', 'runtime/server.mjs', 'runtime/workbench.mjs', 'runtime/viewer.html', 'assets/icon.png',
+  'integrations/codex': ['plugin.json', 'setup-workspace.mjs', 'workspace-config.mjs', 'runtime/server.mjs', 'runtime/workbench.mjs', 'runtime/viewer.html', 'assets/icon.png',
     'skills/spec-review/SKILL.md', 'skills/spec-view/SKILL.md', 'skills/spec-view/agents/openai.yaml',
-    'skills/spec-workbench/SKILL.md', 'skills/spec-workbench/agents/openai.yaml'],
+    'skills/spec-workbench/SKILL.md', 'skills/spec-workbench/agents/openai.yaml', 'skills/spec-setup/SKILL.md', 'skills/spec-setup/agents/openai.yaml'],
   'integrations/opencode': ['tui.tsx', 'runtime/integration.js', 'web-dist/index.html', 'assets/icon.png'],
   'integrations/pi': ['index.ts', 'runtime/integration.js', 'skills/spec-review/SKILL.md', 'assets/icon.png'],
 };

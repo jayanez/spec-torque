@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawn } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
+import { pathToFileURL } from 'node:url';
 import { unzipSync } from 'fflate';
 
 const manifest = JSON.parse(await readFile(new URL('../integrations/codex/plugin.json', import.meta.url), 'utf8'));
@@ -14,16 +15,19 @@ const bytes = await readFile(archive);
 const digest = createHash('sha256').update(bytes).digest('hex');
 assert.equal((await readFile(archive + '.sha256', 'utf8')).split(' ')[0], digest);
 const entries = unzipSync(bytes);
-assert.equal(JSON.parse(Buffer.from(entries['plugin.json'])).version, manifest.version);
+const packagedManifest = JSON.parse(Buffer.from(entries['plugin.json']));
+assert.equal(packagedManifest.version, manifest.version);
+assert.equal(packagedManifest.extensions['com.openai'].onboardingSkill, './skills/spec-setup/SKILL.md');
 assert.ok(!entries['mcp.json'] && !entries['.mcp.json'], 'Only the project config should register the MCP server.');
-for (const path of ['setup-workspace.mjs', 'runtime/server.mjs', 'runtime/viewer.html', 'runtime/workbench.mjs', 'web-dist/index.html',
+for (const path of ['setup-workspace.mjs', 'workspace-config.mjs', 'runtime/server.mjs', 'runtime/viewer.html', 'runtime/workbench.mjs', 'web-dist/index.html',
   'skills/spec-author/SKILL.md', 'skills/spec-refine/SKILL.md', 'skills/spec-review/SKILL.md',
   'skills/spec-view/SKILL.md', 'skills/spec-view/agents/openai.yaml',
   'skills/spec-workbench/SKILL.md', 'skills/spec-workbench/agents/openai.yaml',
+  'skills/spec-setup/SKILL.md', 'skills/spec-setup/agents/openai.yaml',
   'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) assert.ok(entries[path]?.length > 0, path);
 
 const scratch = await realpath(await mkdtemp(join(tmpdir(), 'spectorque codex package ')));
-const install = join(scratch, 'installed plugin');
+const install = join(scratch, process.platform === 'win32' ? 'installed plugin' : 'installed plugin \u007f');
 const worktree = join(scratch, "trusted project's worktree");
 const env = { ...process.env };
 delete env.OPENAI_API_KEY;
@@ -44,7 +48,9 @@ try {
   const runtime = join(install, 'runtime');
   const beforeSetup = await readdir(worktree, { recursive: true });
   const setup = execFileSync(process.execPath, [join(install, 'setup-workspace.mjs'), worktree], { cwd: scratch, env, encoding: 'utf8' });
-  assert.ok(setup.includes('args = [' + JSON.stringify(join(runtime, 'server.mjs')) + ']'));
+  const serverArgs = /^args = (.+)$/mu.exec(setup)?.[1];
+  assert.doesNotMatch(serverArgs, /\u007f/u);
+  assert.deepEqual(JSON.parse(serverArgs), [join(runtime, 'server.mjs')]);
   assert.ok(setup.includes('SPECTORQUE_ROOT = ' + JSON.stringify(root)));
   assert.match(setup, /add --feature <feature-id>/);
   assert.deepEqual((await readdir(worktree, { recursive: true })).sort(), beforeSetup.sort(), 'Setup must not create files or directories.');
@@ -80,11 +86,143 @@ try {
   }
   const stamp = JSON.stringify({ digest, version: manifest.version, node: process.version, platform: process.platform + '/' + process.arch });
   console.log(stamp);
+  await checkProjectSetup();
   await checkMcp();
   await checkWorkbench(actionCommand);
   console.log('Relocated package, print-only setup, scoped MCP resource, evidence and workbench HTTP passed.');
 } finally {
   await rm(scratch, { recursive: true, force: true });
+}
+
+async function checkProjectSetup() {
+  const target = join(scratch, 'setup target');
+  const configDir = join(target, '.codex');
+  const path = join(configDir, 'config.toml');
+  const runAt = (root, mode, ...args) => spawnSync(process.execPath, [join(install, 'setup-workspace.mjs'), mode, root, ...args],
+    { cwd: scratch, env, encoding: 'utf8' });
+  const run = (mode, ...args) => runAt(target, mode, ...args);
+  const check = (status, root = target) => {
+    const result = runAt(root, '--check');
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(result.stdout.includes('Project configuration: ' + status + '\n'), result.stdout);
+    return /^Config revision: (\S+)$/mu.exec(result.stdout)?.[1];
+  };
+  const write = revision => run('--write', '--expect', revision);
+  await mkdir(target);
+  const newRevision = check('missing');
+  assert.match(newRevision, /^[a-f0-9]{64}$/u);
+  assert.deepEqual(await readdir(target), [], 'Check must not create the protected directory.');
+  const otherTarget = join(scratch, 'different setup target');
+  await mkdir(otherTarget);
+  const crossRoot = runAt(otherTarget, '--write', '--expect', newRevision);
+  assert.notEqual(crossRoot.status, 0);
+  assert.match(crossRoot.stderr, /configuration changed/u);
+  assert.deepEqual(await readdir(otherTarget), [], 'A revision from another worktree must not authorize setup here.');
+  const created = write(newRevision);
+  assert.equal(created.status, 0, created.stderr);
+  const generated = await readFile(path, 'utf8');
+  assert.ok(generated.startsWith('[mcp_servers.spectorque-workspace]\n'));
+  assert.match(write(check('configured')).stdout, /^Already configured:/u);
+  assert.equal(await readFile(path, 'utf8'), generated);
+
+  const old = generated.replace(/^command = .*$/mu, 'command = ' + JSON.stringify(join(target, 'missing-node')) + ' # keep this comment')
+    .replace(/^args = .*$/mu, 'args = ' + JSON.stringify([join(target, 'old-plugin', 'server.mjs')]));
+  const foreign = '# keep this section\nnotes = """\n[mcp_servers.spectorque-workspace]\nquotes"""""\n\n' +
+    'options = { paths = [\n  "one", "two",\n], enabled = true }\n' +
+    'values = [42, -2.7e+2, 0xff, 0o755, 0b1010, 2024-02-29T10:08:30Z, 10:08:30]\n' +
+    '[[skills.config]]\npath = "one"\nenabled = true\n[[skills.config]]\npath = "two"\nenabled = false\n\n' +
+    '[mcp_servers.other]\ncommand = "other"\n\n';
+  await writeFile(path, foreign);
+  const appended = write(check('missing'));
+  assert.equal(appended.status, 0, appended.stderr);
+  assert.equal(await readFile(path, 'utf8'), foreign + '\n' + generated);
+  await mkdir(join(configDir, 'environments'));
+  const environment = join(configDir, 'environments', 'environment.toml');
+  await writeFile(environment, '# existing workbench action\n');
+  const stale = (foreign + old).replaceAll('\n', '\r\n');
+  await writeFile(path, stale);
+  const revision = check('stale');
+  assert.equal(await readFile(path, 'utf8'), stale);
+  await writeFile(path, stale + '# concurrent edit\r\n');
+  assert.match(write(revision).stderr, /configuration changed/u);
+  assert.equal(await readFile(path, 'utf8'), stale + '# concurrent edit\r\n');
+  const repaired = write(check('stale'));
+  assert.equal(repaired.status, 0, repaired.stderr);
+  const expected = foreign + generated.replace(/^command = .*$/mu, '$& # keep this comment') + '# concurrent edit\n';
+  const repairedConfig = await readFile(path, 'utf8');
+  assert.equal(repairedConfig, expected.replaceAll('\n', '\r\n'));
+  assert.doesNotMatch(repairedConfig, /\u007f/u, 'Stale repair must escape DEL in the installed runtime path.');
+  assert.equal(await readFile(environment, 'utf8'), '# existing workbench action\n');
+  check('configured');
+
+  const lock = join(configDir, '.spectorque-config.lock');
+  const { setupLockScope } = await import(pathToFileURL(join(install, 'workspace-config.mjs')).href);
+  const scope = await setupLockScope();
+  const recordOwner = async (pid, ownerScope = scope ?? 'unknown') => {
+    await mkdir(lock);
+    const name = ownerScope + '-' + pid + '-' + randomUUID();
+    await writeFile(join(lock, name), '');
+    return name;
+  };
+  await writeFile(path, stale);
+  const lockedRevision = check('stale');
+  const liveOwner = await recordOwner(process.pid);
+  const locked = write(lockedRevision);
+  assert.notEqual(locked.status, 0);
+  assert.match(locked.stderr, /Cannot acquire the SpecTorque setup lock/u);
+  assert.deepEqual(await readdir(lock), [liveOwner]);
+  assert.equal(await readFile(path, 'utf8'), stale);
+  await rm(lock, { recursive: true });
+  const exited = spawnSync(process.execPath, ['-e', ''], { cwd: scratch, env });
+  assert.equal(exited.status, 0);
+  const foreignScope = scope === '0000000000000000' ? '1111111111111111' : '0000000000000000';
+  const foreignOwner = await recordOwner(exited.pid, foreignScope);
+  const foreignLock = write(lockedRevision);
+  assert.notEqual(foreignLock.status, 0);
+  assert.match(foreignLock.stderr, /owner cannot be verified/u);
+  assert.deepEqual(await readdir(lock), [foreignOwner]);
+  assert.equal(await readFile(path, 'utf8'), stale);
+  await rm(lock, { recursive: true });
+  if (scope) await recordOwner(exited.pid);
+  else await mkdir(lock);
+  const recovered = write(lockedRevision);
+  assert.equal(recovered.status, 0, recovered.stderr);
+  assert.equal(await readFile(path, 'utf8'), repairedConfig.replace('# concurrent edit\r\n', ''));
+  assert.deepEqual((await readdir(configDir)).sort(), ['config.toml', 'environments']);
+  assert.equal(await readFile(environment, 'utf8'), '# existing workbench action\n');
+
+  for (const custom of ['mcp_servers = { "spectorque-workspace" = { enabled = false } }\n', 'value = "text"\rignored = true\n',
+    'x = true false\n', 'x = 1garbage\n', 'x = [1 2]\n', 'x = { a = 1, a = 2 }\n',
+    'x = { a = 1,\n b = 2 }\n', '[other]\nx = 1\nx = 2\n',
+    'x = "\\q"\n', 'x = 2025-02-29\n',
+    generated.replace('\nargs', '\nenabled = false\nargs'),
+    generated.replace('[mcp_servers.spectorque-workspace.env]\nSPECTORQUE_ROOT', '"env.SPECTORQUE_ROOT"')]) {
+    await writeFile(path, custom);
+    const result = run('--check');
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Cannot safely merge/u);
+    assert.equal(await readFile(path, 'utf8'), custom);
+  }
+  if (process.platform !== 'win32') {
+    const delTarget = join(scratch, 'worktree with \u007f in its name');
+    await mkdir(delTarget);
+    const checked = runAt(delTarget, '--check');
+    assert.equal(checked.status, 0, checked.stderr);
+    assert.ok(!checked.stdout.match(/^command = .*\u007f/mu), 'TOML command values must escape DEL.');
+    const written = runAt(delTarget, '--write', '--expect', check('missing', delTarget));
+    assert.equal(written.status, 0, written.stderr);
+    const config = await readFile(join(delTarget, '.codex/config.toml'), 'utf8');
+    assert.doesNotMatch(config, /\u007f/u);
+    const cwd = /^cwd = (.+)$/mu.exec(config)?.[1];
+    assert.equal(JSON.parse(cwd), await realpath(delTarget));
+    check('configured', delTarget);
+    const outside = join(scratch, 'outside.toml');
+    await writeFile(outside, 'private = true\n');
+    await rm(path);
+    await symlink(outside, path);
+    assert.match(run('--check').stderr, /Cannot safely merge/u);
+    assert.equal(await readFile(outside, 'utf8'), 'private = true\n');
+  }
 }
 
 function readActionCommand(output) {

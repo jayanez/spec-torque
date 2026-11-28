@@ -1,0 +1,5 @@
+interface:
+  short_description: "Bind this trusted worktree to the SpecTorque viewer"
+  default_prompt: "Use $spec-setup to configure SpecTorque for this local worktree."
+policy:
+  allow_implicit_invocation: false

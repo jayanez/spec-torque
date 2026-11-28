@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Codex Desktop (#117): invoke `$spec-setup` to bind a trusted worktree without a terminal step. Choose it from the `$` menu, confirm the root, and approve the protected MCP write. Then open a new local chat for `$spec-view`. Setup also checks and repairs obsolete paths after an update. The workbench environment action remains a separate opt-in.
+
 - Codex Desktop (#116): open the local workbench from the **Project** command palette without a model turn, or use the optional `$spec-workbench` skill. Worktree setup prints the environment action without editing files. [Desktop observations](docs/codex-desktop-probe.md#workbench-launch-in-codex-desktop-2026-11-28-issue-116)
 
 - Engine 0.1.21 (#52, H52c-a), product version unchanged (0.3.0): a scenario step that carries a normative modal (`- THEN the system SHALL lock the account`, `- ENTONCES el sistema DEBE …`, or a sentence that starts with When/Cuando and has a modal) is now a requirement line, as the label guide defines it. It counts for normative wording (E1.4), measurability (E1.2), single obligations (E2.1), identifiers (I1.2, I2.2) and the related findings, exactly like any other requirement line. A step without a modal is still an acceptance step, even with a requirement ID, and fenced or quoted steps are not read. A specification written as scenarios with `SHALL` steps is no longer `unknown` for those practices. The corpus comparison shows no prediction change. See docs/precision-decisions.md.

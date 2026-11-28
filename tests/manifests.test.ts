@@ -89,3 +89,17 @@ test('spec-workbench is a Codex-only skill that opens the workbench root', async
   assert.doesNotMatch(metadata, /display_name/u);
   await assert.rejects(readFile('skills/spec-workbench/SKILL.md', 'utf8'), { code: 'ENOENT' });
 });
+
+test('spec-setup is a Codex-only, explicit onboarding skill', async () => {
+  const directory = 'integrations/codex/skill-src/spec-setup';
+  const skill = (await readFile(directory + '/SKILL.md', 'utf8')).replace(/\r\n/gu, '\n');
+  assert.match(skill, /^---\nname: spec-setup\n/u);
+  assert.match(skill, /\.\.\/\.\.\/setup-workspace\.mjs/u);
+  assert.match(skill, /--write <absolute-worktree> --expect <revision>/u);
+  const metadata = (await readFile(directory + '/agents/openai.yaml', 'utf8')).replace(/\r\n/gu, '\n');
+  assert.match(metadata, /^policy:\n  allow_implicit_invocation: false$/mu);
+  assert.doesNotMatch(metadata, /display_name/u);
+  const plugin = JSON.parse(await readFile('integrations/codex/plugin.json', 'utf8'));
+  assert.equal(plugin.extensions['com.openai'].onboardingSkill, './skills/spec-setup/SKILL.md');
+  await assert.rejects(readFile('skills/spec-setup/SKILL.md', 'utf8'), { code: 'ENOENT' });
+});

@@ -22,6 +22,6 @@ Use one scope at a time. Do not run a separate review: the viewer assesses local
 
 ## If the tool is missing
 
-If `open_spectorque` or the `spectorque-workspace` server is not available, the project is not bound yet. Tell the user to run `setup-workspace.mjs` from the installed plugin against this worktree, merge its block into `.codex/config.toml`, and open a new chat. See the plugin README, "Install and bind a worktree".
+If `open_spectorque` or the `spectorque-workspace` server is unavailable, ask the user to invoke `$spec-setup` explicitly in this local worktree, trust the folder, and try again from a new local chat. See the plugin README, "Install and bind a worktree".
 
 For a written review of the same scope, use `$spec-review`.

@@ -152,6 +152,24 @@ The local spike used SpecTorque 0.3.0 on macOS arm64 and Codex Desktop `26.1120.
 
 [Issue #116](https://github.com/jayanez/spec-torque/issues/116)
 
+## Worktree binding and project trust (2026-11-28, issue #117)
+
+The legacy plugin probe ran on macOS 27.2.1 arm64 with Codex Desktop `26.1120.50957` from Info.plist, bundled Codex `0.171.0-alpha.13.2` and GPT-6.2 Sol (Medium). The numeric Desktop build was not confirmed in **About**.
+
+- With no `cwd`, the probe received the correct root in each of two linked worktrees and when returning to the first chat. With an explicit control `cwd`, both processes received the control directory. In Desktop turns, the workspaces metadata matched the active worktree under both variants. The no-turn app-server control had no such metadata. Neither run advertised MCP roots or reported `sandboxCwd`. The probe did not request the experimental sandbox-state capability.
+- Cancelling the trust prompt left the new folder unregistered. When the two disposable folders were marked untrusted and opened with **Open restricted**, the plugin still ran and received each active root. The observed metadata did not establish project trust. This supports choosing explicit project onboarding in [#117](https://github.com/jayanez/spec-torque/issues/117).
+
+The separate onboarding control used the app's bundled `0.171.0-alpha.13.2` app-server over stdio, in a temporary trusted project. Its first tool inventory had no `open_spectorque`. After the packaged `--check` and `--write` commands, the inventory included the tool in the same thread and in a new thread, with no explicit reload and no model turn. This was a protocol control. The native result below differs for the existing chat.
+
+## Native onboarding (2026-11-28, issue #117)
+
+Tested the installed ZIP from PR #124 commit `3ea927ac94423c69f41ae68829bd06fefab4a714`, SHA-256 `2bc39f8e7f609b116b78ef92eacf375636130c37c2034a29070a7e6cc1cf8019`, in Codex Desktop `26.1120.50957` as shown in **About**, on macOS 27.2.1 arm64. About showed no numeric build. The chat used GPT-6.2 Sol (Medium), **Ask for approval**, and nine model turns.
+
+- **Entry point.** The manifest registered `onboardingSkill`. The tested plugin page showed **Settings** and **Try now**, with no **Setup** button. **Try now** opened a chat with the plugin selected in the composer and sent no message. Selecting **Spectorque: Spec Setup** from the `$` menu invoked the skill.
+- **Approval and idempotence.** The skill showed the canonical root and MCP block. Declining left `.codex/config.toml` absent. After explicit chat approval and the user's one-time protected-path approval, the file contained one correct binding and no temporary files remained. The exact prompt text was not captured. A repeat reported `configured` without requesting write approval and preserved the config hash and modification time. The environment file remained byte-identical throughout.
+- **Viewer.** The original chat had no `open_spectorque` call or viewer after the write. A new local chat in the same worktree called the candidate runtime and rendered the assessment for that root. The profile had other SpecTorque installs and showed two identical **Spectorque: Spec View** entries, so the exact viewer skill selected is unknown. The verified binding identified the MCP runtime that served the result.
+- **Scope.** The candidate was installed through a local marketplace via the CLI. A fresh Desktop profile, installation from the Desktop store, custom TOML and repair after a runtime upgrade were outside the native run. The app-server, package and browser checks are separate evidence from the observed Desktop workflow.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.
