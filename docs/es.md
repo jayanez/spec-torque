@@ -19,7 +19,7 @@ SpecTorque 0.3.0 es una **versión preliminar**, publicada en el canal `next` ha
 | Plataforma | Instalación | Después |
 |---|---|---|
 | Claude Code (CLI y pestaña Code de Desktop) | `claude plugin marketplace add jayanez/spec-torque` y `claude plugin install spectorque@spectorque` | `/spectorque` |
-| Codex (CLI y Desktop) | `codex plugin marketplace add jayanez/spec-torque` y `codex plugin add spectorque@spectorque` | [Vincula un worktree](../integrations/codex/README.md#install-and-bind-a-worktree) y luego `$spec-view` (visor integrado: solo Desktop) |
+| Codex (CLI y Desktop) | `codex plugin marketplace add jayanez/spec-torque` y `codex plugin add spectorque@spectorque` | [Vincula el worktree con `$spec-setup`](../integrations/codex/README.md#install-and-bind-a-worktree) y abre otro chat local para `$spec-view` (visor integrado: solo Desktop) |
 | OpenCode | Añade `"opencode-spectorque@0.3.0"` a `plugins` en `~/.config/opencode/cli.json` | `/spectorque` en una sesión |
 | Pi y ThinkRail | `pi install npm:pi-spectorque@0.3.0` | `/spectorque` |
 | VS Code | Busca **SpecTorque** y elige *Switch to Pre-Release*, o `code --install-extension jayanez.spectorque --pre-release` | **SpecTorque: Open Specification Workbench** |
@@ -64,7 +64,9 @@ Los refinamientos conservan literalmente las cláusulas negativas detectadas, sa
 
 ## Visor de Codex Desktop
 
-Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el archivo reubicado fuera del checkout. Instala el ZIP desde un marketplace local y ejecuta `setup-workspace.mjs` desde la copia instalada, con la ruta del worktree confiable. Ejecuta el setup una vez por cada worktree, también los vinculados. Incorpora el bloque MCP en `.codex/config.toml` y el de la acción en `.codex/environments/environment.toml`. Si el archivo de entorno ya existe, fusiona la acción y conserva las demás acciones y el script de setup. El script solo imprime la configuración. En Windows imprime el comando para terminal y omite la acción. Para actualizar, reinstala el ZIP verificado y sustituye los bloques con las rutas nuevas. Para retirar la integración, detén el workbench, elimina los bloques de SpecTorque y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
+Genera el ZIP con `npm run check`, `npm run package:integrations` y `npm run package:codex`. `npm run verify:codex-package` comprueba el paquete fuera del checkout. Instala el ZIP desde un marketplace local. En un chat local del worktree, confía en la carpeta y ejecuta **Setup** del plugin o invoca `$spec-setup`. Confirma la raíz que se muestra, revisa el bloque MCP y autoriza la escritura en `.codex/config.toml` cuando se te pida. Abre un chat local nuevo para usar `$spec-view`. Después de actualizar el plugin o Node, vuelve a ejecutar `$spec-setup` para reparar las rutas si hace falta.
+
+Para configurar la acción de entorno, usa el bloque que muestra la skill o que imprime `setup-workspace.mjs`. Incorpóralo a `.codex/environments/environment.toml` conservando las demás acciones y el script de setup. Si el archivo aún no existe, el script imprime su contenido completo. En Windows imprime el comando para terminal. La configuración manual del MCP usa el mismo script y el bloque que imprime. Vincula cada worktree por separado. Para retirar la integración, detén el workbench, elimina los bloques de SpecTorque y desinstala el plugin o marketplace de prueba. [Guía del paquete](../integrations/codex/README.md)
 
 Abre un solo workbench por worktree. Si ya hay uno activo, reutilízalo o detenlo antes de cambiar de vía.
 

@@ -55,7 +55,7 @@ claude mcp add spectorque -- npx -y spectorque mcp
 codex mcp add spectorque -- npx -y spectorque mcp
 ```
 
-Other MCP clients take the same command (`npx -y spectorque mcp`) as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)). The server analyzes the git work tree of the folder the client starts it in; set `SPECTORQUE_ROOT` to point it elsewhere. The npm package is published from [`release.yml`](.github/workflows/release.yml) with npm provenance. For the native panels (`/spectorque` in Claude Code, OpenCode and Pi, the Codex viewer, the VS Code workbench), install the plugin for your host below.
+Other MCP clients take the same command (`npx -y spectorque mcp`) as a stdio server ([configuration](docs/integrations.md#mcp-and-skills)). This standalone MCP command uses its process working directory unless `SPECTORQUE_ROOT` is set. The Codex Desktop viewer uses a separate project-local MCP binding configured with `$spec-setup`. The npm package is published from [`release.yml`](.github/workflows/release.yml) with npm provenance. For the native panels (`/spectorque` in Claude Code, OpenCode and Pi, the Codex viewer, the VS Code workbench), install the plugin for your host below.
 
 ## Install
 
@@ -192,7 +192,7 @@ Install the plugin from the marketplace, start a session in the Code tab, then r
 <details>
 <summary><strong>Codex</strong> · inline viewer</summary>
 
-The viewer opens in the conversation from the project's local MCP server. Choose a scope and finding, preview a change, then hand off to the local workbench to approve or export. Opening the inline viewer in Codex Desktop takes one model turn. Open the workbench directly with the environment action or the optional `$spec-workbench` skill. The capture shows the viewer as Codex renders it, driven by a local MCP Apps host. [Install for Codex](integrations/codex/README.md) · [Codex Desktop capture](docs/assets/panels/codex-desktop.jpg)
+Use `$spec-setup` to bind a trusted worktree, then open a new local chat and invoke `$spec-view`. The viewer opens in the conversation from the project's local MCP server. Choose a scope and finding, preview a change, then hand off to the local workbench to approve or export. Opening the inline viewer in Codex Desktop takes one model turn. Open the workbench directly with the environment action or the optional `$spec-workbench` skill. The capture shows the viewer as Codex renders it, driven by a local MCP Apps host. [Install for Codex](integrations/codex/README.md) · [Codex Desktop capture](docs/assets/panels/codex-desktop.jpg)
 
 [![SpecTorque 0.3.0 inline viewer with the summary, dimensions, finding card and change preview](docs/assets/panels/codex.png)](docs/assets/panels/codex.png)
 

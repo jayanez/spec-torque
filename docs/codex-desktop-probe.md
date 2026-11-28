@@ -152,6 +152,15 @@ The local spike used SpecTorque 0.3.0 on macOS arm64 and Codex Desktop `26.1120.
 
 [Issue #116](https://github.com/jayanez/spec-torque/issues/116)
 
+## Worktree binding and project trust (2026-11-28, issue #117)
+
+The legacy plugin probe ran on macOS 27.2.1 arm64 with Codex Desktop `26.1120.50957` from Info.plist, bundled Codex `0.171.0-alpha.13.2` and GPT-6.2 Sol (Medium). The numeric Desktop build was not confirmed in **About**.
+
+- With no `cwd`, the probe received the correct root in each of two linked worktrees and when returning to the first chat. With an explicit control `cwd`, both processes received the control directory. In Desktop turns, the workspaces metadata matched the active worktree under both variants. The no-turn app-server control had no such metadata. Neither run advertised MCP roots or reported `sandboxCwd`. The probe did not request the experimental sandbox-state capability.
+- Cancelling the trust prompt left the new folder unregistered. When the two disposable folders were marked untrusted and opened with **Open restricted**, the plugin still ran and received each active root. The observed metadata did not establish project trust. This supports choosing explicit project onboarding in [#117](https://github.com/jayanez/spec-torque/issues/117).
+
+The separate onboarding control used the app's bundled `0.171.0-alpha.13.2` app-server over stdio, in a temporary trusted project. Its first tool inventory had no `open_spectorque`. After the packaged `--check` and `--write` commands, the inventory included the tool in the same thread and in a new thread, with no explicit reload and no model turn. This control did not exercise the Desktop Setup button, the protected-path prompt, or tool availability in an existing Desktop conversation. The user-facing steps use a new chat.
+
 ## Clean up
 
 Close the probe views. Disable and remove the probe in **Plugins** and confirm it disappears after restart. Check that probe processes have exited and close any separately started workbench listener. Remove any marketplace registration added for the probe and preserve only sanitized evidence. For the CLI route, use `codex plugin remove spectorque-desktop-probe@spectorque-desktop-qualification` and `codex plugin marketplace remove spectorque-desktop-qualification`. The two linked repositories and direct-MCP configuration are all under the generated run directory. Remove only that directory and the disposable profile or VM when their evidence is retained.

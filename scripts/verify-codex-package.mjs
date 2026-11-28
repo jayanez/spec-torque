@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -14,12 +14,15 @@ const bytes = await readFile(archive);
 const digest = createHash('sha256').update(bytes).digest('hex');
 assert.equal((await readFile(archive + '.sha256', 'utf8')).split(' ')[0], digest);
 const entries = unzipSync(bytes);
-assert.equal(JSON.parse(Buffer.from(entries['plugin.json'])).version, manifest.version);
+const packagedManifest = JSON.parse(Buffer.from(entries['plugin.json']));
+assert.equal(packagedManifest.version, manifest.version);
+assert.equal(packagedManifest.extensions['com.openai'].onboardingSkill, './skills/spec-setup/SKILL.md');
 assert.ok(!entries['mcp.json'] && !entries['.mcp.json'], 'Only the project config should register the MCP server.');
-for (const path of ['setup-workspace.mjs', 'runtime/server.mjs', 'runtime/viewer.html', 'runtime/workbench.mjs', 'web-dist/index.html',
+for (const path of ['setup-workspace.mjs', 'workspace-config.mjs', 'runtime/server.mjs', 'runtime/viewer.html', 'runtime/workbench.mjs', 'web-dist/index.html',
   'skills/spec-author/SKILL.md', 'skills/spec-refine/SKILL.md', 'skills/spec-review/SKILL.md',
   'skills/spec-view/SKILL.md', 'skills/spec-view/agents/openai.yaml',
   'skills/spec-workbench/SKILL.md', 'skills/spec-workbench/agents/openai.yaml',
+  'skills/spec-setup/SKILL.md', 'skills/spec-setup/agents/openai.yaml',
   'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES']) assert.ok(entries[path]?.length > 0, path);
 
 const scratch = await realpath(await mkdtemp(join(tmpdir(), 'spectorque codex package ')));
@@ -80,11 +83,88 @@ try {
   }
   const stamp = JSON.stringify({ digest, version: manifest.version, node: process.version, platform: process.platform + '/' + process.arch });
   console.log(stamp);
+  await checkProjectSetup();
   await checkMcp();
   await checkWorkbench(actionCommand);
   console.log('Relocated package, print-only setup, scoped MCP resource, evidence and workbench HTTP passed.');
 } finally {
   await rm(scratch, { recursive: true, force: true });
+}
+
+async function checkProjectSetup() {
+  const target = join(scratch, 'setup target');
+  const configDir = join(target, '.codex');
+  const path = join(configDir, 'config.toml');
+  const run = (mode, ...args) => spawnSync(process.execPath, [join(install, 'setup-workspace.mjs'), mode, target, ...args],
+    { cwd: scratch, env, encoding: 'utf8' });
+  const check = status => {
+    const result = run('--check');
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(result.stdout.includes('Project configuration: ' + status + '\n'), result.stdout);
+    return /^Config revision: (\S+)$/mu.exec(result.stdout)?.[1];
+  };
+  const write = revision => run('--write', '--expect', revision);
+  await mkdir(target);
+  const newRevision = check('missing');
+  assert.match(newRevision, /^[a-f0-9]{64}$/u);
+  assert.deepEqual(await readdir(target), [], 'Check must not create the protected directory.');
+  const otherTarget = join(scratch, 'different setup target');
+  await mkdir(otherTarget);
+  const crossRoot = spawnSync(process.execPath,
+    [join(install, 'setup-workspace.mjs'), '--write', otherTarget, '--expect', newRevision],
+    { cwd: scratch, env, encoding: 'utf8' });
+  assert.notEqual(crossRoot.status, 0);
+  assert.match(crossRoot.stderr, /configuration changed/u);
+  assert.deepEqual(await readdir(otherTarget), [], 'A revision from another worktree must not authorize setup here.');
+  const created = write(newRevision);
+  assert.equal(created.status, 0, created.stderr);
+  const generated = await readFile(path, 'utf8');
+  assert.ok(generated.startsWith('[mcp_servers.spectorque-workspace]\n'));
+  assert.match(write(check('configured')).stdout, /^Already configured:/u);
+  assert.equal(await readFile(path, 'utf8'), generated);
+
+  const old = generated.replace(/^command = .*$/mu, 'command = ' + JSON.stringify(join(target, 'missing-node')) + ' # keep this comment')
+    .replace(/^args = .*$/mu, 'args = ' + JSON.stringify([join(target, 'old-plugin', 'server.mjs')]));
+  const foreign = '# keep this section\nnotes = """\n[mcp_servers.spectorque-workspace]\nquotes"""""\n\n' +
+    '[mcp_servers.other]\ncommand = "other"\n\n';
+  await writeFile(path, foreign);
+  const appended = write(check('missing'));
+  assert.equal(appended.status, 0, appended.stderr);
+  assert.equal(await readFile(path, 'utf8'), foreign + '\n' + generated);
+  await mkdir(join(configDir, 'environments'));
+  const environment = join(configDir, 'environments', 'environment.toml');
+  await writeFile(environment, '# existing workbench action\n');
+  const stale = (foreign + old).replaceAll('\n', '\r\n');
+  await writeFile(path, stale);
+  const revision = check('stale');
+  assert.equal(await readFile(path, 'utf8'), stale);
+  await writeFile(path, stale + '# concurrent edit\r\n');
+  assert.match(write(revision).stderr, /configuration changed/u);
+  assert.equal(await readFile(path, 'utf8'), stale + '# concurrent edit\r\n');
+  const repaired = write(check('stale'));
+  assert.equal(repaired.status, 0, repaired.stderr);
+  const expected = foreign + generated.replace(/^command = .*$/mu, '$& # keep this comment') + '# concurrent edit\n';
+  assert.equal(await readFile(path, 'utf8'), expected.replaceAll('\n', '\r\n'));
+  assert.equal(await readFile(environment, 'utf8'), '# existing workbench action\n');
+  check('configured');
+
+  for (const custom of ['mcp_servers = { "spectorque-workspace" = { enabled = false } }\n', 'value = "text"\rignored = true\n',
+    generated.replace('\nargs', '\nenabled = false\nargs'),
+    generated.replace('[mcp_servers.spectorque-workspace.env]\nSPECTORQUE_ROOT', '"env.SPECTORQUE_ROOT"')]) {
+    await writeFile(path, custom);
+    const result = run('--check');
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Cannot safely merge/u);
+    assert.equal(await readFile(path, 'utf8'), custom);
+  }
+  if (process.platform !== 'win32') {
+    const outside = join(scratch, 'outside.toml');
+    await writeFile(outside, 'private = true\n');
+    await rm(path);
+    await symlink(outside, path);
+    assert.match(run('--check').stderr, /Cannot safely merge/u);
+    assert.equal(await readFile(outside, 'utf8'), 'private = true\n');
+  }
 }
 
 function readActionCommand(output) {

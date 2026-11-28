@@ -8,7 +8,7 @@ if (manifest.version !== pkg.version) throw new Error('Codex plugin and package 
 const { archive, sha256 } = await packageArchive({
   host: 'codex',
   version: manifest.version,
-  files: ['plugin.json', 'setup-workspace.mjs', 'README.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'],
+  files: ['plugin.json', 'setup-workspace.mjs', 'workspace-config.mjs', 'README.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'],
   directories: ['assets', 'runtime', 'web-dist', 'skills'],
   normalizeText: path => /\.(?:css|html|js|json|md|mjs|txt|yaml)$/u.test(path) ||
     ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES'].includes(path),

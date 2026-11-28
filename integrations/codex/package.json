@@ -39,6 +39,7 @@
   "files": [
     "plugin.json",
     "setup-workspace.mjs",
+    "workspace-config.mjs",
     "runtime",
     "web-dist",
     "skills",
