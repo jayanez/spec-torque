@@ -1,11 +1,10 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { analyze } from '../../src/core/analyze.js';
-import type { Artifact, Role } from '../../src/core/types.js';
+import type { Artifact, Role, Status } from '../../src/core/types.js';
 
-type Case = { id: string; practice: string; role: Role; text: string; expected: string; note: string; spec?: string };
-const cases: Case[] = [
-  ...[
+type Control = [practice: string, role: Role, text: string, expected: Status, note: string, spec?: string];
+const controls: Control[] = [
     ['P2.2','spec','The service MUST handle edge cases.','partial','term without concrete behavior'],
     ['P2.2','spec','El servicio DEBE tratar casos límite.','partial','plural translation'],
     ['P2.2','spec','The service MUST handle boundary cases.','partial','term without concrete behavior'],
@@ -57,8 +56,10 @@ const cases: Case[] = [
     ['C2.3','tasks','- Implementar el requisito de guardar registros.','partial','translated reference','RF-1: El servicio DEBE guardar registros.'],
     ['C2.3','tasks','- Ignore FR-1; this task serves another requirement.','missing','mention without link','FR-1: The service MUST save records.'],
     ['C2.3','spec','FR-1: The service MUST save records.','unknown','missing tasks role'],
-  ].map(([practice,role,text,expected,note,spec],i) => ({id:`L58-${String(i+1).padStart(2,'0')}`,practice,role:role as Role,text,expected,note,spec})),
 ];
+const cases = controls.map(([practice, role, text, expected, note, spec], index) => ({
+  id: `L58-${String(index + 1).padStart(2, '0')}`, practice, role, text, expected, note, spec,
+}));
 const artifact = (role: Role, content: string): Artifact => ({ path: `${role}.md`, role, content, framework:'generic', featureId:'f', archived:false });
 const hashes: Record<string, string> = JSON.parse(readFileSync(new URL('../../research/58/control-hashes.json', import.meta.url), 'utf8'));
 if (Object.keys(hashes).length !== cases.length) throw new Error('Control manifest size mismatch');
@@ -68,7 +69,8 @@ for (const c of cases) {
   const sha256 = createHash('sha256').update(canonical,'utf8').digest('hex');
   if (hashes[c.id] !== sha256) throw new Error(`Control hash mismatch: ${c.id}`);
   const result = await analyze({name:c.id,artifacts});
-  const p = result.practices.find(p => p.id===c.practice)!;
+  const p = result.practices.find(p => p.id === c.practice);
+  if (!p) throw new Error(`Unknown control practice: ${c.practice}`);
   const other = result.practices.filter(p => ['P2.2','P1.4','E3.1','E3.2','E3.3','E3.4','I1.2','C2.3'].includes(p.id)).map(({id,status})=>`${id}:${status}`).join(' ');
   console.log(JSON.stringify({id:c.id,practice:c.practice,sha256,expected:c.expected,observed:p.status,note:c.note,evidence:p.evidence,reason:p.reason,findings:result.findings.map(({practiceId,message,evidence})=>({practiceId,message,evidence})),other}));
 }

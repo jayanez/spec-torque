@@ -25,7 +25,10 @@ python3 scripts/spike-58/fetch-dev.py "$cache"
 node --import tsx scripts/spike-58/scan-context.ts "$cache" \
   > /tmp/spec58-leads.jsonl 2> /tmp/spec58-coverage.json
 node --import tsx --test scripts/spike-58/context-rules.test.ts
+python3 -B -m unittest discover -s scripts/spike-58 -p test_dev_cache.py
 ```
+
+The fetcher accepts a new or empty directory. The contextual scanner also accepts older cache indexes and contacts GitHub for the tree at each pinned revision with local documents. It checks the Git blob ID for each path against the cached bytes before analysis. An unavailable or truncated tree, a path with no matching blob, or mismatched bytes are recorded as skipped in the coverage ledger. Check that ledger before comparing counts. The historical exact-text and whole-document hash tools accept the same optional cache directory and run offline against the validated local paths.
 
 The expanded scanner groups wrapped prose and indented list continuations. A heading, list item, table row, blank line or code fence bounds a passage. A row can inherit the table header and its Markdown headings. A lead includes all matching cues for its practice in one record. Document evidence and passage evidence are separate fields. The coverage ledger lists duplicate normalized fragments across repositories with every location. The scanner checks repository, revision, manifest license, allowed document paths and cache paths before opening content. Root license text is checked at the pinned revision. Reviewers should still account for any document-level license exceptions before redistributing material.
 

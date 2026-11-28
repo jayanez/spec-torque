@@ -1,14 +1,17 @@
 // Search cues rank leads for review. They are independent of the engine's patterns.
 const exception = /\b(edge cases?|boundary|out of range|malformed|invalid|empty|failure|casos? limite|fuera de rango|incorrect[oa]s?|invalid[oa]s?|vaci[oa]s?|fallos?)\b/u;
-const conditionAndOutcome = /\b(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
+const conditionalStart = /\b(?=(?:if|when|si|cuando)\s+)/u;
+const conditionAndOutcome = /^(?:if|when|si|cuando)\s+([^,.?;]+)[,.?;]\s*([^.?;]+)/u;
 const emptyCondition = /\b(?:empty|no content|no (?:rows|results|records)|vaci[oa]s?|sin contenido|sin (?:filas|resultados|registros)|no (?:hay|tiene) contenido)\b/u;
 const emptyOutcome = /\b(?:is created|are created|creates?|will (?:show|display|return)|(?:shows?|displays?|returns?)\s+|se (?:crea(?:ra)?|muestra(?:ra)?|devuelve|devolvera)|(?:creara|mostrara|devolvera)\s+)\b/u;
 
 function hasEmptyCaseOutcome(body: string): boolean {
   // Treat command names and flags as literals, not condition or outcome words.
   const prose = body.replace(/(`+)[^`]+\1(?!`)/gu, ' ');
-  const parts = conditionAndOutcome.exec(prose);
-  return parts !== null && emptyCondition.test(parts[1]) && emptyOutcome.test(parts[2]);
+  return prose.split(conditionalStart).some(clause => {
+    const parts = conditionAndOutcome.exec(clause);
+    return parts !== null && emptyCondition.test(parts[1]) && emptyOutcome.test(parts[2]);
+  });
 }
 const interruption = /\b(upstream|provider|dependency|no response|stops? responding|unavailable|timeout|proveedor|dependencia|servicio externo|deja de responder|no responde|no disponible|interrupcion)\b/u;
 const response = /\b(reject\w*|retry|retries|try again|try twice more|unchanged|retain\w*|rollback|preserv\w*|return\w* an? error|rechaz\w*|reintent\w*|intentar de nuevo|intentar dos veces mas|sin cambios|no se modific\w*|devolv\w* un error)\b/u;
@@ -33,6 +36,7 @@ const headingLine = /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/u;
 const fenceLine = /^\s*(`{3,}|~{3,})(.*)$/u;
 const listLine = /^(\s*)(?:[-+*]|\d+[.)])[ \t]+/u;
 const tableDelimiter = /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)+\|?\s*$/u;
+const singleColumnDelimiter = /^\s*\|?\s*:?-+:?\s*\|?\s*$/u;
 const hasPipe = (line: string) => /(?<!\\)\|/u.test(line);
 
 export function passagesOf(lines: readonly string[]): Passage[] {
@@ -70,7 +74,8 @@ export function passagesOf(lines: readonly string[]): Passage[] {
       tableHeader = undefined;
       continue;
     }
-    if (hasPipe(line) && tableDelimiter.test(lines[index + 1] ?? '')) {
+    const next = lines[index + 1] ?? '';
+    if (hasPipe(line) && (tableDelimiter.test(next) || singleColumnDelimiter.test(next))) {
       tableHeader = line;
       begin(index, 'table');
       index++;

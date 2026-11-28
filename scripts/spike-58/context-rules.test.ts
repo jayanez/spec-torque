@@ -104,3 +104,61 @@ test('adjacent exceptional scenario steps retain their source span', () => {
     assert.deepEqual(scenarioPairs(parse([when, then].join('\n'))), []);
   }
 });
+
+test('one-column Markdown table rows keep their own evidence', () => {
+  const rows = parse('| Context |\n|:---:|\n| Provider |\n| Retry |');
+  assert.deepEqual(rows.map(row => [row.kind, row.start, row.end]), [
+    ['table', 1, 1], ['table', 3, 3], ['table', 4, 4],
+  ]);
+  assert.deepEqual(rows.flatMap(leadsFor), []);
+});
+
+test('later empty conditions are evaluated with their own outcome', () => {
+  const cue = (text: string) => parse(text).flatMap(leadsFor)
+    .some(lead => lead.cues.includes('empty-condition-and-outcome'));
+  assert.ok(cue('When diagnostics are on, log the request. When the inbox is empty, show a notice.'));
+  assert.ok(cue('Si el servicio está ocupado, espera; si el buzón está vacío, se mostrará un aviso.'));
+  assert.ok(!cue('When the inbox is empty, wait and when a message arrives, show a notice.'));
+});
+
+test('cached bytes must be the Git blob at the pinned path, even for an old index', async () => {
+  const { createHash } = await import('node:crypto');
+  const { mkdir, mkdtemp, writeFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { spawnSync } = await import('node:child_process');
+  const root = await mkdtemp(join(tmpdir(), 'spike58-blob-'));
+  const repository = 'github.com/kcalvelli/cairn';
+  const commit = '712dc76d47efd44f2affc5a07865cd26231ef3e6';
+  const path = 'openspec/specs/synthetic/spec.md';
+  const text = Buffer.from('# Example\n\nWhen the mailbox is empty, show a notice.\n');
+  const sha = createHash('sha1').update(`blob ${text.length}\0`).update(text).digest('hex');
+  const mock = join(root, 'mock.mjs');
+  const tree = [{ type: 'blob', mode: '100644', path, sha }];
+  const doc = join(root, 'kcalvelli/cairn/0.md');
+  async function run(pathInIndex: string, data: Buffer | string) {
+    await writeFile(doc, data);
+    await writeFile(join(root, 'index.json'), JSON.stringify([
+      { repository, commit, license: 'MIT', documents: [{ path: pathInIndex, local: '0.md' }] },
+    ]));
+    const result = spawnSync(process.execPath, ['--import', 'tsx', '--import', mock, 'scripts/spike-58/scan-context.ts', root], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    return { coverage: JSON.parse(result.stderr).coverage[0], stdout: result.stdout };
+  }
+  try {
+    await mkdir(join(root, 'kcalvelli/cairn'), { recursive: true });
+    await writeFile(mock, `globalThis.fetch = async url => {
+      if (url !== 'https://api.github.com/repos/kcalvelli/cairn/git/trees/${commit}?recursive=1') throw new Error(url);
+      return Response.json(${JSON.stringify({ tree, truncated: false })});
+    };`);
+    const valid = await run(path, text);
+    assert.equal(valid.coverage.scanned, 1);
+    assert.match(valid.stdout, /empty-condition-and-outcome/u);
+    for (const result of [await run(path, 'altered bytes'), await run('openspec/specs/other/spec.md', text)]) {
+      assert.equal(result.stdout, '');
+      assert.match(result.coverage.skipped[0].reason, /Git blob mismatch/u);
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

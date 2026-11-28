@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
-import { readFile, realpath } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { constants } from 'node:fs';
+import { open, readFile, realpath } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { analyze, ENGINE_VERSION, RUBRIC_VERSION } from '../../src/core/analyze.js';
 import { z } from 'zod';
 import { leadsFor, normalize, passagesOf, scenarioPairs, type Passage } from './context-rules.js';
@@ -25,10 +26,47 @@ const familyPaths: Record<string, RegExp> = {
 };
 
 const hash = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
+const gitBlob = (data: Buffer) => createHash('sha1').update(`blob ${data.length}\0`).update(data).digest('hex');
+const treeSchema = z.object({ truncated: z.boolean(), tree: z.array(z.object({
+  type: z.string(), mode: z.string(), path: z.string(), sha: z.string().regex(/^[a-f0-9]{40}$/u),
+})) });
+
+async function pinnedBlobs(repository: string, revision: string) {
+  const response = await fetch(`https://api.github.com/repos/${repository}/git/trees/${revision}?recursive=1`, {
+    signal: AbortSignal.timeout(25_000), redirect: 'error',
+  });
+  if (!response.ok) throw new Error(`Cannot verify pinned tree: HTTP ${response.status}`);
+  const { tree, truncated } = treeSchema.parse(await response.json());
+  if (truncated) throw new Error('Cannot verify paths against a truncated Git tree');
+  return new Map(tree.filter(entry => entry.type === 'blob' && /^(100644|100755)$/u.test(entry.mode))
+    .map(entry => [entry.path, entry.sha]));
+}
+
+async function readCacheFile(path: string, limit?: number) {
+  if (await realpath(path) !== path) throw new Error('Unexpected cache file target');
+  const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  try {
+    const stat = await handle.stat();
+    if (!stat.isFile()) throw new Error('Unexpected non-regular cache file');
+    if (limit === undefined) return await handle.readFile();
+    if (stat.size > limit) throw new Error('Cached document exceeds 1 MB');
+    const buffer = Buffer.alloc(stat.size + 1);
+    let offset = 0;
+    while (offset < buffer.length) {
+      const { bytesRead } = await handle.read(buffer, offset, buffer.length - offset, offset);
+      if (!bytesRead) break;
+      offset += bytesRead;
+    }
+    if (offset !== stat.size) throw new Error('Cached document size changed during read');
+    return buffer.subarray(0, offset);
+  } finally {
+    await handle.close();
+  }
+}
 
 const root = await realpath(resolve(process.argv[2] ?? '/private/tmp/spec58-natural'));
 const manifest = z.object({ sources: z.array(sourceSchema.extend({ family: z.string() })) }).parse(JSON.parse(await readFile(new URL('../../fixtures/precision/r52-dev-sources.json', import.meta.url), 'utf8')));
-const index = indexSchema.parse(JSON.parse(await readFile(join(root, 'index.json'), 'utf8')));
+const index = indexSchema.parse(JSON.parse((await readCacheFile(join(root, 'index.json'))).toString('utf8')));
 const pinned = new Map(manifest.sources.map(source => [source.repository, source]));
 if (new Set(index.map(source => source.repository)).size !== index.length || index.some(source => {
   const pin = pinned.get(source.repository);
@@ -49,6 +87,7 @@ for (const source of index) {
     matching: source.matching ?? null, downloaded: source.documents?.filter(doc => doc.local).length ?? 0, scanned: 0, truncated: source.tree_truncated ?? null,
     sourceError: source.error ?? null, licenseCheck: source.licenseCheck ?? null, skipped: [] as { path: string; reason: string }[] };
   coverage.push(ledger);
+  let blobs: ReturnType<typeof pinnedBlobs> | undefined;
   for (const document of source.documents ?? []) {
     if (!document.local) {
       ledger.skipped.push({ path: document.path, reason: document.error ?? 'missing download' });
@@ -56,9 +95,9 @@ for (const source of index) {
     }
     let data: Buffer;
     try {
-      const file = await realpath(join(root, repo, document.local));
-      if (relative(root, file) !== join(repo, document.local)) throw new Error('Unexpected download target');
-      data = await readFile(file);
+      data = await readCacheFile(join(root, repo, document.local), 1_000_000);
+      blobs ??= pinnedBlobs(repo, source.commit);
+      if ((await blobs).get(document.path) !== gitBlob(data)) throw new Error('Git blob mismatch for pinned path');
     } catch (error) {
       ledger.skipped.push({ path: document.path, reason: String(error) });
       continue;
@@ -74,14 +113,14 @@ for (const source of index) {
     const blocks = passagesOf(lines);
     const assessment = await analyze({ name: document.path, artifacts: [artifact] });
     const documentHash = hash(data);
-    const negatives: { block: Passage; selector: string }[] = [];
-    function emit(block: Passage, practice: string | null, cues: string[]) {
+    let negative: { block: Passage; selector: string } | undefined;
+    function emit(block: Passage, fragmentHash: string, practice: string | null, cues: string[]) {
       const result = assessment.practices.find(item => item.id === practice);
       for (const cue of cues) counts[cue] = (counts[cue] ?? 0) + 1;
       console.log(JSON.stringify({
         record: practice ? 'lead' : 'negative-sample', practice, cues,
         repository: source.repository, revision: source.commit, manifestLicense: source.license, licenseCheck: source.licenseCheck ?? null,
-        path: document.path, documentHash, fragmentHash: hash(normalize(block.text)),
+        path: document.path, documentHash, fragmentHash,
         ...block, contextStart: Math.max(1, block.start - 2),
         context: lines.slice(Math.max(0, block.start - 3), block.end + 2),
         scanScope: 'single-spec',
@@ -101,14 +140,13 @@ for (const source of index) {
         occurrences.push({ repository: source.repository, revision: source.commit, path: document.path,
           start: block.start, end: block.end });
         fragments.set(fingerprint, occurrences);
-      }
-      for (const { practice, cues } of hits) emit(block, practice, cues);
-      if (!hits.length && block.kind !== 'heading' && /\p{L}{3}/u.test(block.text)) {
-        negatives.push({ block, selector: hash(JSON.stringify([source.repository, source.commit, document.path, block.start])) });
+        for (const { practice, cues } of hits) emit(block, fingerprint, practice, cues);
+      } else if (block.kind !== 'heading' && /\p{L}{3}/u.test(block.text)) {
+        const selector = hash(JSON.stringify([source.repository, source.commit, document.path, block.start]));
+        if (!negative || selector < negative.selector) negative = { block, selector };
       }
     }
-    negatives.sort((a, b) => a.selector.localeCompare(b.selector));
-    if (negatives.length) emit(negatives[0].block, null, ['uncaught-window-sample']);
+    if (negative) emit(negative.block, hash(normalize(negative.block.text)), null, ['uncaught-window-sample']);
   }
 }
 console.error(JSON.stringify({
